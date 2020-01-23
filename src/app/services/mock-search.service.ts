@@ -1,22 +1,15 @@
 import { SearchInterfaceService } from './search-interface.service';
 
 import { Injectable } from '@angular/core';
-import { HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { Item } from '../models/Item';
 import { HierarchyItem } from '../models/HierarchyItem';
 
-const httpOptions = {
-  headers: new HttpHeaders({ 
-    'Content-Type': 'application/json'
-   })
-};
-
 @Injectable({
   providedIn: 'root'
 })
-export class SearchService implements SearchInterfaceService{
+export class MockSearchService implements SearchInterfaceService{
   search(term: string): Observable<Item[]> {
     throw new Error("Method not implemented.");
   }
