@@ -9,7 +9,7 @@ import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
 import { ItemComponent } from './components/item/item.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
-import {MatButtonToggleModule} from '@angular/material';
+import {MatButtonToggleModule, MatGridListModule} from '@angular/material';
 
 @NgModule({
   declarations: [
@@ -24,7 +24,8 @@ import {MatButtonToggleModule} from '@angular/material';
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    MatGridListModule
   ],
   providers: [],
   bootstrap: [AppComponent]

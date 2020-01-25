@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {HierarchyItem} from '../../models/HierarchyItem';
 
 @Component({
   selector: 'app-home',
@@ -7,11 +8,19 @@ import { Component, OnInit } from '@angular/core';
 })
 export class HomeComponent implements OnInit {
 
-  selectedSearch = 'category';
+  selectedSearch = 'Categories';
+  hierarchyItems = new Array();
+  items = new Array();
 
-  constructor() { }
+  constructor() {
+  }
 
   ngOnInit() {
+    // Dummy data
+    for (let i = 0; i < 10; i++) {
+      this.hierarchyItems.push('hierarchy ' + i);
+      this.items.push('item' + i);
+    }
   }
 
 }
