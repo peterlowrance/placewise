@@ -1,6 +1,16 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
+//Imports for material design modules
+import {MatToolbar} from '@angular/material/toolbar'
+import {MatExpansionModule} from '@angular/material/expansion'
+import {MatChipsModule} from '@angular/material/chips'
+import {MatIconModule} from '@angular/material/icon'
+import {MatGridListModule} from '@angular/material/grid-list'
+import {MatButtonModule} from '@angular/material/button'
+import {MatCardModule} from '@angular/material/card'
+
+//Imports for all Placewise modules
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -17,12 +27,19 @@ import { NotFoundComponent } from './components/not-found/not-found.component';
     HomeComponent,
     LoginComponent,
     ItemComponent,
-    NotFoundComponent
+    NotFoundComponent,
+    MatToolbar
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    MatChipsModule,
+    MatIconModule,
+    MatGridListModule,
+    MatExpansionModule,
+    MatButtonModule,
+    MatCardModule
   ],
   providers: [],
   bootstrap: [AppComponent]

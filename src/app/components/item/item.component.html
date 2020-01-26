@@ -1,1 +1,67 @@
-<p>item works!</p>
+<h2>{{item.name}}</h2>
+
+<mat-grid-list cols="3" rowHeight="2:1">
+    <!-- first is image -->
+    <mat-grid-tile [colspan]="2" [rowspan]="3">
+        <img class="responsive-item-image" src={{item.imageUrl}} layout-fit>
+    </mat-grid-tile>
+    <!-- report button -->
+    <mat-grid-tile>
+        <button mat-raised-button color="primary"> Report
+            <mat-icon>report_problem</mat-icon>
+        </button>
+    </mat-grid-tile>
+    
+    <!-- spacers -->
+    <mat-grid-tile>
+
+    </mat-grid-tile>
+    <mat-grid-tile>
+
+    </mat-grid-tile>
+</mat-grid-list>
+
+<!-- more info expansion panel -->
+<mat-accordion>
+    <mat-expansion-panel>
+        <mat-expansion-panel-header>
+            <mat-panel-title>
+                More Information
+            </mat-panel-title>
+            <mat-panel-description>
+            </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <!-- description -->
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>Description</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <p>{{item.description}}</p>
+            </mat-card-content>
+            <mat-card-actions>
+                <!-- edit field -->
+            </mat-card-actions>
+        </mat-card>
+
+        <!-- category -->
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>Category</mat-card-title>
+                <mat-card-subtitle>{{item.category}}</mat-card-subtitle>
+                <div mat-card-avatar> <img src="https://crouton.net/crouton.png"> </div>
+            </mat-card-header>
+        </mat-card>
+
+        <!-- tags -->
+        <h3>Tags</h3>
+        <mat-chip-list>
+            <!-- TODO: add admin control for removing/adding -->
+            <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
+        </mat-chip-list>
+    </mat-expansion-panel>
+</mat-accordion>
+
+<!-- steps to find -->
+<h2>Steps to Find:</h2>
