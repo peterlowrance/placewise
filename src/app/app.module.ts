@@ -9,6 +9,7 @@ import {MatIconModule} from '@angular/material/icon'
 import {MatGridListModule} from '@angular/material/grid-list'
 import {MatButtonModule} from '@angular/material/button'
 import {MatCardModule} from '@angular/material/card'
+import {MatButtonToggleModule} from '@angular/material'
 
 //Imports for all Placewise modules
 import { AppRoutingModule } from './app-routing.module';
@@ -39,7 +40,8 @@ import { NotFoundComponent } from './components/not-found/not-found.component';
     MatGridListModule,
     MatExpansionModule,
     MatButtonModule,
-    MatCardModule
+    MatCardModule,
+    MatButtonToggleModule
   ],
   providers: [],
   bootstrap: [AppComponent]
