@@ -1,3 +1,6 @@
+import { HierarchyItem } from './HierarchyItem';
+
+
 export interface Item{
     ID: number,
     name: string,

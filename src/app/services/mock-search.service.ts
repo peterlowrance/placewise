@@ -1,7 +1,7 @@
 import { SearchInterfaceService } from './search-interface.service';
 
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 import { Item } from '../models/Item';
 import { HierarchyItem } from '../models/HierarchyItem';
@@ -11,34 +11,35 @@ import { HierarchyItem } from '../models/HierarchyItem';
 })
 export class MockSearchService implements SearchInterfaceService{
   search(term: string): Observable<Item[]> {
-    loc1 = {
+    let loc1 = {
       ID: 123,
       name: 'finishing',
       parent: null,
-      children: {}
+      children: []
     };
-    loc2 = {
+    let loc2 = {
       ID: 123,
       name: 'cabinet',
       parent: loc1,
-      children: {}
+      children: []
     };
-    loc1.children = {loc2};
-    cat1 = {
+    loc1.children = [loc2];
+    let cat1 = {
       ID: 123,
       name: 'screws',
       parent: null,
-      children: {}
+      children: []
     };
-    item1 = {
+    let item1 = {
         ID: 123,
         name: "2-inch Galv. Lag Screw",
-        decription?: "Okay",
-        tags?: {},
-        parentLocations: {loc1},
-        parentCategories: cat1,
-        imageUrl?: 'http://pixeljoint.com/files/icons/ethan.png'};
-    return of({item1});
+        decription: "Okay",
+        tags: ["Hello"],
+        parentLocations: [loc1],
+        parentCategory: cat1,
+        imageUrl: 'http://pixeljoint.com/files/icons/ethan.png'};
+
+    return of([item1]);
   }
   categoryItemsSearch(categoryID: number): Observable<Item[]> {
     throw new Error("Method not implemented.");
