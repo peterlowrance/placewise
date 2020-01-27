@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SearchService } from 'src/app/services/search.service';
 import { Item } from 'src/app/models/Item';
 import { Router, ActivatedRoute, Params } from '@angular/router';
+import { SearchInterfaceService } from 'src/app/services/search-interface.service';
 
 @Component({
   selector: 'app-item',
@@ -16,14 +17,14 @@ export class ItemComponent implements OnInit {
   expanded: boolean = false;  //is the more info panel expanded
 
 
-  constructor(private searchService: SearchService, private router: Router, private route: ActivatedRoute) { }
+  constructor(private searchService: SearchInterfaceService, private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit() {
     //retrieve id
     this.id = this.route.params['id'];
 
     //get the item from the id
-    this.searchService.getItem(this.id).subscribe(item => this.item = item);
+    this.searchService.getItem(123).subscribe(item => this.item = item);
     
   }
 

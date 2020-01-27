@@ -10,6 +10,37 @@ import { HierarchyItem } from '../models/HierarchyItem';
   providedIn: 'root'
 })
 export class MockSearchService implements SearchInterfaceService{
+  getItem(ID: number): Observable<Item> {
+    let loc1 = {
+      ID: 123,
+      name: 'finishing',
+      parent: null,
+      children: []
+    };
+    let loc2 = {
+      ID: 123,
+      name: 'cabinet',
+      parent: loc1,
+      children: []
+    };
+    loc1.children = [loc2];
+    let cat1 = {
+      ID: 123,
+      name: 'screws',
+      parent: null,
+      children: []
+    };
+    let item1 = {
+        ID: 123,
+        name: "2-inch Galv. Lag Screw",
+        decription: "Okay",
+        tags: ["Hello"],
+        parentLocations: [loc1],
+        parentCategory: cat1,
+        imageUrl: 'http://pixeljoint.com/files/icons/ethan.png'};
+
+    return of(item1);
+  }
   search(term: string): Observable<Item[]> {
     let loc1 = {
       ID: 123,
