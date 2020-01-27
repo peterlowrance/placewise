@@ -1,5 +1,16 @@
-<p>home works!</p>
-<mat-button-toggle-group [(value)] = "selectedSearch" name="hierarchySelector">
-  <mat-button-toggle value="category">Category</mat-button-toggle>
-  <mat-button-toggle value="location">Location</mat-button-toggle>
+<mat-button-toggle-group [(value)]="selectedSearch" name="hierarchySelector">
+  <mat-button-toggle value="Categories">Category</mat-button-toggle>
+  <mat-button-toggle value="Locations">Location</mat-button-toggle>
 </mat-button-toggle-group>
+<div *ngIf="hierarchyItems.length > 0">
+  <div *ngIf="items.length > 0">{{selectedSearch}}</div>
+  <mat-grid-list cols="3" rowHeight="1:1">
+    <mat-grid-tile *ngFor="let hierarchyItem of hierarchyItems">{{hierarchyItem}}</mat-grid-tile>
+  </mat-grid-list>
+</div>
+<div *ngIf="items.length > 0">
+  <div *ngIf="hierarchyItems.length > 0">Items</div>
+  <mat-grid-list cols="3" rowHeight="1:1">
+    <mat-grid-tile *ngFor="let item of items">{{item}}</mat-grid-tile>
+  </mat-grid-list>
+</div>
