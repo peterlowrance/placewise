@@ -1,4 +1,7 @@
 import {Component, OnInit} from '@angular/core';
+import {SearchInterfaceService} from '../../services/search-interface.service';
+import {Item} from '../../models/Item';
+import {Router} from '@angular/router';
 import {HierarchyItem} from '../../models/HierarchyItem';
 
 @Component({
@@ -9,18 +12,29 @@ import {HierarchyItem} from '../../models/HierarchyItem';
 export class HomeComponent implements OnInit {
 
   selectedSearch = 'Categories';
-  hierarchyItems = new Array();
-  items = new Array();
+  hierarchyItems = [];
+  items: Item[];
+  columns: number;
+  breakpoint = 1024;
 
-  constructor() {
+  constructor(private searchService: SearchInterfaceService, private router: Router) {
   }
 
   ngOnInit() {
     // Dummy data
-    for (let i = 0; i < 10; i++) {
+    this.searchService.search('testSearch').subscribe(item => this.items = item);
+    /*for (let i = 0; i < 10; i++) {
       this.hierarchyItems.push('hierarchy ' + i);
       this.items.push('item' + i);
-    }
+    }*/
+    this.columns = (window.innerWidth <= this.breakpoint) ? 3 : 6;
   }
 
+  onResize(event) {
+    this.columns = (event.target.innerWidth <= this.breakpoint) ? 3 : 6;
+  }
+
+  goToItem(event, item) {
+    this.router.navigate(['/item/', item.ID]);
+  }
 }

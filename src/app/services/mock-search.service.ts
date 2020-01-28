@@ -70,7 +70,7 @@ export class MockSearchService implements SearchInterfaceService{
         parentCategory: cat1,
         imageUrl: 'http://pixeljoint.com/files/icons/ethan.png'};
 
-    return of([item1]);
+    return of([item1, item1, item1, item1]);
   }
   categoryItemsSearch(categoryID: number): Observable<Item[]> {
     throw new Error("Method not implemented.");

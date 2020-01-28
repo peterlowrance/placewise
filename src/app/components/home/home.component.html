@@ -8,9 +8,15 @@
     <mat-grid-tile *ngFor="let hierarchyItem of hierarchyItems">{{hierarchyItem}}</mat-grid-tile>
   </mat-grid-list>
 </div>
+<!--Items-->
 <div *ngIf="items.length > 0">
   <div *ngIf="hierarchyItems.length > 0">Items</div>
-  <mat-grid-list cols="3" rowHeight="1:1">
-    <mat-grid-tile *ngFor="let item of items">{{item}}</mat-grid-tile>
+  <mat-grid-list [cols]="columns" rowHeight="1:1.2" (window:resize)="onResize($event)">
+    <mat-grid-tile *ngFor="let item of items">
+      <mat-card (click)="goToItem($event, item)">
+        <img mat-card-image src="{{item.imageUrl}}">
+        <mat-card-content>{{item.name}}</mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
   </mat-grid-list>
 </div>
