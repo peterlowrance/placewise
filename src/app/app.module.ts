@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 //Imports for material design modules
 import {MatToolbar} from '@angular/material/toolbar'
@@ -10,6 +11,7 @@ import {MatGridListModule} from '@angular/material/grid-list'
 import {MatButtonModule} from '@angular/material/button'
 import {MatCardModule} from '@angular/material/card'
 import {MatButtonToggleModule} from '@angular/material'
+import {MatInputModule} from '@angular/material/input'
 
 //Imports for all Placewise modules
 import { AppRoutingModule } from './app-routing.module';
@@ -34,6 +36,8 @@ import { NotFoundComponent } from './components/not-found/not-found.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
+    FormsModule,
+    ReactiveFormsModule,
     BrowserAnimationsModule,
     MatChipsModule,
     MatIconModule,
@@ -41,7 +45,8 @@ import { NotFoundComponent } from './components/not-found/not-found.component';
     MatExpansionModule,
     MatButtonModule,
     MatCardModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    MatInputModule
   ],
   providers: [],
   bootstrap: [AppComponent]

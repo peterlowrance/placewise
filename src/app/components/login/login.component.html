@@ -1,1 +1,34 @@
-<p>login works!</p>
+<h2 class="login-title"><img src="https://crouton.net/crouton.png"> Placewise</h2>
+<mat-card class="login-form">
+    <mat-card-header class="login-card-components">
+        <mat-card-title>Login</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="login-card-components">
+        <form (ngSubmit)="onSubmit()">
+            <!-- username -->
+            <mat-form-field class="full-width">
+                <input matInput 
+                    placeholder="Email" 
+                    type="email" 
+                    name="email"
+                    [formControl]="emailControl"
+                    required
+                >
+                <mat-error *ngIf="emailControl.hasError('email')">This is not a valid email</mat-error>
+                <mat-error *ngIf="emailControl.hasError('required')">Email is <strong>required</strong></mat-error>
+            </mat-form-field>
+            <!-- password -->
+            <mat-form-field class="full-width">
+                <input matInput placeholder="Password" type="password" name="password" required [(ngModel)]="password">
+            </mat-form-field>
+            <!-- company id -->
+            <mat-form-field class="full-width">
+                <input matInput placeholder="Company ID" type="text" name="CID" required [(ngModel)]="CID">
+            </mat-form-field>
+        </form>
+    </mat-card-content>
+    <mat-card-actions class="login-card-components">
+        <!-- submission -->
+        <button mat-raised-button color="primary">Login</button>
+    </mat-card-actions>
+</mat-card>

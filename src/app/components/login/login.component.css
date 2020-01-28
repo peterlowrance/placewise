@@ -1,0 +1,20 @@
+.login-title{
+    display: flex;
+    margin: inherit 100px;
+    justify-content: center;
+    font-size: xx-large;
+}
+
+.login-form{
+    justify-content: center;
+    margin: 100px 100px;
+}
+
+.login-card-components{
+    display: flex;
+    justify-content: center;
+}
+
+.full-width{
+    width: 100%;
+}
