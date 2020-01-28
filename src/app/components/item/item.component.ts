@@ -3,6 +3,7 @@ import { SearchService } from 'src/app/services/search.service';
 import { Item } from 'src/app/models/Item';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { SearchInterfaceService } from 'src/app/services/search-interface.service';
+import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-item',
@@ -30,6 +31,10 @@ export class ItemComponent implements OnInit {
 
   toggleMoreInfo(){
     this.expanded = !this.expanded;
+  }
+
+  createReport(){
+
   }
 
 }
