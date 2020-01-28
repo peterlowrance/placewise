@@ -1,34 +1,45 @@
 <h2 class="login-title"><img src="https://crouton.net/crouton.png"> Placewise</h2>
 <mat-card class="login-form">
+    <form [formGroup]='loginForm' (ngSubmit)="onSubmit(loginForm)">
     <mat-card-header class="login-card-components">
         <mat-card-title>Login</mat-card-title>
     </mat-card-header>
-    <mat-card-content class="login-card-components">
-        <form (ngSubmit)="onSubmit()">
+    <mat-card-content>
             <!-- username -->
             <mat-form-field class="full-width">
                 <input matInput 
                     placeholder="Email" 
                     type="email" 
-                    name="email"
+                    formControlName="email"
                     [formControl]="emailControl"
                     required
                 >
-                <mat-error *ngIf="emailControl.hasError('email')">This is not a valid email</mat-error>
-                <mat-error *ngIf="emailControl.hasError('required')">Email is <strong>required</strong></mat-error>
+                <mat-error *ngIf="emailControl.invalid">{{getEmailErrors()}}</mat-error>
             </mat-form-field>
             <!-- password -->
             <mat-form-field class="full-width">
-                <input matInput placeholder="Password" type="password" name="password" required [(ngModel)]="password">
+                <input matInput placeholder="Password" 
+                    type="password" 
+                    formControlName="password"
+                    [formControl]="passControl" 
+                    required
+                >
+                <mat-error *ngIf="passControl.invalid">{{getPassErrors()}}</mat-error>
             </mat-form-field>
             <!-- company id -->
             <mat-form-field class="full-width">
-                <input matInput placeholder="Company ID" type="text" name="CID" required [(ngModel)]="CID">
+                <input matInput placeholder="Company ID"
+                    type="text" 
+                    formControlName="CID" 
+                    [formControl]="CIDControl"
+                    required
+                >
+                <mat-error *ngIf="CIDControl.invalid">{{getCIDErrors()}}</mat-error>
             </mat-form-field>
-        </form>
     </mat-card-content>
     <mat-card-actions class="login-card-components">
         <!-- submission -->
-        <button mat-raised-button color="primary">Login</button>
+        <button mat-raised-button type="submit" [disabled]="!loginForm.valid" color="primary">Login</button>
     </mat-card-actions>
+</form>
 </mat-card>
