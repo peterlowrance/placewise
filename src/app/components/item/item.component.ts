@@ -43,7 +43,7 @@ export class ItemComponent implements OnInit {
     this.id = this.route.params['id'];
 
     //get the item from the id
-    this.searchService.getItem(123).subscribe(item => this.item = item);
+    this.searchService.getItem(+this.id).subscribe(item => this.item = item);
     
   }
 

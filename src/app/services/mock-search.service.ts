@@ -30,10 +30,10 @@ export class MockSearchService implements SearchInterfaceService{
       parent: null,
       children: []
     };
-    let item1 = {
+    let item1:Item = {
         ID: 123,
         name: "2-inch Galv. Lag Screw",
-        decription: "Okay",
+        description: "Okay",
         tags: ["Hello"],
         parentLocations: [loc1],
         parentCategory: cat1,
