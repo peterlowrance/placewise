@@ -25,10 +25,11 @@ mat-card {
 
 .itemImage {
   background: 50% 50% no-repeat;
+  background-size: cover;
   width: 80%;
   height: 70%;
   border: black 1px solid;
-  margin: 0 auto;
+  margin: auto;
 }
 
 .item {
