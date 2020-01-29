@@ -1,4 +1,4 @@
 export interface ItemReportModalData{
-    valid: boolean,
-    desc: string
+    valid: boolean;
+    desc: string;
 }
