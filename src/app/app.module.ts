@@ -12,6 +12,7 @@ import {MatButtonModule} from '@angular/material/button'
 import {MatCardModule} from '@angular/material/card'
 import {MatButtonToggleModule} from '@angular/material'
 import {MatInputModule} from '@angular/material/input'
+import {MatDialogModule} from '@angular/material/dialog'
 
 //Imports for all Placewise modules
 import { AppRoutingModule } from './app-routing.module';
@@ -22,6 +23,7 @@ import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
 import { ItemComponent } from './components/item/item.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
+import { ReportDialogComponent } from './components/report-dialog/report-dialog.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +33,8 @@ import { NotFoundComponent } from './components/not-found/not-found.component';
     LoginComponent,
     ItemComponent,
     NotFoundComponent,
-    MatToolbar
+    MatToolbar,
+    ReportDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -46,9 +49,11 @@ import { NotFoundComponent } from './components/not-found/not-found.component';
     MatButtonModule,
     MatCardModule,
     MatButtonToggleModule,
-    MatInputModule
+    MatInputModule,
+    MatDialogModule
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [ReportDialogComponent]
 })
 export class AppModule { }

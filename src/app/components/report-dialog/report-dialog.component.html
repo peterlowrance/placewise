@@ -1,0 +1,11 @@
+<h1 mat-dialog-title>Enter Report Details</h1>
+<mat-dialog-content>
+    <mat-form-field class="report-text-full-width">
+        <textarea matInput placeholder="Report Description" [(ngModel)]="data.desc"></textarea>
+    </mat-form-field>
+</mat-dialog-content>
+<div mat-dialog-actions>
+    <button mat-raised-button (click)="onCancelClick()">Cancel</button>
+    <span class="btn-spacer"></span>
+    <button mat-raised-button color="primary" (click)="onSendClick()">Send</button>
+</div>
