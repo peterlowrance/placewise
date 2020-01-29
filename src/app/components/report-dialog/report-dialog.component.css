@@ -1,7 +1,7 @@
 .report-text-full-width{
-    min-width: 300px;
+    min-width: 150px;
     width: 100%;
-    max-height: 400px;
+    max-height: 350px;
 }
 
 .btn-spacer {

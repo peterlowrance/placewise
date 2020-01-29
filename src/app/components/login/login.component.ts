@@ -17,7 +17,7 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private formBuilder: FormBuilder,
-    private authService: AuthService,
+    // private authService: AuthService,
     private router: Router
     ) { }
 
@@ -25,11 +25,11 @@ export class LoginComponent implements OnInit {
     this.loginForm = this.formBuilder.group({email: this.emailControl, password: this.passControl, CID: this.CIDControl})
 
     //If we are already logged in, redirect to homescreen
-    this.authService.getAuth().subscribe(auth => {
-      if(auth){
-        this.router.navigate(['/']);
-      }
-    })
+    // this.authService.getAuth().subscribe(auth => {
+    //   if(auth){
+    //     this.router.navigate(['/']);
+    //   }
+    // })
   }
 
   getEmailErrors(){

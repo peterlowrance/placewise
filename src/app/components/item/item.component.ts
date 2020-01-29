@@ -56,7 +56,7 @@ export class ItemComponent implements OnInit {
     this.errorDesc = {valid:false,desc:''};
 
     const dialogRef = this.dialog.open(ReportDialogComponent, {
-      width: '350px',
+      width: '240px',
       data: {
         valid: this.errorDesc.valid,
         desc: this.errorDesc.desc
