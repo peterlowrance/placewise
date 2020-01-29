@@ -12,7 +12,7 @@ import {HierarchyItem} from '../../models/HierarchyItem';
 export class HomeComponent implements OnInit {
 
   selectedSearch = 'Categories';
-  hierarchyItems = [];
+  hierarchyItems: HierarchyItem[];
   items: Item[];
   columns: number;
   breakpoint = 1024;

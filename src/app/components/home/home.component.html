@@ -2,21 +2,27 @@
   <mat-button-toggle value="Categories">Category</mat-button-toggle>
   <mat-button-toggle value="Locations">Location</mat-button-toggle>
 </mat-button-toggle-group>
-<div *ngIf="hierarchyItems.length > 0">
-  <div *ngIf="items.length > 0">{{selectedSearch}}</div>
-  <mat-grid-list cols="3" rowHeight="1:1">
-    <mat-grid-tile *ngFor="let hierarchyItem of hierarchyItems">{{hierarchyItem}}</mat-grid-tile>
+<!--Hierarchy Items-->
+<div *ngIf="hierarchyItems && hierarchyItems.length > 0">
+  <div *ngIf="items && items.length > 0">{{selectedSearch}}</div>
+  <mat-grid-list [cols]="columns" rowHeight="1:1.2" (window:resize)="onResize($event)">
+    <mat-grid-tile *ngFor="let hierarchyItem of hierarchyItems">
+      <div class="item">
+        <div class="hierarchyImage" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
+        <div class="text">{{hierarchyItem.name}}</div>
+      </div>
+    </mat-grid-tile>
   </mat-grid-list>
 </div>
 <!--Items-->
-<div *ngIf="items.length > 0">
-  <div *ngIf="hierarchyItems.length > 0">Items</div>
+<div *ngIf="items && items.length > 0">
+  <div *ngIf="hierarchyItems && hierarchyItems.length > 0">Items</div>
   <mat-grid-list [cols]="columns" rowHeight="1:1.2" (window:resize)="onResize($event)">
     <mat-grid-tile *ngFor="let item of items">
-      <mat-card (click)="goToItem($event, item)">
-        <img mat-card-image src="{{item.imageUrl}}">
-        <mat-card-content>{{item.name}}</mat-card-content>
-      </mat-card>
+      <div class="item" (click)="goToItem($event, item)">
+        <div class="itemImage" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
+        <div class="text">{{item.name}}</div>
+      </div>
     </mat-grid-tile>
   </mat-grid-list>
 </div>
