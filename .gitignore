@@ -62,6 +62,7 @@ chrome-profiler-events*.json
 speed-measure-plugin*.json
 
 # IDEs and editors
+.idea/*
 /.idea
 .project
 .classpath
@@ -193,3 +194,4 @@ upgrade-phonecat-3-final/rollup-config.js
 # schematics
 !schematics-for-libraries/projects/my-lib/package.json
 node_modules
+
