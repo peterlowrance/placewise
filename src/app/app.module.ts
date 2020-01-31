@@ -10,7 +10,7 @@ import {MatIconModule} from '@angular/material/icon'
 import {MatGridListModule} from '@angular/material/grid-list'
 import {MatButtonModule} from '@angular/material/button'
 import {MatCardModule} from '@angular/material/card'
-import {MatButtonToggleModule} from '@angular/material'
+import {MatAutocompleteModule, MatButtonToggleModule} from '@angular/material';
 import {MatInputModule} from '@angular/material/input'
 import {MatDialogModule} from '@angular/material/dialog'
 
@@ -24,6 +24,7 @@ import { LoginComponent } from './components/login/login.component';
 import { ItemComponent } from './components/item/item.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { ReportDialogComponent } from './components/report-dialog/report-dialog.component';
+
 
 @NgModule({
   declarations: [
@@ -50,7 +51,9 @@ import { ReportDialogComponent } from './components/report-dialog/report-dialog.
     MatCardModule,
     MatButtonToggleModule,
     MatInputModule,
-    MatDialogModule
+    MatDialogModule,
+    MatAutocompleteModule,
+    MatAutocompleteModule
   ],
   providers: [],
   bootstrap: [AppComponent],

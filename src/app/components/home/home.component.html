@@ -1,3 +1,17 @@
+<!--Search Bar-->
+<form class="search">
+  <mat-form-field class="full-width">
+    <input type="text" placeholder="Search" matInput [formControl]="control" [matAutocomplete]="auto" [(ngModel)]="searchValue">
+    <button mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="control.setValue('')">
+      <mat-icon>close</mat-icon>
+    </button>
+    <mat-autocomplete #auto="matAutocomplete">
+      <mat-option *ngFor="let option of options" [value]="option">
+        {{option}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+</form>
 <mat-button-toggle-group [(value)]="selectedSearch" name="hierarchySelector" (change)="toggleHierarchy($event)">
   <mat-button-toggle value="Categories">Category</mat-button-toggle>
   <mat-button-toggle value="Locations">Location</mat-button-toggle>

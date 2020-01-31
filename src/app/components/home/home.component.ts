@@ -5,6 +5,7 @@ import {Router} from '@angular/router';
 import {HierarchyItem} from '../../models/HierarchyItem';
 import {Category} from '../../models/Category';
 import {Location} from '../../models/Location';
+import {FormControl} from '@angular/forms';
 
 @Component({
   selector: 'app-home',
@@ -12,6 +13,9 @@ import {Location} from '../../models/Location';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
+  control = new FormControl(); // TODO research this more
+  options: string[] = ['Two', 'Inch', 'Galvanized'];
+  searchValue: string;
 
   selectedSearch = 'Categories';
   categories: Category[];
