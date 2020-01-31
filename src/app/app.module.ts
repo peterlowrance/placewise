@@ -24,6 +24,10 @@ import { LoginComponent } from './components/login/login.component';
 import { ItemComponent } from './components/item/item.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { ReportDialogComponent } from './components/report-dialog/report-dialog.component';
+import {AngularFireModule} from '@angular/fire';
+import {environment} from '../environments/environment';
+import {AngularFirestoreModule} from '@angular/fire/firestore';
+import {AngularFireAuthModule} from '@angular/fire/auth';
 
 
 @NgModule({
@@ -53,7 +57,9 @@ import { ReportDialogComponent } from './components/report-dialog/report-dialog.
     MatInputModule,
     MatDialogModule,
     MatAutocompleteModule,
-    MatAutocompleteModule
+    AngularFireModule.initializeApp(environment.firebase, 'clientpanel'),
+    AngularFirestoreModule,
+    AngularFireAuthModule
   ],
   providers: [],
   bootstrap: [AppComponent],
