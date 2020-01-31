@@ -10,7 +10,7 @@ import {MatIconModule} from '@angular/material/icon'
 import {MatGridListModule} from '@angular/material/grid-list'
 import {MatButtonModule} from '@angular/material/button'
 import {MatCardModule} from '@angular/material/card'
-import {MatButtonToggleModule} from '@angular/material'
+import {MatAutocompleteModule, MatButtonToggleModule} from '@angular/material';
 import {MatInputModule} from '@angular/material/input'
 import {MatDialogModule} from '@angular/material/dialog'
 import {MatTreeModule} from '@angular/material/tree'
@@ -26,6 +26,11 @@ import { LoginComponent } from './components/login/login.component';
 import { ItemComponent } from './components/item/item.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { ReportDialogComponent } from './components/report-dialog/report-dialog.component';
+import {AngularFireModule} from '@angular/fire';
+import {environment} from '../environments/environment';
+import {AngularFirestoreModule} from '@angular/fire/firestore';
+import {AngularFireAuthModule} from '@angular/fire/auth';
+
 
 @NgModule({
   declarations: [
@@ -54,7 +59,11 @@ import { ReportDialogComponent } from './components/report-dialog/report-dialog.
     MatInputModule,
     MatDialogModule,
     MatTreeModule,
-    MatListModule
+    MatListModule,
+    MatAutocompleteModule,
+    AngularFireModule.initializeApp(environment.firebase, 'clientpanel'),
+    AngularFirestoreModule,
+    AngularFireAuthModule
   ],
   providers: [],
   bootstrap: [AppComponent],
