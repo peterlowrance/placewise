@@ -15,20 +15,31 @@ export class MockSearchService implements SearchInterfaceService{
       ID: 123,
       name: 'finishing',
       parent: null,
-      children: []
+      children: [],
+      imageUrl: 'https://lh5.googleusercontent.com/proxy/Sguhr2QL1sM4QsDrMnF4aOQYIjwKQLO1Poz8gSKoScC1mDMrAA8rdbmtqiY2z5tjZP4QmQMQIoVSwubnhkzURLGjXZd8fm_nDWnFHUd0GAF4OFfF69--'
     };
     let loc2 = {
       ID: 123,
       name: 'cabinet',
       parent: loc1,
-      children: []
+      children: [],
+      imageUrl: 'https://crouton.net/crouton.png'
     };
+    let loc3 = {
+      ID:123,
+      name:'third drawer',
+      parent:loc2,
+      children:[],
+      imageUrl: 'https://crouton.net/crouton.png'
+    }
     loc1.children = [loc2];
+    loc2.children=[loc3];
     let cat1 = {
       ID: 123,
       name: 'screws',
       parent: null,
-      children: []
+      children: [],
+      imageUrl: 'http://fallingguy.com/img/perso.png'
     };
     let item1:Item = {
         ID: 123,

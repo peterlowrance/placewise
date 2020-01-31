@@ -13,6 +13,8 @@ import {MatCardModule} from '@angular/material/card'
 import {MatButtonToggleModule} from '@angular/material'
 import {MatInputModule} from '@angular/material/input'
 import {MatDialogModule} from '@angular/material/dialog'
+import {MatTreeModule} from '@angular/material/tree'
+import {MatListModule, MatList} from '@angular/material/list'
 
 //Imports for all Placewise modules
 import { AppRoutingModule } from './app-routing.module';
@@ -50,7 +52,9 @@ import { ReportDialogComponent } from './components/report-dialog/report-dialog.
     MatCardModule,
     MatButtonToggleModule,
     MatInputModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTreeModule,
+    MatListModule
   ],
   providers: [],
   bootstrap: [AppComponent],

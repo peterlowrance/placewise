@@ -1,4 +1,7 @@
+//adapted tree control from https://material.angular.io/components/tree/examples
 import { Component, OnInit } from '@angular/core';
+import {NestedTreeControl, TreeControl} from '@angular/cdk/tree';
+import {MatTreeNestedDataSource} from '@angular/material/tree';
 import { SearchService } from 'src/app/services/search.service';
 import { Item } from 'src/app/models/Item';
 import {Report} from 'src/app/models/Report';
@@ -7,6 +10,7 @@ import { Router, ActivatedRoute, Params } from '@angular/router';
 import { SearchInterfaceService } from 'src/app/services/search-interface.service';
 import {MatDialog} from '@angular/material/dialog';
 import {ReportDialogComponent} from '../report-dialog/report-dialog.component'
+import { HierarchyItem } from 'src/app/models/HierarchyItem';
 
 @Component({
   selector: 'app-item',
@@ -30,6 +34,12 @@ export class ItemComponent implements OnInit {
   errorDesc: ItemReportModalData = {valid: false, desc:''}; //user-reported error description
   expanded: boolean = false;  //is the more info panel expanded
 
+  //tree components from material source
+  treeControl = new NestedTreeControl<HierarchyItem>(node => node.children);
+
+  dataSource = new MatTreeNestedDataSource<HierarchyItem>();
+
+  hasChild = (_: number, node: HierarchyItem) => !!node.children && node.children.length > 0;;
 
   constructor(
     private searchService: SearchInterfaceService,
@@ -43,7 +53,12 @@ export class ItemComponent implements OnInit {
     this.id = this.route.params['id'];
 
     //get the item from the id
-    this.searchService.getItem(+this.id).subscribe(item => this.item = item);
+    this.searchService.getItem(+this.id).subscribe(item =>
+      {
+        //get the item ref
+        this.item = item
+        this.dataSource.data = this.item.parentLocations
+      });
     
   }
 

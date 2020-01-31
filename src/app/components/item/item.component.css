@@ -4,3 +4,40 @@
     max-height: 100%;
     height: auto;
 }
+
+/*Adapted from https://stackoverflow.com/questions/46841648/make-all-images-in-mat-card-image-same-size-but-scale-correctly?answertab=votes#tab-top*/
+mat-card img{
+    object-fit: cover; /*this makes the image in src fit to the size specified below*/
+    width: 100%; /* Here you can use wherever you want to specify the width and also the height of the <img>*/
+    height: 100%;
+}
+
+mat-card{
+    margin-bottom: 5px;
+}
+
+mat-expansion-panel{
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+h2{
+    margin: 5px;
+}
+
+
+/*Tree CSS*/
+.invisible {
+    display: none;
+}
+
+.example-tree ul,
+.example-tree li {
+    list-style-type: none;
+    align-content: center;
+}
+
+mat-tree{
+    margin-left: 5px;
+    margin-right: 5px;
+}
