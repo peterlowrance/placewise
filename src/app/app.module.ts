@@ -15,6 +15,7 @@ import {MatInputModule} from '@angular/material/input'
 import {MatDialogModule} from '@angular/material/dialog'
 import {MatTreeModule} from '@angular/material/tree'
 import {MatListModule, MatList} from '@angular/material/list'
+import {MatSnackBarModule} from '@angular/material/snack-bar'
 
 //Imports for all Placewise modules
 import { AppRoutingModule } from './app-routing.module';
@@ -63,7 +64,8 @@ import {AngularFireAuthModule} from '@angular/fire/auth';
     MatAutocompleteModule,
     AngularFireModule.initializeApp(environment.firebase, 'clientpanel'),
     AngularFirestoreModule,
-    AngularFireAuthModule
+    AngularFireAuthModule,
+    MatSnackBarModule
   ],
   providers: [],
   bootstrap: [AppComponent],
