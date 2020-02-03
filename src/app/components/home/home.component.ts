@@ -6,6 +6,7 @@ import {HierarchyItem} from '../../models/HierarchyItem';
 import {Category} from '../../models/Category';
 import {Location} from '../../models/Location';
 import {FormControl} from '@angular/forms';
+import {SearchService} from '../../services/search.service';
 
 @Component({
   selector: 'app-home',
@@ -25,12 +26,13 @@ export class HomeComponent implements OnInit {
   columns: number;
   breakpoint = 1024;
 
-  constructor(private searchService: SearchInterfaceService, private router: Router) {
+  constructor(private searchService: SearchService, private router: Router) {
   }
 
   ngOnInit() {
+    this.searchService.getAllItems().subscribe(data => this.items = data);
     // Dummy data
-    this.searchService.search('testSearch').subscribe(item => this.items = item);
+    // this.searchService.search('testSearch').subscribe(item => this.items = item);
     const c: Category = {
       ID: 123,
       name: 'tool',
@@ -50,6 +52,8 @@ export class HomeComponent implements OnInit {
     this.hierarchyItems = [c, c, l, l, l, l, l];
 
     this.columns = (window.innerWidth <= this.breakpoint) ? 3 : 6;
+
+    console.log(this.searchService.getAllItems());
   }
 
   onResize(event) {
