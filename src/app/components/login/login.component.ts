@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {FormControl, FormGroup, FormBuilder, Validators} from '@angular/forms';
 import {Router} from '@angular/router'
+import {MatSnackBar} from '@angular/material/snack-bar'
 
 import {AuthService} from '../../services/auth.service'
 
@@ -11,25 +12,28 @@ import {AuthService} from '../../services/auth.service'
 })
 export class LoginComponent implements OnInit {
   emailControl = new FormControl('', [Validators.required, Validators.email]);
-  passControl = new FormControl('',Validators.required)
-  CIDControl = new FormControl('', Validators.required)
-  loginForm: FormGroup
+  passControl = new FormControl('',Validators.required);
+  CIDControl = new FormControl('', Validators.required);
+  loginForm: FormGroup;
 
   constructor(
     private formBuilder: FormBuilder,
-    // private authService: AuthService,
-    private router: Router
+    private authService: AuthService,
+    private router: Router,
+    private snack: MatSnackBar
     ) { }
 
   ngOnInit() {
     this.loginForm = this.formBuilder.group({email: this.emailControl, password: this.passControl, CID: this.CIDControl})
 
     //If we are already logged in, redirect to homescreen
-    // this.authService.getAuth().subscribe(auth => {
-    //   if(auth){
-    //     this.router.navigate(['/']);
-    //   }
-    // })
+    this.authService.getAuth().subscribe(auth => {
+      if(auth){
+        //TODO: this is for testing purposes, replace below line with commented out code upon release to redirect login to main page
+        this.authService.logout()
+        //this.router.navigate(['/']);
+      }
+    })
   }
 
   getEmailErrors(){
@@ -49,7 +53,14 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit(){
-    console.log(this.loginForm.value)
+    this.authService.login(
+      this.loginForm.value.email,
+      this.loginForm.value.password,
+      this.loginForm.value.CID).then(res => {
+        this.router.navigate(['/'])
+      }).catch(err => {
+        this.snack.open('Login Failed: '+err, "OK");
+      });
   }
 
 }

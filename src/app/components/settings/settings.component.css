@@ -1,0 +1,11 @@
+.settings-container{
+    list-style-type: none;
+    text-align: center;
+}
+
+.overall-settings{
+    vertical-align: middle;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}

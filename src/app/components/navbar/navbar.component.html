@@ -1,5 +1,22 @@
-<mat-toolbar color="primary">
-    <span>Placewise</span>
+<mat-toolbar *ngIf='this.locationString !== "/login"' color="primary">
+    <div [ngSwitch]="checkLocation()">
+        <span *ngSwitchCase='"item"'>
+            <button mat-button (click)="goBack()">
+                <mat-icon>
+                    arrow_back
+                </mat-icon> Go Back
+            </button>
+        </span>
+        <span *ngSwitchCase='"settings"'>
+            <button mat-button (click)="goBack()">
+                <mat-icon>
+                    arrow_back
+                </mat-icon> User Settings
+            </button>
+        </span>
+        <span *ngSwitchDefault>Placewise</span>
+    </div>
     <span class="spacer"></span>
-    <mat-icon [routerLink]="['/']" routerLinkActive="router-link-active"  class="nav-icon">home</mat-icon>
+    <button mat-icon-button [disabled]="this.locationString==='/settings'"  [routerLink]="['/settings']" routerLinkActive="router-link-active"><mat-icon>person</mat-icon></button>
+    <button mat-icon-button [disabled]="this.locationString==='/' && state==='home'"  [routerLink]="['/']" routerLinkActive="router-link-active"><mat-icon>home</mat-icon></button>
 </mat-toolbar>

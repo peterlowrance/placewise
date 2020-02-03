@@ -15,6 +15,12 @@
     justify-content: center;
 }
 
+.login-error{
+    display: flex;
+    justify-content: center;
+    text-emphasis-color: red;
+}
+
 .full-width{
     width: 100%;
 }
