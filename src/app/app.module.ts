@@ -31,6 +31,7 @@ import {AngularFireModule} from '@angular/fire';
 import {environment} from '../environments/environment';
 import {AngularFirestoreModule} from '@angular/fire/firestore';
 import {AngularFireAuthModule} from '@angular/fire/auth';
+import { SettingsComponent } from './components/settings/settings.component';
 
 
 @NgModule({
@@ -42,7 +43,8 @@ import {AngularFireAuthModule} from '@angular/fire/auth';
     ItemComponent,
     NotFoundComponent,
     MatToolbar,
-    ReportDialogComponent
+    ReportDialogComponent,
+    SettingsComponent
   ],
   imports: [
     BrowserModule,
