@@ -1,6 +1,6 @@
 export interface Report {
     item: {
-        ID: number;
+        ID: string;
         name: string;
         imageUrl: string;
     };
