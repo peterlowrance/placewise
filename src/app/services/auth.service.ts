@@ -15,19 +15,36 @@ export class AuthService {
   login(email: string, password: string, workspace: string){
     return new Promise((resolve, reject) => {
       this.afAuth.auth.signInWithEmailAndPassword(email,password)
-      .then(async userData => {
-          const doc = await this.ensureUserInWorkspace(workspace, userData.user.uid)
-          if(doc){
-            resolve(userData);
-          } else  {
-            this.logout();
-            reject("User does not belong to this workspace or the workspace does not exist.");
-          }
+      .then(userData => {
+        const doc = this.ensureUserInWorkspace(workspace, userData.user.uid)
+           doc.subscribe(val => {
+             console.log(val);
+           })
+           if(doc){
+             resolve(userData);
+           } else  {
+             this.logout();
+             reject("User does not belong to this workspace or the workspace does not exist.");
+           }
+          // resolve(userData)
       },
       err => reject(err)
       );
-    }
-    )
+    })
+    // ).then(
+    //   userData => {
+    //   const doc = this.ensureUserInWorkspace(workspace, userData.user.uid)
+    //       doc.subscribe(val => {
+    //         console.log(val);
+    //       })
+    //       if(doc){
+    //         resolve(userData);
+    //       } else  {
+    //         this.logout();
+    //         reject("User does not belong to this workspace or the workspace does not exist.");
+    //       }
+    //   }
+    // )
   }
 
   /**
@@ -37,7 +54,7 @@ export class AuthService {
    * @returns A boolean if the user is in the given workspace
    */
   private ensureUserInWorkspace(workspace: string, uid: string){
-    return this.afs.doc(`Workspaces/${workspace}/WorkspaceUsers/${uid}`).valueChanges().pipe(first()).toPromise()
+    return this.afs.doc(`Workspaces/${workspace}/WorkspaceUsers/${uid}`).get()
   }
 
   /**
