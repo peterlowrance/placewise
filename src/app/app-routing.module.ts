@@ -13,7 +13,7 @@ import {SettingsComponent} from './components/settings/settings.component'
 
 
 const routes: Routes = [
-  {path: '', component: HomeComponent, canActivate: []},
+  {path: '', component: HomeComponent, canActivate: [AuthGuard]},
   {path: 'login', component: LoginComponent},
   {path: 'item/:id', component: ItemComponent, canActivate: [AuthGuard]},
   {path: 'settings', component: SettingsComponent, canActivate: [AuthGuard]},

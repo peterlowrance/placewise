@@ -1,5 +1,5 @@
 export interface User {
-  fName: string;
-  lName: string;
+  firstName: string;
+  lastName: string;
   email: string;
 }

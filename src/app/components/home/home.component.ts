@@ -22,6 +22,7 @@ export class HomeComponent implements OnInit {
   categories: Category[];
   locations: Location[];
   hierarchyItems: HierarchyItem[];
+  root: HierarchyItem;
   items: Item[];
   columns: number;
   breakpoint = 1024;
@@ -30,7 +31,7 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.searchService.getAllItems().subscribe(data => this.items = data);
+    this.displayDescendants();
     // Dummy data
     // this.searchService.search('testSearch').subscribe(item => this.items = item);
     const c: Category = {
@@ -44,7 +45,7 @@ export class HomeComponent implements OnInit {
       ID: 122,
       name: 'cabinet',
       parent: null,
-      imageUrl: 'https://www.ikea.com/us/en/images/products/havsta-cabinet-with-plinth__0720107_PE732421_S5.JPG?f=s,',
+      imageUrl: 'https://www.ikea.com/us/en/images/products/havsta-cabinet-with-plinth__0720107_PE732421_S5.JPG?f=s',
       children: []
     };
     this.categories = [c, c];
@@ -52,15 +53,22 @@ export class HomeComponent implements OnInit {
     this.hierarchyItems = [c, c, l, l, l, l, l];
 
     this.columns = (window.innerWidth <= this.breakpoint) ? 3 : 6;
+  }
 
-    console.log(this.searchService.getAllItems());
+  displayDescendants(root?: HierarchyItem) {
+    if (root) {
+
+    } else {
+      this.searchService.getAllItems().subscribe(data => this.items = data);
+    }
   }
 
   onResize(event) {
     this.columns = (event.target.innerWidth <= this.breakpoint) ? 3 : 6;
   }
 
-  goToItem(event, item) {
+  goToItem(item) {
+    console.log(item);
     this.router.navigate(['/item/', item.ID]);
   }
 

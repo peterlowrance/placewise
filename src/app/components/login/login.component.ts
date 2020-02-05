@@ -30,8 +30,8 @@ export class LoginComponent implements OnInit {
     this.authService.getAuth().subscribe(auth => {
       if(auth){
         //TODO: this is for testing purposes, replace below line with commented out code upon release to redirect login to main page
-        this.authService.logout()
-        //this.router.navigate(['/']);
+        //this.authService.logout()
+        this.router.navigate(['/']);
       }
     })
   }
