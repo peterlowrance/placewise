@@ -22,7 +22,7 @@
   <div class="header" *ngIf="items && items.length > 0">{{selectedSearch}}</div>
   <mat-grid-list [cols]="columns" rowHeight="1:1.2" (window:resize)="onResize($event)">
     <mat-grid-tile *ngFor="let hierarchyItem of hierarchyItems">
-      <div class="element">
+      <div class="element" (click)="displayDescendants(hierarchyItem)">
         <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
         <div class="text">{{hierarchyItem.name}}</div>
       </div>
@@ -34,7 +34,7 @@
   <div class="header" *ngIf="hierarchyItems && hierarchyItems.length > 0">Items</div>
   <mat-grid-list [cols]="columns" rowHeight="1:1.2" (window:resize)="onResize($event)">
     <mat-grid-tile *ngFor="let item of items">
-      <div class="element" (click)="goToItem($event, item)">
+      <div class="element" (click)="goToItem(item)">
         <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
         <div class="text">{{item.name}}</div>
       </div>
