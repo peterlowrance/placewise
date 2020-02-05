@@ -2,7 +2,7 @@ import {HierarchyItem} from './HierarchyItem';
 
 
 export interface Item {
-  ID: number;
+  ID: string;
   name: string;
   description?: string;
   tags?: string[];

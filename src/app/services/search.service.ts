@@ -7,6 +7,7 @@ import {Observable} from 'rxjs';
 import {Item} from '../models/Item';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {AngularFirestore, AngularFirestoreCollection} from '@angular/fire/firestore';
+import { Category } from '../models/Category';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -22,31 +23,27 @@ export class SearchService implements SearchInterfaceService {
     throw new Error('Method not implemented.');
   }
 
-  getItem(id: number): Observable<Item> {
-    // TODO: interface with firebase to retrieve the item at the given index
-
-    // FIXME: replace with firebase
-    throw new Error('Method not implemented.');
+  getItem(id: string): Observable<Item> {
+    return this.afs.doc<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Items/' + id).valueChanges();
   }
 
   getAllItems(): Observable<Item[]> {
     return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Items').valueChanges();
   }
 
-  categoryItemsSearch(categoryID: number): Observable<Item[]> {
-    throw new Error('Method not implemented.');
+  categoryItemsSearch(categoryID: string): Observable<Item[]> {
+    return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/items').valueChanges();
   }
 
-  categoryChildrenSearch(categoryID: number): Observable<HierarchyItem[]> {
-    throw new Error('Method not implemented.');
+  categoryChildrenSearch(categoryID: string): Observable<Category[]> {
+    return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/children').valueChanges();
   }
 
-  locationItemsSearch(location: HierarchyItem): Observable<Item[]> {
-    throw new Error('Method not implemented.');
-  }
+  locationItemsSearch(locationID: string): Observable<Item[]> {
+    return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Location/' + locationID + '/items').valueChanges();  }
 
-  locationChildrenSearch(location: HierarchyItem): Observable<HierarchyItem[]> {
-    throw new Error('Method not implemented.');
+  locationChildrenSearch(locationID: string): Observable<HierarchyItem[]> {
+    return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Location/' + locationID + '/children').valueChanges();
   }
 
   constructor(private afs: AngularFirestore) {
