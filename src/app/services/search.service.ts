@@ -31,11 +31,20 @@ export class SearchService implements SearchInterfaceService {
     return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Items').valueChanges();
   }
 
+  getAllCategories(): Observable<Item[]> {
+    return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').valueChanges();
+  }
+
+  getAllLocations(): Observable<Item[]> {
+    return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Categories').valueChanges();
+  }
+
   categoryItemsSearch(categoryID: string): Observable<Item[]> {
     return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/items').valueChanges();
   }
 
   categoryChildrenSearch(categoryID: string): Observable<Category[]> {
+    console.log('path: ' + '/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/children');
     return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/children').valueChanges();
   }
 

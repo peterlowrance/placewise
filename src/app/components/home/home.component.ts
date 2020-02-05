@@ -34,15 +34,15 @@ export class HomeComponent implements OnInit {
     this.displayDescendants();
     // Dummy data
     // this.searchService.search('testSearch').subscribe(item => this.items = item);
-    const c: Category = {
-      ID: 123,
+    /*const c: Category = {
+      ID: '123',
       name: 'tool',
       parent: null,
       imageUrl: 'https://previews.123rf.com/images/davids47/davids471403/davids47140300419/26802642-abstract-construction-tool-on-a-white-background.jpg',
       children: []
     };
     const l: Location = {
-      ID: 122,
+      ID: '122',
       name: 'cabinet',
       parent: null,
       imageUrl: 'https://www.ikea.com/us/en/images/products/havsta-cabinet-with-plinth__0720107_PE732421_S5.JPG?f=s',
@@ -50,16 +50,20 @@ export class HomeComponent implements OnInit {
     };
     this.categories = [c, c];
     this.locations = [l];
-    this.hierarchyItems = [c, c, l, l, l, l, l];
+    this.hierarchyItems = [c, c, l, l, l, l, l];*/
 
     this.columns = (window.innerWidth <= this.breakpoint) ? 3 : 6;
   }
 
-  displayDescendants(root?: HierarchyItem) {
-    if (root) {
-
+  displayDescendants() {
+    const rootID = this.root ? this.root.ID : 'root';
+    console.log('root id = ' + rootID);
+    if (this.selectedSearch === 'Categories') {
+      this.searchService.categoryChildrenSearch(rootID).subscribe(data => this.categories = data);
+      this.searchService.categoryItemsSearch(rootID).subscribe(data => this.items = data);
     } else {
-      this.searchService.getAllItems().subscribe(data => this.items = data);
+      this.searchService.locationChildrenSearch(rootID).subscribe(data => this.locations = data);
+      this.searchService.locationItemsSearch(rootID).subscribe(data => this.items = data);
     }
   }
 

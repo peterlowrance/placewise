@@ -24,7 +24,7 @@ export class ItemComponent implements OnInit {
   report: Report = {
     description:'',
     item:{
-      ID:0,
+      ID:'0',
       name:'',
       imageUrl:''
     },
@@ -53,7 +53,7 @@ export class ItemComponent implements OnInit {
     this.id = this.route.params['id'];
 
     //get the item from the id
-    this.searchService.getItem(+this.id).subscribe(item =>
+    this.searchService.getItem(this.id).subscribe(item =>
       {
         //get the item ref
         this.item = item
