@@ -28,6 +28,7 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getAllItems(): Observable<Item[]> {
+    this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Items').snapshotChanges().subscribe(data => console.log(data));
     return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Items').valueChanges();
   }
 

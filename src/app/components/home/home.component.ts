@@ -19,6 +19,8 @@ export class HomeComponent implements OnInit {
   searchValue: string;
 
   selectedSearch = 'Categories';
+  allCategories: Category[];
+  allLocations: Location[];
   categories: Category[];
   locations: Location[];
   hierarchyItems: HierarchyItem[];
@@ -57,10 +59,10 @@ export class HomeComponent implements OnInit {
 
   displayDescendants() {
     const rootID = this.root ? this.root.ID : 'root';
-    console.log('root id = ' + rootID);
+    console.log('root ID = ' + rootID);
     if (this.selectedSearch === 'Categories') {
       this.searchService.categoryChildrenSearch(rootID).subscribe(data => this.categories = data);
-      this.searchService.categoryItemsSearch(rootID).subscribe(data => this.items = data);
+      this.searchService.getAllItems().subscribe(data => this.items = data);
     } else {
       this.searchService.locationChildrenSearch(rootID).subscribe(data => this.locations = data);
       this.searchService.locationItemsSearch(rootID).subscribe(data => this.items = data);
