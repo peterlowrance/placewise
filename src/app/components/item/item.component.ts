@@ -35,7 +35,7 @@ export class ItemComponent implements OnInit {
   expanded: boolean = false;  //is the more info panel expanded
 
   //tree components from material source
-  treeControl = new NestedTreeControl<HierarchyItem>(node => node.children);
+  // treeControl = new NestedTreeControl<HierarchyItem>(node => node.children); TODO this needs to be changed since node.children is just a bunch of id's
 
   dataSource = new MatTreeNestedDataSource<HierarchyItem>();
 

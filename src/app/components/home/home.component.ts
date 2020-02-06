@@ -19,8 +19,6 @@ export class HomeComponent implements OnInit {
   searchValue: string;
 
   selectedSearch = 'Categories';
-  allCategories: Category[];
-  allLocations: Location[];
   categories: Category[];
   locations: Location[];
   hierarchyItems: HierarchyItem[];
@@ -33,20 +31,32 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.displayDescendants();
+    // Init data from firebase
+    this.searchService.getAllCategories().subscribe(data => {
+      this.categories = data;
+      this.displayDescendants(this.selectedSearch);
+    });
+    this.searchService.getAllLocations().subscribe(data => this.locations = data);
     this.columns = (window.innerWidth <= this.breakpoint) ? 3 : 6;
   }
 
-  displayDescendants() {
+  displayDescendants(selectedSearch) {
     const rootID = this.root ? this.root.ID : 'root';
-    console.log('root ID = ' + rootID);
-    if (this.selectedSearch === 'Categories') {
-      this.searchService.categoryChildrenSearch(rootID).subscribe(data => this.categories = data);
-      this.searchService.getAllItems().subscribe(data => this.items = data);
+    this.hierarchyItems = [];
+    if (selectedSearch === 'Categories') {
+      for (const c of this.categories) {
+        if (c.parent === rootID) {
+          this.hierarchyItems.push(c);
+        }
+      }
     } else {
-      this.searchService.locationChildrenSearch(rootID).subscribe(data => this.locations = data);
-      this.searchService.locationItemsSearch(rootID).subscribe(data => this.items = data);
+      for (const l of this.locations) {
+        if (l.parent === rootID) {
+          this.hierarchyItems.push(l);
+        }
+      }
     }
+    this.searchService.getAllItems().subscribe(data => this.items = data);
   }
 
   onResize(event) {
@@ -54,11 +64,10 @@ export class HomeComponent implements OnInit {
   }
 
   goToItem(item) {
-    console.log(item);
     this.router.navigate(['/item/', item.ID]);
   }
 
   toggleHierarchy(event) {
-    this.hierarchyItems = event.value === 'Categories' ? this.categories : this.locations;
+    this.displayDescendants(event.value);
   }
 }

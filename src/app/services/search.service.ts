@@ -8,6 +8,7 @@ import {Item} from '../models/Item';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {AngularFirestore} from '@angular/fire/firestore';
 import {Category} from '../models/Category';
+import {Location} from '../models/Location';
 import {map} from 'rxjs/operators';
 
 const httpOptions = {
@@ -40,12 +41,12 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getAllCategories(): Observable<Item[]> {
-    return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').valueChanges();
+  getAllCategories(): Observable<Category[]> {
+    return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category').valueChanges();
   }
 
-  getAllLocations(): Observable<Item[]> {
-    return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Categories').valueChanges();
+  getAllLocations(): Observable<Location[]> {
+    return this.afs.collection<Location>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').valueChanges();
   }
 
   categoryItemsSearch(categoryID: string): Observable<Item[]> {
