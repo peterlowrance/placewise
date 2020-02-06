@@ -8,6 +8,7 @@ import {Item} from '../models/Item';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {AngularFirestore, AngularFirestoreCollection} from '@angular/fire/firestore';
 import { Category } from '../models/Category';
+import { map } from 'rxjs/operators';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -28,8 +29,20 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getAllItems(): Observable<Item[]> {
-    this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Items').snapshotChanges().subscribe(data => console.log(data));
-    return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Items').valueChanges();
+    //this.afs.collection<Item>().snapshotChanges('/Workspaces/aP87kgghQ8mqvvwcZGQV/Items').subscribe(data => console.log(data));
+    let items = this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Items').snapshotChanges().pipe(map(a =>
+      {
+        return a.map(g =>
+          {
+            console.log(g.payload.doc.data())
+            const data = g.payload.doc.data() as Item
+            data.ID = g.payload.doc.id;
+            return data;
+          }
+        )
+      }))
+    items.subscribe(data => console.log(data))
+    return items;
   }
 
   getAllCategories(): Observable<Item[]> {
@@ -46,14 +59,39 @@ export class SearchService implements SearchInterfaceService {
 
   categoryChildrenSearch(categoryID: string): Observable<Category[]> {
     console.log('path: ' + '/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/children');
-    return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/children').valueChanges();
+    let query = '/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/children'
+    let categories = this.afs.collection<Category>(query).snapshotChanges().pipe(map(a =>
+      {
+        return a.map(g =>
+          {
+            console.log(g.payload.doc.data())
+            const data = g.payload.doc.data() as Category
+            data.ID = g.payload.doc.id;
+            return data;
+          }
+        )
+      }))
+    return categories
   }
 
   locationItemsSearch(locationID: string): Observable<Item[]> {
     return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Location/' + locationID + '/items').valueChanges();  }
 
   locationChildrenSearch(locationID: string): Observable<HierarchyItem[]> {
-    return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Location/' + locationID + '/children').valueChanges();
+  
+    let query = '/Workspaces/aP87kgghQ8mqvvwcZGQV/Location/' + locationID + '/children'
+    let locations = this.afs.collection<Category>(query).snapshotChanges().pipe(map(a =>
+      {
+        return a.map(g =>
+          {
+            console.log(g.payload.doc.data())
+            const data = g.payload.doc.data() as Category
+            data.ID = g.payload.doc.id;
+            return data;
+          }
+        )
+      }))
+    return locations
   }
 
   constructor(private afs: AngularFirestore) {

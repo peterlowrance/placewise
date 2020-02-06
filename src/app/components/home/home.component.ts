@@ -61,7 +61,9 @@ export class HomeComponent implements OnInit {
     const rootID = this.root ? this.root.ID : 'root';
     console.log('root ID = ' + rootID);
     if (this.selectedSearch === 'Categories') {
-      this.searchService.categoryChildrenSearch(rootID).subscribe(data => this.categories = data);
+      this.searchService.categoryChildrenSearch(rootID).subscribe(data => {this.categories = data
+      console.log("yeezy")
+      console.log(this.categories)});
       this.searchService.getAllItems().subscribe(data => this.items = data);
     } else {
       this.searchService.locationChildrenSearch(rootID).subscribe(data => this.locations = data);
