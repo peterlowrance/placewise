@@ -26,7 +26,11 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getItem(id: string): Observable<Item> {
-    return this.afs.doc<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Items/' + id).valueChanges();
+    return this.afs.doc<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Items/' + id).snapshotChanges().pipe(map(a => {
+      const data = a.payload.data() as Item;
+      data.ID = a.payload.id;
+      return data;
+    }));
   }
 
   getAllItems(): Observable<Item[]> {
@@ -42,11 +46,27 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getAllCategories(): Observable<Category[]> {
-    return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category').valueChanges();
+    // return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category').valueChanges();
+    return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category').snapshotChanges().pipe(map(a => {
+      return a.map(g => {
+          const data = g.payload.doc.data() as Category;
+          data.ID = g.payload.doc.id;
+          return data;
+        }
+      );
+    }));
   }
 
   getAllLocations(): Observable<Location[]> {
-    return this.afs.collection<Location>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').valueChanges();
+    // return this.afs.collection<Location>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').valueChanges();
+    return this.afs.collection<Location>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').snapshotChanges().pipe(map(a => {
+      return a.map(g => {
+          const data = g.payload.doc.data() as Location;
+          data.ID = g.payload.doc.id;
+          return data;
+        }
+      );
+    }));
   }
 
   categoryItemsSearch(categoryID: string): Observable<Item[]> {
@@ -73,14 +93,14 @@ export class SearchService implements SearchInterfaceService {
   locationChildrenSearch(locationID: string): Observable<HierarchyItem[]> {
     return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Location/' + locationID + '/children').snapshotChanges().pipe(
       map(a => {
-      return a.map(g => {
-          console.log(g.payload.doc.data());
-          const data = g.payload.doc.data() as Category;
-          data.ID = g.payload.doc.id;
-          return data;
-        }
-      );
-    }));
+        return a.map(g => {
+            console.log(g.payload.doc.data());
+            const data = g.payload.doc.data() as Category;
+            data.ID = g.payload.doc.id;
+            return data;
+          }
+        );
+      }));
   }
 
   constructor(private afs: AngularFirestore) {

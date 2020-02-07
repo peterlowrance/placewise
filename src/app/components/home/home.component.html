@@ -13,16 +13,17 @@
     </mat-autocomplete>
   </mat-form-field>
 </form>-->
-<mat-button-toggle-group [(value)]="selectedSearch" name="hierarchySelector" (change)="toggleHierarchy($event)">
+<mat-button-toggle-group *ngIf="!root || root.name === 'root'" [(value)]="selectedSearch" name="hierarchySelector" (change)="toggleHierarchy($event)">
   <mat-button-toggle value="Categories">Category</mat-button-toggle>
   <mat-button-toggle value="Locations">Location</mat-button-toggle>
 </mat-button-toggle-group>
 <!--Hierarchy Items-->
-<div *ngIf="hierarchyItems && hierarchyItems.length > 0">
-  <div class="header" *ngIf="items && items.length > 0">{{selectedSearch}}</div>
-  <mat-grid-list [cols]="columns" rowHeight="1:1.2" (window:resize)="onResize($event)">
+<div *ngIf="hierarchyItems && hierarchyItems.length > 0" (window:resize)="onResize($event)">
+  <!--Show header if there are both items and hierarchies or if there is no toggle-->
+  <div class="header" *ngIf="(items && items.length > 0) || (root && root.name != 'root')">{{selectedSearch}}</div>
+  <mat-grid-list [cols]="columns" rowHeight="1:1.2">
     <mat-grid-tile *ngFor="let hierarchyItem of hierarchyItems">
-      <div class="element" (click)="displayDescendants()">
+      <div class="element" (click)="goToHierarchy(hierarchyItem)">
         <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
         <div class="text">{{hierarchyItem.name}}</div>
       </div>
@@ -32,7 +33,7 @@
 <!--Items-->
 <div *ngIf="items && items.length > 0">
   <div class="header" *ngIf="hierarchyItems && hierarchyItems.length > 0">Items</div>
-  <mat-grid-list [cols]="columns" rowHeight="1:1.2" (window:resize)="onResize($event)">
+  <mat-grid-list [cols]="columns" rowHeight="1:1.2">
     <mat-grid-tile *ngFor="let item of items">
       <div class="element" (click)="goToItem(item)">
         <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
