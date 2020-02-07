@@ -37,7 +37,7 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getLocation(id: string): Observable<HierarchyItem> {
-    return this.afs.doc<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Location/' + id).snapshotChanges().pipe(map(a => {
+    return this.afs.doc<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as HierarchyItem;
       data.ID = a.payload.id;
       return data;
