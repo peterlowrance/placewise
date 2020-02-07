@@ -7,6 +7,7 @@ import {Category} from '../../models/Category';
 import {FormControl} from '@angular/forms';
 import {SearchService} from '../../services/search.service';
 import {Location} from '@angular/common';
+import {NavService} from '../../services/nav.service';
 
 @Component({
   selector: 'app-home',
@@ -27,18 +28,38 @@ export class HomeComponent implements OnInit {
   columns: number;
   breakpoint = 1024;
 
-  constructor(private searchService: SearchService, private router: Router, private location: Location, private route: ActivatedRoute) {
+  constructor(
+    private navService: NavService,
+    private searchService: SearchService,
+    private router: Router,
+    private location: Location,
+    private route: ActivatedRoute) {
   }
 
   ngOnInit() {
     const urlID = this.route.snapshot.paramMap.get('id');
     const urlSS = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
+    console.log(urlID);
+    console.log(urlSS);
+    if (urlSS === 'Categories') {
+      this.searchService.getCategory(urlID).subscribe(data => {
+        this.root = data;
+        this.navService.setNavBarState(data.name);
+      });
+    } else {
+      this.searchService.getLocation(urlID).subscribe(data => {
+        this.root = data;
+        this.navService.setNavBarState(data.name);
+      });
+    }
     // Init data from firebase
     this.searchService.getAllCategories().subscribe(data => {
       this.categories = data;
-      this.displayDescendants(urlID, urlSS);
+      this.searchService.getAllLocations().subscribe(loc => {
+        this.locations = loc;
+        this.displayDescendants(urlID, urlSS);
+      });
     });
-    this.searchService.getAllLocations().subscribe(data => this.locations = data);
 
     this.columns = (window.innerWidth <= this.breakpoint) ? 3 : 6;
   }
@@ -62,7 +83,7 @@ export class HomeComponent implements OnInit {
         }
       }
     }
-    if (this.root) {
+    if (this.root && this.root.items) {
       for (const i of this.root.items) {
         this.searchService.getItem(i).subscribe(data => this.items.push(data));
       }
@@ -78,12 +99,13 @@ export class HomeComponent implements OnInit {
   }
 
   goToHierarchy(item: HierarchyItem) {
-    this.location.replaceState('search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
     this.root = item;
+    this.location.replaceState('search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
     this.displayDescendants();
   }
 
   toggleHierarchy(event) {
+    this.location.replaceState('search/' + event.value.toLowerCase() + '/' + this.root.ID);
     this.displayDescendants(event.value);
   }
 }
