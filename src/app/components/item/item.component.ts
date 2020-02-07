@@ -57,6 +57,7 @@ export class ItemComponent implements OnInit {
       {
         //get the item ref
         this.item = item
+        console.log(item);
         this.dataSource.data = this.item.parentLocations
       });
     

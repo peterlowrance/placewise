@@ -11,8 +11,12 @@ import { ItemComponent } from '../item/item.component';
   styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent implements OnInit {
+  /** The current location in the app */
   locationString: string = "/login";
-  state: string = "home";
+  /** The current search state */
+  state: string = "/";
+  /** */
+  searchString: string = '';
   
 
 
@@ -29,6 +33,10 @@ export class NavbarComponent implements OnInit {
   ngOnInit() {
   }
 
+  /**
+   * Checks the current location
+   * @returns a string representation of the current location in the app
+   */
   checkLocation(): string{
     if (this.locationString.includes('/item/')){
       return 'item';
@@ -41,8 +49,18 @@ export class NavbarComponent implements OnInit {
     }
   }
 
+  /**
+   * Goes back in the router
+   */
   goBack(){
     this.routeLocation.back();
+  }
+
+  /**
+   * Notifies the navservice that a hierarchy return was requested
+   */
+  returnInHierarchy(){
+
   }
 
 }
