@@ -14,9 +14,7 @@ export class NavbarComponent implements OnInit {
   /** The current location in the app */
   locationString: string = "/login";
   /** The current search state */
-  state: string = "/";
-  /** */
-  searchString: string = '';
+  state: string = "Home";
   
 
 

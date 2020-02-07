@@ -5,7 +5,7 @@ import {Item} from 'src/app/models/Item';
 import {Report} from 'src/app/models/Report';
 import {ItemReportModalData} from 'src/app/models/ItemReportModalData';
 import {ActivatedRoute, Router} from '@angular/router';
-import {SearchInterfaceService} from 'src/app/services/search-interface.service';
+import {SearchService} from 'src/app/services/search.service';
 import {MatDialog} from '@angular/material/dialog';
 import {ReportDialogComponent} from '../report-dialog/report-dialog.component';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
@@ -37,12 +37,12 @@ export class ItemComponent implements OnInit {
   // TODO this needs to be changed since node.children is just a bunch of id's
   // treeControl = new NestedTreeControl<HierarchyItem>(node => node.children);
 
-  dataSource = new MatTreeNestedDataSource<HierarchyItem>();
+  // dataSource = new MatTreeNestedDataSource<HierarchyItem>();
 
-  hasChild = (_: number, node: HierarchyItem) => !!node.children && node.children.length > 0;
+  // hasChild = (_: number, node: HierarchyItem) => !!node.children && node.children.length > 0;
 
   constructor(
-    private searchService: SearchInterfaceService,
+    private searchService: SearchService,
     private router: Router,
     private route: ActivatedRoute,
     public dialog: MatDialog
@@ -58,7 +58,7 @@ export class ItemComponent implements OnInit {
     this.searchService.getItem(this.id).subscribe(item => {
       // get the item ref
       this.item = item;
-      console.log(this.item);
+      //get all locations and filter
       // TODO this will have to be done with a call to get all locations and then filtering them
       // this.dataSource.data = this.item.parentLocations;
     });
