@@ -20,7 +20,7 @@ export class HomeComponent implements OnInit {
   searchValue: string;*/
 
   selectedSearch = 'Categories';
-  categories: Category[];
+  categories: HierarchyItem[];
   locations: HierarchyItem[];
   hierarchyItems: HierarchyItem[];
   root: HierarchyItem;
