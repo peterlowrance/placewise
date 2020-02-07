@@ -2,13 +2,11 @@ import {SearchInterfaceService} from './search-interface.service';
 
 import {Injectable} from '@angular/core';
 import {HttpHeaders} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 
 import {Item} from '../models/Item';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {AngularFirestore} from '@angular/fire/firestore';
-import {Category} from '../models/Category';
-import {Location} from '../models/Location';
 import {map} from 'rxjs/operators';
 import {AuthService} from './auth.service';
 
@@ -32,8 +30,33 @@ export class SearchService implements SearchInterfaceService {
     return null;
   }
 
-  getDescendantsOfItem(id: string) {
-
+  getDescendantsOfRoot(id: string, isCategory: boolean): Observable<HierarchyItem[]> {
+    const result: HierarchyItem[] = [];
+    if (isCategory) {
+      return new Observable(obs => {
+        this.getAllCategories().subscribe(cats => {
+          cats.forEach(cat => {
+            if (cat.parent === id) {
+              result.push(cat);
+            }
+          });
+          obs.next(result);
+          obs.complete();
+        });
+      });
+    } else {
+      return new Observable(obs => {
+        this.getAllLocations().subscribe(cats => {
+          cats.forEach(cat => {
+            if (cat.parent === id) {
+              result.push(cat);
+            }
+          });
+          obs.next(result);
+          obs.complete();
+        });
+      });
+    }
   }
 
   search(term: string): Observable<Item[]> {
@@ -77,26 +100,34 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getAllCategories(): Observable<HierarchyItem[]> {
+    if (this.categories) {
+      return of(this.categories);
+    }
     // return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category').valueChanges();
     return this.afs.collection<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category').snapshotChanges().pipe(map(a => {
-      return a.map(g => {
+      this.categories = a.map(g => {
           const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
           return data;
         }
       );
+      return this.categories;
     }));
   }
 
   getAllLocations(): Observable<HierarchyItem[]> {
+    if (this.locations) {
+      return of(this.locations);
+    }
     // return this.afs.collection<Location>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').valueChanges();
     return this.afs.collection<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').snapshotChanges().pipe(map(a => {
-      return a.map(g => {
+      this.locations =  a.map(g => {
           const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
           return data;
         }
       );
+      return this.locations;
     }));
   }
 
