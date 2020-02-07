@@ -26,80 +26,76 @@ interface Workspace{
 })
 export class AuthService {
   
-  //public getters
+  /** User workspace information */
   workspace: WorkspaceInfo = {
     name: '',
     id: ''
   };
+  /** User information */
   userInfo: User = {
     firstName: '',
     lastName: '',
     email: ''
   }
+  /**User role, Admin or User */
   role: string;
 
   constructor(private afAuth: AngularFireAuth,
               private afs: AngularFirestore,
               private router: Router) { }
 
+  /**
+   * Logs into firebase through email and password sign-in method, retrieves
+   * auth, workspace info, and user info authentication fields
+   * @param email The email used to sign into firebase workspace
+   * @param password The password associated with this email
+   * @param workspace The workspace ID corresponding to the workspace the user is trying to sign into
+   */
   login(email: string, password: string, workspace: string){
+    //promise return login
     return new Promise((resolve, reject) => {
+      //try to log in
       this.afAuth.auth.signInWithEmailAndPassword(email,password)
       .then(userData => {
+        //success, get user info
         const doc = this.ensureUserInWorkspace(workspace, userData.user.uid);
-           
         if(doc){ //user is in DB, get information for authentication
           doc.subscribe(
             val => {
               this.role = val.role;
             }
           );
+
           //get workspace name
           const workDoc = this.getWorkspaceInfo(workspace);
-
           //if work is null, workspace is nonexistant (redundent, but in case of drops)
           if(!workDoc) reject("Could not query workspace information");
-
+          //subscribe to changes in workspace name
           workDoc.subscribe(
             val => this.workspace.name = val.name
           );
-
           //can also set workspace id
           this.workspace.id = workspace;
 
           //now get user information, again might be nonexistant if a drop occurs
           const userDoc = this.getUserInfo(userData.user.uid);
-
           if(!userDoc) reject("Could not query user information");
-
+          //subscribe to changes in user info
           userDoc.subscribe(
             val => this.userInfo = val
           );
-
+          //have all info, can quit
           resolve(userData);
-        } else  {
+        } else  { //user-workspace connect problem
+          //logout and reject
           this.logout();
           reject("User does not belong to this workspace or the workspace does not exist.");
         }
-        // resolve(userData)
       },
+      //error occured in sign-in, reject attempt
       err => reject(err)
       );
     })
-    // ).then(
-    //   userData => {
-    //   const doc = this.ensureUserInWorkspace(workspace, userData.user.uid)
-    //       doc.subscribe(val => {
-    //         console.log(val);
-    //       })
-    //       if(doc){
-    //         resolve(userData);
-    //       } else  {
-    //         this.logout();
-    //         reject("User does not belong to this workspace or the workspace does not exist.");
-    //       }
-    //   }
-    // )
   }
 
   /**

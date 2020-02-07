@@ -1,9 +1,9 @@
 export interface Item {
   ID: string;
   name: string;
-  description?: string;
+  desc?: string;
   tags?: string[];
-  parentLocations: string[];
-  parentCategory: string;
+  locations: string[];
+  category: string;
   imageUrl?: string;
 }
