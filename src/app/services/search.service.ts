@@ -24,8 +24,16 @@ const httpOptions = {
 
 export class SearchService implements SearchInterfaceService {
 
-  getAncestorsOfItem(id: string) {
-    return 'asdf';
+  locations: HierarchyItem[];
+  categories: HierarchyItem[];
+
+  getAncestorsOfItem(id: string): HierarchyItem[][] {
+    // n wide for every location, x tall for the parents to parents to root
+    return null;
+  }
+
+  getDescendantsOfItem(id: string) {
+
   }
 
   search(term: string): Observable<Item[]> {
