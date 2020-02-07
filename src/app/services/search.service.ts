@@ -10,6 +10,7 @@ import {AngularFirestore} from '@angular/fire/firestore';
 import {Category} from '../models/Category';
 import {Location} from '../models/Location';
 import {map} from 'rxjs/operators';
+import { AuthService } from './auth.service';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -20,6 +21,8 @@ const httpOptions = {
 @Injectable({
   providedIn: 'root'
 })
+
+
 export class SearchService implements SearchInterfaceService {
   search(term: string): Observable<Item[]> {
     throw new Error('Method not implemented.');
@@ -28,6 +31,22 @@ export class SearchService implements SearchInterfaceService {
   getItem(id: string): Observable<Item> {
     return this.afs.doc<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Items/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as Item;
+      data.ID = a.payload.id;
+      return data;
+    }));
+  }
+
+  getLocation(id: string): Observable<HierarchyItem> {
+    return this.afs.doc<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Location/' + id).snapshotChanges().pipe(map(a => {
+      const data = a.payload.data() as HierarchyItem;
+      data.ID = a.payload.id;
+      return data;
+    }));
+  }
+
+  getCategory(id: string): Observable<HierarchyItem> {
+    return this.afs.doc<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + id).snapshotChanges().pipe(map(a => {
+      const data = a.payload.data() as HierarchyItem;
       data.ID = a.payload.id;
       return data;
     }));
@@ -73,37 +92,12 @@ export class SearchService implements SearchInterfaceService {
     return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/items').valueChanges();
   }
 
-  categoryChildrenSearch(categoryID: string): Observable<HierarchyItem[]> {
-    return this.afs.collection<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/children').snapshotChanges().pipe(
-      map(a => {
-        return a.map(g => {
-            console.log(g.payload.doc.data());
-            const data = g.payload.doc.data() as HierarchyItem;
-            data.ID = g.payload.doc.id;
-            return data;
-          }
-        );
-      }));
-  }
-
   locationItemsSearch(locationID: string): Observable<Item[]> {
-    return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Location/' + locationID + '/items').valueChanges();
+    return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations/' + locationID + '/items').valueChanges();
   }
 
-  locationChildrenSearch(locationID: string): Observable<HierarchyItem[]> {
-    return this.afs.collection<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Location/' + locationID + '/children').snapshotChanges().pipe(
-      map(a => {
-        return a.map(g => {
-            console.log(g.payload.doc.data());
-            const data = g.payload.doc.data() as HierarchyItem;
-            data.ID = g.payload.doc.id;
-            return data;
-          }
-        );
-      }));
-  }
+  constructor(private afs: AngularFirestore, private auth : AuthService) {
 
-  constructor(private afs: AngularFirestore) {
   }
 
 
