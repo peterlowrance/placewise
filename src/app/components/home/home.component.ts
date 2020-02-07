@@ -40,9 +40,10 @@ export class HomeComponent implements OnInit {
     this.columns = (window.innerWidth <= this.breakpoint) ? 3 : 6;
   }
 
-  displayDescendants(selectedSearch) {
+  displayDescendants(selectedSearch = this.selectedSearch) {
     const rootID = this.root ? this.root.ID : 'root';
     this.hierarchyItems = [];
+    this.items = [];
     if (selectedSearch === 'Categories') {
       for (const c of this.categories) {
         if (c.parent === rootID) {
@@ -56,15 +57,24 @@ export class HomeComponent implements OnInit {
         }
       }
     }
-    this.searchService.getAllItems().subscribe(data => this.items = data);
+    if (this.root) {
+      for (const i of this.root.items) {
+        this.searchService.getItem(i).subscribe(data => this.items.push(data));
+      }
+    }
   }
 
   onResize(event) {
     this.columns = (event.target.innerWidth <= this.breakpoint) ? 3 : 6;
   }
 
-  goToItem(item) {
+  goToItem(item: Item) {
     this.router.navigate(['/item/', item.ID]);
+  }
+
+  goToHierarchy(item: HierarchyItem) {
+    this.root = item;
+    this.displayDescendants();
   }
 
   toggleHierarchy(event) {
