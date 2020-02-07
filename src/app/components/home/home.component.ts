@@ -32,7 +32,6 @@ export class HomeComponent implements OnInit {
     private navService: NavService,
     private searchService: SearchService,
     private router: Router,
-    private location: Location,
     private route: ActivatedRoute) {
   }
 
@@ -41,13 +40,15 @@ export class HomeComponent implements OnInit {
     const urlSS = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
     console.log(urlID);
     console.log(urlSS);
+    this.selectedSearch = urlSS;
     if (urlSS === 'Categories') {
       this.searchService.getCategory(urlID).subscribe(data => {
         this.root = data;
         this.navService.setNavBarState(data.name);
       });
     } else {
-      this.searchService.getLocation(urlID).subscribe(data => {
+      this.searchService.getLocation
+      (urlID).subscribe(data => {
         this.root = data;
         this.navService.setNavBarState(data.name);
       });
@@ -100,12 +101,15 @@ export class HomeComponent implements OnInit {
 
   goToHierarchy(item: HierarchyItem) {
     this.root = item;
-    this.location.replaceState('search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
+    // this.location.replaceState('search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
+    window.history.pushState(null, null, 'search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
+    this.navService.setNavBarState(item.name);
     this.displayDescendants();
   }
 
   toggleHierarchy(event) {
-    this.location.replaceState('search/' + event.value.toLowerCase() + '/' + this.root.ID);
+    // this.location.replaceState('search/' + event.value.toLowerCase() + '/' + this.root.ID);
+    window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + this.root.ID);
     this.displayDescendants(event.value);
   }
 }

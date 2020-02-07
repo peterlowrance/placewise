@@ -10,7 +10,7 @@ import {AngularFirestore} from '@angular/fire/firestore';
 import {Category} from '../models/Category';
 import {Location} from '../models/Location';
 import {map} from 'rxjs/operators';
-import { AuthService } from './auth.service';
+import {AuthService} from './auth.service';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -22,8 +22,12 @@ const httpOptions = {
   providedIn: 'root'
 })
 
-
 export class SearchService implements SearchInterfaceService {
+
+  getAncestorsOfItem(id: string) {
+    return 'asdf';
+  }
+
   search(term: string): Observable<Item[]> {
     throw new Error('Method not implemented.');
   }
@@ -96,7 +100,7 @@ export class SearchService implements SearchInterfaceService {
     return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations/' + locationID + '/items').valueChanges();
   }
 
-  constructor(private afs: AngularFirestore, private auth : AuthService) {
+  constructor(private afs: AngularFirestore, private auth: AuthService) {
 
   }
 
