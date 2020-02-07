@@ -10,6 +10,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {ReportDialogComponent} from '../report-dialog/report-dialog.component';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
 import {NestedTreeControl} from '@angular/cdk/tree';
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-item',
@@ -32,6 +33,8 @@ export class ItemComponent implements OnInit {
   }; // user report
   errorDesc: ItemReportModalData = {valid: false, desc: ''}; // user-reported error description
   expanded = false;  // is the more info panel expanded
+
+  parentLists: string[];
 
   // tree components from material source
   // TODO this needs to be changed since node.children is just a bunch of id's
@@ -59,10 +62,21 @@ export class ItemComponent implements OnInit {
       // get the item ref
       this.item = item;
       //get all locations and filter
+      for(var loc of item.locations){
+        this.buildParents(loc).subscribe(val =>
+          this.parentLists.push('e')
+        )
+        }
       // TODO this will have to be done with a call to get all locations and then filtering them
       // this.dataSource.data = this.item.parentLocations;
     });
 
+  }
+
+  private buildParents(id: string): Observable<string>{
+    if(id == 'root') return of('root');
+    
+    this.searchService.getLocation(id)
   }
 
   toggleMoreInfo() {

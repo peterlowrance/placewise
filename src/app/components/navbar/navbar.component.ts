@@ -19,7 +19,10 @@ export class NavbarComponent implements OnInit {
 
 
   constructor(private routeLocation: Location, private router: Router, private navService: NavService) {
-    navService.navState.subscribe( (state)=> this.state = state )
+    navService.navState.subscribe( (state)=>
+      this.state = (state !== null && state === 'root') ? 'Placewise' : state
+    );
+
     router.events.subscribe(val => {
       if (val instanceof NavigationEnd){
         this.locationString = val.url;
