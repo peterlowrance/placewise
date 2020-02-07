@@ -45,11 +45,11 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getAllCategories(): Observable<Category[]> {
+  getAllCategories(): Observable<HierarchyItem[]> {
     // return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category').valueChanges();
-    return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category').snapshotChanges().pipe(map(a => {
+    return this.afs.collection<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category').snapshotChanges().pipe(map(a => {
       return a.map(g => {
-          const data = g.payload.doc.data() as Category;
+          const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
           return data;
         }
@@ -57,11 +57,11 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getAllLocations(): Observable<Location[]> {
+  getAllLocations(): Observable<HierarchyItem[]> {
     // return this.afs.collection<Location>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').valueChanges();
-    return this.afs.collection<Location>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').snapshotChanges().pipe(map(a => {
+    return this.afs.collection<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').snapshotChanges().pipe(map(a => {
       return a.map(g => {
-          const data = g.payload.doc.data() as Location;
+          const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
           return data;
         }
@@ -73,12 +73,12 @@ export class SearchService implements SearchInterfaceService {
     return this.afs.collection<Item>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/items').valueChanges();
   }
 
-  categoryChildrenSearch(categoryID: string): Observable<Category[]> {
-    return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/children').snapshotChanges().pipe(
+  categoryChildrenSearch(categoryID: string): Observable<HierarchyItem[]> {
+    return this.afs.collection<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Category/' + categoryID + '/children').snapshotChanges().pipe(
       map(a => {
         return a.map(g => {
             console.log(g.payload.doc.data());
-            const data = g.payload.doc.data() as Category;
+            const data = g.payload.doc.data() as HierarchyItem;
             data.ID = g.payload.doc.id;
             return data;
           }
@@ -91,11 +91,11 @@ export class SearchService implements SearchInterfaceService {
   }
 
   locationChildrenSearch(locationID: string): Observable<HierarchyItem[]> {
-    return this.afs.collection<Category>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Location/' + locationID + '/children').snapshotChanges().pipe(
+    return this.afs.collection<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Location/' + locationID + '/children').snapshotChanges().pipe(
       map(a => {
         return a.map(g => {
             console.log(g.payload.doc.data());
-            const data = g.payload.doc.data() as Category;
+            const data = g.payload.doc.data() as HierarchyItem;
             data.ID = g.payload.doc.id;
             return data;
           }
