@@ -62,21 +62,11 @@ export class ItemComponent implements OnInit {
       // get the item ref
       this.item = item;
       //get all locations and filter
-      for(var loc of item.locations){
-        this.buildParents(loc).subscribe(val =>
-          this.parentLists.push('e')
-        )
-        }
+      this.searchService.getAncestorsOfItem(item.ID);
       // TODO this will have to be done with a call to get all locations and then filtering them
       // this.dataSource.data = this.item.parentLocations;
     });
 
-  }
-
-  private buildParents(id: string): Observable<string>{
-    if(id == 'root') return of('root');
-    
-    this.searchService.getLocation(id)
   }
 
   toggleMoreInfo() {

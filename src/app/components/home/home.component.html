@@ -13,7 +13,7 @@
     </mat-autocomplete>
   </mat-form-field>
 </form>-->
-<mat-button-toggle-group *ngIf="!root || root.name === 'root'" [(value)]="selectedSearch" name="hierarchySelector" (change)="toggleHierarchy($event)">
+<mat-button-toggle-group *ngIf="!root || root?.name === 'root'" [(value)]="selectedSearch" name="hierarchySelector" (change)="toggleHierarchy($event)">
   <mat-button-toggle value="Categories">Category</mat-button-toggle>
   <mat-button-toggle value="Locations">Location</mat-button-toggle>
 </mat-button-toggle-group>

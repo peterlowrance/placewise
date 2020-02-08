@@ -57,7 +57,7 @@ export class LoginComponent implements OnInit {
       this.loginForm.value.email,
       this.loginForm.value.password,
       this.loginForm.value.CID).then(res => {
-        this.router.navigate(['/'])
+        this.router.navigate(['/search/locations/root'])
       }).catch(err => {
         this.snack.open('Login Failed: '+err, "OK");
       });

@@ -4,6 +4,8 @@ import {Location} from '@angular/common';
 
 import {NavService} from '../../services/nav.service';
 import {ItemComponent} from '../item/item.component';
+import { of } from 'rxjs';
+import { HierarchyItem } from 'src/app/models/HierarchyItem';
 
 @Component({
   selector: 'app-navbar',
@@ -16,10 +18,23 @@ export class NavbarComponent implements OnInit {
   /** The current search state */
   state = 'Home';
 
+  /**Reference to type of searching */
+  searchType: string = '';
+
+  /**Reference to parent */
+  parent: HierarchyItem = {
+    ID: '',
+    name: '',
+    parent: '',
+    children: [],
+    items: [],
+    imageUrl: ''
+  };
+
 
   constructor(private routeLocation: Location, private router: Router, private navService: NavService) {
     navService.navState.subscribe((state) =>
-      this.state = (state !== null && state === 'root') ? 'Placewise' : state
+      this.state = (state !== null && state === 'root') ? 'Home' : state
     );
 
     router.events.subscribe(val => {
@@ -28,6 +43,9 @@ export class NavbarComponent implements OnInit {
         console.log(this.locationString);
       }
     });
+
+    navService.searchType.subscribe(val => this.searchType=val);
+    navService.parent.subscribe(val => this.parent=val);
   }
 
   ngOnInit() {
@@ -58,7 +76,16 @@ export class NavbarComponent implements OnInit {
    * Notifies the navservice that a hierarchy return was requested
    */
   returnInHierarchy() {
-    this.goBack();
+    this.routeLocation.back()
+    this.navService.returnState();
+  }
+
+  /**
+   * Returns home, forgets parent state
+   */
+  goHome(){
+    this.navService.forgetParent();
+    this.router.navigate([`search/${this.searchType}/root`]);
   }
 
 }

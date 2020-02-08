@@ -16,19 +16,19 @@
         </span>
         <!-- we are home, check for in search hierarchy -->
         <span *ngSwitchDefault>
-            <span *ngIf='state === "/"'>Placewise</span>
+            <span *ngIf='parent === null || parent?.ID === "root"'>Placewise</span>
 
             <!-- not home, display back button with functionality -->
-            <div *ngIf='state !== "/"'>
+            <div *ngIf='parent !== null && parent.ID !== "root"'>
                 <button mat-button (click)="returnInHierarchy()">
                     <mat-icon>
                         arrow_back
-                    </mat-icon> {{state}}
+                    </mat-icon> {{parent.name}}
                 </button>
             </div>
         </span>
     </div>
     <span class="spacer"></span>
     <button mat-icon-button [disabled]="this.locationString==='/settings'"  [routerLink]="['/settings']" routerLinkActive="router-link-active"><mat-icon>person</mat-icon></button>
-    <button mat-icon-button [disabled]="this.locationString==='/' && state==='home'"  [routerLink]="['/']" routerLinkActive="router-link-active"><mat-icon>home</mat-icon></button>
+    <button mat-icon-button [disabled]="this.locationString==='/' && state==='home'" (click)="goHome()"><mat-icon>home</mat-icon></button>
 </mat-toolbar>

@@ -1,5 +1,5 @@
 export interface HierarchyItem {
-  ID: string;
+  ID?: string;
   name: string;
   parent?: string;
   children: string[];
