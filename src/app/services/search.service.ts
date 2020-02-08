@@ -25,10 +25,28 @@ export class SearchService implements SearchInterfaceService {
   locations: HierarchyItem[];
   categories: HierarchyItem[];
 
-  getAncestorsOfItem(id: string): HierarchyItem[][] {
+  getAncestorsOfItem(id: string): Observable<HierarchyItem[][]> {
+    const result: HierarchyItem[][] = [[]];
+    return new Observable(obs => {
+      this.getAllLocations().subscribe(locs => {
+        locs.forEach(locOuter => {
+          // If the location contains the item
+          if (locOuter.items.indexOf(id) > -1) {
+            const levelOfLocations: HierarchyItem[] = [locOuter];
+            result.push(levelOfLocations);
+            locs.forEach(locInner => {
+
+            });
+          }
+        });
+      });
+    });
     // n wide for every location, x tall for the parents to parents to root
-    return null;
   }
+
+  getAncestors(id: string, locations: HierarchyItem[]){
+
+}
 
   getDescendantsOfRoot(id: string, isCategory: boolean): Observable<HierarchyItem[]> {
     const result: HierarchyItem[] = [];

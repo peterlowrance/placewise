@@ -19,9 +19,7 @@ export class HomeComponent implements OnInit {
   options: string[] = ['Two', 'Inch', 'Galvanized'];
   searchValue: string;*/
 
-  selectedSearch = 'Locations';
-  categories: HierarchyItem[];
-  locations: HierarchyItem[];
+  selectedSearch = 'Categories';
   hierarchyItems: HierarchyItem[];
   root: HierarchyItem;
   items: Item[];
@@ -36,63 +34,73 @@ export class HomeComponent implements OnInit {
     //subscribe to nav state
     this.navService.returnClick.subscribe(
       val => {
-        if (val){ //if we returned
+        if (val) { //if we returned
           this.navigateUpHierarchy();
         }
       }
-    )
+    );
 
     //subscribe to change keeping
-    this.navService.searchType.subscribe(val => {this.selectedSearch = val;})
+    this.navService.searchType.subscribe(val => {
+      this.selectedSearch = val;
+    });
     //change if parent is different
     this.navService.parent.subscribe(val => {
-      this.root = val;
-      console.log(this.navService.parent.value);
-    }
-    )
+        this.root = val;
+        console.log(this.navService.parent.value);
+      }
+    );
   }
 
   ngOnInit() {
     const urlID = this.route.snapshot.paramMap.get('id');
-    const urlSS = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
+    this.selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
 
-    // Init data from firebase
-    this.searchService.getAllCategories().subscribe(data => {
-      this.categories = data;
-      this.searchService.getAllLocations().subscribe(loc => {
-        this.locations = loc;
+    this.displayDescendants(urlID, this.selectedSearch === 'Categories');
 
-        // this.displayDescendants(urlID, urlSS);
+    this.loadLevel(urlID, this.selectedSearch);
+    /*// get current level
+    if (this.root === null) {
+      this.loadLevel(urlID, this.selectedSearch);
+    } else {
+      this.loadLevel(this.root.ID, this.selectedSearch);
+    }*/
 
-        //get current level
-        if(this.root === null) this.loadLevel(urlID, urlSS);
-        else this.loadLevel(this.root.ID, this.selectedSearch);
+    // Load root and set nav bar name
+    if (this.selectedSearch === 'Categories') {
+      this.searchService.getCategory(urlID).subscribe(data => {
+        this.root = data;
+        this.navService.setNavBarState(data.name);
       });
-    });
-
+    } else {
+      this.searchService.getLocation(urlID).subscribe(data => {
+        this.root = data;
+        this.navService.setNavBarState(data.name);
+      });
+    }
     this.columns = (window.innerWidth <= this.breakpoint) ? 3 : 6;
   }
 
-  private navigateUpHierarchy(){
+  private navigateUpHierarchy() {
     const urlID = this.route.snapshot.paramMap.get('id');
     const urlSS = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
     this.loadLevel(this.root.parent, this.selectedSearch);
   }
 
-  private loadLevel(urlID: string, urlSS: string){
+  private loadLevel(urlID: string, urlSS: string) {
     this.selectedSearch = urlSS;
     this.navService.setSearchType(this.selectedSearch);
     if (urlSS === 'Categories') {
       this.searchService.getCategory(urlID).subscribe(data => {
         this.root = data;
         this.setNavParent(this.root);
-        this.displayDescendants(this.root.ID, this.selectedSearch);
+        this.displayDescendants(this.root.ID, this.selectedSearch === 'Categories');
       });
     } else {
       this.searchService.getLocation(urlID).subscribe(data => {
         this.root = data;
         this.setNavParent(this.root);
-        this.displayDescendants(this.root.ID, this.selectedSearch);
+        this.displayDescendants(this.root.ID, this.selectedSearch === 'Categories');
       });
     }
   }
@@ -101,39 +109,37 @@ export class HomeComponent implements OnInit {
    * Sets the nav parent field of the nav controller
    * @param parent parent hierarchy item
    */
-  private setNavParent(parent: HierarchyItem){
+  private setNavParent(parent: HierarchyItem) {
     this.navService.setParent(parent);
   }
 
-    /**
+  /**
    * Sets the nav type field of the nav controller
    * @param type string search type
    */
-  private setNavType(type: string){
+  private setNavType(type: string) {
     this.navService.setSearchType(type);
   }
 
-  displayDescendants(rootID = null, selectedSearch = this.selectedSearch) {
-    if (!rootID) {
-      rootID = this.root ? this.root.ID : 'root';
-    }
-    this.hierarchyItems = [];
+  displayDescendants(rootID = this.root.ID, isCategory = this.selectedSearch === 'Categories') {
+    this.searchService.getDescendantsOfRoot(rootID ? rootID : 'root', isCategory).subscribe(data => this.hierarchyItems = data);
+    // Load items that descend from root
     this.items = [];
-    if (selectedSearch === 'Categories') {
-      for (const c of this.categories) {
-        if (c.parent === rootID) {
-          this.hierarchyItems.push(c);
-        }
-      }
-    } else {
-      for (const l of this.locations) {
-        if (l.parent === rootID) {
-          this.hierarchyItems.push(l);
-        }
+    // If root exists, display it's items, otherwise get root from db first
+    if (this.root && this.root.items) {
+      this.displayItems(this.root);
+    } else if (rootID) {
+      if (isCategory) {
+        this.searchService.getCategory(rootID).subscribe(rootCat => this.displayItems(rootCat));
+      } else {
+        this.searchService.getLocation(rootID).subscribe(rootLoc => this.displayItems(rootLoc));
       }
     }
-    if (this.root && this.root.items) {
-      for (const i of this.root.items) {
+  }
+
+  displayItems(root: HierarchyItem) {
+    if (root.items) {
+      for (const i of root.items) {
         this.searchService.getItem(i).subscribe(data => this.items.push(data));
       }
     }
@@ -150,15 +156,13 @@ export class HomeComponent implements OnInit {
 
   goToHierarchy(item: HierarchyItem) {
     this.root = item;
-    // this.location.replaceState('search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
     window.history.pushState(null, null, 'search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
-    this.setNavParent(item);
+    this.navService.setNavBarState(item.name);
     this.displayDescendants();
   }
 
   toggleHierarchy(event) {
-    // this.location.replaceState('search/' + event.value.toLowerCase() + '/' + this.root.ID);
     window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + this.root.ID);
-    this.displayDescendants(event.value);
+    this.displayDescendants(this.root.ID, event.value === 'Categories');
   }
 }
