@@ -25,28 +25,47 @@ export class SearchService implements SearchInterfaceService {
   locations: HierarchyItem[];
   categories: HierarchyItem[];
 
+  /**
+   * Finds all the ancestors of an item and returns them in a 2D array.
+   * The first dimension of the array are arrays of ancestors, the second dimension is each individual ancestor.
+   * @param id item to find ancestors of
+   */
   getAncestorsOfItem(id: string): Observable<HierarchyItem[][]> {
-    const result: HierarchyItem[][] = [[]];
     return new Observable(obs => {
       this.getAllLocations().subscribe(locs => {
-        locs.forEach(locOuter => {
-          // If the location contains the item
-          if (locOuter.items.indexOf(id) > -1) {
-            const levelOfLocations: HierarchyItem[] = [locOuter];
-            result.push(levelOfLocations);
-            locs.forEach(locInner => {
-
-            });
-          }
-        });
+        obs.next(this.getAncestors(id, locs));
+        obs.complete();
       });
     });
-    // n wide for every location, x tall for the parents to parents to root
   }
 
-  getAncestors(id: string, locations: HierarchyItem[]){
-
-}
+  /**
+   * Returns the ancestors when you have an array of locations.
+   * @param id item to find ancestors of
+   * @param locations array of locations to find ancestors out of
+   */
+  getAncestors(id: string, locations: HierarchyItem[]): HierarchyItem[][] {
+    const result: HierarchyItem[][] = [];
+    // Find all parents of items and add an array for each parent
+    for (const parentL1 of locations) {
+      if (parentL1.items && parentL1.items.indexOf(id) > -1) {
+        const ancestors: HierarchyItem[] = [parentL1];
+        result.push(ancestors);
+        // Find all parents in this ancestor list
+        // While the last parent of the last array of ancestors is not the root
+        console.log(result);
+        while (result[result.length - 1][result[result.length - 1].length - 1].ID !== 'root') {
+          for (const parentL2 of locations) {
+            // If the item has the same ID as the parent of the last item in the ancestor list, add it
+            if (parentL2.ID === result[result.length - 1][result[result.length - 1].length - 1].parent) {
+              result[result.length - 1].push(parentL2);
+            }
+          }
+        }
+      }
+    }
+    return result;
+  }
 
   getDescendantsOfRoot(id: string, isCategory: boolean): Observable<HierarchyItem[]> {
     const result: HierarchyItem[] = [];
@@ -139,7 +158,7 @@ export class SearchService implements SearchInterfaceService {
     }
     // return this.afs.collection<Location>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').valueChanges();
     return this.afs.collection<HierarchyItem>('/Workspaces/aP87kgghQ8mqvvwcZGQV/Locations').snapshotChanges().pipe(map(a => {
-      this.locations =  a.map(g => {
+      this.locations = a.map(g => {
           const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
           return data;
