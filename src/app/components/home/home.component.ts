@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, OnDestroy} from '@angular/core';
 import {Item} from '../../models/Item';
 import {ActivatedRoute, Router} from '@angular/router';
 import {HierarchyItem} from '../../models/HierarchyItem';
@@ -8,13 +8,14 @@ import {FormControl} from '@angular/forms';
 import {SearchService} from '../../services/search.service';
 import {Location} from '@angular/common';
 import {NavService} from '../../services/nav.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   /*control = new FormControl(); // TODO research this more
   options: string[] = ['Two', 'Inch', 'Galvanized'];
   searchValue: string;*/
@@ -26,30 +27,41 @@ export class HomeComponent implements OnInit {
   columns: number;
   breakpoint = 1024;
 
+  typeSub: Subscription;
+  parentSub: Subscription;
+  returnSub: Subscription;
+
   constructor(
     private navService: NavService,
     private searchService: SearchService,
     private router: Router,
     private route: ActivatedRoute) {
     //subscribe to nav state
-    this.navService.returnClick.subscribe(
+    this.returnSub = this.navService.getReturnState().subscribe(
       val => {
-        if (val) { //if we returned
+        if (val && this.root) { //if we returned
           this.navigateUpHierarchy();
         }
       }
     );
 
     //subscribe to change keeping
-    this.navService.searchType.subscribe(val => {
+    this.typeSub = this.navService.getSearchType().subscribe(val => {
+      console.log(val);
       this.selectedSearch = val;
     });
     //change if parent is different
-    this.navService.parent.subscribe(val => {
+    this.parentSub = this.navService.getParent().subscribe(val => {
+      console.log(val);
         this.root = val;
-        console.log(this.navService.parent.value);
       }
     );
+  }
+
+  ngOnDestroy(){
+    this.parentSub.unsubscribe();
+    this.typeSub.unsubscribe();
+    this.returnSub.unsubscribe();
   }
 
   ngOnInit() {
@@ -70,12 +82,12 @@ export class HomeComponent implements OnInit {
     if (this.selectedSearch === 'Categories') {
       this.searchService.getCategory(urlID).subscribe(data => {
         this.root = data;
-        this.navService.setNavBarState(data.name);
+        this.navService.setParent(data);
       });
     } else {
       this.searchService.getLocation(urlID).subscribe(data => {
         this.root = data;
-        this.navService.setNavBarState(data.name);
+        this.navService.setParent(data);
       });
     }
     this.columns = (window.innerWidth <= this.breakpoint) ? 3 : 6;
@@ -110,6 +122,7 @@ export class HomeComponent implements OnInit {
    * @param parent parent hierarchy item
    */
   private setNavParent(parent: HierarchyItem) {
+    console.log("set parent");
     this.navService.setParent(parent);
   }
 
@@ -157,12 +170,13 @@ export class HomeComponent implements OnInit {
   goToHierarchy(item: HierarchyItem) {
     this.root = item;
     window.history.pushState(null, null, 'search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
-    this.navService.setNavBarState(item.name);
+    this.setNavParent(item);
     this.displayDescendants();
   }
 
   toggleHierarchy(event) {
     window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + this.root.ID);
+    this.setNavType(event.value);
     this.displayDescendants(this.root.ID, event.value === 'Categories');
   }
 }

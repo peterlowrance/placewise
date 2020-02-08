@@ -10,10 +10,7 @@ import { HierarchyItem } from '../models/HierarchyItem';
 })
 export class NavService {
 
-  private navStateSource = new Subject<string>(); //state subject
-  navState = this.navStateSource.asObservable();  //observable for state
-
-  returnClick: BehaviorSubject<boolean> = new BehaviorSubject(false); //emitter for return clicked
+  private returnClick: BehaviorSubject<boolean> = new BehaviorSubject(false); //emitter for return clicked
 
   /**The current parent reference, used to hold reference between screens*/
   private parentRaw: HierarchyItem;
@@ -22,12 +19,17 @@ export class NavService {
   private searchTypeRaw: string;
 
   /**Parent behavior, used for interop between navbar and search */
-  parent: BehaviorSubject<HierarchyItem> = new BehaviorSubject(null);
+  private parent: BehaviorSubject<HierarchyItem> = new BehaviorSubject(null);
 
   /**Search type behavior, used for interop between navbar and search */
-  searchType: BehaviorSubject<string> = new BehaviorSubject('');
+  private searchType: BehaviorSubject<string> = new BehaviorSubject('');
 
   constructor() { }
+
+  /**Getter for parent subscription */
+  getParent(){
+    return this.parent.asObservable();
+  }
 
   /**An event to send to the nav service, telling it to forget its state */
   forgetParent(){
@@ -41,12 +43,19 @@ export class NavService {
     this.parent.next(newParent);
   }
 
-  setNavBarState( state: string ) {
-    this.navStateSource.next( state );
+  /**Gets return state observable */
+  getReturnState(){
+    return this.returnClick.asObservable();
   }
 
   returnState(){
+    console.log('returned');
     this.returnClick.next(true);
+  }
+
+  /**Getter for search type */
+  getSearchType(){
+    return this.searchType.asObservable();
   }
 
   /**Forgets the search type */

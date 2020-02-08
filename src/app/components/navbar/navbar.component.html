@@ -30,5 +30,5 @@
     </div>
     <span class="spacer"></span>
     <button mat-icon-button [disabled]="this.locationString==='/settings'"  [routerLink]="['/settings']" routerLinkActive="router-link-active"><mat-icon>person</mat-icon></button>
-    <button mat-icon-button [disabled]="this.locationString==='/' && state==='home'" (click)="goHome()"><mat-icon>home</mat-icon></button>
+    <button mat-icon-button [disabled]="checkLocation() ==='/' && (parent === null || parent.ID === 'root')" (click)="goHome()"><mat-icon>home</mat-icon></button>
 </mat-toolbar>

@@ -15,8 +15,6 @@ import { HierarchyItem } from 'src/app/models/HierarchyItem';
 export class NavbarComponent implements OnInit {
   /** The current location in the app */
   locationString = '/login';
-  /** The current search state */
-  state = 'Home';
 
   /**Reference to type of searching */
   searchType: string = '';
@@ -33,9 +31,6 @@ export class NavbarComponent implements OnInit {
 
 
   constructor(private routeLocation: Location, private router: Router, private navService: NavService) {
-    navService.navState.subscribe((state) =>
-      this.state = (state !== null && state === 'root') ? 'Home' : state
-    );
 
     router.events.subscribe(val => {
       if (val instanceof NavigationEnd) {
@@ -44,8 +39,8 @@ export class NavbarComponent implements OnInit {
       }
     });
 
-    navService.searchType.subscribe(val => this.searchType=val);
-    navService.parent.subscribe(val => this.parent=val);
+    navService.getSearchType().subscribe(val => this.searchType = val);
+    navService.getParent().subscribe(val => this.parent = val);
   }
 
   ngOnInit() {
