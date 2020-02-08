@@ -1,6 +1,6 @@
 import {Component, OnInit, OnDestroy} from '@angular/core';
 import {Item} from '../../models/Item';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute, Router, NavigationEnd} from '@angular/router';
 import {HierarchyItem} from '../../models/HierarchyItem';
 import {Category} from '../../models/Category';
 // import {Location} from '../../models/Location';
@@ -9,6 +9,13 @@ import {SearchService} from '../../services/search.service';
 import {Location} from '@angular/common';
 import {NavService} from '../../services/nav.service';
 import { Subscription } from 'rxjs';
+
+/**
+ * 
+ * TODO: displays multiple items on startup in layer with items, problem with calling
+ * displayDescendents once and then loadLevel (which calls displayDescendents)
+ * 
+ */
 
 @Component({
   selector: 'app-home',
@@ -56,6 +63,14 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.root = val;
       }
     );
+
+    //subscirbe to routing home
+    this.router.events.subscribe(val => {
+      if (val instanceof NavigationEnd) {
+        if(this.route.snapshot.paramMap.get('id') == 'root')
+          this.displayDescendants('root', this.selectedSearch === 'Categories');
+      }
+    });
   }
 
   ngOnDestroy(){
