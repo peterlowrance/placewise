@@ -33,23 +33,23 @@ export class HomeComponent implements OnInit {
     private searchService: SearchService,
     private router: Router,
     private route: ActivatedRoute) {
-      //subscribe to nav state
-      this.navService.returnClick.subscribe(
-        val => {
-          if (val && this.root){ //if we returned
-            this.navigateUpHierarchy();
-          }
+    //subscribe to nav state
+    this.navService.returnClick.subscribe(
+      val => {
+        if (val){ //if we returned
+          this.navigateUpHierarchy();
         }
-      )
-
-      //subscribe to change keeping
-      this.navService.searchType.subscribe(val => {this.selectedSearch = val;})
-      //change if parent is different
-      this.navService.parent.subscribe(val => {
-        this.root = val;
-        console.log(this.navService.parent.value);
       }
-      )
+    )
+
+    //subscribe to change keeping
+    this.navService.searchType.subscribe(val => {this.selectedSearch = val;})
+    //change if parent is different
+    this.navService.parent.subscribe(val => {
+      this.root = val;
+      console.log(this.navService.parent.value);
+    }
+    )
   }
 
   ngOnInit() {
