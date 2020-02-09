@@ -1,4 +1,6 @@
-<h2 class="login-title"><img src="https://crouton.net/crouton.png"> Placewise</h2>
+<div class="logo">
+  <object type="image/svg+xml" data="../../../assets/logo.svg">Placewise</object>
+</div>
 <mat-card class="login-form">
     <form [formGroup]='loginForm' (ngSubmit)="onSubmit(loginForm)">
     <mat-card-header class="login-card-components">
@@ -7,9 +9,9 @@
     <mat-card-content>
             <!-- username -->
             <mat-form-field class="full-width">
-                <input matInput 
-                    placeholder="Email" 
-                    type="email" 
+                <input matInput
+                    placeholder="Email"
+                    type="email"
                     formControlName="email"
                     [formControl]="emailControl"
                     required
@@ -18,10 +20,10 @@
             </mat-form-field>
             <!-- password -->
             <mat-form-field class="full-width">
-                <input matInput placeholder="Password" 
-                    type="password" 
+                <input matInput placeholder="Password"
+                    type="password"
                     formControlName="password"
-                    [formControl]="passControl" 
+                    [formControl]="passControl"
                     required
                 >
                 <mat-error *ngIf="passControl.invalid">{{getPassErrors()}}</mat-error>
@@ -29,8 +31,8 @@
             <!-- company id -->
             <mat-form-field class="full-width">
                 <input matInput placeholder="Company ID"
-                    type="text" 
-                    formControlName="CID" 
+                    type="text"
+                    formControlName="CID"
                     [formControl]="CIDControl"
                     required
                 >
