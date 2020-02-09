@@ -50,8 +50,8 @@
         <mat-card>
             <mat-card-header>
                 <mat-card-title>Category</mat-card-title>
-                <mat-card-subtitle>{{item.category.name}}</mat-card-subtitle>
-                <div mat-card-avatar> <img src={{item.category.imageUrl}}> </div>
+                <mat-card-subtitle>{{category?.name}}</mat-card-subtitle>
+                <div mat-card-avatar> <img src={{category?.imageUrl}}> </div>
             </mat-card-header>
         </mat-card>
 
@@ -72,9 +72,9 @@
     <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding matTreeNodePaddingIndent="5">
         <li class="mat-tree-node  mat-elevation-z4">
             <div>
-                <button mat-icon-button disabled>{{node.name}}</button>
+                {{node.name}}
                 <br>
-                <img src={{node.imageUrl}}>
+                <img src={{node?.imageUrl}}>
             </div>
         </li>
     </mat-tree-node>
