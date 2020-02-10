@@ -8,13 +8,13 @@ import {FormControl} from '@angular/forms';
 import {SearchService} from '../../services/search.service';
 import {Location} from '@angular/common';
 import {NavService} from '../../services/nav.service';
-import { Subscription } from 'rxjs';
+import {Subscription} from 'rxjs';
 
 /**
- * 
+ *
  * TODO: displays multiple items on startup in layer with items, problem with calling
  * displayDescendents once and then loadLevel (which calls displayDescendents)
- * 
+ *
  */
 
 @Component({
@@ -54,12 +54,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     //subscribe to change keeping
     this.typeSub = this.navService.getSearchType().subscribe(val => {
-      console.log(val);
       this.selectedSearch = val;
     });
     //change if parent is different
     this.parentSub = this.navService.getParent().subscribe(val => {
-      console.log(val);
         this.root = val;
       }
     );
@@ -67,13 +65,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     //subscirbe to routing home
     this.router.events.subscribe(val => {
       if (val instanceof NavigationEnd) {
-        if(this.route.snapshot.paramMap.get('id') == 'root')
+        if (this.route.snapshot.paramMap.get('id') == 'root') {
           this.displayDescendants('root', this.selectedSearch === 'Categories');
+        }
       }
     });
   }
 
-  ngOnDestroy(){
+  ngOnDestroy() {
     this.parentSub.unsubscribe();
     this.typeSub.unsubscribe();
     this.returnSub.unsubscribe();
@@ -137,7 +136,6 @@ export class HomeComponent implements OnInit, OnDestroy {
    * @param parent parent hierarchy item
    */
   private setNavParent(parent: HierarchyItem) {
-    console.log("set parent");
     this.navService.setParent(parent);
   }
 
@@ -178,7 +176,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   goToItem(item: Item) {
-    console.log(this.root);
     this.router.navigate(['/item/', item.ID]);
   }
 
@@ -190,8 +187,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   toggleHierarchy(event) {
-    window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + this.root.ID);
+    window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + (this.root ? this.root.ID : 'root'));
     this.setNavType(event.value);
-    this.displayDescendants(this.root.ID, event.value === 'Categories');
+    this.displayDescendants(this.root ? this.root.ID : 'root', event.value === 'Categories');
   }
 }
