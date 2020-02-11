@@ -55,6 +55,8 @@ export class NavbarComponent implements OnInit {
       return 'item';
     } else if (this.locationString === '/login') {
       return 'login';
+    } else if (this.locationString == '/settings'){
+      return 'settings';
     } else {
       return '/';
     }
