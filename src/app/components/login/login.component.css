@@ -4,13 +4,6 @@
   font-size: xx-large;
 }
 
-.login-form {
-  justify-content: center;
-  margin: auto;
-  min-width: 200px;
-  width: 40%;
-}
-
 .login-card-components {
   display: flex;
   justify-content: center;
@@ -26,9 +19,37 @@
   width: 100%;
 }
 
-.logo {
-  padding: 20px;
-  margin: auto;
-  min-width: 200px;
-  width: 20%;
+@media only screen and (orientation: landscape) {
+  .logo {
+    padding: 20px;
+    margin: auto;
+    min-width: 200px;
+    width: 20%;
+  }
+
+
+  .login-form {
+    justify-content: center;
+    margin: auto;
+    min-width: 200px;
+    width: 20%;
+  }
+}
+
+@media only screen and (orientation: portrait) {
+  .logo {
+    padding: 5%;
+    justify-content: center;
+    min-width: 200px;
+    margin: auto;
+    width: 40%;
+  }
+
+
+  .login-form {
+    justify-content: center;
+    margin: auto;
+    min-width: 200px;
+    width: 40%;
+  }
 }
