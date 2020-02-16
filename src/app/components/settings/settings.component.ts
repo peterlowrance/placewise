@@ -20,6 +20,7 @@ export class SettingsComponent implements OnInit {
     name: '',
     id: ''
   };
+  role: string; //the user's role, user or admin
 
   constructor(
     private authService: AuthService,
@@ -30,11 +31,15 @@ export class SettingsComponent implements OnInit {
   ngOnInit() {
     this.authService.getUser().subscribe(
       val => this.user = val
-    )
+    );
 
     this.authService.getWorkspace().subscribe(
       val => this.workspace = val
-    )
+    );
+
+    this.authService.getRole().subscribe(
+      val => this.role = val
+    );
   }
 
   /**

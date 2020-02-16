@@ -1,25 +1,47 @@
+<!-- load admin components if admin -->
+<div *ngIf="role === 'Admin'">
+    <mat-list class ="settings-container">
+        <mat-list-item>
+            <button mat-raised-button class="equal-button">Manage Items</button>
+        </mat-list-item>
+        <mat-list-item>
+            <button mat-raised-button class="equal-button">Reports</button>
+        </mat-list-item>
+        <mat-divider></mat-divider>
+        <h3 mat-subheader>Shop Config</h3>
+        <mat-list-item>
+            <button mat-raised-button class="equal-button">Users</button>
+        </mat-list-item>
+        <mat-list-item>
+            <button mat-raised-button class="equal-button">Modify Locations</button>
+        </mat-list-item>
+        <mat-list-item>
+            <button mat-raised-button class="equal-button">Modify Categories</button>
+        </mat-list-item>
+        <mat-divider></mat-divider>
+        <h3 mat-subheader>My Settings</h3>
+    </mat-list>
+</div>
+<!-- load rest of settings -->
 <div class="overall-settings">
 
     <h3>User</h3>
-
     <h5>{{user.firstName}} {{user.lastName}}</h5>
 
     <br>
 
     <h3>Email:</h3>
-
     <h5>{{user.email}}</h5>
 
     <br>
 
     <h3>Workspace:</h3>
-
     <h5>{{workspace.name}}</h5>
 
     <br>
     <!-- buttons here -->
-    <button mat-raised-button color="primary" (click)="requestPasswordChange()">Change Password</button>
+    <button mat-raised-button class="equal-button" color="primary" (click)="requestPasswordChange()">Change Password</button>
     <br>
     <br>
-    <button mat-raised-button color="warn" (click)="logout()">Logout <mat-icon>exit_to_app</mat-icon></button>
+    <button mat-raised-button class="equal-button" color="warn" (click)="logout()">Logout <mat-icon>exit_to_app</mat-icon></button>
 </div>

@@ -16,6 +16,7 @@ import {MatDialogModule} from '@angular/material/dialog'
 import {MatTreeModule} from '@angular/material/tree'
 import {MatListModule, MatList} from '@angular/material/list'
 import {MatSnackBarModule} from '@angular/material/snack-bar'
+import {MatDividerModule} from '@angular/material/divider'
 
 //Imports for all Placewise modules
 import { AppRoutingModule } from './app-routing.module';
@@ -67,7 +68,8 @@ import { SettingsComponent } from './components/settings/settings.component';
     AngularFireModule.initializeApp(environment.firebase, 'clientpanel'),
     AngularFirestoreModule,
     AngularFireAuthModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatDividerModule
   ],
   providers: [],
   bootstrap: [AppComponent],

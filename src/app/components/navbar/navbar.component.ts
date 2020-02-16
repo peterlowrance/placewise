@@ -6,6 +6,7 @@ import {NavService} from '../../services/nav.service';
 import {ItemComponent} from '../item/item.component';
 import { of } from 'rxjs';
 import { HierarchyItem } from 'src/app/models/HierarchyItem';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -29,8 +30,11 @@ export class NavbarComponent implements OnInit {
     imageUrl: ''
   };
 
+  /**The user's role */
+  role: string = '';
 
-  constructor(private routeLocation: Location, private router: Router, private navService: NavService) {
+
+  constructor(private routeLocation: Location, private router: Router, private navService: NavService, private authService: AuthService) {
 
     router.events.subscribe(val => {
       if (val instanceof NavigationEnd) {
@@ -44,6 +48,9 @@ export class NavbarComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.authService.getRole().subscribe(
+      val => this.role = val
+    );
   }
 
   /**

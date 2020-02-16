@@ -1,6 +1,14 @@
-.settings-container{
+mat-list-item{
     list-style-type: none;
     text-align: center;
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
+}
+
+.equal-button{
+    width: 70%;
+    min-width: unset;
 }
 
 .overall-settings{

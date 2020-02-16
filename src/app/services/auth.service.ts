@@ -152,4 +152,11 @@ export class AuthService {
   getWorkspace(){
     return of(this.workspace);
   }
+
+  /**
+   * Gets the role of the user
+   */
+  getRole(){
+    return of(this.role);
+  }
 }
