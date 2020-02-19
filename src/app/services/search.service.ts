@@ -7,6 +7,7 @@ import {Observable, of} from 'rxjs';
 import {Item} from '../models/Item';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {AngularFirestore} from '@angular/fire/firestore';
+import { AngularFireStorage } from '@angular/fire/storage';
 import {map} from 'rxjs/operators';
 import {AuthService} from './auth.service';
 
@@ -86,6 +87,13 @@ export class SearchService implements SearchInterfaceService {
         this.getAllLocations().subscribe(cats => {
           cats.forEach(cat => {
             if (cat.parent === id) {
+
+              if (cat.imageUrl != null) {
+                this.getImage(cat.imageUrl).subscribe(link => {
+                  cat.imageUrl = link;
+                });
+              };
+
               result.push(cat);
             }
           });
@@ -176,7 +184,11 @@ export class SearchService implements SearchInterfaceService {
     return this.afs.collection<Item>('/Workspaces/'+ this.auth.workspace.id +'/Locations/' + locationID + '/items').valueChanges();
   }
 
-  constructor(private afs: AngularFirestore, private auth: AuthService) {
+  getImage(ID: string): Observable<any> {
+    return this.afsg.ref(this.auth.workspace.id + '/' + ID).getDownloadURL();
+  }
+
+  constructor(private afs: AngularFirestore, private auth: AuthService, private afsg: AngularFireStorage) {
 
   }
 

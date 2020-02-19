@@ -33,6 +33,7 @@ import {environment} from '../environments/environment';
 import {AngularFirestoreModule} from '@angular/fire/firestore';
 import {AngularFireAuthModule} from '@angular/fire/auth';
 import { SettingsComponent } from './components/settings/settings.component';
+import {AngularFireStorageModule} from '@angular/fire/storage';
 
 
 @NgModule({
@@ -68,6 +69,7 @@ import { SettingsComponent } from './components/settings/settings.component';
     AngularFireModule.initializeApp(environment.firebase, 'clientpanel'),
     AngularFirestoreModule,
     AngularFireAuthModule,
+    AngularFireStorageModule,
     MatSnackBarModule,
     MatDividerModule
   ],
