@@ -41,3 +41,32 @@ mat-tree{
     margin-left: 5px;
     margin-right: 5px;
 }
+
+/*Photo Container CSS*/
+/*Ref: https://stackoverflow.com/questions/54508374/how-can-i-position-an-icon-over-an-image*/
+.container {
+    position: relative;
+}
+
+.container img{
+    display: block;
+}
+
+.container button{
+    position: absolute;
+    bottom: 0%;
+    right: 0%;
+}
+
+/*Form display fields*/
+.form-appear{
+    width: 100%;
+}
+
+/*FAB display field*/
+.fab{
+    bottom: 2%;
+    right: 2%;
+    position: fixed;
+    z-index: 1;
+}

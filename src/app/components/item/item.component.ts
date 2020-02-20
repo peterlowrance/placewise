@@ -1,5 +1,5 @@
 // adapted tree control from https://material.angular.io/components/tree/examples
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild, ElementRef, ViewChildren} from '@angular/core';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {Item} from 'src/app/models/Item';
 import {Report} from 'src/app/models/Report';
@@ -13,7 +13,9 @@ import {NestedTreeControl} from '@angular/cdk/tree';
 import { Observable, of } from 'rxjs';
 import {AuthService} from '../../services/auth.service'
 import { AuthGuard } from 'src/app/guards/auth.guard';
-
+import { FormControl, Validators, FormGroup, FormBuilder } from '@angular/forms';
+import {MatChipInputEvent} from '@angular/material/chips';
+import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
 
 interface TreeNode{
   name: string;
@@ -28,8 +30,11 @@ interface TreeNode{
   styleUrls: ['./item.component.css']
 })
 export class ItemComponent implements OnInit {
+  readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
+
   id: string; // item id
   item: Item; // item returned by id
+  previousItem: Item; //previous item, before edits are made
   loading = true;  // whether the page is actively loading
   report: Report = {
     description: '',
@@ -43,6 +48,8 @@ export class ItemComponent implements OnInit {
   }; // user report
   errorDesc: ItemReportModalData = {valid: false, desc: ''}; // user-reported error description
   expanded = false;  // is the more info panel expanded
+
+
 
   //Parent of heirarchy, does nothing now
   parent: TreeNode = {name: null, imageUrl: null, children: null, ID: null};
@@ -58,15 +65,30 @@ export class ItemComponent implements OnInit {
 
   hasChild = (_: number, node: TreeNode) => !!node.children && node.children.length > 0;
 
+
+
   role: string; //user role for editing
   dirty: boolean; //is the item edited dirty
+
+  textEditFields:{
+    name: boolean;
+    desc: boolean;
+    tags: boolean;
+  } = {name: false, desc: false, tags: false}
+
+  //view child refs
+  //@ViewChild("name", {read: ElementRef, static: false}) nameField: ElementRef;
+
+  // nameControl = new FormControl('', Validators.required);
+  // nameForm: FormGroup;
 
   constructor(
     private searchService: SearchService,
     private router: Router,
     private route: ActivatedRoute,
     public dialog: MatDialog,
-    private authService: AuthService
+    private authService: AuthService,
+    private formBuilder: FormBuilder
   ) {
   }
 
@@ -78,6 +100,7 @@ export class ItemComponent implements OnInit {
     this.searchService.getItem(this.id).subscribe(item => {
       // get the item ref
       this.item = item;
+      this.previousItem = JSON.parse(JSON.stringify(item)); //deep copy
       //get all locations and filter
       this.searchService.getAncestorsOfItem(item.ID).subscribe(hierarchy => {
         //need to loop over first elements, pop off, and combine any like
@@ -101,6 +124,9 @@ export class ItemComponent implements OnInit {
 
     //get user role
     this.role = this.authService.role;
+
+    //set up admin change forms
+    // this.nameForm = this.formBuilder.group({name: this.nameControl})
   }
 
   convertList(items: HierarchyItem[]): TreeNode {
@@ -170,6 +196,134 @@ export class ItemComponent implements OnInit {
         console.log(this.report);
       }
     });
+  }
+
+  /**
+   * A field edit handler
+   * @param field the string name of the item field to edit
+   */
+  editField(field: string){
+    //set edit field value to enable state change, then set focus
+    switch(field){
+      case 'name':
+        this.textEditFields.name = true;
+        //focus
+        //this.nameField.nativeElement.focus();
+        break;
+      case 'desc':
+        this.textEditFields.desc = true;
+        //focus
+
+        break;
+      case 'tags':
+        this.textEditFields.tags = true;
+        //focus
+
+        break;
+      default: break;
+    }
+  }
+
+  /**
+   * Handles logic for submitting the name
+   */
+  onNameSubmit(){
+    //check to see if name is valid
+    if(this.item.name !== ""){
+      // this.item.name = this.nameForm.value;
+      //hide control
+      this.textEditFields.name = false;
+    }
+    else{
+      this.item.name = this.previousItem.name;
+      //TODO: show snackbar
+    }
+
+    //check for dirtiness
+    this.checkDirty();
+  }
+
+  /**
+   * Handles logic for submitting the description
+   */
+  onDescSubmit(){
+    //check to see if name is valid
+    if(this.item.desc !== ""){
+      // this.item.name = this.nameForm.value;
+      //hide control
+      this.textEditFields.desc = false;
+    }
+    else{
+      this.item.desc = this.previousItem.desc;
+      //TODO: show snackbar
+    }
+
+    //check for dirtiness
+    this.checkDirty();
+  }
+
+  /** Tag control: https://material.angular.io/components/chips/examples */
+
+  /**
+   * Adds a tag to the list
+   * @param event tag input event
+   */
+  add(event: MatChipInputEvent): void {
+    const input = event.input;
+    const value = event.value;
+
+    // Add our fruit
+    if ((value || '').trim()) {
+      this.item.tags.push(value.trim());
+    }
+
+    // Reset the input value
+    if (input) {
+      input.value = '';
+    }
+
+    //check dirty
+    this.checkDirty();
+  }
+
+  /**
+   * Removes a tag from the list
+   * @param tag string tag to remove
+   */
+  removeTag(tag: string): void {
+    const index = this.item.tags.indexOf(tag);
+
+    if (index >= 0) {
+      this.item.tags.splice(index, 1);
+    }
+
+    //check dirty
+    this.checkDirty();
+  }
+
+  /**
+   * Checks to see if the current item is dirty (edited)
+   */
+  checkDirty(){
+    if(this.item === this.previousItem){
+      this.dirty = false;
+      return false;
+    }
+    else{
+      this.dirty = true;
+      return true;
+    }
+  }
+
+  /**
+   * Saves the item to the database, sets not dirty, and sets previousItem
+   */
+  saveItem(){
+    //TODO: call save in service, wait for success or display snack
+    {
+      this.previousItem = JSON.parse(JSON.stringify(this.item));
+      this.dirty = false;
+    }
   }
 
 }
