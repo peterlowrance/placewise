@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {Router} from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
 import {AngularFirestore, AngularFirestoreDocument} from '@angular/fire/firestore';
-import {Observable, of} from 'rxjs';
+import {Observable, of, BehaviorSubject} from 'rxjs';
 import {first, map} from 'rxjs/operators';
 import {WorkspaceInfo} from '../models/WorkspaceInfo';
 import {User} from '../models/User';
@@ -25,7 +25,6 @@ interface Workspace{
   providedIn: 'root'
 })
 export class AuthService {
-  
   /** User workspace information */
   workspace: WorkspaceInfo = {
     name: '',
@@ -39,6 +38,10 @@ export class AuthService {
   }
   /**User role, Admin or User */
   role: string;
+
+  _workspace: BehaviorSubject<WorkspaceInfo> = new BehaviorSubject(this.workspace);
+  _userInfo: BehaviorSubject<User> = new BehaviorSubject(this.userInfo);
+  _role: BehaviorSubject<string> = new BehaviorSubject(this.role);
 
   constructor(private afAuth: AngularFireAuth,
               private afs: AngularFirestore,
@@ -61,9 +64,7 @@ export class AuthService {
         const doc = this.ensureUserInWorkspace(workspace, userData.user.uid);
         if(doc){ //user is in DB, get information for authentication
           doc.subscribe(
-            val => {
-              this.role = val.role;
-            }
+            val => {this.role = val.role; this._role.next(this.role);}
           );
 
           //get workspace name
@@ -72,7 +73,7 @@ export class AuthService {
           if(!workDoc) reject("Could not query workspace information");
           //subscribe to changes in workspace name
           workDoc.subscribe(
-            val => this.workspace.name = val.name
+            val => {this.workspace.name = val.name; this._workspace.next(this.workspace);}
           );
           //can also set workspace id
           this.workspace.id = workspace;
@@ -82,7 +83,7 @@ export class AuthService {
           if(!userDoc) reject("Could not query user information");
           //subscribe to changes in user info
           userDoc.subscribe(
-            val => this.userInfo = val
+            val => {this.userInfo = val; this._userInfo.next(val);}
           );
           //have all info, can quit
           resolve(userData);
@@ -143,20 +144,20 @@ export class AuthService {
    * Gets the user information
    */
   getUser(){
-    return of(this.userInfo);
+    return this._userInfo.asObservable();
   }
 
   /**
    * Gets the workspace information
    */
   getWorkspace(){
-    return of(this.workspace);
+    return this._workspace.asObservable();
   }
 
   /**
    * Gets the role of the user
    */
   getRole(){
-    return of(this.role);
+    return this._role.asObservable();
   }
 }

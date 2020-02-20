@@ -11,6 +11,8 @@ import {ReportDialogComponent} from '../report-dialog/report-dialog.component';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import { Observable, of } from 'rxjs';
+import {AuthService} from '../../services/auth.service'
+import { AuthGuard } from 'src/app/guards/auth.guard';
 
 
 interface TreeNode{
@@ -56,18 +58,21 @@ export class ItemComponent implements OnInit {
 
   hasChild = (_: number, node: TreeNode) => !!node.children && node.children.length > 0;
 
+  role: string; //user role for editing
+  dirty: boolean; //is the item edited dirty
+
   constructor(
     private searchService: SearchService,
     private router: Router,
     private route: ActivatedRoute,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private authService: AuthService
   ) {
   }
 
   ngOnInit() {
     // retrieve id
     this.id = this.route.snapshot.paramMap.get('id');
-    console.log('id is ' + this.id);
 
     // get the item from the id
     this.searchService.getItem(this.id).subscribe(item => {
@@ -94,6 +99,8 @@ export class ItemComponent implements OnInit {
       this.searchService.getCategory(item.category).subscribe(val => this.category = val);
     });
 
+    //get user role
+    this.role = this.authService.role;
   }
 
   convertList(items: HierarchyItem[]): TreeNode {
