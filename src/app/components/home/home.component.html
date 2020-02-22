@@ -42,3 +42,14 @@
     </mat-grid-tile>
   </mat-grid-list>
 </div>
+
+<!-- add homescreen fab for admins here -->
+<smd-fab-speed-dial class="fab" [(open)]="open" [direction]="direction" [animationMode]="animation">
+  <smd-fab-trigger [spin]="spin">
+    <button mat-fab matTooltip="Add to this hierarchy level" color="primary" (click)="toggleIco()"><mat-icon>{{ico}}</mat-icon></button>
+  </smd-fab-trigger>
+  <smd-fab-actions>
+    <button mat-mini-fab matTooltip="Add item" color="primary" (click)="addItem()"><mat-icon>post_add</mat-icon></button>
+    <button mat-mini-fab matTooltip="Add hierarchy level" color="primary" (click)="addHierarchy()"><mat-icon>account_tree</mat-icon></button>
+  </smd-fab-actions>
+</smd-fab-speed-dial>

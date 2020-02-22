@@ -9,6 +9,7 @@ import {SearchService} from '../../services/search.service';
 import {Location} from '@angular/common';
 import {NavService} from '../../services/nav.service';
 import {Subscription} from 'rxjs';
+import { AuthService } from 'src/app/services/auth.service';
 
 /**
  *
@@ -38,11 +39,24 @@ export class HomeComponent implements OnInit, OnDestroy {
   parentSub: Subscription;
   returnSub: Subscription;
 
+  /**The user's role, used for fab loading */
+  role: String = '';
+
+  /**Admin fab open direction */
+  direction = "up";
+  /**Admin fab open animation type */
+  animation = "fling";
+  /**Admin fab spin */
+  spin = true;
+  /**Admin fab icon */
+  ico = 'add';
+
   constructor(
     private navService: NavService,
     private searchService: SearchService,
     private router: Router,
-    private route: ActivatedRoute) {
+    private route: ActivatedRoute,
+    private authService: AuthService) {
     //subscribe to nav state
     this.returnSub = this.navService.getReturnState().subscribe(
       val => {
@@ -105,6 +119,11 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
     }
     this.columns = (window.innerWidth <= this.breakpoint) ? 3 : 6;
+
+    //Get role
+    this.authService.getRole().subscribe(
+      val => this.role = val
+    );
   }
 
   private navigateUpHierarchy() {
@@ -190,5 +209,22 @@ export class HomeComponent implements OnInit, OnDestroy {
     window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + (this.root ? this.root.ID : 'root'));
     this.setNavType(event.value);
     this.displayDescendants(this.root ? this.root.ID : 'root', event.value === 'Categories');
+  }
+
+  /**Toggles the admin fab icon */
+  toggleIco(){
+    this.ico = this.ico === 'add' ? 'close' : 'add';
+  }
+
+  /**Adds an item to the current depth */
+  addItem(){
+    if(this.ico === 'close')  this.toggleIco();
+    console.log('item');
+  }
+
+  /**Adds a hierarchy item to the current depth */
+  addHierarchy(){
+    if(this.ico === 'close')  this.toggleIco();
+    console.log('hierarchy');
   }
 }

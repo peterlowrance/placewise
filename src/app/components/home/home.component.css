@@ -45,3 +45,11 @@ mat-button-toggle {
 .header {
   padding: 1% 3.5%;
 }
+
+/*FAB display field*/
+.fab{
+  bottom: 2%;
+  right: 3%;
+  position: fixed;
+  z-index: 1;
+}
