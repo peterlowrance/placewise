@@ -11,7 +11,11 @@ export class ImageService {
 
   constructor(private afsg: AngularFireStorage, private auth: AuthService) { }
 
-  getImage(ID: string): Observable<any> {
+  getImage(ID: string): Observable<string> {
+
+    // If it's already a firestorage URL, then don't poll for one
+    if (ID.substring(0, 5) === 'gs://') { return; }
+
     return this.afsg.ref(this.auth.workspace.id + '/' + ID).getDownloadURL();
   }
 }
