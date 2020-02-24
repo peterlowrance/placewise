@@ -1,15 +1,13 @@
-import {Component, OnInit, OnDestroy} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Item} from '../../models/Item';
-import {ActivatedRoute, Router, NavigationEnd} from '@angular/router';
+import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {HierarchyItem} from '../../models/HierarchyItem';
-import {Category} from '../../models/Category';
-// import {Location} from '../../models/Location';
 import {FormControl} from '@angular/forms';
 import {SearchService} from '../../services/search.service';
-import {Location} from '@angular/common';
 import {NavService} from '../../services/nav.service';
 import {Subscription} from 'rxjs';
 import {ImageService} from '../../services/image.service';
+import * as Fuse from 'fuse.js';
 
 /**
  *
@@ -24,20 +22,28 @@ import {ImageService} from '../../services/image.service';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  /*control = new FormControl(); // TODO research this more
+  control = new FormControl(); // TODO research this more
   options: string[] = ['Two', 'Inch', 'Galvanized'];
-  searchValue: string;*/
+  searchValue: string;
 
   selectedSearch = 'Categories';
   hierarchyItems: HierarchyItem[];
   root: HierarchyItem;
   items: Item[];
+  allChildrenItems: Item[];
   columns: number;
   breakpoint = 1024;
 
   typeSub: Subscription;
   parentSub: Subscription;
   returnSub: Subscription;
+
+  searchOptions = {
+    shouldSort: true,
+    keys: ['name'],
+    distance: 50,
+    threshold: .5
+  };
 
   constructor(
     private navService: NavService,
@@ -67,7 +73,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // subscirbe to routing home
     this.router.events.subscribe(val => {
       if (val instanceof NavigationEnd) {
-        if (this.route.snapshot.paramMap.get('id') == 'root') {
+        if (this.route.snapshot.paramMap.get('id') === 'root') {
           this.displayDescendants('root', this.selectedSearch === 'Categories');
         }
       }
@@ -197,5 +203,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + (this.root ? this.root.ID : 'root'));
     this.setNavType(event.value);
     this.displayDescendants(this.root ? this.root.ID : 'root', event.value === 'Categories');
+  }
+
+  searchTextChange(event) {
+    this.searchService.getAllItems().subscribe(items => {
+      const searcher = new Fuse(items, this.searchOptions);
+      this.items = searcher.search(event);
+    });
   }
 }

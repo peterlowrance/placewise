@@ -144,6 +144,18 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
+
+  getAllChildrenItems(id: string): Observable<Item[]> {
+    return this.afs.collection<Item>('/Workspaces/' + this.auth.workspace.id + '/Items').snapshotChanges().pipe(map(a => {
+      return a.map(g => {
+          const data = g.payload.doc.data() as Item;
+          data.ID = g.payload.doc.id;
+          return data;
+        }
+      );
+    }));
+  }
+
   getAllCategories(): Observable<HierarchyItem[]> {
     if (this.categories) {
       return of(this.categories);
