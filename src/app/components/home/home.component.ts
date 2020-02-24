@@ -38,7 +38,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   parentSub: Subscription;
   returnSub: Subscription;
 
-  searchOptions = {
+  itemSearchOptions = {
+    shouldSort: true,
+    keys: ['name', 'desc', 'tags'],
+    distance: 50,
+    threshold: .5
+  };
+  hierarchySearchOptions = {
     shouldSort: true,
     keys: ['name'],
     distance: 50,
@@ -207,8 +213,12 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   searchTextChange(event) {
     this.searchService.getAllItems().subscribe(items => {
-      const searcher = new Fuse(items, this.searchOptions);
+      const searcher = new Fuse(items, this.itemSearchOptions);
       this.items = searcher.search(event);
+    });
+    this.searchService.getAllLocations().subscribe(locations => {
+      const searcher = new Fuse(locations, this.hierarchySearchOptions);
+      this.hierarchyItems = searcher.search(event);
     });
   }
 }
