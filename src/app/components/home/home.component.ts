@@ -9,6 +9,7 @@ import {SearchService} from '../../services/search.service';
 import {Location} from '@angular/common';
 import {NavService} from '../../services/nav.service';
 import {Subscription} from 'rxjs';
+import {ImageService} from '../../services/image.service';
 
 /**
  *
@@ -41,28 +42,29 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private navService: NavService,
     private searchService: SearchService,
+    private imageService: ImageService,
     private router: Router,
     private route: ActivatedRoute) {
-    //subscribe to nav state
+    // subscribe to nav state
     this.returnSub = this.navService.getReturnState().subscribe(
       val => {
-        if (val && this.root) { //if we returned
+        if (val && this.root) { // if we returned
           this.navigateUpHierarchy();
         }
       }
     );
 
-    //subscribe to change keeping
+    // subscribe to change keeping
     this.typeSub = this.navService.getSearchType().subscribe(val => {
       this.selectedSearch = val;
     });
-    //change if parent is different
+    // change if parent is different
     this.parentSub = this.navService.getParent().subscribe(val => {
         this.root = val;
       }
     );
 
-    //subscirbe to routing home
+    // subscirbe to routing home
     this.router.events.subscribe(val => {
       if (val instanceof NavigationEnd) {
         if (this.route.snapshot.paramMap.get('id') == 'root') {
@@ -148,7 +150,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   displayDescendants(rootID = this.root.ID, isCategory = this.selectedSearch === 'Categories') {
-    this.searchService.getDescendantsOfRoot(rootID ? rootID : 'root', isCategory).subscribe(data => this.hierarchyItems = data);
+    this.searchService.getDescendantsOfRoot(rootID ? rootID : 'root', isCategory).subscribe(data => {
+      this.hierarchyItems = data;
+    });
     // Load items that descend from root
     this.items = [];
     // If root exists, display it's items, otherwise get root from db first
@@ -166,7 +170,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   displayItems(root: HierarchyItem) {
     if (root.items) {
       for (const i of root.items) {
-        this.searchService.getItem(i).subscribe(data => this.items.push(data));
+        this.searchService.getItem(i).subscribe(data => {
+          this.items.push(data);
+          this.imageService.getImage(data.imageUrl).subscribe(link => data.imageUrl = link);
+        });
       }
     }
   }
