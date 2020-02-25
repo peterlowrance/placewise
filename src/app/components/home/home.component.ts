@@ -93,7 +93,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.searchService.getAllDescendantsOfRoot('root', true).subscribe(d => console.log(d));
+    this.searchService.getAllDescendantsOfRoot('root', true).subscribe(d => {
+      console.log(d);
+      this.searchService.getAllDescendantItems('asdf', d).subscribe(i => console.log(i));
+    });
     const urlID = this.route.snapshot.paramMap.get('id');
     this.selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
 

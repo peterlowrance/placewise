@@ -131,11 +131,44 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
+  getAllDescendantItems(id: string, allParents: HierarchyItem[]): Observable<Item[]> {
+    if (id === 'root') {
+      return this.getAllItems();
+    }
+    // Make list of all children items
+    const childrenItems: string[] = [];
+    allParents.forEach(p => {
+      if (p.items) {
+        p.items.forEach(i => {
+          if (!childrenItems.includes(i)) {
+            childrenItems.push(i);
+          }
+        });
+      }
+    });
+    const result: Item[] = [];
+    return new Observable(obs => {
+      // Find all items whose ID's are in the list of children items
+      this.getAllItems().subscribe(items => {
+        items.forEach(i => {
+          if (childrenItems.includes(i.ID)) {
+            result.push(i);
+          }
+        });
+        obs.next(result);
+        obs.complete();
+      });
+    });
+  }
+
   getAllDescendantsOfRoot(id: string, isCategory: boolean): Observable<HierarchyItem[]> {
     const result: HierarchyItem[] = [];
     const parents: string[] = [id];
+    const appropriateHierarchyItems = isCategory ? this.getAllCategories() : this.getAllLocations();
+    if (id === 'root') {
+      return appropriateHierarchyItems;
+    }
     return new Observable(obs => {
-      const appropriateHierarchyItems = isCategory ? this.getAllCategories() : this.getAllLocations();
       appropriateHierarchyItems.subscribe(hierarchyItems => {
         let added = true;
         while (added) {
