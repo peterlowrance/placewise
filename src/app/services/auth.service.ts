@@ -159,4 +159,11 @@ export class AuthService {
   getRole(){
     return of(this.role);
   }
+
+  /**
+   * Sends a reset password email with the given email
+   */
+  sendPasswordResetEmail(email: string){
+    return this.afAuth.auth.sendPasswordResetEmail(email);
+  }
 }
