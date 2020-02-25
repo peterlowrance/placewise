@@ -77,6 +77,6 @@ import { ChangePassDialogComponent } from './components/change-pass-dialog/chang
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent, ResetPassDialogComponent]
+  entryComponents: [ReportDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent]
 })
 export class AppModule { }

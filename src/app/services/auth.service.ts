@@ -6,6 +6,7 @@ import {Observable, of} from 'rxjs';
 import {first, map} from 'rxjs/operators';
 import {WorkspaceInfo} from '../models/WorkspaceInfo';
 import {User} from '../models/User';
+import * as firebase from 'firebase';
 
 interface WorkspaceUser{
   role: string;
@@ -165,5 +166,16 @@ export class AuthService {
    */
   sendPasswordResetEmail(email: string){
     return this.afAuth.auth.sendPasswordResetEmail(email);
+  }
+
+  /**
+   * Sends a change password request to firebase
+   */
+  changePassword(curPass: string, newPass: string){
+    const cred = firebase.auth.EmailAuthProvider.credential(this.userInfo.email, curPass);
+    //reauthenticate
+    return this.afAuth.auth.currentUser.reauthenticateWithCredential(cred).then(
+      () => this.afAuth.auth.currentUser.updatePassword(newPass)
+    )
   }
 }

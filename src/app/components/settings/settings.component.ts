@@ -49,13 +49,22 @@ export class SettingsComponent implements OnInit {
    * Requests a password change
    */
   requestPasswordChange(){
+    let data = {
+      oldPass: '',
+      newPass: ''
+    };
+
     this.diag.open(ChangePassDialogComponent, 
       {
-        width: '60%'
+        width: '60%',
+        data: data
       }
     ).afterClosed().subscribe(
       val => {
-        
+        //if returned a confirm
+        if(val){
+          console.log(data);
+        }
       }
     )
   }

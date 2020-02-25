@@ -30,7 +30,7 @@ export class ResetPassDialogComponent {
     return this.emailControl.hasError('required') ? "Email is required" :
         this.emailControl.hasError('email') ? 
         "Email entered is not valid" :
-        "Company ID is incorrect";
+        "There is an error in your email field";
   }
 
 }
