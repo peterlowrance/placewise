@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {FormControl, FormGroup, FormBuilder, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {MatDialog, MatDialogRef, MAT_DIALOG_DATA, MatDialogConfig } from '@angular/material/dialog';
+import {MatDialog} from '@angular/material/dialog';
 import {ResetPassDialogComponent} from '../reset-pass-dialog/reset-pass-dialog.component';
 
 import {AuthService} from '../../services/auth.service';
@@ -62,7 +62,7 @@ export class LoginComponent implements OnInit {
       this.loginForm.value.CID).then(res => {
         this.router.navigate(['/search/locations/root'])
       }).catch(err => {
-        this.snack.open('Login Failed: '+err, "OK");
+        this.snack.open('Login Failed: '+err, "OK", {duration: 3000});
       });
   }
 
@@ -76,9 +76,9 @@ export class LoginComponent implements OnInit {
     ).afterClosed().subscribe(
       val => {
         this.authService.sendPasswordResetEmail(val).then(
-          () => alert("Password reset email has been sent."),
-          (fail) => alert("Your password could not be reset: " + fail)
-        ).catch(e => alert('An error occurred while attempting to reset your password'));
+          () => this.snack.open("Password reset email has been sent", "OK", {duration: 3000}),
+          (fail) => this.snack.open(fail, "OK", {duration: 3000})
+        ).catch(e => this.snack.open("An error occurred while attempting to reset your password", "OK", {duration: 3000}));
       }
     );
   }
