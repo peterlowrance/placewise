@@ -51,7 +51,8 @@ export class SettingsComponent implements OnInit {
   requestPasswordChange(){
     let data = {
       oldPass: '',
-      newPass: ''
+      newPass: '',
+      newPassConfirm: ''
     };
 
     this.diag.open(ChangePassDialogComponent, 
@@ -62,8 +63,12 @@ export class SettingsComponent implements OnInit {
     ).afterClosed().subscribe(
       val => {
         //if returned a confirm
-        if(val){
-          console.log(data);
+        if(val && val.newPass === val.newPassConfirm){
+          data = val;
+          this.authService.changePassword(data.oldPass, data.newPass).then(
+            () => alert('Password successfully changed'),
+            (error) => alert('Password change failed:\n'+error)
+          );
         }
       }
     )
