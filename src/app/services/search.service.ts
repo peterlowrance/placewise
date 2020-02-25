@@ -7,8 +7,10 @@ import {Observable, of} from 'rxjs';
 import {Item} from '../models/Item';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {AngularFirestore} from '@angular/fire/firestore';
-import {map} from 'rxjs/operators';
+import { AngularFireStorage } from '@angular/fire/storage';
+import {finalize, map} from 'rxjs/operators';
 import {AuthService} from './auth.service';
+import {ImageService} from './image.service';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -78,6 +80,9 @@ export class SearchService implements SearchInterfaceService {
             }
           });
           obs.next(result);
+          result.forEach((item) => {
+            this.imageService.getImage(item.imageUrl).subscribe(link => { item.imageUrl = link; console.log(item.imageUrl); });
+          });
           obs.complete();
         });
       });
@@ -90,6 +95,9 @@ export class SearchService implements SearchInterfaceService {
             }
           });
           obs.next(result);
+          result.forEach((item) => {
+            this.imageService.getImage(item.imageUrl).subscribe(link => { item.imageUrl = link; console.log(item.imageUrl); });
+          });
           obs.complete();
         });
       });
@@ -101,7 +109,7 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getItem(id: string): Observable<Item> {
-    return this.afs.doc<Item>('/Workspaces/'+ this.auth.workspace.id +'/Items/' + id).snapshotChanges().pipe(map(a => {
+    return this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as Item;
       data.ID = a.payload.id;
       return data;
@@ -109,7 +117,7 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getLocation(id: string): Observable<HierarchyItem> {
-    return this.afs.doc<HierarchyItem>('/Workspaces/'+ this.auth.workspace.id +'/Locations/' + id).snapshotChanges().pipe(map(a => {
+    return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as HierarchyItem;
       data.ID = a.payload.id;
       return data;
@@ -117,7 +125,7 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getCategory(id: string): Observable<HierarchyItem> {
-    return this.afs.doc<HierarchyItem>('/Workspaces/'+ this.auth.workspace.id +'/Category/' + id).snapshotChanges().pipe(map(a => {
+    return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as HierarchyItem;
       data.ID = a.payload.id;
       return data;
@@ -126,7 +134,7 @@ export class SearchService implements SearchInterfaceService {
 
   getAllItems(): Observable<Item[]> {
     // this.afs.collection<Item>().snapshotChanges('/Workspaces/'+ auth.workspace.id +'/Items').subscribe(data => console.log(data));
-    return this.afs.collection<Item>('/Workspaces/'+ this.auth.workspace.id +'/Items').snapshotChanges().pipe(map(a => {
+    return this.afs.collection<Item>('/Workspaces/' + this.auth.workspace.id + '/Items').snapshotChanges().pipe(map(a => {
       return a.map(g => {
           const data = g.payload.doc.data() as Item;
           data.ID = g.payload.doc.id;
@@ -141,7 +149,7 @@ export class SearchService implements SearchInterfaceService {
       return of(this.categories);
     }
     // return this.afs.collection<Category>('/Workspaces/'+ auth.workspace.id +'/Category').valueChanges();
-    return this.afs.collection<HierarchyItem>('/Workspaces/'+ this.auth.workspace.id +'/Category').snapshotChanges().pipe(map(a => {
+    return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category').snapshotChanges().pipe(map(a => {
       this.categories = a.map(g => {
           const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
@@ -157,7 +165,7 @@ export class SearchService implements SearchInterfaceService {
       return of(this.locations);
     }
     // return this.afs.collection<Location>('/Workspaces/'+ auth.workspace.id +'/Locations').valueChanges();
-    return this.afs.collection<HierarchyItem>('/Workspaces/'+ this.auth.workspace.id +'/Locations').snapshotChanges().pipe(map(a => {
+    return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations').snapshotChanges().pipe(map(a => {
       this.locations = a.map(g => {
           const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
@@ -169,14 +177,14 @@ export class SearchService implements SearchInterfaceService {
   }
 
   categoryItemsSearch(categoryID: string): Observable<Item[]> {
-    return this.afs.collection<Item>('/Workspaces/'+ this.auth.workspace.id +'/Category/' + categoryID + '/items').valueChanges();
+    return this.afs.collection<Item>('/Workspaces/' + this.auth.workspace.id + '/Category/' + categoryID + '/items').valueChanges();
   }
 
   locationItemsSearch(locationID: string): Observable<Item[]> {
-    return this.afs.collection<Item>('/Workspaces/'+ this.auth.workspace.id +'/Locations/' + locationID + '/items').valueChanges();
+    return this.afs.collection<Item>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + locationID + '/items').valueChanges();
   }
 
-  constructor(private afs: AngularFirestore, private auth: AuthService) {
+  constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService) {
 
   }
 
