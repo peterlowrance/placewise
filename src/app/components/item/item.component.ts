@@ -11,6 +11,7 @@ import {ReportDialogComponent} from '../report-dialog/report-dialog.component';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import { Observable, of } from 'rxjs';
+import { AdminService } from 'src/app/services/admin.service';
 
 
 interface TreeNode{
@@ -58,6 +59,7 @@ export class ItemComponent implements OnInit {
 
   constructor(
     private searchService: SearchService,
+    private adminService: AdminService,
     private router: Router,
     private route: ActivatedRoute,
     public dialog: MatDialog
