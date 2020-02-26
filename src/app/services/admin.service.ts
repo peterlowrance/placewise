@@ -1,4 +1,4 @@
-import { AdminInterfaceService } from './admin-interface.service';
+//import { AdminInterfaceService } from './admin-interface.service';
 
 import { Injectable } from '@angular/core';
 import { HttpHeaders } from '@angular/common/http';
@@ -20,7 +20,8 @@ const httpOptions = {
 @Injectable({
   providedIn: 'root'
 })
-export class AdminService implements AdminInterfaceService{
+export class AdminService //implements AdminInterfaceService
+{
   placeReport(itemID: string, text: string): Observable<boolean> {
     this.afs.collection('/Workspaces/'+ this.auth.workspace.id +'/Reports').add({desc: text,item: itemID, user:this.auth.userInfo.firstName});  
 
