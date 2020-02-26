@@ -161,7 +161,7 @@ export class SearchService implements SearchInterfaceService {
     });
   }
 
-  getAllDescendantsOfRoot(id: string, isCategory: boolean): Observable<HierarchyItem[]> {
+  getAllDescendantHierarchyItems(id: string, isCategory: boolean): Observable<HierarchyItem[]> {
     const result: HierarchyItem[] = [];
     const parents: string[] = [id];
     const appropriateHierarchyItems = isCategory ? this.getAllCategories() : this.getAllLocations();
@@ -175,7 +175,7 @@ export class SearchService implements SearchInterfaceService {
           added = false;
           hierarchyItems.forEach(c => {
             // If the category has a parent in the parents list
-            if (c.parent && parents.includes(c.parent) && !result.includes(c)) {
+            if (c.parent && parents.includes(c.parent) && !result.includes(c) && c.ID !== 'root') { // TODO make more efficient
               if (c.children && c.children.length !== 0) {
                 added = true;
                 parents.push(c.ID);

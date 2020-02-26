@@ -93,7 +93,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.searchService.getAllDescendantsOfRoot('root', true).subscribe(d => {
+    this.searchService.getAllDescendantHierarchyItems('root', true).subscribe(d => {
       console.log(d);
       this.searchService.getAllDescendantItems('asdf', d).subscribe(i => console.log(i));
     });
@@ -216,13 +216,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   searchTextChange(event) {
-    this.searchService.getAllItems().subscribe(items => {
-      const searcher = new Fuse(items, this.itemSearchOptions);
-      this.items = searcher.search(event);
-    });
-    this.searchService.getAllLocations().subscribe(locations => {
-      const searcher = new Fuse(locations, this.hierarchySearchOptions);
-      this.hierarchyItems = searcher.search(event);
-    });
+    if (event === '') {
+      console.log('empty search');
+      this.displayDescendants(this.root.ID, this.selectedSearch === 'Categories');
+    } else {
+      this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
+        this.searchService.getAllDescendantItems(this.root.ID, hierarchyItems).subscribe(items => {
+          const itemSearcher = new Fuse(items, this.itemSearchOptions);
+          this.items = itemSearcher.search(event);
+        });
+        const hierarchySearcher = new Fuse(hierarchyItems, this.hierarchySearchOptions);
+        this.hierarchyItems = hierarchySearcher.search(event);
+      });
+    }
   }
 }
