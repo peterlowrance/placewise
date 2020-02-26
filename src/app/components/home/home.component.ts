@@ -221,7 +221,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.displayDescendants(this.root.ID, this.selectedSearch === 'Categories');
     } else {
       this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
-        this.searchService.getAllDescendantItems(this.root.ID, hierarchyItems).subscribe(items => {
+        const hierarchyItemsAndRoot: HierarchyItem[] = hierarchyItems;
+        hierarchyItemsAndRoot.push(this.root);
+        this.searchService.getAllDescendantItems(this.root.ID, hierarchyItemsAndRoot).subscribe(items => {
           const itemSearcher = new Fuse(items, this.itemSearchOptions);
           this.items = itemSearcher.search(event);
         });
