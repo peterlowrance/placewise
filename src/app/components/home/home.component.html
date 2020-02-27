@@ -1,7 +1,7 @@
 <!--Search Bar-->
 <form class="search" (submit)="null">
   <mat-form-field class="full-width">
-    <input type="text" placeholder="Search..." matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null"> <!--[matAutocomplete]="auto"-->
+    <input type="text" placeholder="Search in {{root? root.name : 'root'}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null"> <!--[matAutocomplete]="auto"-->
     <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="control.setValue('')">
       <mat-icon>close</mat-icon>
     </button>

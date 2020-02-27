@@ -23,7 +23,7 @@ import * as Fuse from 'fuse.js';
 })
 export class HomeComponent implements OnInit, OnDestroy {
   control = new FormControl(); // TODO research this more
-  options: string[] = ['Two', 'Inch', 'Galvanized'];
+  // options: string[] = ['Two', 'Inch', 'Galvanized'];
   searchValue: string;
 
   selectedSearch = 'Categories';
@@ -100,12 +100,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.displayDescendants(urlID, this.selectedSearch === 'Categories');
 
     this.loadLevel(urlID, this.selectedSearch);
-    /*// get current level
-    if (this.root === null) {
-      this.loadLevel(urlID, this.selectedSearch);
-    } else {
-      this.loadLevel(this.root.ID, this.selectedSearch);
-    }*/
 
     // Load root and set nav bar name
     if (this.selectedSearch === 'Categories') {
@@ -200,6 +194,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   goToHierarchy(item: HierarchyItem) {
+    this.control.setValue('');
+    this.searchTextChange('');
     this.root = item;
     window.history.pushState(null, null, 'search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
     this.setNavParent(item);
@@ -207,6 +203,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   toggleHierarchy(event) {
+    this.control.setValue('');
+    this.searchTextChange('');
     window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + (this.root ? this.root.ID : 'root'));
     this.setNavType(event.value);
     this.displayDescendants(this.root ? this.root.ID : 'root', event.value === 'Categories');
