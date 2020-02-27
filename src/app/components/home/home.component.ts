@@ -106,7 +106,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.navService.setParent(data);
       });
     }
-    this.columns = (window.innerWidth <= this.breakpoint) ? 3 : 6;
+    this.determineCols();
   }
 
   private navigateUpHierarchy() {
@@ -179,7 +179,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   onResize(event) {
-    this.columns = (event.target.innerWidth <= this.breakpoint) ? 3 : 6;
+    this.determineCols();
+  }
+
+  determineCols() {
+    this.columns = (window.innerWidth > window.innerHeight) ? 6 : 3;
   }
 
   goToItem(item: Item) {
