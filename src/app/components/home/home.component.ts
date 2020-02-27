@@ -93,10 +93,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.searchService.getAllDescendantHierarchyItems('root', true).subscribe(d => {
-      console.log(d);
-      this.searchService.getAllDescendantItems('asdf', d).subscribe(i => console.log(i));
-    });
+    this.searchService.getAllLocations().subscribe(l => console.log(l));
     const urlID = this.route.snapshot.paramMap.get('id');
     this.selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
 
@@ -216,17 +213,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   searchTextChange(event) {
+    // If the search is empty, load descendants normally
     if (event === '') {
       console.log('empty search');
       this.displayDescendants(this.root.ID, this.selectedSearch === 'Categories');
-    } else {
+    } else { // Otherwise, get all descendant hierarchy items and items and fuzzy match them
       this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
-        const hierarchyItemsAndRoot: HierarchyItem[] = hierarchyItems;
-        hierarchyItemsAndRoot.push(this.root);
-        this.searchService.getAllDescendantItems(this.root.ID, hierarchyItemsAndRoot).subscribe(items => {
+        this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
+          // Search items
           const itemSearcher = new Fuse(items, this.itemSearchOptions);
           this.items = itemSearcher.search(event);
         });
+        // Search hierarchy items
         const hierarchySearcher = new Fuse(hierarchyItems, this.hierarchySearchOptions);
         this.hierarchyItems = hierarchySearcher.search(event);
       });

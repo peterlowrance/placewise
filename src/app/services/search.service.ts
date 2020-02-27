@@ -131,12 +131,12 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getAllDescendantItems(id: string, allParents: HierarchyItem[]): Observable<Item[]> {
-    if (id === 'root') {
+  getAllDescendantItems(root: HierarchyItem, allParents: HierarchyItem[]): Observable<Item[]> {
+    if (root.ID === 'root') {
       return this.getAllItems();
     }
     // Make list of all children items
-    const childrenItems: string[] = [];
+    const childrenItems: string[] = root.items ? root.items : [];
     allParents.forEach(p => {
       if (p.items) {
         p.items.forEach(i => {
@@ -201,7 +201,7 @@ export class SearchService implements SearchInterfaceService {
           data.ID = g.payload.doc.id;
           return data;
         }
-      );
+      ).filter(g => g.ID !== 'root');
       return this.categories;
     }));
   }
@@ -210,14 +210,13 @@ export class SearchService implements SearchInterfaceService {
     if (this.locations) {
       return of(this.locations);
     }
-    // return this.afs.collection<Location>('/Workspaces/'+ auth.workspace.id +'/Locations').valueChanges();
     return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations').snapshotChanges().pipe(map(a => {
       this.locations = a.map(g => {
           const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
           return data;
         }
-      );
+      ).filter(g => g.ID !== 'root');
       return this.locations;
     }));
   }
