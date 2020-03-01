@@ -53,3 +53,9 @@
     width: 40%;
   }
 }
+
+.new-link {
+  bottom: 2%;
+  right: 2%;
+  position: fixed;
+}

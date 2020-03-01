@@ -83,4 +83,11 @@ export class LoginComponent implements OnInit {
     );
   }
 
+  /**
+   * Opens link to a new workspace
+   */
+  newWorkspace(){
+    window.open("https://google.com","_blank");
+  }
+
 }
