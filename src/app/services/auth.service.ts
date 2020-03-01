@@ -7,6 +7,7 @@ import {first, map} from 'rxjs/operators';
 import {WorkspaceInfo} from '../models/WorkspaceInfo';
 import {User} from '../models/User';
 import * as firebase from 'firebase';
+import { $ } from 'protractor';
 
 interface WorkspaceUser{
   role: string;
@@ -43,7 +44,29 @@ export class AuthService {
 
   constructor(private afAuth: AngularFireAuth,
               private afs: AngularFirestore,
-              private router: Router) { }
+              private router: Router) {
+
+                //onauthstatechange, update credentials
+                afAuth.auth.onAuthStateChanged((user) => {
+                  if(user){
+                    user.getIdTokenResult().then(token => {
+                      this.workspace.id = token.claims.workspace;
+                      this.role = token.claims.role;
+                      console.log(token.claims);
+                      const workDoc = this.getWorkspaceInfo(token.claims.workspace);
+                      //subscribe to changes in workspace name
+                      workDoc.subscribe(
+                        val => this.workspace.name = val.name
+                      );
+                    });
+                    const userDoc = this.getUserInfo(user.uid);
+                    //subscribe to changes in user info
+                    userDoc.subscribe(
+                      val => this.userInfo = val
+                    );
+                  }
+                })
+               }
 
   /**
    * Logs into firebase through email and password sign-in method, retrieves
@@ -59,39 +82,60 @@ export class AuthService {
       this.afAuth.auth.signInWithEmailAndPassword(email,password)
       .then(userData => {
         //success, get user info
-        const doc = this.ensureUserInWorkspace(workspace, userData.user.uid);
-        if(doc){ //user is in DB, get information for authentication
-          doc.subscribe(
-            val => {
-              this.role = val.role;
-            }
-          );
-
-          //get workspace name
-          const workDoc = this.getWorkspaceInfo(workspace);
-          //if work is null, workspace is nonexistant (redundent, but in case of drops)
-          if(!workDoc) reject("Could not query workspace information");
-          //subscribe to changes in workspace name
-          workDoc.subscribe(
-            val => this.workspace.name = val.name
-          );
-          //can also set workspace id
-          this.workspace.id = workspace;
-
-          //now get user information, again might be nonexistant if a drop occurs
-          const userDoc = this.getUserInfo(userData.user.uid);
-          if(!userDoc) reject("Could not query user information");
-          //subscribe to changes in user info
-          userDoc.subscribe(
-            val => this.userInfo = val
-          );
-          //have all info, can quit
-          resolve(userData);
-        } else  { //user-workspace connect problem
-          //logout and reject
-          this.logout();
-          reject("User does not belong to this workspace or the workspace does not exist.");
+        userData.user.getIdTokenResult().then( token => {
+          this.role = token.claims.role;
+          this.workspace.id = token.claims.workspace;
+          console.log(token.claims);
         }
+        )
+        //get information
+        const userDoc = this.getUserInfo(userData.user.uid);
+           if(!userDoc) reject("Could not query user information");
+           //subscribe to changes in user info
+           userDoc.subscribe(
+             val => this.userInfo = val
+        );
+        const workDoc = this.getWorkspaceInfo(workspace);
+        //if work is null, workspace is nonexistant (redundent, but in case of drops)
+        if(!workDoc) reject("Could not query workspace information");
+        //subscribe to changes in workspace name
+        workDoc.subscribe(
+          val => this.workspace.name = val.name
+        );
+        
+        // const doc = this.ensureUserInWorkspace(workspace, userData.user.uid);
+        // if(doc){ //user is in DB, get information for authentication
+        //   doc.subscribe(
+        //     val => {
+        //       this.role = val.role;
+        //     }
+        //   );
+
+        //   //get workspace name
+        //   const workDoc = this.getWorkspaceInfo(workspace);
+        //   //if work is null, workspace is nonexistant (redundent, but in case of drops)
+        //   if(!workDoc) reject("Could not query workspace information");
+        //   //subscribe to changes in workspace name
+        //   workDoc.subscribe(
+        //     val => this.workspace.name = val.name
+        //   );
+        //   //can also set workspace id
+        //   this.workspace.id = workspace;
+
+        //   //now get user information, again might be nonexistant if a drop occurs
+        //   const userDoc = this.getUserInfo(userData.user.uid);
+        //   if(!userDoc) reject("Could not query user information");
+        //   //subscribe to changes in user info
+        //   userDoc.subscribe(
+        //     val => this.userInfo = val
+        //   );
+        //   //have all info, can quit
+        //   resolve(userData);
+        // } else  { //user-workspace connect problem
+        //   //logout and reject
+        //   this.logout();
+        //   reject("User does not belong to this workspace or the workspace does not exist.");
+        // }
       },
       //error occured in sign-in, reject attempt
       err => reject(err)
