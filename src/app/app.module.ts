@@ -34,6 +34,7 @@ import {AngularFirestoreModule} from '@angular/fire/firestore';
 import {AngularFireAuthModule} from '@angular/fire/auth';
 import { SettingsComponent } from './components/settings/settings.component';
 import {AngularFireStorageModule} from '@angular/fire/storage';
+import { ModifyHierarchyComponent } from './components/modify-hierarchy/modify-hierarchy.component';
 
 
 @NgModule({
@@ -46,7 +47,8 @@ import {AngularFireStorageModule} from '@angular/fire/storage';
     NotFoundComponent,
     MatToolbar,
     ReportDialogComponent,
-    SettingsComponent
+    SettingsComponent,
+    ModifyHierarchyComponent
   ],
   imports: [
     BrowserModule,

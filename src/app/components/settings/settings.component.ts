@@ -46,14 +46,17 @@ export class SettingsComponent implements OnInit {
    * Requests a password change
    */
   requestPasswordChange(){
-    
+
   }
 
   /**
    * Logs out and navigates to login screen
    */
-  logout(){
+  logout() {
     this.authService.logout();
   }
 
+  goToModify(isCategory: boolean) {
+    this.router.navigate(['modify/' + (isCategory ? 'categories' : 'locations')]);
+  }
 }
