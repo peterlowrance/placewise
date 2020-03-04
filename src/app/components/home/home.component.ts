@@ -32,7 +32,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   items: Item[];
   allChildrenItems: Item[];
   columns: number;
-  breakpoint = 1024;
 
   typeSub: Subscription;
   parentSub: Subscription;
@@ -113,7 +112,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.navService.setParent(data);
       });
     }
-    this.columns = (window.innerWidth <= this.breakpoint) ? 3 : 6;
+    this.determineCols();
   }
 
   private navigateUpHierarchy() {
@@ -186,7 +185,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   onResize(event) {
-    this.columns = (event.target.innerWidth <= this.breakpoint) ? 3 : 6;
+    this.determineCols();
+  }
+
+  determineCols() {
+    const textField = document.documentElement;
+    const style = window.getComputedStyle(textField, null).getPropertyValue('font-size');
+    const fontSize = parseFloat(style);
+    const fontLine = fontSize * 7; // Sets max characters (not directly) on a line
+    console.log(window.innerWidth / fontLine);
+    this.columns = window.innerWidth / fontLine;
   }
 
   goToItem(item: Item) {
