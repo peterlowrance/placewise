@@ -9,6 +9,7 @@ import {Subscription} from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import {ImageService} from '../../services/image.service';
 import * as Fuse from 'fuse.js';
+import { AdminService } from 'src/app/services/admin.service';
 
 /**
  *
@@ -68,7 +69,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private imageService: ImageService,
     private router: Router,
     private route: ActivatedRoute,
-    private authService: AuthService) {
+    private authService: AuthService,
+    private adminService: AdminService) {
     //subscribe to nav state
     this.returnSub = this.navService.getReturnState().subscribe(
       val => {
@@ -244,7 +246,20 @@ export class HomeComponent implements OnInit, OnDestroy {
   /**Adds an item to the current depth */
   addItem(){
     if(this.ico === 'close')  this.toggleIco();
-    console.log('item');
+    //add the item
+    var category = '';
+    var location = '';
+    //to category
+    if(this.selectedSearch === 'Categories'){
+      category = this.root.ID;
+    }
+    else { //add to locations
+      location = this.root.ID;
+    }
+    this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '', location).subscribe(val => {
+      if(!val) alert('Item could not be created');
+      else alert('Item successfully added');
+    });
   }
 
   /**Adds a hierarchy item to the current depth */
