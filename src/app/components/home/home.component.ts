@@ -33,7 +33,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   root: HierarchyItem;
   items: Item[];
   columns: number;
-  breakpoint = 1024;
 
   typeSub: Subscription;
   parentSub: Subscription;
@@ -183,7 +182,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   determineCols() {
-    this.columns = (window.innerWidth > window.innerHeight) ? 6 : 3;
+    const textField = document.documentElement;
+    const style = window.getComputedStyle(textField, null).getPropertyValue('font-size');
+    const fontSize = parseFloat(style);
+    const fontLine = fontSize * 7; // Sets max characters (not directly) on a line
+    console.log(window.innerWidth / fontLine);
+    this.columns = window.innerWidth / fontLine;
   }
 
   goToItem(item: Item) {

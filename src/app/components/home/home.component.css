@@ -19,8 +19,8 @@ mat-button-toggle {
 .image {
   background: 50% 50% no-repeat;
   background-size: cover;
-  width: 6em;
-  height: 6em;
+  width: 5.5em;
+  height: 5.5em;
   border: dimgray 1px solid;
   margin: auto;
 }
@@ -36,14 +36,17 @@ mat-button-toggle {
 .element {
   width: 95%;
   height: 95%;
+  font-size: 100%;
 }
 
 .text {
   text-align: center;
+  padding: 0% 0.3em;
 }
 
 .header {
-  padding: 1% 3.5%;
+  padding: 1em;
+  font-weight: bold;
 }
 
 .hierarchySelector {
