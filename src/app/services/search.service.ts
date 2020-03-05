@@ -7,7 +7,7 @@ import {Observable, of} from 'rxjs';
 import {Item} from '../models/Item';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {AngularFirestore} from '@angular/fire/firestore';
-import { AngularFireStorage } from '@angular/fire/storage';
+import {AngularFireStorage} from '@angular/fire/storage';
 import {finalize, map} from 'rxjs/operators';
 import {AuthService} from './auth.service';
 import {ImageService} from './image.service';
@@ -71,37 +71,24 @@ export class SearchService implements SearchInterfaceService {
 
   getDescendantsOfRoot(id: string, isCategory: boolean): Observable<HierarchyItem[]> {
     const result: HierarchyItem[] = [];
-    if (isCategory) {
-      return new Observable(obs => {
-        this.getAllCategories().subscribe(cats => {
-          cats.forEach(cat => {
-            if (cat.parent === id) {
-              result.push(cat);
-            }
-          });
-          obs.next(result);
-          result.forEach((item) => {
-            this.imageService.getImage(item.imageUrl).subscribe(link => { item.imageUrl = link; console.log(item.imageUrl); });
-          });
-          obs.complete();
+    const appropriateHierarchyItems = isCategory ? this.getAllCategories() : this.getAllLocations();
+    return new Observable(obs => {
+      appropriateHierarchyItems.subscribe(hierarchyItems => {
+        hierarchyItems.forEach(cat => {
+          if (cat.parent === id) {
+            result.push(cat);
+          }
         });
-      });
-    } else {
-      return new Observable(obs => {
-        this.getAllLocations().subscribe(cats => {
-          cats.forEach(cat => {
-            if (cat.parent === id) {
-              result.push(cat);
-            }
+        obs.next(result);
+        result.forEach((item) => {
+          this.imageService.getImage(item.imageUrl).subscribe(link => {
+            item.imageUrl = link;
+            console.log(item.imageUrl);
           });
-          obs.next(result);
-          result.forEach((item) => {
-            this.imageService.getImage(item.imageUrl).subscribe(link => { item.imageUrl = link; console.log(item.imageUrl); });
-          });
-          obs.complete();
         });
+        obs.complete();
       });
-    }
+    });
   }
 
   search(term: string): Observable<Item[]> {
@@ -144,6 +131,65 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
+  getAllDescendantItems(root: HierarchyItem, allParents: HierarchyItem[]): Observable<Item[]> {
+    if (root.ID === 'root') {
+      return this.getAllItems();
+    }
+    // Make list of all children items
+    const childrenItems: string[] = root.items ? root.items : [];
+    allParents.forEach(p => {
+      if (p.items) {
+        p.items.forEach(i => {
+          if (!childrenItems.includes(i)) {
+            childrenItems.push(i);
+          }
+        });
+      }
+    });
+    const result: Item[] = [];
+    return new Observable(obs => {
+      // Find all items whose ID's are in the list of children items
+      this.getAllItems().subscribe(items => {
+        items.forEach(i => {
+          if (childrenItems.includes(i.ID)) {
+            result.push(i);
+          }
+        });
+        obs.next(result);
+        obs.complete();
+      });
+    });
+  }
+
+  getAllDescendantHierarchyItems(id: string, isCategory: boolean): Observable<HierarchyItem[]> {
+    const result: HierarchyItem[] = [];
+    const parents: string[] = [id];
+    const appropriateHierarchyItems = isCategory ? this.getAllCategories() : this.getAllLocations();
+    if (id === 'root') {
+      return appropriateHierarchyItems;
+    }
+    return new Observable(obs => {
+      appropriateHierarchyItems.subscribe(hierarchyItems => {
+        let added = true;
+        while (added) {
+          added = false;
+          hierarchyItems.forEach(c => {
+            // If the category has a parent in the parents list
+            if (c.parent && parents.includes(c.parent) && !result.includes(c) && c.ID !== 'root') { // TODO make more efficient
+              if (c.children && c.children.length !== 0) {
+                added = true;
+                parents.push(c.ID);
+              }
+              result.push(c);
+            }
+          });
+        }
+        obs.next(result);
+        obs.complete();
+      });
+    });
+  }
+
   getAllCategories(): Observable<HierarchyItem[]> {
     if (this.categories) {
       return of(this.categories);
@@ -155,7 +201,7 @@ export class SearchService implements SearchInterfaceService {
           data.ID = g.payload.doc.id;
           return data;
         }
-      );
+      ).filter(g => g.ID !== 'root');
       return this.categories;
     }));
   }
@@ -164,14 +210,13 @@ export class SearchService implements SearchInterfaceService {
     if (this.locations) {
       return of(this.locations);
     }
-    // return this.afs.collection<Location>('/Workspaces/'+ auth.workspace.id +'/Locations').valueChanges();
     return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations').snapshotChanges().pipe(map(a => {
       this.locations = a.map(g => {
           const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
           return data;
         }
-      );
+      ).filter(g => g.ID !== 'root');
       return this.locations;
     }));
   }
