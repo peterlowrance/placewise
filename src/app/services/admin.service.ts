@@ -8,6 +8,7 @@ import {AngularFirestore} from '@angular/fire/firestore';
 import {AuthService} from './auth.service';
 import {SentReport} from '../models/SentReport';
 import {map} from 'rxjs/operators';
+import { HierarchyItem } from '../models/HierarchyItem';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -47,14 +48,26 @@ export class AdminService // implements AdminInterfaceService
   }
 
   createItem(item: Item): Observable<boolean> {
+    var admin = require("firebase-admin");
+
     this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       item
-    });
+    }).then(ref => {
+      for(let i = 0; i < item.locations.length; i++) 
+      {
+        let arrUnion = this.afs.doc<HierarchyItem>('/Workspaces/'+ this.auth.workspace.id + '/Locations/' + item.locations[i]).update({
+          items: admin.firestore.FieldValue.arrayUnion(ref.id)
+        });
+      }
+    });;
+
+
+    
     return of(true);
   }
 
   createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string): Observable<boolean> {
-    // console.log("frankin");
+    var admin = require("firebase-admin");
     this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       name: name,
       desc: desc,
@@ -62,6 +75,10 @@ export class AdminService // implements AdminInterfaceService
       locations: [location],
       category: category,
       imageUrl: imageUrl
+    }).then(ref => {
+      let arrUnion = this.afs.doc<HierarchyItem>('/Workspaces/'+ this.auth.workspace.id + '/Locations/' + location).update({
+        items: admin.firestore.FieldValue.arrayUnion(ref.id)
+      });
     });
 
     return of(true);
