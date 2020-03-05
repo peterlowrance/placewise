@@ -31,16 +31,16 @@ export class ItemComponent implements OnInit {
   id: string; // item id
   item: Item; // item returned by id
   loading = true;  // whether the page is actively loading
-  report: Report = {
-    description: '',
-    item: {
-      ID: '0',
-      name: '',
-      imageUrl: ''
-    },
-    reportDate: '',
-    reporter: ''
-  }; // user report
+  // report: Report = {
+  //   description: '',
+  //   item: {
+  //     ID: '0',
+  //     name: '',
+  //     imageUrl: ''
+  //   },
+  //   reportDate: '',
+  //   reporter: ''
+  // }; // user report
   errorDesc: ItemReportModalData = {valid: false, desc: ''}; // user-reported error description
   expanded = false;  // is the more info panel expanded
 
@@ -69,12 +69,14 @@ export class ItemComponent implements OnInit {
   }
 
   ngOnInit() {
+    debugger;
     // retrieve id
     this.id = this.route.snapshot.paramMap.get('id');
     console.log('id is ' + this.id);
 
     // get the item from the id
     this.searchService.getItem(this.id).subscribe(item => {
+      debugger;
       // get the item ref
       this.item = item;
       // get all locations and filter
@@ -162,16 +164,21 @@ export class ItemComponent implements OnInit {
       this.errorDesc = result;
       // if it's valid, build and isue report, else leave
       if (this.errorDesc.valid) {
-        this.report.description = this.errorDesc.desc;
-        this.report.item.name = this.item.name;
-        this.report.item.ID = this.item.ID;
-        this.report.item.imageUrl = this.item.imageUrl;
+        //this.report.description = this.errorDesc.desc;
+        //this.report.item.name = this.item.name;
+        //this.report.item.ID = this.item.ID;
+        //this.report.item.imageUrl = this.item.imageUrl;
         // TODO: input reporter name from auth service
         // this.report.reporter
-        this.report.reportDate = new Date().toDateString();
+        //this.report.reportDate = new Date().toDateString();
 
-        // TODO: issue report
-        console.log(this.report);
+        //issue report
+        this.adminService.placeReport(this.item.ID, this.errorDesc.desc).subscribe(
+          val => {
+            if(val) alert('The report has been sent');
+            else alert('The report could not be sent. Check your internet connection.');
+          }
+        );
       }
     });
   }
