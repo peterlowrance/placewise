@@ -19,8 +19,7 @@ export class ModifyHierarchyComponent implements OnInit {
 
   ngOnInit() {
     const isCategory = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories';
-    const appropriateHierarchyItems = isCategory ? this.searchService.getAllCategories() : this.searchService.getAllLocations();
-    appropriateHierarchyItems.subscribe(hierarchyItems => this.dataSource.data = hierarchyItems);
+    this.searchService.getDescendantsOfRoot('root', isCategory).subscribe(items => this.dataSource.data = items);
   }
 
   hasChild = (_: number, node: HierarchyItem) => !!node.children && node.children.length > 0;
