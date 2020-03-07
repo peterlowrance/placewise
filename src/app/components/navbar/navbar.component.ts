@@ -3,7 +3,6 @@ import {Router, NavigationEnd} from '@angular/router';
 import {Location} from '@angular/common';
 
 import {NavService} from '../../services/nav.service';
-import {ItemComponent} from '../item/item.component';
 import { of } from 'rxjs';
 import { HierarchyItem } from 'src/app/models/HierarchyItem';
 import { AuthService } from 'src/app/services/auth.service';
@@ -14,6 +13,7 @@ import { AuthService } from 'src/app/services/auth.service';
   styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent implements OnInit {
+
   /** The current location in the app */
   locationString = '/login';
 
@@ -90,6 +90,14 @@ export class NavbarComponent implements OnInit {
   goHome(){
     this.navService.forgetParent();
     this.router.navigate([`search/${this.searchType}/root`]);
+  }
+
+  /**
+   * Sets the delete message from the nav service
+   */
+  delete(){
+    this.navService.setDelete();
+    this.navService.resetDelete();
   }
 
 }

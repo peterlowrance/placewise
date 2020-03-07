@@ -80,7 +80,7 @@ export class AdminService // implements AdminInterfaceService
     //return of(true);
   }
 
-  removeItem(itemID: number) {
+  removeItem(itemID: string) {
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + itemID).delete();
     return of(true);
   }

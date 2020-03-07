@@ -1,24 +1,23 @@
 // adapted tree control from https://material.angular.io/components/tree/examples
-import {Component, OnInit, ViewChild, ElementRef, ViewChildren} from '@angular/core';
+import {Component, OnInit, OnDestroy} from '@angular/core';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {Item} from 'src/app/models/Item';
 import {Report} from 'src/app/models/Report';
 import {ItemReportModalData} from 'src/app/models/ItemReportModalData';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
+import {Location} from '@angular/common';
 import {SearchService} from 'src/app/services/search.service';
 import {MatDialog} from '@angular/material/dialog';
 import {ReportDialogComponent} from '../report-dialog/report-dialog.component';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
 import {NestedTreeControl} from '@angular/cdk/tree';
-import { Observable, of } from 'rxjs';
+import { Subscription } from 'rxjs';
 import {AuthService} from '../../services/auth.service'
-import { AuthGuard } from 'src/app/guards/auth.guard';
-import { FormControl, Validators, FormGroup, FormBuilder } from '@angular/forms';
 import {MatChipInputEvent} from '@angular/material/chips';
 import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
 import { AdminService } from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
-import { first } from 'rxjs/operators';
+import {NavService} from '../../services/nav.service';
 
 
 interface TreeNode {
@@ -33,7 +32,7 @@ interface TreeNode {
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css']
 })
-export class ItemComponent implements OnInit {
+export class ItemComponent implements OnInit, OnDestroy {
   readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
 
   id: string; // item id
@@ -80,21 +79,18 @@ export class ItemComponent implements OnInit {
     tags: boolean;
   } = {name: false, desc: false, tags: false}
 
-  //view child refs
-  //@ViewChild("name", {read: ElementRef, static: false}) nameField: ElementRef;
-
-  // nameControl = new FormControl('', Validators.required);
-  // nameForm: FormGroup;
+  //delete message handler
+  deleteSub: Subscription;
 
   constructor(
     private searchService: SearchService,
     private adminService: AdminService,
-    private router: Router,
+    private routeLocation: Location,
     private route: ActivatedRoute,
     public dialog: MatDialog,
     private authService: AuthService,
-    private formBuilder: FormBuilder,
-    private imageService: ImageService
+    private imageService: ImageService,
+    private navService: NavService
   ) {
   }
 
@@ -140,8 +136,15 @@ export class ItemComponent implements OnInit {
     //get user role
     this.role = this.authService.role;
 
-    //set up admin change forms
-    // this.nameForm = this.formBuilder.group({name: this.nameControl})
+    //listen to delete messages
+    this.deleteSub = this.navService.getDeleteMessage().subscribe(
+      (del) => {if(del.valueOf()) this.deleteItem()}
+        
+    )
+  }
+
+  ngOnDestroy(): void {
+    this.deleteSub.unsubscribe();
   }
 
   convertList(items: HierarchyItem[]): TreeNode {
@@ -381,6 +384,35 @@ export class ItemComponent implements OnInit {
       }
       else alert("Item save failed");
     })
+  }
+
+  /**
+   * Prompts for delete, deletes if so
+   */
+  deleteItem(){
+    if(confirm("Are you sure you want to delete this item? This process cannot be undone.\n" +
+      "Associated locations/categories will remain, but item image will be lost")){
+        //delete first the image, since it can always be restored, if it has one
+        if(this.previousItem.imageUrl !== null && this.previousItem.imageUrl !== ""){
+          this.imageService.removeImage(this.previousItem.imageUrl).then(
+            () => {
+              //on success, delete the item
+              this.adminService.removeItem(this.item.ID);
+              //go back
+              this.routeLocation.back();
+            },
+            (err) => {
+              alert("Item deletion failed. Reason:\n" + err)
+            }
+          )
+        }
+        else{
+          //on success, delete the item
+          this.adminService.removeItem(this.item.ID);
+          //go back
+          this.routeLocation.back();
+        }
+      }
   }
 
 }

@@ -216,7 +216,7 @@ export class SearchService implements SearchInterfaceService {
           data.ID = g.payload.doc.id;
           return data;
         }
-      ).filter(g => g.ID !== 'root');
+      )
       return this.locations;
     }));
   }
