@@ -18,6 +18,7 @@ import {MatChipInputEvent} from '@angular/material/chips';
 import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
 import { AdminService } from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
+import { first } from 'rxjs/operators';
 
 
 interface TreeNode {
@@ -38,6 +39,8 @@ export class ItemComponent implements OnInit {
   id: string; // item id
   item: Item; // item returned by id
   previousItem: Item; //previous item, before edits are made
+  imageToSave: File = null; //the image to upload when saved
+
   loading = true;  // whether the page is actively loading
   report: Report = {
     description: '',
@@ -272,6 +275,31 @@ export class ItemComponent implements OnInit {
     this.checkDirty();
   }
 
+  /**
+   * Handles uploading an image file to firestorage
+   * @param event 
+   */
+  uploadImage(fileEvent: Event){
+    //cast
+    const element = (fileEvent.target as HTMLInputElement);
+    //only change if there was a file upload
+    if (element.files && element.files[0]){
+      //set image url file
+      const file = element.files[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (ev) => {
+        if(typeof reader.result === 'string') {
+          this.item.imageUrl = reader.result;
+          //set dirty and save for upload
+          this.checkDirty();
+          this.imageToSave = file;
+          console.log(this.item.imageUrl);
+        }
+      }
+    }
+  }
+
   /** Tag control: https://material.angular.io/components/chips/examples */
 
   /**
@@ -329,11 +357,30 @@ export class ItemComponent implements OnInit {
    * Saves the item to the database, sets not dirty, and sets previousItem
    */
   saveItem(){
-    //TODO: call save in service, wait for success or display snack
-    {
-      this.previousItem = JSON.parse(JSON.stringify(this.item));
-      this.dirty = false;
+    debugger;
+    //first, upload the image if edited
+    if(this.previousItem.imageUrl !== this.item.imageUrl){
+      //if the URL previously existed, just upload, else get new imageURL
+      if(this.previousItem.imageUrl === null || this.previousItem.imageUrl === ''){
+        this.item.imageUrl = this.imageToSave.name;
+      }
+      else{
+        this.item.imageUrl = this.previousItem.imageUrl;
+      }
+      //post to upload image
+      this.imageService.putImage(this.imageToSave, this.item.imageUrl).subscribe(link => this.item.imageUrl = link);
+
     }
+    //post to save item, on uccess update
+    this.adminService.updateItem(this.item).subscribe(val =>{ 
+      if(val)
+      {
+        this.previousItem = JSON.parse(JSON.stringify(this.item));
+        this.dirty = false;
+        alert("Item save successful");
+      }
+      else alert("Item save failed");
+    })
   }
 
 }

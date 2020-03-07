@@ -22,9 +22,11 @@
 <mat-grid-list cols="3" rowHeight="2:1">
     <!-- first is image -->
     <mat-grid-tile [colspan]="2" [rowspan]="3">
-        <div class="container">
-            <img class="responsive-item-image" src={{item.imageUrl}} layout-fit>
-            <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editField('image')"><mat-icon>photo_camera</mat-icon></button>
+        <div>
+            <img class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
+            <button mat-icon-button *ngIf="this.role === 'Admin'" class="container-button"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button>
+            <!-- hidden item uploader -->
+            <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
         </div>
     </mat-grid-tile>
     <!-- report button -->
