@@ -31,14 +31,26 @@ export class AdminService // implements AdminInterfaceService
   }
 
   getReports(): Observable<SentReport[]> {
-    return this.afs.collection<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports').snapshotChanges().pipe(map(a => {
-      return a.map(g => {
-          const data = g.payload.doc.data() as SentReport;
-          data.ID = g.payload.doc.id;
-          return data;
-        }
-      );
+    console.log('/Workspaces/' + this.auth.workspace.id + '/Reports');
+    return this.afs.collection<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports').snapshotChanges().pipe(
+      map(a => {
+        return a.map(g => {
+            const data = g.payload.doc.data() as SentReport;
+            data.ID = g.payload.doc.id;
+            return data;
+          }
+        );
     }));
+  }
+
+  clearReports(reports: SentReport[]): Observable<Boolean> {
+    for(let i = 0; i < reports.length; i++)
+    {
+      console.log("reportdel")
+      this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + reports[i].ID).delete();
+    }
+    reports = [];
+    return of(true);
   }
 
   updateItem(item: Item): Observable<boolean> {

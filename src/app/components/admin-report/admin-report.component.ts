@@ -20,7 +20,18 @@ export class AdminReportComponent implements OnInit {
     private imageService: ImageService) { }
 
   ngOnInit() {
-    this.adminService.getReports().subscribe(x => this.reports = x);
+    this.adminService.getReports().subscribe(x => {this.reports = x; 
+      for(let i = 0; i < this.reports.length; i++)
+      {
+        this.searchService.getItem(this.reports[i].item).subscribe(z =>{
+          this.reports[i].trueItem = z;
+        })
+      }
+    });
+  }
+
+  clearReports() {
+    this.adminService.clearReports(this.reports);
   }
 
 }

@@ -1,5 +1,15 @@
 <mat-list>
     <mat-list-item *ngFor = "let r of reports">
-        {{report.item}}
+        <img src= {{r.trueItem.imageUrl}} alt= " {{r.trueItem.name}} Image">
+        <div class = "reportName">
+            <p class = "reportPiece">
+                {{r.trueItem.name}}
+            </p>
+            <p class = "reportPiece">
+                Reported by {{r.user}}
+            </p>
+        </div>
     </mat-list-item>
+
 </mat-list>
+<button mat-raised-button class="equal-button" (click)="clearReports()">Clear All Reports</button>
