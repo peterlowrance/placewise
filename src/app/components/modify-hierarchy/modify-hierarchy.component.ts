@@ -80,7 +80,7 @@ export class ModifyHierarchyComponent implements OnInit {
     // Add new node to parent
     if (parent) {
       // Check if item already exists
-      if (parent.children.indexOf(newNode.ID) > -1) {
+      if (parent.children.indexOf(newNode.ID) > -1 || (parent.addedChildren && parent.addedChildren.indexOf(newNode) > -1)) {
         console.log('already a child of its parent');
       }
       if (!parent.addedChildren) {
