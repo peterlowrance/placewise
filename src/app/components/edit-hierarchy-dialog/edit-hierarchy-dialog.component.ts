@@ -15,26 +15,14 @@ interface TreeHierarchyItem extends HierarchyItem {
   styleUrls: ['./edit-hierarchy-dialog.component.css']
 })
 export class EditHierarchyDialogComponent implements OnInit {
-  parentName = '';
 
   constructor(
     public dialogRef: MatDialogRef<EditHierarchyDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: TreeHierarchyItem,
-    private searchService: SearchService
+    @Inject(MAT_DIALOG_DATA) public data: TreeHierarchyItem
   ) {
   }
 
   ngOnInit() {
-    this.searchService.getLocation(this.data.parent).subscribe(parent => {
-      if (parent) {
-        this.parentName = parent.name;
-      }
-    });
-    this.searchService.getCategory(this.data.parent).subscribe(parent => {
-      if (parent) {
-        this.parentName = parent.name;
-      }
-    });
   }
 
   onCancelClick() {
@@ -47,5 +35,9 @@ export class EditHierarchyDialogComponent implements OnInit {
 
   onDeleteClick() {
     this.dialogRef.close({data: this.data, action: 'delete'});
+  }
+
+  onChangeParent() {
+    this.dialogRef.close({data: this.data, action: 'changeParent'});
   }
 }

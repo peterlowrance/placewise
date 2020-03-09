@@ -5,7 +5,7 @@
     </mat-form-field>
   </h1>
   <button mat-icon-button (click)="onDeleteClick()"><mat-icon>delete</mat-icon></button>
-  <div>Parent: {{parentName}} <button mat-icon-button><mat-icon>edit</mat-icon></button></div>
+  <div>Parent: {{data.realParent ? data.realParent.name : 'root'}} <button mat-icon-button (click)="onChangeParent()"><mat-icon>edit</mat-icon></button></div>
 </mat-dialog-content>
 <div mat-dialog-actions>
   <button mat-raised-button (click)="onCancelClick()">Cancel</button>

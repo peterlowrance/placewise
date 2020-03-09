@@ -21,6 +21,7 @@ interface TreeHierarchyItem extends HierarchyItem {
 })
 export class ModifyHierarchyComponent implements OnInit {
   isCategory: boolean;
+  changeParentNode: TreeHierarchyItem;
   treeControl = new NestedTreeControl<TreeHierarchyItem>(node => node.realChildren);
   dataSource = new MatTreeNestedDataSource<TreeHierarchyItem>();
   dataChange = new BehaviorSubject<TreeHierarchyItem[]>([]);
@@ -41,7 +42,6 @@ export class ModifyHierarchyComponent implements OnInit {
       this.searchService.getDescendantsOfRoot('root', this.isCategory).subscribe(descOfRoot => {
         // Build the tree starting with each root node
         descOfRoot.forEach(d => this.buildTree(d, hierarchy));
-        console.log(descOfRoot);
         this.dataChange.next(descOfRoot);
       });
     });
@@ -86,6 +86,9 @@ export class ModifyHierarchyComponent implements OnInit {
       // If a string was returned, delete the item with that ID
       if (result.action === 'delete') {
         this.delete(result.data);
+      } else if (result.action === 'changeParent') {
+        // this.changeParentMode = true;
+        this.changeParentNode = result.data;
       } else if (newItem && result.data) {
         this.add(result.data);
       } else if (!newItem && result.data) {
@@ -108,6 +111,7 @@ export class ModifyHierarchyComponent implements OnInit {
       if (!parent.realChildren) {
         parent.realChildren = [];
       }
+      newNode.realParent = parent;
       // If the item is already a child, update it
       const indexOfChild = parent.realChildren.indexOf(newNode);
       if (indexOfChild > -1) {
@@ -121,6 +125,7 @@ export class ModifyHierarchyComponent implements OnInit {
         this.treeControl.expand(parent);
       }
     } else { // Otherwise, add item to root levels
+      newNode.realParent = null;
       // Check if the item already exists as a root child
       const indexOfChild = this.dataChange.value.indexOf(newNode);
       if (indexOfChild > -1) {
@@ -142,13 +147,20 @@ export class ModifyHierarchyComponent implements OnInit {
     console.log('update ' + node.ID);
   }
 
-  delete(node: TreeHierarchyItem) {
+  /**
+   * Delete an item from the tree
+   * @param node node to be deleted
+   * @param promoteChildren if true the children will become children of the node's parent. Otherwise, they will be removed
+   * although they are kept as children of the removed item
+   */
+  delete(node: TreeHierarchyItem, promoteChildren: boolean = true) {
+    // TODO: database (remember special case for when not promoting children)
     // If you have a parent, remove yourself
     if (node.realParent) {
       // Remove child from parent
       node.realParent.realChildren = node.realParent.realChildren.filter(el => el.ID !== node.ID);
       // If you have children, set them as children of your parent
-      if (node.realChildren) {
+      if (promoteChildren && node.realChildren) {
         // Add grandchildren to parent
         node.realParent.realChildren = node.realParent.realChildren.concat(node.realChildren);
         // Add parent to grandchildren
@@ -156,11 +168,37 @@ export class ModifyHierarchyComponent implements OnInit {
       }
     } else { // If you have no parent, treat the dataSource.data as the parent
       this.dataSource.data = this.dataSource.data.filter(el => el.ID !== node.ID);
-      if (node.realChildren) {
+      if (promoteChildren && node.realChildren) {
         this.dataSource.data = this.dataSource.data.concat(node.realChildren);
         node.realChildren.forEach(child => child.realParent = null);
       }
     }
     this.dataChange.next(this.dataSource.data);
+  }
+
+  /**
+   * Move a node to a new location
+   * @param node node to be moved
+   * @param newParent new parent of the node. If it is null, the parent is the root
+   */
+  move(node: TreeHierarchyItem, newParent?: TreeHierarchyItem) {
+    // TODO: database
+    const hasCorrectParent = (node.realParent && newParent && node.realParent.ID === newParent.ID) || (!node.realParent && !newParent);
+    // If the node doesn't already have the correct parent, delete it and add it in the new position
+    if (!hasCorrectParent) {
+      this.delete(node, false);
+      this.add(node, newParent);
+    }
+    this.changeParentNode = null;
+  }
+
+  // Recursive function to check if a node is a descendent of another node (includes itself)
+  isDescendantOf(node: TreeHierarchyItem, potentialAncestor: TreeHierarchyItem) {
+    if (node.ID === potentialAncestor.ID) {
+      return true;
+    } else if (node.realParent) {
+      return this.isDescendantOf(node.realParent, potentialAncestor);
+    }
+    return false;
   }
 }
