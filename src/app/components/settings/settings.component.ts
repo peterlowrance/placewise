@@ -4,6 +4,8 @@ import {NavService} from '../../services/nav.service';
 import {Router} from '@angular/router';
 import {User} from '../../models/User';
 import {WorkspaceInfo} from '../../models/WorkspaceInfo';
+import {MatDialog} from '@angular/material/dialog';
+import {ChangePassDialogComponent} from '../change-pass-dialog/change-pass-dialog.component';
 
 @Component({
   selector: 'app-settings',
@@ -25,7 +27,8 @@ export class SettingsComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private navService: NavService,
-    private router: Router
+    private router: Router,
+    private diag: MatDialog
     ) { }
 
   ngOnInit() {
@@ -47,6 +50,29 @@ export class SettingsComponent implements OnInit {
    */
   requestPasswordChange(){
 
+    let data = {
+      oldPass: '',
+      newPass: '',
+      newPassConfirm: ''
+    };
+
+    this.diag.open(ChangePassDialogComponent, 
+      {
+        width: '60%',
+        data: data
+      }
+    ).afterClosed().subscribe(
+      val => {
+        //if returned a confirm
+        if(val && val.newPass === val.newPassConfirm){
+          data = val;
+          this.authService.changePassword(data.oldPass, data.newPass).then(
+            () => alert('Password successfully changed'),
+            (error) => alert('Password change failed:\n'+error)
+          );
+        }
+      }
+    )
   }
 
   /**
