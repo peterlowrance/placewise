@@ -6,7 +6,7 @@ import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {ActivatedRoute} from '@angular/router';
 import {MatDialog} from '@angular/material/dialog';
 import {EditHierarchyDialogComponent} from '../edit-hierarchy-dialog/edit-hierarchy-dialog.component';
-import {BehaviorSubject, of, zip} from 'rxjs';
+import {BehaviorSubject, EMPTY, of, zip} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 interface TreeHierarchyItem extends HierarchyItem {
@@ -23,13 +23,13 @@ export class ModifyHierarchyComponent implements OnInit {
   treeControl = new NestedTreeControl<TreeHierarchyItem>(node => {
     // Merge the children from the database and that additional children
     return zip(this.searchService.getDescendantsOfRoot(node.ID, this.isCategory), of(node.addedChildren))
-      .pipe(map(x => x[0].concat(x[1])));
+      .pipe(map(x => x[1] ? x[0].concat(x[1]) : x[0]));
   });
   dataSource = new MatTreeNestedDataSource<TreeHierarchyItem>();
   dataChange = new BehaviorSubject<TreeHierarchyItem[]>([]);
 
-  hasChild = (_: number, node: TreeHierarchyItem) => (!!node.children && node.children.length > 0) ||
-    (!!node.addedChildren && node.addedChildren.length > 0)
+  hasChild = (_: number, node: TreeHierarchyItem) => node && ((!!node.children && node.children.length > 0) ||
+    (!!node.addedChildren && node.addedChildren.length > 0))
 
   constructor(private searchService: SearchService, private route: ActivatedRoute, public dialog: MatDialog) {
   }
@@ -46,45 +46,67 @@ export class ModifyHierarchyComponent implements OnInit {
   }
 
   openEditModal(node: TreeHierarchyItem) {
+    if (!node) {
+      node = {
+        name: '',
+        children: [],
+        items: [],
+        parent: 'root'
+      };
+    }
     const dialogRef = this.dialog.open(EditHierarchyDialogComponent, {
       width: '75%',
       data: node
     });
-
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        console.log(result);
-      }
-      /*this.errorDesc = result;
-      // if it's valid, build and isue report, else leave
-      if (this.errorDesc.valid) {
-        this.report.description = this.errorDesc.desc;
-        this.report.item.name = this.item.name;
-        this.report.item.ID = this.item.ID;
-        this.report.item.imageUrl = this.item.imageUrl;
-        // TODO: input reporter name from auth service
-        // this.report.reporter
-        this.report.reportDate = new Date().toDateString();
+      console.log(this.dataSource.data);
+      // If the result was saved
+      this.setItem(result);
+      /*if (result) {
+        this.getAppropriateHierarchyItem(result.parent).subscribe(parent => {
+          this.setItem(parent, result);
+        });
       }*/
     });
   }
 
   /**
-   * Add a new item to the hierarchy
-   * @param parent the parent of the item to be added
-   * @param newNode the new node to be added
+   * Add or update an item to the hierarchy
+   * @param parent the parent of the item to be set
+   * @param newNode the node to be set
    */
-  addItem(parent: TreeHierarchyItem, newNode: TreeHierarchyItem) {
+  setItem(newNode: TreeHierarchyItem, parent?: TreeHierarchyItem) {
+    // TODO: add/update the database
     // Add new node to parent
-    if (!parent.addedChildren) {
-      parent.addedChildren = [newNode];
+    if (parent) {
+      // Check if item already exists
+      if (parent.children.indexOf(newNode.ID) > -1) {
+        console.log('already a child of its parent');
+      }
+      if (!parent.addedChildren) {
+        parent.addedChildren = [newNode];
+      } else {
+        parent.addedChildren.push(newNode);
+      }
+      // Expand parent
+      if (!this.treeControl.isExpanded(parent)) {
+        this.treeControl.expand(parent);
+      }
     } else {
-      parent.addedChildren.push(newNode);
+      // Check if the item already exists as a root child
+      const indexOfNewItem = this.dataChange.value.indexOf(newNode);
+      if (indexOfNewItem > -1) {
+        console.log('already exists!!!');
+        this.dataChange[indexOfNewItem] = newNode;
+        this.dataChange.next(this.dataChange.value);
+      } else {
+        this.dataChange.next([
+          ...this.dataChange.value,
+          newNode
+        ]);
+      }
     }
-    // Expand parent
-    if (!this.treeControl.isExpanded(parent)) {
-      this.treeControl.expand(parent);
-    }
+
     // Set data
     this.dataChange.next(this.dataChange.value);
   }
