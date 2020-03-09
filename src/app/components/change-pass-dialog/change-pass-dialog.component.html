@@ -1,0 +1,40 @@
+<h1 mat-dialog-title>Password Change</h1>
+<form [formGroup]='changeForm' (ngSubmit)='onSubmit(loginForm)'>
+    <div mat-dialog-content>
+        <p>Please enter your old password</p>
+        <mat-form-field>
+            <input matInput
+                placeholder="Old Password"
+                type="password"
+                formControlName="oldPass"
+                [formControl]="oldPass"
+                required
+            >
+            <mat-error *ngIf="oldPass.invalid">Old password is required</mat-error>
+        </mat-form-field>
+        <br>
+        <mat-form-field>
+            <input matInput
+                placeholder="New Password"
+                type="password"
+                formControlName="newPass"
+                [formControl]="newPass"
+                required
+            >
+            <mat-error *ngIf="newPass.invalid">New password is required</mat-error>
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput
+                placeholder="Confirm New Password"
+                [errorStateMatcher]="crossMatch"
+                type="password"
+                formControlName="newPassConfirm"
+                [formControl]="newPassConfirm"
+                required
+            >
+            <mat-error *ngIf="changeForm.hasError('notEqual')">Passwords <strong>must</strong> match</mat-error>
+        </mat-form-field>
+    </div>
+    <button mat-raised-button (click)="onCancel()">Cancel</button>
+    <button mat-raised-button type='submit' color='primary' [disabled]="!changeForm.valid" >Change Password</button>
+</form>
