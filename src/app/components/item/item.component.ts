@@ -11,9 +11,11 @@ import {ReportDialogComponent} from '../report-dialog/report-dialog.component';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import { Observable, of } from 'rxjs';
+import { AdminService } from 'src/app/services/admin.service';
+import {ImageService} from '../../services/image.service';
 
 
-interface TreeNode{
+interface TreeNode {
   name: string;
   imageUrl: string;
   children: TreeNode[];
@@ -42,9 +44,9 @@ export class ItemComponent implements OnInit {
   errorDesc: ItemReportModalData = {valid: false, desc: ''}; // user-reported error description
   expanded = false;  // is the more info panel expanded
 
-  //Parent of heirarchy, does nothing now
+  // Parent of heirarchy, does nothing now
   parent: TreeNode = {name: null, imageUrl: null, children: null, ID: null};
-  //category of the item
+  // category of the item
   category: HierarchyItem;
 
   // tree components from material source
@@ -52,15 +54,17 @@ export class ItemComponent implements OnInit {
 
   dataSource = new MatTreeNestedDataSource<TreeNode>();
 
-  toTree = (h: HierarchyItem) => {return {name: h.name, imageUrl: h.imageUrl, children: [], ID: h.ID}};
+  toTree = (h: HierarchyItem) => ({name: h.name, imageUrl: h.imageUrl, children: [], ID: h.ID});
 
   hasChild = (_: number, node: TreeNode) => !!node.children && node.children.length > 0;
 
   constructor(
     private searchService: SearchService,
+    private adminService: AdminService,
     private router: Router,
     private route: ActivatedRoute,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private imageService: ImageService
   ) {
   }
 
@@ -73,37 +77,45 @@ export class ItemComponent implements OnInit {
     this.searchService.getItem(this.id).subscribe(item => {
       // get the item ref
       this.item = item;
-      //get all locations and filter
+      // get all locations and filter
       this.searchService.getAncestorsOfItem(item.ID).subscribe(hierarchy => {
-        //need to loop over first elements, pop off, and combine any like
-        //first pop off all top level locations, those are the root
-        for(let h of hierarchy){
-            let head = this.toTree(h.pop());
+        // need to loop over first elements, pop off, and combine any like
+        // first pop off all top level locations, those are the root
+        for (const h of hierarchy) {
+            const head = this.toTree(h.pop());
             this.parent = this.parent.ID === null ? head : this.parent;
-            //go over all list and keep building node list
+            // go over all list and keep building node list
             this.parent.children.push(this.convertList(h));
         }
 
-        //now collapse duplicates
+        // now collapse duplicates
         this.collapseNodes(this.parent);
 
         this.dataSource.data = this.parent.children;
       });
 
-      //get the category information
+      // Load image for item
+      console.log(this.item.imageUrl);
+      if (this.item.imageUrl != null) {
+        this.imageService.getImage(item.imageUrl).subscribe(link => {
+          console.log(link);
+          this.item.imageUrl = link;
+        });
+      }
+
+      // get the category information
       this.searchService.getCategory(item.category).subscribe(val => this.category = val);
     });
 
   }
 
   convertList(items: HierarchyItem[]): TreeNode {
-    if(items.length === 0) return null;
-    else{
-      var level = this.toTree(items.pop());
-      let child = this.convertList(items);
+    if (items.length === 0) { return null; } else {
+      const level = this.toTree(items.pop());
+      const child = this.convertList(items);
 
-      //add if not null
-      if(child) level.children.push(child);
+      // add if not null
+      if (child) { level.children.push(child); }
       return level;
     }
   }
@@ -111,22 +123,21 @@ export class ItemComponent implements OnInit {
   /**
    * Collapses a single level of the node hierarchy
    * Adapted with insight from: https://stackoverflow.com/questions/16747798/delete-duplicate-elements-from-an-array
-   * @param node 
+   * @param node
    */
-  collapseNodes(node: TreeNode){
-    var m = {}, newarr = []
-    for (var i=0; i<node.children.length; i++) {
-      var v = node.children[i];
+  collapseNodes(node: TreeNode) {
+    const m = {}, newarr = [];
+    for (let i = 0; i < node.children.length; i++) {
+      const v = node.children[i];
       if (!m[v.ID]) {
-        m[v.ID]=v;
+        m[v.ID] = v;
         newarr.push(v);
-      }
-      else{
+      } else {
         m[v.ID].children = m[v.ID].children.concat(v.children);
       }
     }
     node.children = newarr;
-    for(let child of node.children){
+    for (const child of node.children) {
       this.collapseNodes(child);
     }
   }

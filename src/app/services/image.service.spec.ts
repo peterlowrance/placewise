@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 
-import { MockAdminService } from './mock-admin.service';
+import { ImageService } from './image.service';
 
-describe('MockAdminService', () => {
+describe('ImageService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
-    const service: MockAdminService = TestBed.get(MockAdminService);
+    const service: ImageService = TestBed.get(ImageService);
     expect(service).toBeTruthy();
   });
 });

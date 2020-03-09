@@ -35,6 +35,7 @@ import {AngularFireAuthModule} from '@angular/fire/auth';
 import { SettingsComponent } from './components/settings/settings.component';
 import { ResetPassDialogComponent } from './components/reset-pass-dialog/reset-pass-dialog.component';
 import { ChangePassDialogComponent } from './components/change-pass-dialog/change-pass-dialog.component';
+import {AngularFireStorageModule} from '@angular/fire/storage';
 
 
 @NgModule({
@@ -72,6 +73,7 @@ import { ChangePassDialogComponent } from './components/change-pass-dialog/chang
     AngularFireModule.initializeApp(environment.firebase, 'clientpanel'),
     AngularFirestoreModule,
     AngularFireAuthModule,
+    AngularFireStorageModule,
     MatSnackBarModule,
     MatDividerModule
   ],

@@ -26,3 +26,7 @@ $placewise-theme: mat-light-theme($placewise-primary, $placewise-accent, $placew
 // that you are using.
 @include angular-material-theme($placewise-theme);
 
+html {
+  font-size: 1.2rem;
+}
+
