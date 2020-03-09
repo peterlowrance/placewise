@@ -35,6 +35,7 @@ import {AngularFireAuthModule} from '@angular/fire/auth';
 import { SettingsComponent } from './components/settings/settings.component';
 import {AngularFireStorageModule} from '@angular/fire/storage';
 import { ModifyHierarchyComponent } from './components/modify-hierarchy/modify-hierarchy.component';
+import { EditHierarchyDialogComponent } from './components/edit-hierarchy-dialog/edit-hierarchy-dialog.component';
 
 
 @NgModule({
@@ -48,7 +49,8 @@ import { ModifyHierarchyComponent } from './components/modify-hierarchy/modify-h
     MatToolbar,
     ReportDialogComponent,
     SettingsComponent,
-    ModifyHierarchyComponent
+    ModifyHierarchyComponent,
+    EditHierarchyDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -77,6 +79,6 @@ import { ModifyHierarchyComponent } from './components/modify-hierarchy/modify-h
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent]
+  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent]
 })
 export class AppModule { }

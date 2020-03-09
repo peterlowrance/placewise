@@ -14,7 +14,7 @@ export class ImageService {
   getImage(ID: string): Observable<string> {
 
     // If it's already a firestorage URL, then don't poll for one
-    if (ID.substring(0, 5) === 'gs://') { return; }
+    if (ID && ID.substring(0, 5) === 'gs://') { return; }
 
     return this.afsg.ref(this.auth.workspace.id + '/' + ID).getDownloadURL();
   }
