@@ -7,8 +7,7 @@ import {Observable, of} from 'rxjs';
 import {Item} from '../models/Item';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {AngularFirestore} from '@angular/fire/firestore';
-import {AngularFireStorage} from '@angular/fire/storage';
-import {finalize, map} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 import {AuthService} from './auth.service';
 import {ImageService} from './image.service';
 
@@ -164,7 +163,7 @@ export class SearchService implements SearchInterfaceService {
   getAllDescendantHierarchyItems(id: string, isCategory: boolean): Observable<HierarchyItem[]> {
     const result: HierarchyItem[] = [];
     const parents: string[] = [id];
-    const appropriateHierarchyItems = isCategory ? this.getAllCategories() : this.getAllLocations();
+    const appropriateHierarchyItems = isCategory ? this.getAllCategories(true) : this.getAllLocations(true);
     if (id === 'root') {
       return appropriateHierarchyItems;
     }
@@ -190,25 +189,24 @@ export class SearchService implements SearchInterfaceService {
     });
   }
 
-  getAllCategories(): Observable<HierarchyItem[]> {
+  getAllCategories(excludeRoot: boolean = false): Observable<HierarchyItem[]> {
     if (this.categories) {
-      return of(this.categories);
+      return of(excludeRoot ? this.categories.filter(g => g.ID !== 'root') : this.categories);
     }
-    // return this.afs.collection<Category>('/Workspaces/'+ auth.workspace.id +'/Category').valueChanges();
     return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category').snapshotChanges().pipe(map(a => {
       this.categories = a.map(g => {
           const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
           return data;
         }
-      ).filter(g => g.ID !== 'root');
-      return this.categories;
+      );
+      return excludeRoot ? this.categories.filter(g => g.ID !== 'root') : this.categories;
     }));
   }
 
-  getAllLocations(): Observable<HierarchyItem[]> {
+  getAllLocations(excludeRoot: boolean = false): Observable<HierarchyItem[]> {
     if (this.locations) {
-      return of(this.locations);
+      return of(excludeRoot ? this.locations.filter(g => g.ID !== 'root') : this.locations);
     }
     return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations').snapshotChanges().pipe(map(a => {
       this.locations = a.map(g => {
@@ -216,8 +214,8 @@ export class SearchService implements SearchInterfaceService {
           data.ID = g.payload.doc.id;
           return data;
         }
-      ).filter(g => g.ID !== 'root');
-      return this.locations;
+      );
+      return excludeRoot ? this.locations.filter(g => g.ID !== 'root') : this.locations;
     }));
   }
 
@@ -232,6 +230,4 @@ export class SearchService implements SearchInterfaceService {
   constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService) {
 
   }
-
-
 }
