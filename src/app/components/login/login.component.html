@@ -1,7 +1,8 @@
 <div class="logo">
   <object class="logoSVG" type="image/svg+xml" preserveAspectRatio="xMidYMid meet" data="../../../assets/logo.svg">Placewise</object>
 </div>
-<mat-card class="login-form">
+<div class="login-form">
+<mat-card>
     <form [formGroup]='loginForm' (ngSubmit)="onSubmit(loginForm)">
     <mat-card-header class="login-card-components">
         <mat-card-title>Login</mat-card-title>
@@ -45,3 +46,9 @@
     </mat-card-actions>
 </form>
 </mat-card>
+<u class="reset-link" (click)="forgotPassword()">Forgot Password</u>
+</div>
+<br>
+<div class="new-link">
+    <u (click)='newWorkspace()'>Create a Workspace</u>
+</div>
