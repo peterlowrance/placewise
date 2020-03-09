@@ -4,7 +4,8 @@
       <input matInput [(ngModel)]="data.name">
     </mat-form-field>
   </h1>
-  <button mat-raised-button>Parent: {{parentName}}</button>
+  <button mat-icon-button (click)="onDeleteClick()"><mat-icon>delete</mat-icon></button>
+  <div>Parent: {{parentName}} <button mat-icon-button><mat-icon>edit</mat-icon></button></div>
 </mat-dialog-content>
 <div mat-dialog-actions>
   <button mat-raised-button (click)="onCancelClick()">Cancel</button>

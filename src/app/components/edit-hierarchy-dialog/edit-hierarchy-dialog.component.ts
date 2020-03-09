@@ -2,7 +2,12 @@ import {Component, Inject, OnInit} from '@angular/core';
 import {MatDialogRef} from '@angular/material';
 import {MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {HierarchyItem} from '../../models/HierarchyItem';
-import {SearchService} from "../../services/search.service";
+import {SearchService} from '../../services/search.service';
+
+interface TreeHierarchyItem extends HierarchyItem {
+  realChildren?: TreeHierarchyItem[];
+  realParent?: TreeHierarchyItem;
+}
 
 @Component({
   selector: 'app-edit-hierarchy-dialog',
@@ -14,7 +19,7 @@ export class EditHierarchyDialogComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<EditHierarchyDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: HierarchyItem,
+    @Inject(MAT_DIALOG_DATA) public data: TreeHierarchyItem,
     private searchService: SearchService
   ) {
   }
@@ -33,10 +38,14 @@ export class EditHierarchyDialogComponent implements OnInit {
   }
 
   onCancelClick() {
-    this.dialogRef.close(null);
+    this.dialogRef.close({data: null, action: null});
   }
 
   onSaveClick() {
-    this.dialogRef.close(this.data);
+    this.dialogRef.close({data: this.data, action: 'save'});
+  }
+
+  onDeleteClick() {
+    this.dialogRef.close({data: this.data, action: 'delete'});
   }
 }

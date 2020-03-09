@@ -10,7 +10,8 @@ import {BehaviorSubject, EMPTY, of, zip} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 interface TreeHierarchyItem extends HierarchyItem {
-  addedChildren?: TreeHierarchyItem[];
+  realChildren?: TreeHierarchyItem[];
+  realParent?: TreeHierarchyItem;
 }
 
 @Component({
@@ -20,16 +21,11 @@ interface TreeHierarchyItem extends HierarchyItem {
 })
 export class ModifyHierarchyComponent implements OnInit {
   isCategory: boolean;
-  treeControl = new NestedTreeControl<TreeHierarchyItem>(node => {
-    // Merge the children from the database and that additional children
-    return zip(this.searchService.getDescendantsOfRoot(node.ID, this.isCategory), of(node.addedChildren))
-      .pipe(map(x => x[1] ? x[0].concat(x[1]) : x[0]));
-  });
+  treeControl = new NestedTreeControl<TreeHierarchyItem>(node => node.realChildren);
   dataSource = new MatTreeNestedDataSource<TreeHierarchyItem>();
   dataChange = new BehaviorSubject<TreeHierarchyItem[]>([]);
 
-  hasChild = (_: number, node: TreeHierarchyItem) => node && ((!!node.children && node.children.length > 0) ||
-    (!!node.addedChildren && node.addedChildren.length > 0))
+  hasChild = (_: number, node: TreeHierarchyItem) => node && (!!node.realChildren && node.realChildren.length > 0);
 
   constructor(private searchService: SearchService, private route: ActivatedRoute, public dialog: MatDialog) {
   }
@@ -40,13 +36,41 @@ export class ModifyHierarchyComponent implements OnInit {
       this.dataSource.data = null;
       this.dataSource.data = changedData;
     });
-    this.searchService.getDescendantsOfRoot('root', this.isCategory).subscribe(descOfRoot => {
-      this.dataChange.next(descOfRoot);
+    const appropriateHierarchy = this.isCategory ? this.searchService.getAllCategories() : this.searchService.getAllLocations();
+    appropriateHierarchy.subscribe(hierarchy => {
+      this.searchService.getDescendantsOfRoot('root', this.isCategory).subscribe(descOfRoot => {
+        // Build the tree starting with each root node
+        descOfRoot.forEach(d => this.buildTree(d, hierarchy));
+        console.log(descOfRoot);
+        this.dataChange.next(descOfRoot);
+      });
     });
   }
 
+  /**
+   * Recursive build tree
+   * @param root the node to attach children to
+   * @param allHierarchy the entire hierarchy
+   */
+  buildTree(root: TreeHierarchyItem, allHierarchy: TreeHierarchyItem[]) {
+    if (!root || !root.children) {
+      return;
+    }
+    if (!root.realChildren) {
+      root.realChildren = [];
+    }
+    for (const child of root.children) {
+      const realChild = allHierarchy.find(e => e.ID === child);
+      realChild.realParent = root;
+      root.realChildren.push(realChild);
+      // Recursive build tree call
+      this.buildTree(realChild, allHierarchy);
+    }
+  }
+
   openEditModal(node: TreeHierarchyItem) {
-    if (!node) {
+    const newItem = !node;
+    if (newItem) {
       node = {
         name: '',
         children: [],
@@ -59,14 +83,14 @@ export class ModifyHierarchyComponent implements OnInit {
       data: node
     });
     dialogRef.afterClosed().subscribe(result => {
-      console.log(this.dataSource.data);
-      // If the result was saved
-      this.setItem(result);
-      /*if (result) {
-        this.getAppropriateHierarchyItem(result.parent).subscribe(parent => {
-          this.setItem(parent, result);
-        });
-      }*/
+      // If a string was returned, delete the item with that ID
+      if (result.action === 'delete') {
+        this.delete(result.data);
+      } else if (newItem && result.data) {
+        this.add(result.data);
+      } else if (!newItem && result.data) {
+        this.update(result.data);
+      }
     });
   }
 
@@ -75,39 +99,68 @@ export class ModifyHierarchyComponent implements OnInit {
    * @param parent the parent of the item to be set
    * @param newNode the node to be set
    */
-  setItem(newNode: TreeHierarchyItem, parent?: TreeHierarchyItem) {
+  add(newNode: TreeHierarchyItem, parent?: TreeHierarchyItem) {
+    console.log('adding new item');
     // TODO: add/update the database
     // Add new node to parent
     if (parent) {
-      // Check if item already exists
-      if (parent.children.indexOf(newNode.ID) > -1 || (parent.addedChildren && parent.addedChildren.indexOf(newNode) > -1)) {
-        console.log('already a child of its parent');
+      // Initialize realChildren if needed
+      if (!parent.realChildren) {
+        parent.realChildren = [];
       }
-      if (!parent.addedChildren) {
-        parent.addedChildren = [newNode];
-      } else {
-        parent.addedChildren.push(newNode);
+      // If the item is already a child, update it
+      const indexOfChild = parent.realChildren.indexOf(newNode);
+      if (indexOfChild > -1) {
+        console.log('already a child of its parent');
+        parent.realChildren[indexOfChild] = newNode;
+      } else { // Otherwise add the new item
+        parent.realChildren.push(newNode);
       }
       // Expand parent
       if (!this.treeControl.isExpanded(parent)) {
         this.treeControl.expand(parent);
       }
-    } else {
+    } else { // Otherwise, add item to root levels
       // Check if the item already exists as a root child
-      const indexOfNewItem = this.dataChange.value.indexOf(newNode);
-      if (indexOfNewItem > -1) {
+      const indexOfChild = this.dataChange.value.indexOf(newNode);
+      if (indexOfChild > -1) {
         console.log('already exists!!!');
-        this.dataChange[indexOfNewItem] = newNode;
+        this.dataChange[indexOfChild] = newNode;
         this.dataChange.next(this.dataChange.value);
-      } else {
+      } else { // Otherwise, add new item to root level
         this.dataChange.next([
           ...this.dataChange.value,
           newNode
         ]);
       }
     }
-
     // Set data
     this.dataChange.next(this.dataChange.value);
+  }
+
+  update(node: TreeHierarchyItem) {
+    console.log('update ' + node.ID);
+  }
+
+  delete(node: TreeHierarchyItem) {
+    // If you have a parent, remove yourself
+    if (node.realParent) {
+      // Remove child from parent
+      node.realParent.realChildren = node.realParent.realChildren.filter(el => el.ID !== node.ID);
+      // If you have children, set them as children of your parent
+      if (node.realChildren) {
+        // Add grandchildren to parent
+        node.realParent.realChildren = node.realParent.realChildren.concat(node.realChildren);
+        // Add parent to grandchildren
+        node.realChildren.forEach(child => child.realParent = node.realParent);
+      }
+    } else { // If you have no parent, treat the dataSource.data as the parent
+      this.dataSource.data = this.dataSource.data.filter(el => el.ID !== node.ID);
+      if (node.realChildren) {
+        this.dataSource.data = this.dataSource.data.concat(node.realChildren);
+        node.realChildren.forEach(child => child.realParent = null);
+      }
+    }
+    this.dataChange.next(this.dataSource.data);
   }
 }
