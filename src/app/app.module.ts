@@ -40,6 +40,7 @@ import { ChangePassDialogComponent } from './components/change-pass-dialog/chang
 import {AngularFireStorageModule} from '@angular/fire/storage';
 import { ModifyHierarchyComponent } from './components/modify-hierarchy/modify-hierarchy.component';
 import { EditHierarchyDialogComponent } from './components/edit-hierarchy-dialog/edit-hierarchy-dialog.component';
+import { ModifyHierarchyDialogComponent } from './components/modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 
 
 @NgModule({
@@ -56,7 +57,8 @@ import { EditHierarchyDialogComponent } from './components/edit-hierarchy-dialog
     ModifyHierarchyComponent,
     EditHierarchyDialogComponent,
     ResetPassDialogComponent,
-    ChangePassDialogComponent
+    ChangePassDialogComponent,
+    ModifyHierarchyDialogComponent
   ],
   imports: [
     BrowserModule,
