@@ -8,6 +8,7 @@ import {AngularFirestore} from '@angular/fire/firestore';
 import {AuthService} from './auth.service';
 import {SentReport} from '../models/SentReport';
 import {map} from 'rxjs/operators';
+import { HierarchyItem } from '../models/HierarchyItem';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -53,18 +54,30 @@ export class AdminService // implements AdminInterfaceService
     return of(true);
   }
 
-  createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string): Observable<boolean> {
+  createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string) {
     // console.log("frankin");
-    this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
+    return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       name: name,
       desc: desc,
       tags: tags,
       locations: [location],
       category: category,
       imageUrl: imageUrl
-    });
+    }).then(
+      val => {
+        this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
+          map( doc => doc.data())
+        ).toPromise().then(
+          doc => {
+            let ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+            ary.push(val.id);
+            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary})
+          }
+        )
+      }
+    );
 
-    return of(true);
+    //return of(true);
   }
 
   removeItem(itemID: number) {
