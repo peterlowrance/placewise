@@ -35,13 +35,19 @@ export class LoginComponent implements OnInit {
     });
 
     //If we are already logged in, redirect to homescreen
-    this.authService.getAuth().subscribe(auth => {
-      if (auth) {
-        //TODO: this is for testing purposes, replace below line with commented out code upon release to redirect login to main page
-        //this.authService.logout()
-        this.router.navigate(['/search/categories/root']);
-      }
-    });
+    this.authService.getAuth().subscribe(
+      this.redirect
+    );
+  }
+
+  /**
+   * Redirects to the home page if auth is valid
+   * @param auth Auth state
+   */
+  redirect(auth: any){
+    if (auth) {
+      this.router.navigate(['/search/categories/root']);
+    }
   }
 
   getEmailErrors() {
@@ -79,13 +85,19 @@ export class LoginComponent implements OnInit {
         width: '60%'
       }
     ).afterClosed().subscribe(
-      val => {
-        this.authService.sendPasswordResetEmail(val).then(
-          () => this.snack.open("Password reset email has been sent", "OK", {duration: 3000}),
-          (fail) => this.snack.open(fail, "OK", {duration: 3000})
-        ).catch(e => this.snack.open("An error occurred while attempting to reset your password", "OK", {duration: 3000}));
-      }
-    );
+      this.sendPasswordEmail
+    )
+  }
+
+  /**
+   * Sends the reset email to the given email address
+   * @param emailInfo Email address to send password reset to
+   */
+  sendPasswordEmail(emailInfo: string){
+    this.authService.sendPasswordResetEmail(emailInfo).then(
+      () => this.snack.open("Password reset email has been sent", "OK", {duration: 3000}),
+      (fail) => this.snack.open(fail, "OK", {duration: 3000})
+    )
   }
 
   /**
