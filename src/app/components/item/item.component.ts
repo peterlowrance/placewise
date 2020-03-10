@@ -10,8 +10,11 @@ import {MatDialog} from '@angular/material/dialog';
 import {ReportDialogComponent} from '../report-dialog/report-dialog.component';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
 import {NestedTreeControl} from '@angular/cdk/tree';
-import { Observable, of } from 'rxjs';
-import { AdminService } from 'src/app/services/admin.service';
+import {AuthService} from '../../services/auth.service';
+import {FormBuilder} from '@angular/forms';
+import {MatChipInputEvent} from '@angular/material/chips';
+import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
+import {AdminService} from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
 
 
@@ -28,8 +31,31 @@ interface TreeNode {
   styleUrls: ['./item.component.css']
 })
 export class ItemComponent implements OnInit {
+
+  // view child refs
+  // @ViewChild("name", {read: ElementRef, static: false}) nameField: ElementRef;
+
+  // nameControl = new FormControl('', Validators.required);
+  // nameForm: FormGroup;
+
+  constructor(
+    private searchService: SearchService,
+    private adminService: AdminService,
+    private router: Router,
+    private route: ActivatedRoute,
+    public dialog: MatDialog,
+    private authService: AuthService,
+    private formBuilder: FormBuilder,
+    private imageService: ImageService
+  ) {
+  }
+  readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
+
   id: string; // item id
   item: Item; // item returned by id
+  previousItem: Item; // previous item, before edits are made
+  imageToSave: File = null; // the image to upload when saved
+
   loading = true;  // whether the page is actively loading
   report: Report = {
     description: '',
@@ -54,38 +80,38 @@ export class ItemComponent implements OnInit {
 
   dataSource = new MatTreeNestedDataSource<TreeNode>();
 
+
+  role: string; // user role for editing
+  dirty: boolean; // is the item edited dirty
+
+  textEditFields: {
+    name: boolean;
+    desc: boolean;
+    tags: boolean;
+  } = {name: false, desc: false, tags: false};
+
   toTree = (h: HierarchyItem) => ({name: h.name, imageUrl: h.imageUrl, children: [], ID: h.ID});
 
   hasChild = (_: number, node: TreeNode) => !!node.children && node.children.length > 0;
 
-  constructor(
-    private searchService: SearchService,
-    private adminService: AdminService,
-    private router: Router,
-    private route: ActivatedRoute,
-    public dialog: MatDialog,
-    private imageService: ImageService
-  ) {
-  }
-
   ngOnInit() {
     // retrieve id
     this.id = this.route.snapshot.paramMap.get('id');
-    console.log('id is ' + this.id);
 
     // get the item from the id
     this.searchService.getItem(this.id).subscribe(item => {
       // get the item ref
       this.item = item;
+      this.previousItem = JSON.parse(JSON.stringify(item)); // deep copy
       // get all locations and filter
       this.searchService.getAncestorsOfItem(item.ID).subscribe(hierarchy => {
         // need to loop over first elements, pop off, and combine any like
         // first pop off all top level locations, those are the root
         for (const h of hierarchy) {
-            const head = this.toTree(h.pop());
-            this.parent = this.parent.ID === null ? head : this.parent;
-            // go over all list and keep building node list
-            this.parent.children.push(this.convertList(h));
+          const head = this.toTree(h.pop());
+          this.parent = this.parent.ID === null ? head : this.parent;
+          // go over all list and keep building node list
+          this.parent.children.push(this.convertList(h));
         }
 
         // now collapse duplicates
@@ -107,15 +133,24 @@ export class ItemComponent implements OnInit {
       this.searchService.getCategory(item.category).subscribe(val => this.category = val);
     });
 
+    // get user role
+    this.role = this.authService.role;
+
+    // set up admin change forms
+    // this.nameForm = this.formBuilder.group({name: this.nameControl})
   }
 
   convertList(items: HierarchyItem[]): TreeNode {
-    if (items.length === 0) { return null; } else {
+    if (items.length === 0) {
+      return null;
+    } else {
       const level = this.toTree(items.pop());
       const child = this.convertList(items);
 
       // add if not null
-      if (child) { level.children.push(child); }
+      if (child) {
+        level.children.push(child);
+      }
       return level;
     }
   }
@@ -173,6 +208,174 @@ export class ItemComponent implements OnInit {
         // TODO: issue report
         console.log(this.report);
       }
+    });
+  }
+
+  /**
+   * A field edit handler
+   * @param field the string name of the item field to edit
+   */
+  editField(field: string) {
+    // set edit field value to enable state change, then set focus
+    switch (field) {
+      case 'name':
+        this.textEditFields.name = true;
+        // focus
+        // this.nameField.nativeElement.focus();
+        break;
+      case 'desc':
+        this.textEditFields.desc = true;
+        // focus
+
+        break;
+      case 'tags':
+        this.textEditFields.tags = true;
+        // focus
+
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
+   * Handles logic for submitting the name
+   */
+  onNameSubmit() {
+    // check to see if name is valid
+    if (this.item.name !== '') {
+      // this.item.name = this.nameForm.value;
+      // hide control
+      this.textEditFields.name = false;
+    } else {
+      this.item.name = this.previousItem.name;
+      // TODO: show snackbar
+    }
+
+    // check for dirtiness
+    this.checkDirty();
+  }
+
+  /**
+   * Handles logic for submitting the description
+   */
+  onDescSubmit() {
+    // check to see if name is valid
+    if (this.item.desc !== '') {
+      // this.item.name = this.nameForm.value;
+      // hide control
+      this.textEditFields.desc = false;
+    } else {
+      this.item.desc = this.previousItem.desc;
+      // TODO: show snackbar
+    }
+
+    // check for dirtiness
+    this.checkDirty();
+  }
+
+  /**
+   * Handles uploading an image file to firestorage
+   * @param event
+   */
+  uploadImage(fileEvent: Event) {
+    // cast
+    const element = (fileEvent.target as HTMLInputElement);
+    // only change if there was a file upload
+    if (element.files && element.files[0]) {
+      // set image url file
+      const file = element.files[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (ev) => {
+        if (typeof reader.result === 'string') {
+          this.item.imageUrl = reader.result;
+          // set dirty and save for upload
+          this.checkDirty();
+          this.imageToSave = file;
+          console.log(this.item.imageUrl);
+        }
+      };
+    }
+  }
+
+  /** Tag control: https://material.angular.io/components/chips/examples */
+
+  /**
+   * Adds a tag to the list
+   * @param event tag input event
+   */
+  add(event: MatChipInputEvent): void {
+    const input = event.input;
+    const value = event.value;
+
+    // Add our fruit
+    if ((value || '').trim()) {
+      this.item.tags.push(value.trim());
+    }
+
+    // Reset the input value
+    if (input) {
+      input.value = '';
+    }
+
+    // check dirty
+    this.checkDirty();
+  }
+
+  /**
+   * Removes a tag from the list
+   * @param tag string tag to remove
+   */
+  removeTag(tag: string): void {
+    const index = this.item.tags.indexOf(tag);
+
+    if (index >= 0) {
+      this.item.tags.splice(index, 1);
+    }
+
+    // check dirty
+    this.checkDirty();
+  }
+
+  /**
+   * Checks to see if the current item is dirty (edited)
+   */
+  checkDirty() {
+    if (this.item === this.previousItem) {
+      this.dirty = false;
+      return false;
+    } else {
+      this.dirty = true;
+      return true;
+    }
+  }
+
+  /**
+   * Saves the item to the database, sets not dirty, and sets previousItem
+   */
+  saveItem() {
+    // first, upload the image if edited
+    if (this.previousItem.imageUrl !== this.item.imageUrl) {
+      // if the URL previously existed, just upload, else get new imageURL
+      if (this.previousItem.imageUrl === null || this.previousItem.imageUrl === '') {
+        this.item.imageUrl = this.imageToSave.name;
+      } else {
+        this.item.imageUrl = this.previousItem.imageUrl;
+      }
+      // post to upload image
+      if (this.imageToSave) {
+        this.imageService.putImage(this.imageToSave, this.item.imageUrl).subscribe(link => this.item.imageUrl = link);
+      }
+    }
+    // post to save item, on uccess update
+    console.log('saving');
+    this.adminService.updateItem(this.item).subscribe(val => {
+      if (val) {
+        this.previousItem = JSON.parse(JSON.stringify(this.item));
+        this.dirty = false;
+        alert('Item save successful');
+      } else { alert('Item save failed'); }
     });
   }
 

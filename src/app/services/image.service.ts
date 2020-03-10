@@ -18,4 +18,13 @@ export class ImageService {
 
     return this.afsg.ref(this.auth.workspace.id + '/' + ID).getDownloadURL();
   }
+
+  putImage(file: File, itemID: string): Observable<string>{
+    //get blob ref
+    const ref = this.afsg.ref(this.auth.workspace.id + '/' + itemID);
+    //put
+    const put = ref.put(file);
+    //return new link
+    return ref.getDownloadURL();
+  }
 }

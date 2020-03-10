@@ -6,8 +6,10 @@ import {FormControl} from '@angular/forms';
 import {SearchService} from '../../services/search.service';
 import {NavService} from '../../services/nav.service';
 import {Subscription} from 'rxjs';
+import { AuthService } from 'src/app/services/auth.service';
 import {ImageService} from '../../services/image.service';
 import * as Fuse from 'fuse.js';
+import { AdminService } from 'src/app/services/admin.service';
 
 /**
  *
@@ -37,6 +39,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   parentSub: Subscription;
   returnSub: Subscription;
 
+  /**The user's role, used for fab loading */
+  role: String = '';
+
+  /**Admin fab open direction */
+  direction = "up";
+  /**Admin fab open animation type */
+  animation = "fling";
+  /**Admin fab spin */
+  spin = true;
+  /**Admin fab icon */
+  ico = 'add';
   itemSearchOptions = {
     shouldSort: true,
     keys: ['name', 'desc', 'tags'],
@@ -55,8 +68,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     private searchService: SearchService,
     private imageService: ImageService,
     private router: Router,
-    private route: ActivatedRoute) {
-    // subscribe to nav state
+    private route: ActivatedRoute,
+    private authService: AuthService,
+    private adminService: AdminService) {
+    //subscribe to nav state
     this.returnSub = this.navService.getReturnState().subscribe(
       val => {
         if (val && this.root) { // if we returned
@@ -113,6 +128,11 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
     }
     this.determineCols();
+
+    //Get role
+    this.authService.getRole().subscribe(
+      val => this.role = val
+    );
   }
 
   private navigateUpHierarchy() {
@@ -216,6 +236,36 @@ export class HomeComponent implements OnInit, OnDestroy {
     window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + (this.root ? this.root.ID : 'root'));
     this.setNavType(event.value);
     this.displayDescendants(this.root ? this.root.ID : 'root', event.value === 'Categories');
+  }
+
+  /**Toggles the admin fab icon */
+  toggleIco(){
+    this.ico = this.ico === 'add' ? 'close' : 'add';
+  }
+
+  /**Adds an item to the current depth */
+  addItem(){
+    if(this.ico === 'close')  this.toggleIco();
+    //add the item
+    var category = '';
+    var location = '';
+    //to category
+    if(this.selectedSearch === 'Categories'){
+      category = this.root.ID;
+    }
+    else { //add to locations
+      location = this.root.ID;
+    }
+    this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '', location).then(
+      () => alert('Item successfully added'),
+      (err) => alert('Item successfully added. Error:\n' + err)
+    );
+  }
+
+  /**Adds a hierarchy item to the current depth */
+  addHierarchy(){
+    if(this.ico === 'close')  this.toggleIco();
+    console.log('hierarchy');
   }
 
   searchTextChange(event) {

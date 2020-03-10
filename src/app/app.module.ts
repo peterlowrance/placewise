@@ -18,6 +18,8 @@ import {MatListModule, MatList} from '@angular/material/list'
 import {MatSnackBarModule} from '@angular/material/snack-bar'
 import {MatDividerModule} from '@angular/material/divider'
 
+import {SmdFabSpeedDialModule} from 'node_modules/angular-speed-dial'
+
 //Imports for all Placewise modules
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -75,7 +77,8 @@ import {AngularFireStorageModule} from '@angular/fire/storage';
     AngularFireAuthModule,
     AngularFireStorageModule,
     MatSnackBarModule,
-    MatDividerModule
+    MatDividerModule,
+    SmdFabSpeedDialModule
   ],
   providers: [],
   bootstrap: [AppComponent],
