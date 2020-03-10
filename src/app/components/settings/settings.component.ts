@@ -41,7 +41,10 @@ export class SettingsComponent implements OnInit {
     );
 
     this.authService.getRole().subscribe(
-      val => this.role = val
+      val => {
+        this.role = val;
+        console.log('role' + val);
+      }
     );
   }
 
@@ -56,7 +59,7 @@ export class SettingsComponent implements OnInit {
       newPassConfirm: ''
     };
 
-    this.diag.open(ChangePassDialogComponent, 
+    this.diag.open(ChangePassDialogComponent,
       {
         width: '60%',
         data: data
