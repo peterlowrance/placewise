@@ -248,7 +248,10 @@ export class ItemComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       // TODO: update parents to database
       // TODO: update parenst in UI
-      console.log('closed' + result);
+      console.log(result);
+      if (result) {
+        this.item.locations = result;
+      }
     });
   }
 
@@ -260,7 +263,10 @@ export class ItemComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       // TODO: update parents to database
       // TODO: update parenst in UI
-      console.log('closed' + result);
+      if (result && result.length > 0) {
+        this.item.category = result[0];
+        this.searchService.getCategory(result[0]).subscribe(c => this.category = c);
+      }
     });
   }
 
