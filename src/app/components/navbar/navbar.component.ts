@@ -49,7 +49,7 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit() {
     this.authService.getRole().subscribe(
-      val => this.role = val
+      val => {console.log(val);this.role = val}
     );
   }
 

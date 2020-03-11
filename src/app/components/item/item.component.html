@@ -1,10 +1,33 @@
 <div *ngIf="item">
-<h2>{{item.name}}</h2>
+<!-- item name goes here, switch by edit val -->
+<div [ngSwitch]="this.textEditFields.name">
+    <div *ngSwitchCase=true>
+        <form (ngSubmit)="onNameSubmit()">
+            <mat-form-field>
+                <input matInput #name type="text"
+                placeholder="Name"
+                [(ngModel)]="item.name"
+                name="name"
+                (focusout)="onNameSubmit()"
+                required
+                class="form-appear"
+                >
+            </mat-form-field>
+        </form>
+    </div>
+    <div *ngSwitchDefault><h2>{{item.name}}</h2></div>
+</div>
+ <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
 
 <mat-grid-list cols="3" rowHeight="2:1">
     <!-- first is image -->
     <mat-grid-tile [colspan]="2" [rowspan]="3">
-        <img class="responsive-item-image" src={{item.imageUrl}} layout-fit>
+        <div>
+            <img class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
+            <button mat-icon-button *ngIf="this.role === 'Admin'" class="container-button"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button>
+            <!-- hidden item uploader -->
+            <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
+        </div>
     </mat-grid-tile>
     <!-- report button -->
     <mat-grid-tile>
@@ -36,10 +59,26 @@
         <!-- description -->
         <mat-card>
             <mat-card-header>
-                <mat-card-title>Description</mat-card-title>
+                <mat-card-title>Description <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button></mat-card-title>
             </mat-card-header>
             <mat-card-content>
-                <p>{{item.desc}}</p>
+                <div [ngSwitch]="this.textEditFields.desc">
+                    <div *ngSwitchCase=true>
+                        <form (ngSubmit)="onDescSubmit()">
+                            <mat-form-field>
+                                <input matInput #desc type="text"
+                                placeholder="Desc"
+                                [(ngModel)]="item.desc"
+                                name="desc"
+                                (focusout)="onDescSubmit()"
+                                required
+                                class="form-appear"
+                                >
+                            </mat-form-field>
+                        </form>
+                    </div>
+                    <div *ngSwitchDefault><p>{{item.desc}}</p></div>
+                </div>
             </mat-card-content>
             <mat-card-actions>
                 <!-- edit field -->
@@ -49,24 +88,47 @@
         <!-- category -->
         <mat-card>
             <mat-card-header>
-                <mat-card-title>Category</mat-card-title>
+                <mat-card-title>Category <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editField('category')"><mat-icon>edit</mat-icon></button></mat-card-title>
                 <mat-card-subtitle>{{category?.name}}</mat-card-subtitle>
                 <div mat-card-avatar> <img src={{category?.imageUrl}}> </div>
             </mat-card-header>
         </mat-card>
 
         <!-- tags -->
-        <h3>Tags</h3>
-        <mat-chip-list>
-            <!-- TODO: add admin control for removing/adding -->
-            <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
-        </mat-chip-list>
+        <h3>Tags <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editField('tags')"><mat-icon>add</mat-icon></button></h3>
+        <div [ngSwitch]="this.textEditFields.tags">
+            <div *ngSwitchCase=true>
+                <form>
+                    <mat-form-field>
+                        <mat-chip-list #tagList>
+                          <mat-chip *ngFor="let tag of item.tags" [selectable]=true
+                                   [removable]=true (removed)="removeTag(tag)">
+                            {{tag}}
+                            <mat-icon matChipRemove>cancel</mat-icon>
+                          </mat-chip>
+                          <input placeholder="New tag"
+                                 [matChipInputFor]="tagList"
+                                 [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                                 [matChipInputAddOnBlur]="addOnBlur"
+                                 (matChipInputTokenEnd)="add($event)"
+                                 name="tags"
+                            >
+                        </mat-chip-list>
+                      </mat-form-field>
+                </form>
+            </div>
+            <div *ngSwitchDefault>
+                <mat-chip-list selectable=false>
+                    <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
+                </mat-chip-list>
+            </div>
+        </div>
     </mat-expansion-panel>
 </mat-accordion>
 
 <!-- steps to find -->
 <!-- adapted from https://material.angular.io/components/tree/examples -->
-<h2>Steps to Find:</h2>
+<h2>Steps to Find:</h2> <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
 <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="example-tree">
     <!-- This is the tree node template for leaf nodes -->
     <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding matTreeNodePaddingIndent="5">
@@ -100,3 +162,8 @@
     </mat-nested-tree-node>
 </mat-tree>
 </div>
+
+<!-- FAB for saving -->
+<button class="fab" *ngIf="this.role === 'Admin' && this.dirty" mat-fab color="primary" (click)="saveItem()">
+    <mat-icon>save</mat-icon>
+</button>

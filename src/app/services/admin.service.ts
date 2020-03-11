@@ -9,7 +9,6 @@ import {AuthService} from './auth.service';
 import {SentReport} from '../models/SentReport';
 import {map} from 'rxjs/operators';
 import { HierarchyItem } from '../models/HierarchyItem';
-
 declare var require: any
 
 const httpOptions = {
@@ -55,7 +54,7 @@ export class AdminService // implements AdminInterfaceService
     this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       item
     }).then(ref => {
-      for(let i = 0; i < item.locations.length; i++) 
+      for(let i = 0; i < item.locations.length; i++)
       {
         let arrUnion = this.afs.doc<HierarchyItem>('/Workspaces/'+ this.auth.workspace.id + '/Locations/' + item.locations[i]).update({
           items: admin.firestore.FieldValue.arrayUnion(ref.id)
@@ -64,7 +63,7 @@ export class AdminService // implements AdminInterfaceService
     });;
 
 
-    
+
     return of(true);
   }
 
@@ -83,7 +82,7 @@ export class AdminService // implements AdminInterfaceService
       });
     });
 
-    return of(true);
+    //return of(true);
   }
 
   removeItem(itemID: number) {
