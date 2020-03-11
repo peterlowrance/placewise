@@ -48,8 +48,8 @@ export class AdminService // implements AdminInterfaceService
     return of(true);
   }
 
-  createItem(item: Item): Observable<boolean> {
-    this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
+  createItem(item: Item){
+    return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       item
     }).then(
       val => {
@@ -67,11 +67,10 @@ export class AdminService // implements AdminInterfaceService
         }
       }
     );
-    return of(true);
   }
 
-  createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string): Observable<boolean> {
-    this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
+  createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string){
+    return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       name: name,
       desc: desc,
       tags: tags,
