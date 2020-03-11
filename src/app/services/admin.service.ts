@@ -24,7 +24,7 @@ export class AdminService // implements AdminInterfaceService
     this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
       desc: text,
       item: itemID,
-      user: this.auth.userInfo.firstName
+      user: this.auth.getAuth().subscribe(x => x.uid)
     });
 
     return of(true);

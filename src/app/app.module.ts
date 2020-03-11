@@ -53,6 +53,7 @@ import { AdminReportComponent } from './components/admin-report/admin-report.com
     AdminReportComponent,
     ResetPassDialogComponent,
     ChangePassDialogComponent
+  ],
   imports: [
     BrowserModule,
     AppRoutingModule,
