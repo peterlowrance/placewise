@@ -10,6 +10,8 @@ import {SentReport} from '../models/SentReport';
 import {map} from 'rxjs/operators';
 import { HierarchyItem } from '../models/HierarchyItem';
 
+declare var require: any
+
 const httpOptions = {
   headers: new HttpHeaders({
     'Content-Type': 'application/json'
