@@ -49,21 +49,24 @@ export class AdminService // implements AdminInterfaceService
   }
 
   createItem(item: Item): Observable<boolean> {
-    /*var admin = require("firebase-admin");
-
     this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       item
-    }).then(ref => {
-      for(let i = 0; i < item.locations.length; i++)
-      {
-        let arrUnion = this.afs.doc<HierarchyItem>('/Workspaces/'+ this.auth.workspace.id + '/Locations/' + item.locations[i]).update({
-          items: admin.firestore.FieldValue.arrayUnion(ref.id)
-        });
+    }).then(
+      val => {
+        for(let i = 0; i < item.locations.length; i++)
+        {
+          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + item.locations[i]).get().pipe(
+            map( doc => doc.data())
+          ).toPromise().then(
+            doc => {
+              let ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+              ary.push(val.id);
+              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + item.locations[i]).update({items: ary})
+            }
+          )
+        }
       }
-    });;*/
-
-
-
+    );
     return of(true);
   }
 
@@ -102,18 +105,24 @@ export class AdminService // implements AdminInterfaceService
   }
 
   updateLocationPosition(parentID: string, moveID: string) {
-    /*var admin = require("firebase-admin");
     var loc : HierarchyItem;
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + moveID).get().subscribe(doc => console.log(doc.data))
-    let oldParent = loc.parent;*/
-    /*this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + moveID).update({
+    let oldParent = loc.parent;
+    //update new parent id
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + moveID).update({
       parent: parentID
-    }).then(ref => {
-      let arrUnion = this.afs.doc<HierarchyItem>('/Workspaces/'+ this.auth.workspace.id + '/Locations/' + location).update({
-        children: admin.firestore.FieldValue.arrayUnion(ref.id)
-      });
-    });
-    */
+    })
+    //remove from old parent's child list
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParent).get().pipe(
+      map( doc => doc.data())
+    ).toPromise().then(
+      doc => {
+        let ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
+        ary.remove(moveID);
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParent).update({children: ary})
+      }
+    )
+
   }
 
   updateCategoryPosition(parentID: number, moveID: number) {
