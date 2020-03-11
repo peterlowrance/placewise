@@ -49,7 +49,7 @@ export class AdminService // implements AdminInterfaceService
   }
 
   createItem(item: Item): Observable<boolean> {
-    var admin = require("firebase-admin");
+    /*var admin = require("firebase-admin");
 
     this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       item
@@ -60,7 +60,7 @@ export class AdminService // implements AdminInterfaceService
           items: admin.firestore.FieldValue.arrayUnion(ref.id)
         });
       }
-    });;
+    });;*/
 
 
 
@@ -68,7 +68,7 @@ export class AdminService // implements AdminInterfaceService
   }
 
   createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string): Observable<boolean> {
-    var admin = require("firebase-admin");
+    /*var admin = require("firebase-admin");
     this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       name: name,
       desc: desc,
@@ -80,9 +80,9 @@ export class AdminService // implements AdminInterfaceService
       let arrUnion = this.afs.doc<HierarchyItem>('/Workspaces/'+ this.auth.workspace.id + '/Locations/' + location).update({
         items: admin.firestore.FieldValue.arrayUnion(ref.id)
       });
-    });
+    });*/
 
-    //return of(true);
+    return of(true);
   }
 
   removeItem(itemID: number) {
@@ -95,10 +95,10 @@ export class AdminService // implements AdminInterfaceService
   }
 
   updateLocationPosition(parentID: string, moveID: string) {
-    var admin = require("firebase-admin");
+    /*var admin = require("firebase-admin");
     var loc : HierarchyItem;
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + moveID).get().subscribe(doc => console.log(doc.data))
-    let oldParent = loc.parent;
+    let oldParent = loc.parent;*/
     /*this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + moveID).update({
       parent: parentID
     }).then(ref => {
