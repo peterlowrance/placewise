@@ -10,29 +10,29 @@ import * as firebase from 'firebase';
 import { $ } from 'protractor';
 
 
-const EXPECTED_TEST_CREDENTIALS = {
+export const EXPECTED_TEST_CREDENTIALS = {
   email: 'correct@correct.com',
   password: 'correctPassword',
-  workspace: ''
+  workspace: '000111000'
 };
 
-const MOCK_USER: User = {
+export const MOCK_USER: User = {
   firstName: 'USER',
   lastName: 'McUSER',
   email: 'correct@correct.com',
 }
 
-const MOCK_WORKSPACE: WorkspaceInfo = {
+export const MOCK_WORKSPACE: WorkspaceInfo = {
   name: 'WORKSPACE',
   id: '000111000'
 };
 
-let MOCK_ROLE = 'Admin';
+export let MOCK_ROLE = 'Admin';
 
-let changeRoll = () => 
+export let changeRoll = () => 
   MOCK_ROLE = MOCK_ROLE === 'Admin' ? 'User' : 'Admin';
 
-let loggedIn = false;
+export let loggedIn = false;
 
 interface WorkspaceUser{
   role: string;
