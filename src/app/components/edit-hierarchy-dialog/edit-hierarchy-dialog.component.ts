@@ -2,7 +2,6 @@ import {Component, Inject, OnInit} from '@angular/core';
 import {MatDialogRef} from '@angular/material';
 import {MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {HierarchyItem} from '../../models/HierarchyItem';
-import {SearchService} from '../../services/search.service';
 
 interface TreeHierarchyItem extends HierarchyItem {
   realChildren?: TreeHierarchyItem[];

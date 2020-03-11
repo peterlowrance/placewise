@@ -41,6 +41,8 @@ import {AngularFireStorageModule} from '@angular/fire/storage';
 import { ModifyHierarchyComponent } from './components/modify-hierarchy/modify-hierarchy.component';
 import { EditHierarchyDialogComponent } from './components/edit-hierarchy-dialog/edit-hierarchy-dialog.component';
 import { ModifyHierarchyDialogComponent } from './components/modify-hierarchy-dialog/modify-hierarchy-dialog.component';
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MatRadioModule} from "@angular/material/radio";
 
 
 @NgModule({
@@ -84,10 +86,12 @@ import { ModifyHierarchyDialogComponent } from './components/modify-hierarchy-di
     AngularFireStorageModule,
     MatSnackBarModule,
     MatDividerModule,
-    SmdFabSpeedDialModule
+    SmdFabSpeedDialModule,
+    MatCheckboxModule,
+    MatRadioModule
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent]
+  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent]
 })
 export class AppModule { }

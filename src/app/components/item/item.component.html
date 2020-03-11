@@ -88,7 +88,7 @@
         <!-- category -->
         <mat-card>
             <mat-card-header>
-                <mat-card-title>Category <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editField('category')"><mat-icon>edit</mat-icon></button></mat-card-title>
+                <mat-card-title>Category <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></mat-card-title>
                 <mat-card-subtitle>{{category?.name}}</mat-card-subtitle>
                 <div mat-card-avatar> <img src={{category?.imageUrl}}> </div>
             </mat-card-header>
@@ -128,7 +128,7 @@
 
 <!-- steps to find -->
 <!-- adapted from https://material.angular.io/components/tree/examples -->
-<h2>Steps to Find:</h2> <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
+<h2>Steps to Find:</h2> <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
 <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="example-tree">
     <!-- This is the tree node template for leaf nodes -->
     <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding matTreeNodePaddingIndent="5">

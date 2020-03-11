@@ -6,7 +6,9 @@
       <button *ngIf="changeParentNode" mat-raised-button [disabled]="isDescendantOf(node, changeParentNode)" (click)="move(changeParentNode, node)">{{node.name}}</button>
       <div *ngIf="!changeParentNode">
         {{node.name}}
-        <button mat-icon-button (click)="openEditModal(node)"><mat-icon>edit</mat-icon></button>
+        <button *ngIf="!selectMode" mat-icon-button (click)="openEditModal(node)"><mat-icon>edit</mat-icon></button>
+        <mat-checkbox *ngIf="selectMode && !isCategory" [checked]="selectedParents.indexOf(node.ID) > -1" (change)="selectedParentsToggle(node)"></mat-checkbox>
+        <mat-radio-button *ngIf="selectMode && isCategory" [checked]="selectedParents.indexOf(node.ID) > -1" (change)="setParent(node)"></mat-radio-button>
       </div>
     </li>
   </mat-tree-node>
@@ -22,7 +24,9 @@
         <button *ngIf="changeParentNode" mat-raised-button [disabled]="isDescendantOf(node, changeParentNode)" (click)="move(changeParentNode, node)">{{node.name}}</button>
         <div *ngIf="!changeParentNode">
           {{node.name}}
-          <button mat-icon-button (click)="openEditModal(node)"><mat-icon>edit</mat-icon></button>
+          <button *ngIf="!selectMode" mat-icon-button (click)="openEditModal(node)"><mat-icon>edit</mat-icon></button>
+          <mat-checkbox *ngIf="selectMode && !isCategory" [checked]="selectedParents.indexOf(node.ID) > -1" (change)="selectedParentsToggle(node)"></mat-checkbox>
+          <mat-radio-button *ngIf="selectMode && isCategory" [checked]="selectedParents.indexOf(node.ID) > -1" (change)="setParent(node)"></mat-radio-button>
         </div>
       </div>
     </li>
@@ -32,6 +36,6 @@
   </mat-nested-tree-node>
 </mat-tree>
 <button *ngIf="changeParentNode" mat-raised-button (click)="move(changeParentNode)">root</button>
-<button class="mat-fab" mat-fab (click)="openEditModal(null)">
+<button *ngIf="!selectMode" class="mat-fab" mat-fab (click)="openEditModal(null)">
   <mat-icon class="icon">add</mat-icon>
 </button>

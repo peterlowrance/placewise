@@ -16,6 +16,8 @@ import {MatChipInputEvent} from '@angular/material/chips';
 import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
 import {AdminService} from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
+import {EditHierarchyDialogComponent} from "../edit-hierarchy-dialog/edit-hierarchy-dialog.component";
+import {ModifyHierarchyDialogComponent} from "../modify-hierarchy-dialog/modify-hierarchy-dialog.component";
 
 
 interface TreeNode {
@@ -236,6 +238,30 @@ export class ItemComponent implements OnInit {
       default:
         break;
     }
+  }
+
+  editLocation() {
+    const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
+      width: '75%',
+      data: {hierarchy: 'locations', parents: this.item.locations}
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      // TODO: update parents to database
+      // TODO: update parenst in UI
+      console.log('closed' + result);
+    });
+  }
+
+  editCategory() {
+    const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
+      width: '75%',
+      data: {hierarchy: 'categories', parents: [this.item.category]}
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      // TODO: update parents to database
+      // TODO: update parenst in UI
+      console.log('closed' + result);
+    });
   }
 
   /**

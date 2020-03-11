@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {HierarchyItem} from '../../models/HierarchyItem';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {SearchService} from '../../services/search.service';
@@ -20,7 +20,10 @@ interface TreeHierarchyItem extends HierarchyItem {
   styleUrls: ['./modify-hierarchy.component.css']
 })
 export class ModifyHierarchyComponent implements OnInit {
-  isCategory: boolean;
+  @Input() selectMode = false;
+  @Input() selectedParents: string[];
+  @Output() selectedParentsOutput = new EventEmitter<string[]>();
+  @Input() isCategory = true;
   changeParentNode: TreeHierarchyItem;
   treeControl = new NestedTreeControl<TreeHierarchyItem>(node => node.realChildren);
   dataSource = new MatTreeNestedDataSource<TreeHierarchyItem>();
@@ -32,7 +35,10 @@ export class ModifyHierarchyComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.isCategory = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories';
+    if (!this.selectMode) {
+      this.isCategory = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories';
+    }
+
     this.dataChange.subscribe(changedData => {
       this.dataSource.data = null;
       this.dataSource.data = changedData;
@@ -43,8 +49,15 @@ export class ModifyHierarchyComponent implements OnInit {
         // Build the tree starting with each root node
         descOfRoot.forEach(d => this.buildTree(d, hierarchy));
         this.dataChange.next(descOfRoot);
+        // If parents are selected, expand the tree to see them
+        if (this.selectedParents) {
+          this.selectedParents.forEach(p => {
+            this.expandParents(this.findByID(p, descOfRoot));
+          });
+        }
       });
     });
+    this.selectedParentsOutput.emit(this.selectedParents);
   }
 
   /**
@@ -61,10 +74,50 @@ export class ModifyHierarchyComponent implements OnInit {
     }
     for (const child of root.children) {
       const realChild = allHierarchy.find(e => e.ID === child);
-      realChild.realParent = root;
-      root.realChildren.push(realChild);
-      // Recursive build tree call
-      this.buildTree(realChild, allHierarchy);
+      if (realChild) {
+        realChild.realParent = root;
+        root.realChildren.push(realChild);
+        // Recursive build tree call
+        this.buildTree(realChild, allHierarchy);
+      }
+    }
+  }
+
+  selectedParentsToggle(node: TreeHierarchyItem) {
+    // If the parent is selected, remove it
+    if (this.selectedParents.indexOf(node.ID) > -1) {
+      this.selectedParents = this.selectedParents.filter(el => el !== node.ID);
+    } else { // Otherwise add it
+      this.selectedParents.push(node.ID);
+    }
+    this.selectedParentsOutput.emit(this.selectedParents);
+  }
+
+  setParent(node: TreeHierarchyItem) {
+    this.selectedParents = [node.ID];
+    this.selectedParentsOutput.emit(this.selectedParents);
+  }
+
+  // Recursively expand nodes
+  expandParents(node: TreeHierarchyItem) {
+    this.treeControl.expand(node);
+    if (node && node.realParent) {
+      this.expandParents(node.realParent);
+    }
+  }
+
+  // Depth first search using a stack
+  findByID(ID: string, roots: TreeHierarchyItem[]): TreeHierarchyItem {
+    const stack: TreeHierarchyItem[] = [];
+    roots.forEach(r => stack.push(r));
+    while (stack.length > 0) {
+      const node = stack.pop();
+      if (node.ID === ID) {
+        return node;
+      } else if (node.realChildren) {
+        // Add the children to the stack
+        node.realChildren.forEach(r => stack.push(r));
+      }
     }
   }
 

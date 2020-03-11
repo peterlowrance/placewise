@@ -1,1 +1,9 @@
-<p>modify-hierarchy-dialog works!</p>
+<mat-dialog-content>
+  <h1 mat-dialog-title>Select new {{data.hierarchy}}</h1>
+  <app-modify-hierarchy selectMode="true" [isCategory]="data.hierarchy === 'categories'" [selectedParents]="data.parents" (selectedParentsOutput)="updateParents($event)"></app-modify-hierarchy>
+</mat-dialog-content>
+<div mat-dialog-actions>
+  <button mat-raised-button (click)="onCancelClick()">Cancel</button>
+  <span class="btn-spacer"></span>
+  <button mat-raised-button color="primary" (click)="onSaveClick()">Save</button>
+</div>
