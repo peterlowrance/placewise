@@ -93,7 +93,32 @@ export class AdminService // implements AdminInterfaceService
     throw new Error('Method not implemented.');
   }
 
+  updateLocationPosition(parentID: string, moveID: string) {
+    var admin = require("firebase-admin");
+    var loc : HierarchyItem;
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + moveID).get().subscribe(doc => console.log(doc.data))
+    let oldParent = loc.parent;
+    /*this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + moveID).update({
+      parent: parentID
+    }).then(ref => {
+      let arrUnion = this.afs.doc<HierarchyItem>('/Workspaces/'+ this.auth.workspace.id + '/Locations/' + location).update({
+        children: admin.firestore.FieldValue.arrayUnion(ref.id)
+      });
+    });
+    */
+  }
+
+  updateCategoryPosition(parentID: number, moveID: number) {
+    throw new Error('Method not implemented.');
+  }
+
+  addLocation()
+  {
+
+  }
+
   constructor(private afs: AngularFirestore, private auth: AuthService) {
+    this.updateLocationPosition("K1l2fRAzAoz3hJsx6qHF","WzEIS9CQyRlB34s68Bfv");
     // this.createItemAtLocation("Pizza Frank", "A pizza named Frank", ["Pizza", "Frank"],"FqYPTX6TfHKfWtaTJ7FS","https://cdn.discordapp.com/attachments/216020806587645954/681427611221884938/PizzaFrank.png","66RbfJWe0GA0AyU37v7a")
   }
 }
