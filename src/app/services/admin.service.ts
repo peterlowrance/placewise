@@ -68,7 +68,6 @@ export class AdminService // implements AdminInterfaceService
   }
 
   createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string): Observable<boolean> {
-    /*var admin = require("firebase-admin");
     this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       name: name,
       desc: desc,
@@ -76,11 +75,19 @@ export class AdminService // implements AdminInterfaceService
       locations: [location],
       category: category,
       imageUrl: imageUrl
-    }).then(ref => {
-      let arrUnion = this.afs.doc<HierarchyItem>('/Workspaces/'+ this.auth.workspace.id + '/Locations/' + location).update({
-        items: admin.firestore.FieldValue.arrayUnion(ref.id)
-      });
-    });*/
+    }).then(
+      val => {
+        this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
+          map( doc => doc.data())
+        ).toPromise().then(
+          doc => {
+            let ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+            ary.push(val.id);
+            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary})
+          }
+        )
+      }
+    );
 
     return of(true);
   }
