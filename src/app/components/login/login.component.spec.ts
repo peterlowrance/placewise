@@ -29,8 +29,6 @@ let snackMock = {
   open: jest.fn((message: string, button: string, options: {duration: number}) => {})
 }
 
-const mockRoute = new RouterTestingModule();
-
 let snackImp;
 
 let navImp;
