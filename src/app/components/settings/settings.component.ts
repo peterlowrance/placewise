@@ -26,8 +26,6 @@ export class SettingsComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private navService: NavService,
-    private router: Router,
     private diag: MatDialog
     ) { }
 
