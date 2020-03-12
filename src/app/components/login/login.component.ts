@@ -35,9 +35,7 @@ export class LoginComponent implements OnInit {
     });
 
     //If we are already logged in, redirect to homescreen
-    this.authService.getAuth().subscribe(
-      this.redirect
-    );
+    this.authService.getAuth().subscribe(this.redirect);
   }
 
   /**
@@ -67,7 +65,7 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit() {
-    this.authService.login(
+    return this.authService.login(
       this.loginForm.value.email,
       this.loginForm.value.password,
       this.loginForm.value.CID).then(res => {
@@ -94,7 +92,7 @@ export class LoginComponent implements OnInit {
    * @param emailInfo Email address to send password reset to
    */
   sendPasswordEmail(emailInfo: string){
-    this.authService.sendPasswordResetEmail(emailInfo).then(
+    return this.authService.sendPasswordResetEmail(emailInfo).then(
       () => this.snack.open("Password reset email has been sent", "OK", {duration: 3000}),
       (fail) => this.snack.open(fail, "OK", {duration: 3000})
     )

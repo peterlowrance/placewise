@@ -56,10 +56,7 @@ export class AuthMockService {
   /**User role, Admin or User */
   role: string;
 
-  constructor() {
-                //onauthstatechange, update credentials
-
-               }
+  constructor() {}
 
   /**
    * Logs into firebase through email and password sign-in method, retrieves
@@ -75,7 +72,7 @@ export class AuthMockService {
         && password === EXPECTED_TEST_CREDENTIALS.password
         && workspace === EXPECTED_TEST_CREDENTIALS.workspace){
           loggedIn = true;
-          resolve();
+          resolve('LOGGED-IN');
         }
         else reject('LOG-IN ERROR');
     })
@@ -121,9 +118,9 @@ export class AuthMockService {
    * Sends a reset password email with the given email
    */
   sendPasswordResetEmail(email: string){
-    return new Promise((reject, resolve) => {
-      if(email === MOCK_USER.email) resolve();
-      else reject();
+    return new Promise((resolve, reject) => {
+      if(email == MOCK_USER.email) return resolve();
+      else return reject('failure');
     })
   }
 
@@ -133,7 +130,7 @@ export class AuthMockService {
   changePassword(curPass: string, newPass: string){
     return new Promise((reject, resolve) => {
       if(curPass === EXPECTED_TEST_CREDENTIALS.password) resolve();
-      else reject();
+      else reject('err');
     })
   }
 }
