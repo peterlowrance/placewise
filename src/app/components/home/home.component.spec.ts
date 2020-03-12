@@ -8,16 +8,25 @@ import {Router} from '@angular/router';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MatDialog} from '@angular/material/dialog';
 import {ReactiveFormsModule} from '@angular/forms';
+import {FormsModule} from '@angular/forms';
 
 //Imports for material design modules
 import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from '@angular/material/card';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIconModule} from '@angular/material/icon';
+import {MatGridListModule} from '@angular/material/grid-list';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatInputModule} from '@angular/material/input';
-import {MatSnackBarModule} from '@angular/material/snack-bar';
 
 //Mocks
 import * as AuthTest from '../../services/auth.mock.service';
 import {RouterTestingModule} from '@angular/router/testing';
+import {NavService} from '../../services/nav.service';
+import {SearchService} from '../../services/search.service';
+import * as SearchTest from '../../services/search.mock.service';
+import {ImageService} from '../../services/image.service';
+import * as ImageTest from '../../services/image.mock.service';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -41,7 +50,9 @@ describe('HomeComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ HomeComponent ]
+      declarations: [ HomeComponent ],
+      providers: [{provide: NavService, useValue: new NavService()}, {provide: SearchService, useClass: SearchTest.SearchMockService}, {provide: ImageService, useClass: ImageTest.ImageMockService}],
+      imports: [MatInputModule, FormsModule, ReactiveFormsModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatButtonToggleModule, MatGridListModule, RouterTestingModule.withRoutes([]), BrowserAnimationsModule]
     })
     .compileComponents();
   }));
