@@ -4,7 +4,7 @@ import {Observable, of} from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class ImageService {
+export class ImageMockService {
 
   constructor() { }
 

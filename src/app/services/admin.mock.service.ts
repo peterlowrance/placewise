@@ -9,7 +9,7 @@ import {SentReport} from '../models/SentReport';
 @Injectable({
   providedIn: 'root'
 })
-export class AdminService // implements AdminInterfaceService
+export class AdminMockService // implements AdminInterfaceService
 {
   placeReport(itemID: string, text: string): Observable<boolean> {
     return of(true);

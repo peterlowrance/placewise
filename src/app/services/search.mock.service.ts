@@ -10,7 +10,7 @@ import * as MOCKDB from '../models/MockDB';
   providedIn: 'root'
 })
 
-export class SearchService {
+export class SearchMockService {
 
   locations: HierarchyItem[];
   categories: HierarchyItem[];

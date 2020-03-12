@@ -4,14 +4,12 @@ import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {Item} from 'src/app/models/Item';
 import {Report} from 'src/app/models/Report';
 import {ItemReportModalData} from 'src/app/models/ItemReportModalData';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {SearchService} from 'src/app/services/search.service';
 import {MatDialog} from '@angular/material/dialog';
 import {ReportDialogComponent} from '../report-dialog/report-dialog.component';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
 import {NestedTreeControl} from '@angular/cdk/tree';
-import { Observable, of } from 'rxjs';
-import { AdminService } from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
 
 
