@@ -60,8 +60,6 @@ export class ItemComponent implements OnInit {
 
   constructor(
     private searchService: SearchService,
-    private adminService: AdminService,
-    private router: Router,
     private route: ActivatedRoute,
     public dialog: MatDialog,
     private imageService: ImageService
