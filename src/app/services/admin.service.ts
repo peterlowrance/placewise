@@ -121,16 +121,25 @@ export class AdminService // implements AdminInterfaceService
         this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParent).update({children: ary})
       }
     )
+    //Add to new parent's list
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + parentID).get().pipe(
+      map( doc => doc.data())
+    ).toPromise().then(
+      doc => {
+        let ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
+        ary.push(moveID);
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + parentID).update({children: ary})
+      }
+    )
+  }
 
+  addLocation(newitem : HierarchyItem)
+  {
+    
   }
 
   updateCategoryPosition(parentID: number, moveID: number) {
     throw new Error('Method not implemented.');
-  }
-
-  addLocation()
-  {
-
   }
 
   constructor(private afs: AngularFirestore, private auth: AuthService) {
