@@ -13,10 +13,10 @@
             <button mat-raised-button class="equal-button">Users</button>
         </mat-list-item>
         <mat-list-item>
-            <button mat-raised-button class="equal-button">Modify Locations</button>
+            <button mat-raised-button class="equal-button" (click)="goToModify(false)">Modify Locations</button>
         </mat-list-item>
         <mat-list-item>
-            <button mat-raised-button class="equal-button">Modify Categories</button>
+            <button mat-raised-button class="equal-button" (click)="goToModify(true)">Modify Categories</button>
         </mat-list-item>
         <mat-divider></mat-divider>
         <h3 mat-subheader>My Settings</h3>

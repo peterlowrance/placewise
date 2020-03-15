@@ -38,6 +38,11 @@ import { SettingsComponent } from './components/settings/settings.component';
 import { ResetPassDialogComponent } from './components/reset-pass-dialog/reset-pass-dialog.component';
 import { ChangePassDialogComponent } from './components/change-pass-dialog/change-pass-dialog.component';
 import {AngularFireStorageModule} from '@angular/fire/storage';
+import { ModifyHierarchyComponent } from './components/modify-hierarchy/modify-hierarchy.component';
+import { EditHierarchyDialogComponent } from './components/edit-hierarchy-dialog/edit-hierarchy-dialog.component';
+import { ModifyHierarchyDialogComponent } from './components/modify-hierarchy-dialog/modify-hierarchy-dialog.component';
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MatRadioModule} from "@angular/material/radio";
 
 
 @NgModule({
@@ -51,8 +56,11 @@ import {AngularFireStorageModule} from '@angular/fire/storage';
     MatToolbar,
     ReportDialogComponent,
     SettingsComponent,
+    ModifyHierarchyComponent,
+    EditHierarchyDialogComponent,
     ResetPassDialogComponent,
-    ChangePassDialogComponent
+    ChangePassDialogComponent,
+    ModifyHierarchyDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -78,10 +86,12 @@ import {AngularFireStorageModule} from '@angular/fire/storage';
     AngularFireStorageModule,
     MatSnackBarModule,
     MatDividerModule,
-    SmdFabSpeedDialModule
+    SmdFabSpeedDialModule,
+    MatCheckboxModule,
+    MatRadioModule
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent]
+  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent]
 })
 export class AppModule { }

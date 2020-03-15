@@ -16,6 +16,8 @@ import {MatChipInputEvent} from '@angular/material/chips';
 import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
 import {AdminService} from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
+import {EditHierarchyDialogComponent} from "../edit-hierarchy-dialog/edit-hierarchy-dialog.component";
+import {ModifyHierarchyDialogComponent} from "../modify-hierarchy-dialog/modify-hierarchy-dialog.component";
 
 
 interface TreeNode {
@@ -236,6 +238,39 @@ export class ItemComponent implements OnInit {
       default:
         break;
     }
+  }
+
+  editLocation() {
+    // Deep copy locations
+    const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
+    const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
+      width: '75%',
+      data: {hierarchy: 'locations', parents: this.item.locations}
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log(result);
+        console.log(oldLocations);
+        this.item.locations = result;
+        this.adminService.updateItem(this.item, null, oldLocations);
+        setTimeout(() => location.reload(), 100);
+      }
+    });
+  }
+
+  editCategory() {
+    const oldCategory = this.item.category;
+    const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
+      width: '75%',
+      data: {hierarchy: 'categories', parents: [this.item.category]}
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.length > 0) {
+        this.item.category = result[0];
+        this.searchService.getCategory(result[0]).subscribe(c => this.category = c);
+        this.adminService.updateItem(this.item, oldCategory, null);
+      }
+    });
   }
 
   /**

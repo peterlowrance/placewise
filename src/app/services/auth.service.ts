@@ -105,7 +105,7 @@ export class AuthService {
         workDoc.subscribe(
           val => this.workspace.name = val.name
         );
-        
+
         // const doc = this.ensureUserInWorkspace(workspace, userData.user.uid);
         // if(doc){ //user is in DB, get information for authentication
         //   doc.subscribe(
@@ -205,6 +205,7 @@ export class AuthService {
    * Gets the role of the user
    */
   getRole(){
+    return of(this.role);
     return this._role.asObservable();
   }
 

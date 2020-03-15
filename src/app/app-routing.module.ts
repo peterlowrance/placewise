@@ -10,6 +10,7 @@ import {LoginComponent} from './components/login/login.component';
 import {ItemComponent} from './components/item/item.component';
 import {NotFoundComponent} from './components/not-found/not-found.component';
 import {SettingsComponent} from './components/settings/settings.component'
+import {ModifyHierarchyComponent} from "./components/modify-hierarchy/modify-hierarchy.component";
 
 
 const routes: Routes = [
@@ -17,6 +18,7 @@ const routes: Routes = [
   {path: 'login', component: LoginComponent},
   {path: 'item/:id', component: ItemComponent, canActivate: [AuthGuard]},
   {path: 'settings', component: SettingsComponent, canActivate: [AuthGuard]},
+  {path: 'modify/:selectedHierarchy', component: ModifyHierarchyComponent, canActivate: [AuthGuard]},
   {path: '**', component: NotFoundComponent}
 ];
 
