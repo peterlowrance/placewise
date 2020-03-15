@@ -131,8 +131,37 @@ export class AdminService // implements AdminInterfaceService
     );
   }
 
-  addLocation(newitem: HierarchyItem) {
+  addLocation(newItem: HierarchyItem, newParentID: string) {
+    newItem.ID = newItem.name + Math.round((Math.random() * 1000000));
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + newItem.ID).set(newItem);
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + newParentID).get().pipe(
+      map( doc => doc.data())
+    ).toPromise().then(
+      doc => {
+        const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
+        ary.push(newItem.ID);
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + newParentID).update({children: ary});
+      }
+    );
+  }
 
+  removeLocation(rem: HierarchyItem) {
+    // TODO: Promote Children
+    // this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Items/' + rem.ID).delete();
+  }
+
+  addCategory(newItem: HierarchyItem, newParentID: string) {
+    newItem.ID = newItem.name + Math.round((Math.random() * 1000000));
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + newItem.ID).set(newItem);
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + newParentID).get().pipe(
+      map( doc => doc.data())
+    ).toPromise().then(
+      doc => {
+        const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
+        ary.push(newItem.ID);
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + newParentID).update({children: ary});
+      }
+    );
   }
 
   updateCategoryPosition(parentID: string, moveID: string, oldParentID: string) {

@@ -140,6 +140,11 @@ export class ModifyHierarchyComponent implements OnInit {
       if (result.action === 'delete') {
         this.delete(result.data);
       } else if (result.action === 'changeParent') {
+        // If this is a new item, add it
+        console.log(result.data);
+        if (!result.data.ID) {
+          this.add(result.data);
+        }
         this.changeParentNode = result.data;
       } else if (newItem && result.data) {
         this.add(result.data);
@@ -154,8 +159,17 @@ export class ModifyHierarchyComponent implements OnInit {
    * @param parent the parent of the item to be set
    * @param newNode the node to be set
    */
-  add(newNode: TreeHierarchyItem, parent?: TreeHierarchyItem) {
+  add(newNode: TreeHierarchyItem, parent?: TreeHierarchyItem, updateDB: boolean = true) {
     console.log('adding new item');
+    if (updateDB) {
+      const parentID = parent ? parent.ID : 'root';
+      newNode.parent = parentID;
+      if (this.isCategory) {
+        this.adminService.addCategory(newNode, parentID);
+      } else {
+        this.adminService.addLocation(newNode, parentID);
+      }
+    }
     // TODO: add/update the database
     // Add new node to parent
     if (parent) {
@@ -205,7 +219,7 @@ export class ModifyHierarchyComponent implements OnInit {
    * @param promoteChildren if true the children will become children of the node's parent. Otherwise, they will be removed
    * although they are kept as children of the removed item
    */
-  delete(node: TreeHierarchyItem, promoteChildren: boolean = true) {
+  delete(node: TreeHierarchyItem, promoteChildren: boolean = true, updateDB: boolean = true) {
     // TODO: database (remember special case for when not promoting children)
     // If you have a parent, remove yourself
     if (node.realParent) {
@@ -239,8 +253,8 @@ export class ModifyHierarchyComponent implements OnInit {
     const hasCorrectParent = (node.realParent && node.realParent.ID === newParentID) || (!node.realParent && !newParent);
     // If the node doesn't already have the correct parent, delete it and add it in the new position
     if (!hasCorrectParent) {
-      this.delete(node, false);
-      this.add(node, newParent);
+      this.delete(node, false, false);
+      this.add(node, newParent, false);
       if (this.isCategory) {
         this.adminService.updateCategoryPosition(newParentID, node.ID, node.parent);
       } else {
