@@ -45,8 +45,6 @@ export class AdminService // implements AdminInterfaceService
   }
 
   updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Observable<boolean> {
-    console.log(oldLocationsID);
-    console.log(item.locations);
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).set(item);
     if (oldCategoryID) {
       // Remove from old category
@@ -88,6 +86,7 @@ export class AdminService // implements AdminInterfaceService
       });
       // Add to new locations
       item.locations.forEach(location => {
+        console.log(location);
         this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
           map( doc => doc.data())
         ).toPromise().then(
@@ -95,7 +94,7 @@ export class AdminService // implements AdminInterfaceService
             const ary: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
             if (ary.indexOf(item.ID) === -1) {
               ary.push(item.ID);
-              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: ary});
+              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
             }
           }
         );

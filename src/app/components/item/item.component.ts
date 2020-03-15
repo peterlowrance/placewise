@@ -248,12 +248,12 @@ export class ItemComponent implements OnInit {
       data: {hierarchy: 'locations', parents: this.item.locations}
     });
     dialogRef.afterClosed().subscribe(result => {
-      // TODO: update parents to database
-      // TODO: update parenst in UI
-      console.log(result);
       if (result) {
+        console.log(result);
+        console.log(oldLocations);
         this.item.locations = result;
         this.adminService.updateItem(this.item, null, oldLocations);
+        setTimeout(() => location.reload(), 100);
       }
     });
   }
