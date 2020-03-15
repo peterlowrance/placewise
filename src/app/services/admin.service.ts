@@ -44,8 +44,63 @@ export class AdminService // implements AdminInterfaceService
     }));
   }
 
-  updateItem(item: Item): Observable<boolean> {
+  updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Observable<boolean> {
+    console.log(oldLocationsID);
+    console.log(item.locations);
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).set(item);
+    if (oldCategoryID) {
+      // Remove from old category
+      this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).get().pipe(
+        map( doc => doc.data())
+      ).toPromise().then(
+        doc => {
+          let ary: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+          ary = ary.filter(obj => obj !== item.ID);
+          this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: ary});
+        }
+      );
+      // Add to new category
+      this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).get().pipe(
+        map( doc => doc.data())
+      ).toPromise().then(
+        doc => {
+          const ary: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+          ary.push(item.ID);
+          this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: ary});
+        }
+      );
+    }
+    if (oldLocationsID && oldLocationsID.length > 0) {
+      // Remove from old locations
+      oldLocationsID.forEach(location => {
+        // If this location is no longer present
+        if (item.locations.indexOf(location) === -1) {
+          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
+            map(doc => doc.data())
+          ).toPromise().then(
+            doc => {
+              let ary: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+              ary = ary.filter(obj => obj !== item.ID);
+              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
+            }
+          );
+        }
+      });
+      // Add to new locations
+      item.locations.forEach(location => {
+        this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
+          map( doc => doc.data())
+        ).toPromise().then(
+          doc => {
+            const ary: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+            if (ary.indexOf(item.ID) === -1) {
+              ary.push(item.ID);
+              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: ary});
+            }
+          }
+        );
+      });
+    }
     return of(true);
   }
 

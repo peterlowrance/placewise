@@ -241,6 +241,8 @@ export class ItemComponent implements OnInit {
   }
 
   editLocation() {
+    // Deep copy locations
+    const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '75%',
       data: {hierarchy: 'locations', parents: this.item.locations}
@@ -251,21 +253,22 @@ export class ItemComponent implements OnInit {
       console.log(result);
       if (result) {
         this.item.locations = result;
+        this.adminService.updateItem(this.item, null, oldLocations);
       }
     });
   }
 
   editCategory() {
+    const oldCategory = this.item.category;
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '75%',
       data: {hierarchy: 'categories', parents: [this.item.category]}
     });
     dialogRef.afterClosed().subscribe(result => {
-      // TODO: update parents to database
-      // TODO: update parenst in UI
       if (result && result.length > 0) {
         this.item.category = result[0];
         this.searchService.getCategory(result[0]).subscribe(c => this.category = c);
+        this.adminService.updateItem(this.item, oldCategory, null);
       }
     });
   }
