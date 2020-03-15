@@ -47,29 +47,28 @@ export class SettingsComponent implements OnInit {
    * Requests a password change
    */
   requestPasswordChange(){
-    let data = {
-      oldPass: '',
-      newPass: '',
-      newPassConfirm: ''
-    };
+    let data = { oldPass: '', newPass: '', newPassConfirm: '' };
 
     this.diag.open(ChangePassDialogComponent, 
       {
         width: '60%',
         data: data
       }
-    ).afterClosed().subscribe(
-      val => {
-        //if returned a confirm
-        if(val && val.newPass === val.newPassConfirm){
-          data = val;
-          this.authService.changePassword(data.oldPass, data.newPass).then(
-            () => alert('Password successfully changed'),
-            (error) => alert('Password change failed:\n'+error)
-          );
-        }
-      }
-    )
+    ).afterClosed().subscribe(this.sendPasswordChangeRequest);
+  }
+
+  /**
+   * Validates password equality and sends request to change password
+   * @param val password change object sent by modal
+   */
+  sendPasswordChangeRequest(val: {oldPass:string, newPass:string, newPassConfirm:string}){
+    //if returned a confirm
+    if(val && val.newPass === val.newPassConfirm){
+      return this.authService.changePassword(val.oldPass, val.newPass).then(
+        () => alert('Password successfully changed'),
+        (error) => alert('Password change failed:\n'+error)
+      );
+    }
   }
 
   /**

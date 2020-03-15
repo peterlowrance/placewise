@@ -34,6 +34,8 @@ export let changeRoll = () =>
 
 export let loggedIn = false;
 
+export let updatedPass:string = null;
+
 interface WorkspaceUser{
   role: string;
   userRef: any;
@@ -128,9 +130,12 @@ export class AuthMockService {
    * Sends a change password request to firebase
    */
   changePassword(curPass: string, newPass: string){
-    return new Promise((reject, resolve) => {
-      if(curPass === EXPECTED_TEST_CREDENTIALS.password) resolve();
-      else reject('err');
+    return new Promise((resolve, reject) => {
+      if(curPass === EXPECTED_TEST_CREDENTIALS.password){
+        updatedPass = newPass;
+        return resolve();
+      }
+      else return reject('err');
     })
   }
 }
