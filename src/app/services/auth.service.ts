@@ -1,13 +1,11 @@
 import { Injectable } from '@angular/core';
 import {Router} from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
-import {AngularFirestore, AngularFirestoreDocument} from '@angular/fire/firestore';
-import {Observable, of} from 'rxjs';
-import {first, map} from 'rxjs/operators';
+import {AngularFirestore} from '@angular/fire/firestore';
+import {of} from 'rxjs';
 import {WorkspaceInfo} from '../models/WorkspaceInfo';
 import {User} from '../models/User';
 import * as firebase from 'firebase';
-import { $ } from 'protractor';
 
 interface WorkspaceUser{
   role: string;
@@ -47,27 +45,33 @@ export class AuthService {
               private router: Router) {
 
                 //onauthstatechange, update credentials
-                afAuth.auth.onAuthStateChanged((user) => {
-                  if(user){
-                    user.getIdTokenResult().then(token => {
-                      this.workspace.id = token.claims.workspace;
-                      this.role = token.claims.role;
-                      console.log(token.claims);
-                      const workDoc = this.getWorkspaceInfo(token.claims.workspace);
-                      //subscribe to changes in workspace name
-                      workDoc.subscribe(
-                        val => this.workspace.name = val.name
-                      );
-                    });
-                    const userDoc = this.getUserInfo(user.uid);
-                    //subscribe to changes in user info
-                    userDoc.subscribe(
-                      val => this.userInfo = val
-                    );
-                  }
-                })
-               }
+                afAuth.auth.onAuthStateChanged((user) => this.updateUserInformation(user));
+  }
 
+  /**
+   * Updates user information when auth state changes
+   * @param user The user info retrieved from onAuthStateChanged
+   */
+  updateUserInformation(user: firebase.User){
+    if(user){
+      user.getIdTokenResult().then(token => {
+        this.workspace.id = token.claims.workspace;
+        this.role = token.claims.role;
+        console.log(token.claims);
+        const workDoc = this.getWorkspaceInfo(token.claims.workspace);
+        //subscribe to changes in workspace name
+        workDoc.subscribe(
+          val => this.workspace.name = val.name
+        );
+      });
+      const userDoc = this.getUserInfo(user.uid);
+      //subscribe to changes in user info
+      userDoc.subscribe(
+        val => this.userInfo = val
+      );
+    }
+  }
+  
   /**
    * Logs into firebase through email and password sign-in method, retrieves
    * auth, workspace info, and user info authentication fields
@@ -85,16 +89,6 @@ export class AuthService {
       err => reject(err)
       );
     })
-  }
-
-  /**
-   * Ensures a user is in the current workspace
-   * @param workspace Workspace ID trying to sign into
-   * @param uid: User ID trying to sign in
-   * @returns A boolean if the user is in the given workspace
-   */
-  private ensureUserInWorkspace(workspace: string, uid: string){
-    return this.afs.doc<WorkspaceUser>(`Workspaces/${workspace}/WorkspaceUsers/${uid}`).valueChanges();
   }
 
   /**
@@ -159,11 +153,10 @@ export class AuthService {
   /**
    * Sends a change password request to firebase
    */
-  changePassword(curPass: string, newPass: string){
+  async changePassword(curPass: string, newPass: string){
     const cred = firebase.auth.EmailAuthProvider.credential(this.userInfo.email, curPass);
     //reauthenticate
-    return this.afAuth.auth.currentUser.reauthenticateWithCredential(cred).then(
-      () => this.afAuth.auth.currentUser.updatePassword(newPass)
-    )
+    await this.afAuth.auth.currentUser.reauthenticateWithCredential(cred);
+    return await this.afAuth.auth.currentUser.updatePassword(newPass);
   }
 }
