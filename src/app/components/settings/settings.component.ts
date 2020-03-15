@@ -54,7 +54,7 @@ export class SettingsComponent implements OnInit {
         width: '60%',
         data: data
       }
-    ).afterClosed().subscribe(this.sendPasswordChangeRequest);
+    ).afterClosed().subscribe(val => this.sendPasswordChangeRequest(val));
   }
 
   /**

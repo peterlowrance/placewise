@@ -35,7 +35,7 @@ export class LoginComponent implements OnInit {
     });
 
     //If we are already logged in, redirect to homescreen
-    this.authService.getAuth().subscribe(this.redirect);
+    this.authService.getAuth().subscribe(auth => this.redirect(auth));
   }
 
   /**
@@ -82,9 +82,7 @@ export class LoginComponent implements OnInit {
     this.diag.open(ResetPassDialogComponent, {
         width: '60%'
       }
-    ).afterClosed().subscribe(
-      this.sendPasswordEmail
-    )
+    ).afterClosed().subscribe(val => this.sendPasswordEmail(val));
   }
 
   /**

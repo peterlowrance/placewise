@@ -144,6 +144,16 @@ export class AuthService {
   }
 
   /**
+   * Ensures a user is in the current workspace
+   * @param workspace Workspace ID trying to sign into
+   * @param uid: User ID trying to sign in
+   * @returns A boolean if the user is in the given workspace
+   */
+  private ensureUserInWorkspace(workspace: string, uid: string){
+    return this.afs.doc<WorkspaceUser>(`Workspaces/${workspace}/WorkspaceUsers/${uid}`).valueChanges();
+  }
+
+  /**
    * Gets the workspace information from firebase
    * @param workspace the workspace id
    */
