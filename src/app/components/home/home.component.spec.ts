@@ -29,6 +29,7 @@ import {ImageService} from '../../services/image.service';
 import * as ImageTest from '../../services/image.mock.service';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {HierarchyItem} from '../../models/HierarchyItem';
 
 let navMock = {
   navigate: jest.fn((url: string[]) => {})
@@ -66,4 +67,22 @@ describe('HomeComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should create2', () => {
+    expect(component).toBeTruthy();
+  });
+
+  describe('Resizing', () => {
+
+    //it('Basic Method Test', () => {
+      //component.columns = 0;
+      //component.determineCols(16, 1000)
+      //expect(component.columns).toBeCloseTo(8.9, 2)
+    //})
+
+    /*afterEach(() => {
+      component.determineCols(); // Resets it back to default column size
+    })*/
+
+  })
 });
