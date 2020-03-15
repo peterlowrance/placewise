@@ -39,6 +39,7 @@ import { ResetPassDialogComponent } from './components/reset-pass-dialog/reset-p
 import { ChangePassDialogComponent } from './components/change-pass-dialog/change-pass-dialog.component';
 import {AngularFireStorageModule} from '@angular/fire/storage';
 import { ReportDetailViewComponent } from './components/report-detail-view/report-detail-view.component';
+import { AdminReportComponent } from './components/admin-report/admin-report.component'
 
 
 @NgModule({
@@ -51,6 +52,7 @@ import { ReportDetailViewComponent } from './components/report-detail-view/repor
     NotFoundComponent,
     MatToolbar,
     ReportDialogComponent,
+    AdminReportComponent,
     SettingsComponent,
     ResetPassDialogComponent,
     ChangePassDialogComponent,
