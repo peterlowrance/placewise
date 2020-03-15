@@ -31,6 +31,10 @@ export class ModifyHierarchyComponent implements OnInit {
   dataChange = new BehaviorSubject<TreeHierarchyItem[]>([]);
 
   hasChild = (_: number, node: TreeHierarchyItem) => node && (!!node.realChildren && node.realChildren.length > 0);
+  toHierarchyItem = (node: TreeHierarchyItem) => ({
+    ID: node.ID, name: node.name, imageUrl: node.imageUrl, children: node.realChildren ? node.realChildren.map(e => e.ID) : [],
+    parent: node.realParent ? node.realParent.ID : 'root', items: node.items
+  });
 
   constructor(private searchService: SearchService, private route: ActivatedRoute, public dialog: MatDialog, public adminService: AdminService) {
   }
@@ -171,7 +175,6 @@ export class ModifyHierarchyComponent implements OnInit {
         this.adminService.addLocation(newNode, parentID);
       }
     }
-    // TODO: add/update the database
     // Add new node to parent
     if (parent) {
       // Initialize realChildren if needed
@@ -212,6 +215,7 @@ export class ModifyHierarchyComponent implements OnInit {
 
   update(node: TreeHierarchyItem) {
     console.log('update ' + node.ID);
+    this.adminService.updateHierarchy(this.toHierarchyItem(node), this.isCategory);
   }
 
   /**
@@ -222,6 +226,13 @@ export class ModifyHierarchyComponent implements OnInit {
    */
   delete(node: TreeHierarchyItem, promoteChildren: boolean = true, updateDB: boolean = true) {
     // TODO: database (remember special case for when not promoting children)
+    if (updateDB) {
+      if (this.isCategory) {
+        this.adminService.removeCategory(this.toHierarchyItem(node));
+      } else {
+        this.adminService.removeLocation(this.toHierarchyItem(node));
+      }
+    }
     // If you have a parent, remove yourself
     if (node.realParent) {
       // Remove child from parent

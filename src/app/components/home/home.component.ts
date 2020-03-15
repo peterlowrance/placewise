@@ -112,21 +112,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
 
     // this.displayDescendants(urlID, this.selectedSearch === 'Categories');
-
     this.loadLevel(urlID, this.selectedSearch);
 
-    // Load root and set nav bar name
-    /*if (this.selectedSearch === 'Categories') {
-      this.searchService.getCategory(urlID).subscribe(data => {
-        this.root = data;
-        this.navService.setParent(data);
-      });
-    } else {
-      this.searchService.getLocation(urlID).subscribe(data => {
-        this.root = data;
-        this.navService.setParent(data);
-      });
-    }*/
     this.determineCols();
 
     // Get role
@@ -173,7 +160,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.hierarchyItems = data;
     });
     // Load items that descend from root
-    this.items = [];
     // If root exists, display it's items, otherwise get root from db first
     if (this.root && this.root.items) {
       this.displayItems(this.root);
@@ -187,6 +173,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   displayItems(root: HierarchyItem) {
+    this.items = [];
     if (root.items) {
       for (const i of root.items) {
         this.searchService.getItem(i).subscribe(data => {
@@ -239,15 +226,15 @@ export class HomeComponent implements OnInit, OnDestroy {
   addItem() {
     if (this.ico === 'close') { this.toggleIco(); }
     // add the item
-    let category = '';
-    let location = '';
+    let category = 'root';
+    let location = 'root';
     // to category
     if (this.selectedSearch === 'Categories') {
       category = this.root.ID;
     } else { // add to locations
       location = this.root.ID;
     }
-    this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '', location)
+    this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '../../../assets/notFound.png', location);
   }
 
   /**Adds a hierarchy item to the current depth */
@@ -256,8 +243,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   searchTextChange(event) {
+    if (event === '' && this.previousSearch === '') {
+      return;
+    }
     // If the search is empty, load descendants normally
-    if (event === '' && this.previousSearch !== '') {
+    if (event === '') {
       this.displayDescendants(this.root.ID, this.selectedSearch === 'Categories');
     } else { // Otherwise, get all descendant hierarchy items and items and fuzzy match them
       this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {

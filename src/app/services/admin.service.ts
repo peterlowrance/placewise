@@ -9,6 +9,7 @@ import {AuthService} from './auth.service';
 import {SentReport} from '../models/SentReport';
 import {map} from 'rxjs/operators';
 import { HierarchyItem } from '../models/HierarchyItem';
+import {SearchService} from "./search.service";
 declare var require: any
 
 const httpOptions = {
@@ -69,7 +70,13 @@ export class AdminService // implements AdminInterfaceService
     );
   }
 
-  createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string){
+  createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string) {
+    if (!category) {
+      category = 'root';
+    }
+    if (!location) {
+      location = 'root';
+    }
     return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       name: name,
       desc: desc,
@@ -83,11 +90,20 @@ export class AdminService // implements AdminInterfaceService
           map( doc => doc.data())
         ).toPromise().then(
           doc => {
-            let ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+            const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
             ary.push(val.id);
-            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary})
+            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
           }
-        )
+        );
+        this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + category).get().pipe(
+          map( doc => doc.data())
+        ).toPromise().then(
+          doc => {
+            const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+            ary.push(val.id);
+            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + category).update({items: ary});
+          }
+        );
       }
     );
 
@@ -145,9 +161,77 @@ export class AdminService // implements AdminInterfaceService
     );
   }
 
-  removeLocation(rem: HierarchyItem) {
-    // TODO: Promote Children
-    // this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Items/' + rem.ID).delete();
+  removeLocation(remove: HierarchyItem) {
+    // Remove from parent and promote children and items to parent
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).get().pipe(
+      map(doc => doc.data())
+    ).toPromise().then(
+      doc => {
+        // Update parent's children
+        let newChildren: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
+        newChildren = newChildren.filter(obj => obj !== remove.ID);
+        if (remove.children) {
+          newChildren.concat(remove.children);
+          // Update children's parents
+          remove.children.forEach(child => this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + child).update({parent: remove.parent}));
+        }
+        // Update parent's items
+        const newItems: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+        if (remove.items) {
+          newItems.concat(remove.items);
+          // Update item's parents
+          remove.items.forEach(item => {
+            this.searchService.getItem(item).subscribe(i => {
+              // Remove the location from the items locations
+              i.locations = i.locations.filter(id => id !== remove.ID);
+              // Add the new parent to the items locations
+              if (i.locations.indexOf(remove.parent) === -1) {
+                i.locations.push(remove.parent);
+              }
+              console.log(i);
+              this.updateItem(i);
+            });
+          });
+        }
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({children: newChildren, items: newItems});
+      }
+    );
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.ID).delete();
+  }
+
+  removeCategory(toRemove: HierarchyItem) {
+    // Remove from parent and promote children and items to parent
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).get().pipe(
+      map(doc => doc.data())
+    ).toPromise().then(
+      doc => {
+        // Update parent's children
+        let newChildren: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
+        newChildren = newChildren.filter(obj => obj !== toRemove.ID);
+        if (toRemove.children) {
+          newChildren.concat(toRemove.children);
+          // Update children's parents
+          toRemove.children.forEach(child => this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + child).update({parent: toRemove.parent}));
+        }
+        // Update parent's items
+        const newItems: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+        if (toRemove.items) {
+          toRemove.items.forEach(i => newItems.push(i));
+          // Update item's parents
+          toRemove.items.forEach(item => {
+            this.searchService.getItem(item).subscribe(i => {
+              // Set the category
+              i.category = toRemove.parent;
+              this.updateItem(i);
+            });
+          });
+        }
+        console.log(newItems);
+        console.log(toRemove.items);
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({children: newChildren, items: newItems});
+      }
+    );
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.ID).delete();
   }
 
   addCategory(newItem: HierarchyItem, newParentID: string) {
@@ -166,9 +250,7 @@ export class AdminService // implements AdminInterfaceService
 
   updateCategoryPosition(parentID: string, moveID: string, oldParentID: string) {
     // update new parent id
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + moveID).update({
-      parent: parentID
-    });
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + moveID).update({parent: parentID});
     // remove from old parent's child list
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + oldParentID).get().pipe(
       map( doc => doc.data())
@@ -192,7 +274,12 @@ export class AdminService // implements AdminInterfaceService
     );
   }
 
-  constructor(private afs: AngularFirestore, private auth: AuthService) {
+  updateHierarchy(node: HierarchyItem, isCategory: boolean) {
+    const appropriateHierarchy = isCategory ? '/Category/' : '/Locations/';
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + appropriateHierarchy + node.ID).update(node);
+  }
+
+  constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService) {
     // this.updateLocationPosition("K1l2fRAzAoz3hJsx6qHF","WzEIS9CQyRlB34s68Bfv");
     // this.createItemAtLocation("Pizza Frank", "A pizza named Frank", ["Pizza", "Frank"],"FqYPTX6TfHKfWtaTJ7FS","https://cdn.discordapp.com/attachments/216020806587645954/681427611221884938/PizzaFrank.png","66RbfJWe0GA0AyU37v7a")
   }
