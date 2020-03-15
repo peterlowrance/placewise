@@ -18,6 +18,8 @@ import {MatListModule, MatList} from '@angular/material/list'
 import {MatSnackBarModule} from '@angular/material/snack-bar'
 import {MatDividerModule} from '@angular/material/divider'
 
+import {SmdFabSpeedDialModule} from 'node_modules/angular-speed-dial'
+
 //Imports for all Placewise modules
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -36,7 +38,7 @@ import { SettingsComponent } from './components/settings/settings.component';
 import { ResetPassDialogComponent } from './components/reset-pass-dialog/reset-pass-dialog.component';
 import { ChangePassDialogComponent } from './components/change-pass-dialog/change-pass-dialog.component';
 import {AngularFireStorageModule} from '@angular/fire/storage';
-import { AdminReportComponent } from './components/admin-report/admin-report.component';
+import { ReportDetailViewComponent } from './components/report-detail-view/report-detail-view.component';
 
 
 @NgModule({
@@ -50,9 +52,9 @@ import { AdminReportComponent } from './components/admin-report/admin-report.com
     MatToolbar,
     ReportDialogComponent,
     SettingsComponent,
-    AdminReportComponent,
     ResetPassDialogComponent,
-    ChangePassDialogComponent
+    ChangePassDialogComponent,
+    ReportDetailViewComponent
   ],
   imports: [
     BrowserModule,
@@ -77,7 +79,8 @@ import { AdminReportComponent } from './components/admin-report/admin-report.com
     AngularFireAuthModule,
     AngularFireStorageModule,
     MatSnackBarModule,
-    MatDividerModule
+    MatDividerModule,
+    SmdFabSpeedDialModule
   ],
   providers: [],
   bootstrap: [AppComponent],
