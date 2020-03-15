@@ -188,13 +188,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.determineCols();
   }
 
-  determineCols() {
+  determineCols(fontSize: number = this.getFontSize(), width = window.innerWidth) {
+    const fontLine = fontSize * 7; // Sets max characters (but not directly) on a line
+    this.columns = width / fontLine;
+  }
+
+  getFontSize() {
     const textField = document.documentElement;
     const style = window.getComputedStyle(textField, null).getPropertyValue('font-size');
-    const fontSize = parseFloat(style);
-    const fontLine = fontSize * 7; // Sets max characters (not directly) on a line
-    console.log(window.innerWidth / fontLine);
-    this.columns = window.innerWidth / fontLine;
+    return parseFloat(style);
   }
 
   goToItem(item: Item) {
