@@ -64,9 +64,21 @@
       "<rootDir>/src/assets/",
       "<rootDir>/src/environments/",
       "<rootDir>/src/test.ts",
-      "<rootDir>/src/services/*.mock*",
-      "<rootDir>/src/app/components/*/*.html",
-      "<rootDir>/src/app/components/*dialog/"
+      ".mock.service.ts",
+      "<rootDir>/src/app/components/*dialog/",
+      "<rootDir>/src/app/models/"
+    ],
+    "coveragePathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/dist/",
+      "<rootDir>/src/assets/",
+      "<rootDir>/src/environments/",
+      "<rootDir>/src/test.ts",
+      ".mock.service.ts",
+      "<rootDir>/src/app/components/change-pass-dialog/",
+      "<rootDir>/src/app/components/report-dialog/",
+      "<rootDir>/src/app/components/reset-pass-dialog/",
+      "<rootDir>/src/app/models/"
     ]
   }
 }
