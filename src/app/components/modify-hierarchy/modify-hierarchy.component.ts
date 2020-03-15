@@ -242,7 +242,7 @@ export class ModifyHierarchyComponent implements OnInit {
       this.delete(node, false);
       this.add(node, newParent);
       if (this.isCategory) {
-
+        this.adminService.updateCategoryPosition(newParentID, node.ID, node.parent);
       } else {
         this.adminService.updateLocationPosition(newParentID, node.ID, node.parent);
       }
