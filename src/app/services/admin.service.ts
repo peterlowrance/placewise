@@ -103,39 +103,37 @@ export class AdminService // implements AdminInterfaceService
     throw new Error('Method not implemented.');
   }
 
-  updateLocationPosition(parentID: string, moveID: string) {
-    var loc : HierarchyItem;
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + moveID).get().subscribe(doc => console.log(doc.data))
-    let oldParent = loc.parent;
-    //update new parent id
+  updateLocationPosition(parentID: string, moveID: string, oldParent: string) {
+    // update new parent id
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + moveID).update({
       parent: parentID
-    })
-    //remove from old parent's child list
+    });
+    // remove from old parent's child list
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParent).get().pipe(
       map( doc => doc.data())
     ).toPromise().then(
       doc => {
-        let ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
-        ary.remove(moveID);
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParent).update({children: ary})
+        let ary: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
+        // ary.remove(moveID);
+        ary = ary.filter(obj => obj !== moveID);
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParent).update({children: ary});
       }
-    )
-    //Add to new parent's list
+    );
+    // Add to new parent's list
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + parentID).get().pipe(
       map( doc => doc.data())
     ).toPromise().then(
       doc => {
-        let ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
+        const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
         ary.push(moveID);
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + parentID).update({children: ary})
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + parentID).update({children: ary});
       }
-    )
+    );
   }
 
   addLocation(newitem : HierarchyItem)
   {
-    
+
   }
 
   updateCategoryPosition(parentID: number, moveID: number) {
@@ -143,7 +141,7 @@ export class AdminService // implements AdminInterfaceService
   }
 
   constructor(private afs: AngularFirestore, private auth: AuthService) {
-    this.updateLocationPosition("K1l2fRAzAoz3hJsx6qHF","WzEIS9CQyRlB34s68Bfv");
+    // this.updateLocationPosition("K1l2fRAzAoz3hJsx6qHF","WzEIS9CQyRlB34s68Bfv");
     // this.createItemAtLocation("Pizza Frank", "A pizza named Frank", ["Pizza", "Frank"],"FqYPTX6TfHKfWtaTJ7FS","https://cdn.discordapp.com/attachments/216020806587645954/681427611221884938/PizzaFrank.png","66RbfJWe0GA0AyU37v7a")
   }
 }

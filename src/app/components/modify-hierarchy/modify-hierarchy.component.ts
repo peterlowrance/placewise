@@ -8,6 +8,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {EditHierarchyDialogComponent} from '../edit-hierarchy-dialog/edit-hierarchy-dialog.component';
 import {BehaviorSubject, EMPTY, of, zip} from 'rxjs';
 import {map} from 'rxjs/operators';
+import {AdminService} from "../../services/admin.service";
 
 interface TreeHierarchyItem extends HierarchyItem {
   realChildren?: TreeHierarchyItem[];
@@ -31,7 +32,7 @@ export class ModifyHierarchyComponent implements OnInit {
 
   hasChild = (_: number, node: TreeHierarchyItem) => node && (!!node.realChildren && node.realChildren.length > 0);
 
-  constructor(private searchService: SearchService, private route: ActivatedRoute, public dialog: MatDialog) {
+  constructor(private searchService: SearchService, private route: ActivatedRoute, public dialog: MatDialog, public adminService: AdminService) {
   }
 
   ngOnInit() {
@@ -136,11 +137,9 @@ export class ModifyHierarchyComponent implements OnInit {
       data: node
     });
     dialogRef.afterClosed().subscribe(result => {
-      // If a string was returned, delete the item with that ID
       if (result.action === 'delete') {
         this.delete(result.data);
       } else if (result.action === 'changeParent') {
-        // this.changeParentMode = true;
         this.changeParentNode = result.data;
       } else if (newItem && result.data) {
         this.add(result.data);
@@ -236,11 +235,17 @@ export class ModifyHierarchyComponent implements OnInit {
    */
   move(node: TreeHierarchyItem, newParent?: TreeHierarchyItem) {
     // TODO: database
-    const hasCorrectParent = (node.realParent && newParent && node.realParent.ID === newParent.ID) || (!node.realParent && !newParent);
+    const newParentID = newParent ? newParent.ID : 'root'
+    const hasCorrectParent = (node.realParent && node.realParent.ID === newParentID) || (!node.realParent && !newParent);
     // If the node doesn't already have the correct parent, delete it and add it in the new position
     if (!hasCorrectParent) {
       this.delete(node, false);
       this.add(node, newParent);
+      if (this.isCategory) {
+
+      } else {
+        this.adminService.updateLocationPosition(newParentID, node.ID, node.parent);
+      }
     }
     this.changeParentNode = null;
   }
