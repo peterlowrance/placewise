@@ -77,7 +77,9 @@ export class ModifyHierarchyComponent implements OnInit {
       const realChild = allHierarchy.find(e => e.ID === child);
       if (realChild) {
         realChild.realParent = root;
-        root.realChildren.push(realChild);
+        if (root.realChildren.indexOf(realChild) === -1) {
+          root.realChildren.push(realChild);
+        }
         // Recursive build tree call
         this.buildTree(realChild, allHierarchy);
       }
@@ -141,7 +143,6 @@ export class ModifyHierarchyComponent implements OnInit {
         this.delete(result.data);
       } else if (result.action === 'changeParent') {
         // If this is a new item, add it
-        console.log(result.data);
         if (!result.data.ID) {
           this.add(result.data);
         }
