@@ -52,3 +52,11 @@ mat-button-toggle {
 .hierarchySelector {
   margin: 2% 0% 3% 0%;
 }
+
+/*FAB display field*/
+.fab{
+  bottom: 2%;
+  right: 3%;
+  position: fixed;
+  z-index: 1;
+}

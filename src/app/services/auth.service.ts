@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {Router} from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
 import {AngularFirestore} from '@angular/fire/firestore';
-import {of} from 'rxjs';
+import {of, BehaviorSubject} from 'rxjs';
 import {WorkspaceInfo} from '../models/WorkspaceInfo';
 import {User} from '../models/User';
 import * as firebase from 'firebase';
@@ -25,7 +25,6 @@ interface Workspace{
   providedIn: 'root'
 })
 export class AuthService {
-  
   /** User workspace information */
   workspace: WorkspaceInfo = {
     name: '',
@@ -39,6 +38,8 @@ export class AuthService {
   }
   /**User role, Admin or User */
   role: string;
+
+  currentRole: BehaviorSubject<string> = new BehaviorSubject<string>(this.role);
 
   constructor(private afAuth: AngularFireAuth,
               private afs: AngularFirestore,
@@ -141,6 +142,10 @@ export class AuthService {
    */
   getRole(){
     return of(this.role);
+  }
+
+  getRoleCurrent(){
+    return this.currentRole.asObservable();
   }
 
   /**

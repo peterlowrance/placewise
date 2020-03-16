@@ -26,7 +26,8 @@ export class SettingsComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private diag: MatDialog
+    private diag: MatDialog,
+    private router: Router
     ) { }
 
   ngOnInit() {
@@ -39,7 +40,10 @@ export class SettingsComponent implements OnInit {
     );
 
     this.authService.getRole().subscribe(
-      val => this.role = val
+      val => {
+        this.role = val;
+        console.log('role' + val);
+      }
     );
   }
 
@@ -49,7 +53,7 @@ export class SettingsComponent implements OnInit {
   requestPasswordChange(){
     let data = { oldPass: '', newPass: '', newPassConfirm: '' };
 
-    this.diag.open(ChangePassDialogComponent, 
+    this.diag.open(ChangePassDialogComponent,
       {
         width: '60%',
         data: data
@@ -74,8 +78,11 @@ export class SettingsComponent implements OnInit {
   /**
    * Logs out and navigates to login screen
    */
-  logout(){
+  logout() {
     this.authService.logout();
   }
 
+  goToModify(isCategory: boolean) {
+    this.router.navigate(['modify/' + (isCategory ? 'categories' : 'locations')]);
+  }
 }
