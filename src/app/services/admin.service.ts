@@ -22,13 +22,21 @@ const httpOptions = {
 export class AdminService // implements AdminInterfaceService
 {
   placeReport(itemID: string, text: string): Observable<boolean> {
+    var userID: string;
+    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID,text,x.uid))
+
+
+    return of(true);
+  }
+
+  placeReportHelper(itemID: string, text:string, userID:string)
+  {
     this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
       desc: text,
       item: itemID,
-      user: this.auth.getAuth().subscribe(x => x.uid)
+      user: userID,
+      date: new Date()
     });
-
-    return of(true);
   }
 
   getReports(): Observable<SentReport[]> {
@@ -42,6 +50,11 @@ export class AdminService // implements AdminInterfaceService
           }
         );
     }));
+  }
+
+  deleteReport(id : string)
+  {
+    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).delete();
   }
 
   clearReports(reports: SentReport[]): Observable<Boolean> {

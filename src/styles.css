@@ -2,12 +2,4 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: "Roboto Condensed", "Helvetica Neue", sans-serif; }
-.reportName{
-    font-size: 70%;
-    margin-left: 5%;
-    width: 50%;
-    position: relative;
-}
-.reportPiece{
-    margin:0;
-}
+

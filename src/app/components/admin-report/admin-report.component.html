@@ -1,5 +1,5 @@
 <mat-list>
-    <mat-list-item *ngFor = "let r of reports">
+    <mat-list-item *ngFor = "let r of reports" (click) = "openModal(r)">
         <img src= {{r.trueItem.imageUrl}} alt= " {{r.trueItem.name}} Image">
         <div class = "reportName">
             <p class = "reportPiece">
@@ -10,6 +10,5 @@
             </p>
         </div>
     </mat-list-item>
-
 </mat-list>
 <button mat-raised-button class="equal-button" (click)="clearReports()">Clear All Reports</button>

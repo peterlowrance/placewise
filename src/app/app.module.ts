@@ -86,6 +86,6 @@ import { AdminReportComponent } from './components/admin-report/admin-report.com
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent]
+  entryComponents: [ReportDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ReportDetailViewComponent]
 })
 export class AppModule { }
