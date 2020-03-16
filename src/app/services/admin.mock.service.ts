@@ -5,18 +5,20 @@ import {HttpHeaders} from '@angular/common/http';
 import {Observable, of} from 'rxjs';
 import {Item} from '../models/Item';
 import {SentReport} from '../models/SentReport';
+import {Report} from '../models/Report';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AdminMockService // implements AdminInterfaceService
-{
+export class AdminMockService {
   placeReport(itemID: string, text: string): Observable<boolean> {
     return of(true);
   }
 
   getReports(): Observable<SentReport[]> {
-    return of([{item: 'I1', desc: 'An item', user: 'Bobbo', ID: '1', trueItem: {ID: '1', name: 'An item', locations: [], category: 'cat'}}, {item: 'I2', desc: 'An item 2', user: 'Benny', ID: '2'}, {item: 'I3', desc: 'Last item', user: 'Kenneth', ID: '3', trueItem: {ID: '1', name: 'An item', locations: [], category: 'cat'}}]);
+    const trueItem: Item = {name: 'test', ID: '1', locations: [], category: 'cat'};
+    const report: SentReport = {item: 'I1', desc: 'an item', user: 'Bobbo', ID: '1', trueItem};
+    return of([report]);
   }
 
   updateItem(item: Item): Observable<boolean> {

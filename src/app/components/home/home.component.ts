@@ -10,7 +10,6 @@ import {AuthService} from 'src/app/services/auth.service';
 import {ImageService} from '../../services/image.service';
 import * as Fuse from 'fuse.js';
 import {AdminService} from 'src/app/services/admin.service';
-import {subscribeOn} from "rxjs/operators";
 
 /**
  *
@@ -228,7 +227,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   /**Adds an item to the current depth */
   addItem() {
-    if (this.ico === 'close') { this.toggleIco(); }
+    if (this.ico === 'close') {
+      this.toggleIco();
+    }
     // add the item
     let category = 'root';
     let location = 'root';
@@ -246,7 +247,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   /**Adds a hierarchy item to the current depth */
   addHierarchy() {
-    if (this.ico === 'close') { this.toggleIco(); }
+    if (this.ico === 'close') {
+      this.toggleIco();
+    }
   }
 
   searchTextChange(event) {
