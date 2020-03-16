@@ -1,0 +1,14 @@
+.reportName{
+    font-size: 70%;
+    margin-left: 5%;
+    width: 50%;
+    position: relative;
+}
+.reportPiece{
+    margin:0;
+}
+
+img {
+    height: 90%;
+    width: 40px
+}

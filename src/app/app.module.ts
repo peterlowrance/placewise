@@ -38,6 +38,8 @@ import { SettingsComponent } from './components/settings/settings.component';
 import { ResetPassDialogComponent } from './components/reset-pass-dialog/reset-pass-dialog.component';
 import { ChangePassDialogComponent } from './components/change-pass-dialog/change-pass-dialog.component';
 import {AngularFireStorageModule} from '@angular/fire/storage';
+import { ReportDetailViewComponent } from './components/report-detail-view/report-detail-view.component';
+import { AdminReportComponent } from './components/admin-report/admin-report.component'
 import { ModifyHierarchyComponent } from './components/modify-hierarchy/modify-hierarchy.component';
 import { EditHierarchyDialogComponent } from './components/edit-hierarchy-dialog/edit-hierarchy-dialog.component';
 import { ModifyHierarchyDialogComponent } from './components/modify-hierarchy-dialog/modify-hierarchy-dialog.component';
@@ -55,11 +57,13 @@ import {MatRadioModule} from "@angular/material/radio";
     NotFoundComponent,
     MatToolbar,
     ReportDialogComponent,
+    AdminReportComponent,
     SettingsComponent,
     ModifyHierarchyComponent,
     EditHierarchyDialogComponent,
     ResetPassDialogComponent,
     ChangePassDialogComponent,
+    ReportDetailViewComponent
     ModifyHierarchyDialogComponent
   ],
   imports: [
@@ -92,6 +96,6 @@ import {MatRadioModule} from "@angular/material/radio";
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent]
+  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent]
 })
 export class AppModule { }

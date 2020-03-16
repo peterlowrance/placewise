@@ -24,24 +24,49 @@ const httpOptions = {
 export class AdminService // implements AdminInterfaceService
 {
   placeReport(itemID: string, text: string): Observable<boolean> {
-    this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
-      desc: text,
-      item: itemID,
-      user: this.auth.userInfo.firstName
-    });
+    var userID: string;
+    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID,text,x.uid))
+
 
     return of(true);
   }
 
+  placeReportHelper(itemID: string, text:string, userID:string)
+  {
+    this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
+      desc: text,
+      item: itemID,
+      user: userID,
+      date: new Date()
+    });
+  }
+
   getReports(): Observable<SentReport[]> {
-    return this.afs.collection<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports').snapshotChanges().pipe(map(a => {
-      return a.map(g => {
-          const data = g.payload.doc.data() as SentReport;
-          data.ID = g.payload.doc.id;
-          return data;
-        }
-      );
+    console.log('/Workspaces/' + this.auth.workspace.id + '/Reports');
+    return this.afs.collection<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports').snapshotChanges().pipe(
+      map(a => {
+        return a.map(g => {
+            const data = g.payload.doc.data() as SentReport;
+            data.ID = g.payload.doc.id;
+            return data;
+          }
+        );
     }));
+  }
+
+  deleteReport(id : string)
+  {
+    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).delete();
+  }
+
+  clearReports(reports: SentReport[]): Observable<Boolean> {
+    for(let i = 0; i < reports.length; i++)
+    {
+      console.log("reportdel")
+      this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + reports[i].ID).delete();
+    }
+    reports = [];
+    return of(true);
   }
 
   updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Observable<boolean> {
