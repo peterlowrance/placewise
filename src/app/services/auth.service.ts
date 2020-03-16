@@ -6,6 +6,8 @@ import {Observable, of, BehaviorSubject} from 'rxjs';
 import {first, map} from 'rxjs/operators';
 import {WorkspaceInfo} from '../models/WorkspaceInfo';
 import {User} from '../models/User';
+import * as firebase from 'firebase';
+import { $ } from 'protractor';
 
 interface WorkspaceUser{
   role: string;
@@ -39,13 +41,31 @@ export class AuthService {
   /**User role, Admin or User */
   role: string;
 
-  _workspace: BehaviorSubject<WorkspaceInfo> = new BehaviorSubject(this.workspace);
-  _userInfo: BehaviorSubject<User> = new BehaviorSubject(this.userInfo);
-  _role: BehaviorSubject<string> = new BehaviorSubject(this.role);
-
   constructor(private afAuth: AngularFireAuth,
               private afs: AngularFirestore,
-              private router: Router) { }
+              private router: Router) {
+
+                //onauthstatechange, update credentials
+                afAuth.auth.onAuthStateChanged((user) => {
+                  if(user){
+                    user.getIdTokenResult().then(token => {
+                      this.workspace.id = token.claims.workspace;
+                      this.role = token.claims.role;
+                      console.log(token.claims);
+                      const workDoc = this.getWorkspaceInfo(token.claims.workspace);
+                      //subscribe to changes in workspace name
+                      workDoc.subscribe(
+                        val => this.workspace.name = val.name
+                      );
+                    });
+                    const userDoc = this.getUserInfo(user.uid);
+                    //subscribe to changes in user info
+                    userDoc.subscribe(
+                      val => this.userInfo = val
+                    );
+                  }
+                })
+               }
 
   /**
    * Logs into firebase through email and password sign-in method, retrieves
@@ -61,37 +81,60 @@ export class AuthService {
       this.afAuth.auth.signInWithEmailAndPassword(email,password)
       .then(userData => {
         //success, get user info
-        const doc = this.ensureUserInWorkspace(workspace, userData.user.uid);
-        if(doc){ //user is in DB, get information for authentication
-          doc.subscribe(
-            val => {this.role = val.role; this._role.next(this.role);}
-          );
-
-          //get workspace name
-          const workDoc = this.getWorkspaceInfo(workspace);
-          //if work is null, workspace is nonexistant (redundent, but in case of drops)
-          if(!workDoc) reject("Could not query workspace information");
-          //subscribe to changes in workspace name
-          workDoc.subscribe(
-            val => {this.workspace.name = val.name; this._workspace.next(this.workspace);}
-          );
-          //can also set workspace id
-          this.workspace.id = workspace;
-
-          //now get user information, again might be nonexistant if a drop occurs
-          const userDoc = this.getUserInfo(userData.user.uid);
-          if(!userDoc) reject("Could not query user information");
-          //subscribe to changes in user info
-          userDoc.subscribe(
-            val => {this.userInfo = val; this._userInfo.next(val);}
-          );
-          //have all info, can quit
-          resolve(userData);
-        } else  { //user-workspace connect problem
-          //logout and reject
-          this.logout();
-          reject("User does not belong to this workspace or the workspace does not exist.");
+        userData.user.getIdTokenResult().then( token => {
+          this.role = token.claims.role;
+          this.workspace.id = token.claims.workspace;
+          console.log(token.claims);
         }
+        )
+        //get information
+        const userDoc = this.getUserInfo(userData.user.uid);
+           if(!userDoc) reject("Could not query user information");
+           //subscribe to changes in user info
+           userDoc.subscribe(
+             val => this.userInfo = val
+        );
+        const workDoc = this.getWorkspaceInfo(workspace);
+        //if work is null, workspace is nonexistant (redundent, but in case of drops)
+        if(!workDoc) reject("Could not query workspace information");
+        //subscribe to changes in workspace name
+        workDoc.subscribe(
+          val => this.workspace.name = val.name
+        );
+
+        // const doc = this.ensureUserInWorkspace(workspace, userData.user.uid);
+        // if(doc){ //user is in DB, get information for authentication
+        //   doc.subscribe(
+        //     val => {
+        //       this.role = val.role;
+        //     }
+        //   );
+
+        //   //get workspace name
+        //   const workDoc = this.getWorkspaceInfo(workspace);
+        //   //if work is null, workspace is nonexistant (redundent, but in case of drops)
+        //   if(!workDoc) reject("Could not query workspace information");
+        //   //subscribe to changes in workspace name
+        //   workDoc.subscribe(
+        //     val => this.workspace.name = val.name
+        //   );
+        //   //can also set workspace id
+        //   this.workspace.id = workspace;
+
+        //   //now get user information, again might be nonexistant if a drop occurs
+        //   const userDoc = this.getUserInfo(userData.user.uid);
+        //   if(!userDoc) reject("Could not query user information");
+        //   //subscribe to changes in user info
+        //   userDoc.subscribe(
+        //     val => this.userInfo = val
+        //   );
+        //   //have all info, can quit
+        //   resolve(userData);
+        // } else  { //user-workspace connect problem
+        //   //logout and reject
+        //   this.logout();
+        //   reject("User does not belong to this workspace or the workspace does not exist.");
+        // }
       },
       //error occured in sign-in, reject attempt
       err => reject(err)
@@ -144,20 +187,38 @@ export class AuthService {
    * Gets the user information
    */
   getUser(){
-    return this._userInfo.asObservable();
+    return of(this.userInfo);
   }
 
   /**
    * Gets the workspace information
    */
   getWorkspace(){
-    return this._workspace.asObservable();
+    return of(this.workspace);
   }
 
   /**
    * Gets the role of the user
    */
   getRole(){
-    return this._role.asObservable();
+    return of(this.role);
+  }
+
+  /**
+   * Sends a reset password email with the given email
+   */
+  sendPasswordResetEmail(email: string){
+    return this.afAuth.auth.sendPasswordResetEmail(email);
+  }
+
+  /**
+   * Sends a change password request to firebase
+   */
+  changePassword(curPass: string, newPass: string){
+    const cred = firebase.auth.EmailAuthProvider.credential(this.userInfo.email, curPass);
+    //reauthenticate
+    return this.afAuth.auth.currentUser.reauthenticateWithCredential(cred).then(
+      () => this.afAuth.auth.currentUser.updatePassword(newPass)
+    )
   }
 }

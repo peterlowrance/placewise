@@ -3,9 +3,16 @@ import {Router, NavigationEnd} from '@angular/router';
 import {Location} from '@angular/common';
 
 import {NavService} from '../../services/nav.service';
+<<<<<<< HEAD
 import { of } from 'rxjs';
 import { HierarchyItem } from 'src/app/models/HierarchyItem';
 import { AuthService } from 'src/app/services/auth.service';
+=======
+import {ItemComponent} from '../item/item.component';
+import {of} from 'rxjs';
+import {HierarchyItem} from 'src/app/models/HierarchyItem';
+import {AuthService} from 'src/app/services/auth.service';
+>>>>>>> master
 
 @Component({
   selector: 'app-navbar',
@@ -43,13 +50,16 @@ export class NavbarComponent implements OnInit {
       }
     });
 
-    navService.getSearchType().subscribe(val => this.searchType = val);
+    navService.getSearchType().subscribe(val => this.searchType = val.toLowerCase());
     navService.getParent().subscribe(val => this.parent = val);
   }
 
   ngOnInit() {
     this.authService.getRole().subscribe(
-      val => {console.log(val);this.role = val}
+      val => {
+        console.log(val);
+        this.role = val;
+      }
     );
   }
 
@@ -62,8 +72,12 @@ export class NavbarComponent implements OnInit {
       return 'item';
     } else if (this.locationString === '/login') {
       return 'login';
-    } else if (this.locationString == '/settings'){
+    } else if (this.locationString === '/settings') {
       return 'settings';
+    } else if (this.locationString === '/modify/categories') {
+      return 'modifyCategories';
+    } else if (this.locationString === '/modify/locations') {
+      return 'modifyLocations';
     } else {
       return '/';
     }
@@ -80,16 +94,16 @@ export class NavbarComponent implements OnInit {
    * Notifies the navservice that a hierarchy return was requested
    */
   returnInHierarchy() {
-    this.routeLocation.back()
+    this.routeLocation.back();
     this.navService.returnState();
   }
 
   /**
    * Returns home, forgets parent state
    */
-  goHome(){
+  goHome() {
     this.navService.forgetParent();
-    this.router.navigate([`search/${this.searchType}/root`]);
+    this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/root']);
   }
 
   /**

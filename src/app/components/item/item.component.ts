@@ -1,23 +1,23 @@
 // adapted tree control from https://material.angular.io/components/tree/examples
-import {Component, OnInit, OnDestroy} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {Item} from 'src/app/models/Item';
 import {Report} from 'src/app/models/Report';
 import {ItemReportModalData} from 'src/app/models/ItemReportModalData';
-import {ActivatedRoute} from '@angular/router';
-import {Location} from '@angular/common';
+import {ActivatedRoute, Router} from '@angular/router';
 import {SearchService} from 'src/app/services/search.service';
 import {MatDialog} from '@angular/material/dialog';
 import {ReportDialogComponent} from '../report-dialog/report-dialog.component';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
 import {NestedTreeControl} from '@angular/cdk/tree';
-import { Subscription } from 'rxjs';
-import {AuthService} from '../../services/auth.service'
+import {AuthService} from '../../services/auth.service';
+import {FormBuilder} from '@angular/forms';
 import {MatChipInputEvent} from '@angular/material/chips';
 import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
-import { AdminService } from 'src/app/services/admin.service';
+import {AdminService} from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
-import {NavService} from '../../services/nav.service';
+import {EditHierarchyDialogComponent} from "../edit-hierarchy-dialog/edit-hierarchy-dialog.component";
+import {ModifyHierarchyDialogComponent} from "../modify-hierarchy-dialog/modify-hierarchy-dialog.component";
 
 
 interface TreeNode {
@@ -32,13 +32,31 @@ interface TreeNode {
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css']
 })
-export class ItemComponent implements OnInit, OnDestroy {
+export class ItemComponent implements OnInit {
+
+  // view child refs
+  // @ViewChild("name", {read: ElementRef, static: false}) nameField: ElementRef;
+
+  // nameControl = new FormControl('', Validators.required);
+  // nameForm: FormGroup;
+
+  constructor(
+    private searchService: SearchService,
+    private adminService: AdminService,
+    private router: Router,
+    private route: ActivatedRoute,
+    public dialog: MatDialog,
+    private authService: AuthService,
+    private formBuilder: FormBuilder,
+    private imageService: ImageService
+  ) {
+  }
   readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
 
   id: string; // item id
   item: Item; // item returned by id
-  previousItem: Item; //previous item, before edits are made
-  imageToSave: File = null; //the image to upload when saved
+  previousItem: Item; // previous item, before edits are made
+  imageToSave: File = null; // the image to upload when saved
 
   loading = true;  // whether the page is actively loading
   report: Report = {
@@ -64,35 +82,19 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   dataSource = new MatTreeNestedDataSource<TreeNode>();
 
-  toTree = (h: HierarchyItem) => ({name: h.name, imageUrl: h.imageUrl, children: [], ID: h.ID});
 
-  hasChild = (_: number, node: TreeNode) => !!node.children && node.children.length > 0;
+  role: string; // user role for editing
+  dirty: boolean; // is the item edited dirty
 
-
-
-  role: string; //user role for editing
-  dirty: boolean; //is the item edited dirty
-
-  textEditFields:{
+  textEditFields: {
     name: boolean;
     desc: boolean;
     tags: boolean;
-  } = {name: false, desc: false, tags: false}
+  } = {name: false, desc: false, tags: false};
 
-  //delete message handler
-  deleteSub: Subscription;
+  toTree = (h: HierarchyItem) => ({name: h.name, imageUrl: h.imageUrl, children: [], ID: h.ID});
 
-  constructor(
-    private searchService: SearchService,
-    private adminService: AdminService,
-    private routeLocation: Location,
-    private route: ActivatedRoute,
-    public dialog: MatDialog,
-    private authService: AuthService,
-    private imageService: ImageService,
-    private navService: NavService
-  ) {
-  }
+  hasChild = (_: number, node: TreeNode) => !!node.children && node.children.length > 0;
 
   ngOnInit() {
     // retrieve id
@@ -102,16 +104,16 @@ export class ItemComponent implements OnInit, OnDestroy {
     this.searchService.getItem(this.id).subscribe(item => {
       // get the item ref
       this.item = item;
-      this.previousItem = JSON.parse(JSON.stringify(item)); //deep copy
-      //get all locations and filter
+      this.previousItem = JSON.parse(JSON.stringify(item)); // deep copy
+      // get all locations and filter
       this.searchService.getAncestorsOfItem(item.ID).subscribe(hierarchy => {
         // need to loop over first elements, pop off, and combine any like
         // first pop off all top level locations, those are the root
         for (const h of hierarchy) {
-            const head = this.toTree(h.pop());
-            this.parent = this.parent.ID === null ? head : this.parent;
-            // go over all list and keep building node list
-            this.parent.children.push(this.convertList(h));
+          const head = this.toTree(h.pop());
+          this.parent = this.parent.ID === null ? head : this.parent;
+          // go over all list and keep building node list
+          this.parent.children.push(this.convertList(h));
         }
 
         // now collapse duplicates
@@ -133,27 +135,24 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.searchService.getCategory(item.category).subscribe(val => this.category = val);
     });
 
-    //get user role
+    // get user role
     this.role = this.authService.role;
 
-    //listen to delete messages
-    this.deleteSub = this.navService.getDeleteMessage().subscribe(
-      (del) => {if(del.valueOf()) this.deleteItem()}
-        
-    )
-  }
-
-  ngOnDestroy(): void {
-    this.deleteSub.unsubscribe();
+    // set up admin change forms
+    // this.nameForm = this.formBuilder.group({name: this.nameControl})
   }
 
   convertList(items: HierarchyItem[]): TreeNode {
-    if (items.length === 0) { return null; } else {
+    if (items.length === 0) {
+      return null;
+    } else {
       const level = this.toTree(items.pop());
       const child = this.convertList(items);
 
       // add if not null
-      if (child) { level.children.push(child); }
+      if (child) {
+        level.children.push(child);
+      }
       return level;
     }
   }
@@ -218,88 +217,120 @@ export class ItemComponent implements OnInit, OnDestroy {
    * A field edit handler
    * @param field the string name of the item field to edit
    */
-  editField(field: string){
-    //set edit field value to enable state change, then set focus
-    switch(field){
+  editField(field: string) {
+    // set edit field value to enable state change, then set focus
+    switch (field) {
       case 'name':
         this.textEditFields.name = true;
-        //focus
-        //this.nameField.nativeElement.focus();
+        // focus
+        // this.nameField.nativeElement.focus();
         break;
       case 'desc':
         this.textEditFields.desc = true;
-        //focus
+        // focus
 
         break;
       case 'tags':
         this.textEditFields.tags = true;
-        //focus
+        // focus
 
         break;
-      default: break;
+      default:
+        break;
     }
+  }
+
+  editLocation() {
+    // Deep copy locations
+    const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
+    const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
+      width: '75%',
+      data: {hierarchy: 'locations', parents: this.item.locations}
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log(result);
+        console.log(oldLocations);
+        this.item.locations = result;
+        this.adminService.updateItem(this.item, null, oldLocations);
+        setTimeout(() => location.reload(), 100);
+      }
+    });
+  }
+
+  editCategory() {
+    const oldCategory = this.item.category;
+    const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
+      width: '75%',
+      data: {hierarchy: 'categories', parents: [this.item.category]}
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.length > 0) {
+        this.item.category = result[0];
+        this.searchService.getCategory(result[0]).subscribe(c => this.category = c);
+        this.adminService.updateItem(this.item, oldCategory, null);
+      }
+    });
   }
 
   /**
    * Handles logic for submitting the name
    */
-  onNameSubmit(){
-    //check to see if name is valid
-    if(this.item.name !== ""){
+  onNameSubmit() {
+    // check to see if name is valid
+    if (this.item.name !== '') {
       // this.item.name = this.nameForm.value;
-      //hide control
+      // hide control
       this.textEditFields.name = false;
-    }
-    else{
+    } else {
       this.item.name = this.previousItem.name;
-      //TODO: show snackbar
+      // TODO: show snackbar
     }
 
-    //check for dirtiness
+    // check for dirtiness
     this.checkDirty();
   }
 
   /**
    * Handles logic for submitting the description
    */
-  onDescSubmit(){
-    //check to see if name is valid
-    if(this.item.desc !== ""){
+  onDescSubmit() {
+    // check to see if name is valid
+    if (this.item.desc !== '') {
       // this.item.name = this.nameForm.value;
-      //hide control
+      // hide control
       this.textEditFields.desc = false;
-    }
-    else{
+    } else {
       this.item.desc = this.previousItem.desc;
-      //TODO: show snackbar
+      // TODO: show snackbar
     }
 
-    //check for dirtiness
+    // check for dirtiness
     this.checkDirty();
   }
 
   /**
    * Handles uploading an image file to firestorage
-   * @param event 
+   * @param event
    */
-  uploadImage(fileEvent: Event){
-    //cast
+  uploadImage(fileEvent: Event) {
+    // cast
     const element = (fileEvent.target as HTMLInputElement);
-    //only change if there was a file upload
-    if (element.files && element.files[0]){
-      //set image url file
+    // only change if there was a file upload
+    if (element.files && element.files[0]) {
+      // set image url file
       const file = element.files[0];
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = (ev) => {
-        if(typeof reader.result === 'string') {
+        if (typeof reader.result === 'string') {
           this.item.imageUrl = reader.result;
-          //set dirty and save for upload
+          // set dirty and save for upload
           this.checkDirty();
           this.imageToSave = file;
           console.log(this.item.imageUrl);
         }
-      }
+      };
     }
   }
 
@@ -323,7 +354,7 @@ export class ItemComponent implements OnInit, OnDestroy {
       input.value = '';
     }
 
-    //check dirty
+    // check dirty
     this.checkDirty();
   }
 
@@ -338,19 +369,18 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.item.tags.splice(index, 1);
     }
 
-    //check dirty
+    // check dirty
     this.checkDirty();
   }
 
   /**
    * Checks to see if the current item is dirty (edited)
    */
-  checkDirty(){
-    if(this.item === this.previousItem){
+  checkDirty() {
+    if (this.item === this.previousItem) {
       this.dirty = false;
       return false;
-    }
-    else{
+    } else {
       this.dirty = true;
       return true;
     }
@@ -359,60 +389,29 @@ export class ItemComponent implements OnInit, OnDestroy {
   /**
    * Saves the item to the database, sets not dirty, and sets previousItem
    */
-  saveItem(){
-    debugger;
-    //first, upload the image if edited
-    if(this.previousItem.imageUrl !== this.item.imageUrl){
-      //if the URL previously existed, just upload, else get new imageURL
-      if(this.previousItem.imageUrl === null || this.previousItem.imageUrl === ''){
+  saveItem() {
+    // first, upload the image if edited
+    if (this.previousItem.imageUrl !== this.item.imageUrl) {
+      // if the URL previously existed, just upload, else get new imageURL
+      if (this.previousItem.imageUrl === null || this.previousItem.imageUrl === '') {
         this.item.imageUrl = this.imageToSave.name;
-      }
-      else{
+      } else {
         this.item.imageUrl = this.previousItem.imageUrl;
       }
-      //post to upload image
-      this.imageService.putImage(this.imageToSave, this.item.imageUrl).subscribe(link => this.item.imageUrl = link);
-
+      // post to upload image
+      if (this.imageToSave) {
+        this.imageService.putImage(this.imageToSave, this.item.imageUrl).subscribe(link => this.item.imageUrl = link);
+      }
     }
-    //post to save item, on uccess update
-    this.adminService.updateItem(this.item).subscribe(val =>{ 
-      if(val)
-      {
+    // post to save item, on uccess update
+    console.log('saving');
+    this.adminService.updateItem(this.item, null, null).subscribe(val => {
+      if (val) {
         this.previousItem = JSON.parse(JSON.stringify(this.item));
         this.dirty = false;
-        alert("Item save successful");
-      }
-      else alert("Item save failed");
-    })
-  }
-
-  /**
-   * Prompts for delete, deletes if so
-   */
-  deleteItem(){
-    if(confirm("Are you sure you want to delete this item? This process cannot be undone.\n" +
-      "Associated locations/categories will remain, but item image will be lost")){
-        //delete first the image, since it can always be restored, if it has one
-        if(this.previousItem.imageUrl !== null && this.previousItem.imageUrl !== ""){
-          this.imageService.removeImage(this.previousItem.imageUrl).then(
-            () => {
-              //on success, delete the item
-              this.adminService.removeItem(this.item.ID);
-              //go back
-              this.routeLocation.back();
-            },
-            (err) => {
-              alert("Item deletion failed. Reason:\n" + err)
-            }
-          )
-        }
-        else{
-          //on success, delete the item
-          this.adminService.removeItem(this.item.ID);
-          //go back
-          this.routeLocation.back();
-        }
-      }
+        alert('Item save successful');
+      } else { alert('Item save failed'); }
+    });
   }
 
 }
