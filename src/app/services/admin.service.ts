@@ -103,25 +103,11 @@ export class AdminService // implements AdminInterfaceService
     return of(true);
   }
 
-  createItem(item: Item){
-    return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
+  createItem(item: Item): Observable<boolean> {
+    this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       item
-    }).then(
-      val => {
-        for(let i = 0; i < item.locations.length; i++)
-        {
-          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + item.locations[i]).get().pipe(
-            map( doc => doc.data())
-          ).toPromise().then(
-            doc => {
-              let ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
-              ary.push(val.id);
-              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + item.locations[i]).update({items: ary})
-            }
-          )
-        }
-      }
-    );
+    });
+    return of(true);
   }
 
   createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string) {
@@ -161,7 +147,7 @@ export class AdminService // implements AdminInterfaceService
       }
     );
 
-    return of(true);
+    //return of(true);
   }
 
   removeItem(itemID: number) {
