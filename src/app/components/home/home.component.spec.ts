@@ -4,7 +4,7 @@ import { HomeComponent } from './home.component';
 
 import {FormBuilder} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
-import {Router} from '@angular/router';
+import {ActivatedRoute, convertToParamMap, Router} from '@angular/router';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MatDialog} from '@angular/material/dialog';
 import {ReactiveFormsModule} from '@angular/forms';
@@ -30,6 +30,7 @@ import * as ImageTest from '../../services/image.mock.service';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {HierarchyItem} from '../../models/HierarchyItem';
+import {from, Observable, of} from 'rxjs';
 
 let navMock = {
   navigate: jest.fn((url: string[]) => {})
@@ -52,7 +53,8 @@ describe('HomeComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ HomeComponent ],
-      providers: [{provide: NavService, useValue: new NavService()}, {provide: SearchService, useClass: SearchTest.SearchMockService}, {provide: ImageService, useClass: ImageTest.ImageMockService}],
+      providers: [{provide: NavService, useValue: new NavService()}, {provide: SearchService, useClass: SearchTest.SearchMockService},
+        {provide: ImageService, useClass: ImageTest.ImageMockService}, {provide: ActivatedRoute, useValue: {snapshot: {paramMap: convertToParamMap({id: 'root'})}}}],
       imports: [MatInputModule, FormsModule, ReactiveFormsModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatButtonToggleModule, MatGridListModule, RouterTestingModule.withRoutes([]), BrowserAnimationsModule]
     })
     .compileComponents();
@@ -68,21 +70,17 @@ describe('HomeComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should create2', () => {
-    expect(component).toBeTruthy();
-  });
-
   describe('Resizing', () => {
 
-    //it('Basic Method Test', () => {
-      //component.columns = 0;
-      //component.determineCols(16, 1000)
-      //expect(component.columns).toBeCloseTo(8.9, 2)
-    //})
+    it('Basic Method Test', () => {
+      component.columns = 0;
+      component.determineCols(16, 1000)
+      expect(component.columns).toBeCloseTo(8.928, 2)
+    })
 
-    /*afterEach(() => {
+    afterEach(() => {
       component.determineCols(); // Resets it back to default column size
-    })*/
+    })
 
   })
 });

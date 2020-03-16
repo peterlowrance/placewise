@@ -22,7 +22,7 @@ export class SearchMockService {
    */
   getAncestorsOfItem(id: string): Observable<HierarchyItem[][]> {
     let ret: HierarchyItem[][];
-    const item = MOCKDB.ITEMS.find((value, index, obj) => {value.ID === id}) 
+    const item = MOCKDB.ITEMS.find((value, index, obj) => {value.ID === id})
     for(let i = 0; i < item.locations.length; i++){
         ret.push([]);
         let current = item.locations[i];
