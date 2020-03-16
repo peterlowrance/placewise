@@ -63,7 +63,7 @@ import {MatRadioModule} from "@angular/material/radio";
     EditHierarchyDialogComponent,
     ResetPassDialogComponent,
     ChangePassDialogComponent,
-    ReportDetailViewComponent
+    ReportDetailViewComponent,
     ModifyHierarchyDialogComponent
   ],
   imports: [
