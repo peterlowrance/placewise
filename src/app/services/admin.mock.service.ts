@@ -16,7 +16,7 @@ export class AdminMockService // implements AdminInterfaceService
   }
 
   getReports(): Observable<SentReport[]> {
-    return of([{item: 'I1', desc: 'An item', user: 'Bobbo', ID: '1'}, {item: 'I2', desc: 'An item 2', user: 'Benny', ID: '2'}, {item: 'I3', desc: 'Last item', user: 'Kenneth', ID: '3'}]);
+    return of([{item: 'I1', desc: 'An item', user: 'Bobbo', ID: '1', trueItem: {ID: '1', name: 'An item', locations: [], category: 'cat'}}, {item: 'I2', desc: 'An item 2', user: 'Benny', ID: '2'}, {item: 'I3', desc: 'Last item', user: 'Kenneth', ID: '3', trueItem: {ID: '1', name: 'An item', locations: [], category: 'cat'}}]);
   }
 
   updateItem(item: Item): Observable<boolean> {
