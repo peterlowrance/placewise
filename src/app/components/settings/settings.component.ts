@@ -41,7 +41,10 @@ export class SettingsComponent implements OnInit {
     );
 
     this.authService.getRole().subscribe(
-      val => this.role = val
+      val => {
+        this.role = val;
+        console.log('role' + val);
+      }
     );
   }
 
@@ -49,13 +52,14 @@ export class SettingsComponent implements OnInit {
    * Requests a password change
    */
   requestPasswordChange(){
+
     let data = {
       oldPass: '',
       newPass: '',
       newPassConfirm: ''
     };
 
-    this.diag.open(ChangePassDialogComponent, 
+    this.diag.open(ChangePassDialogComponent,
       {
         width: '60%',
         data: data
@@ -77,8 +81,11 @@ export class SettingsComponent implements OnInit {
   /**
    * Logs out and navigates to login screen
    */
-  logout(){
+  logout() {
     this.authService.logout();
   }
 
+  goToModify(isCategory: boolean) {
+    this.router.navigate(['modify/' + (isCategory ? 'categories' : 'locations')]);
+  }
 }

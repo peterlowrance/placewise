@@ -14,6 +14,20 @@
                 </mat-icon> <a *ngIf="this.role !=='Admin'">User Settings</a> <a *ngIf="role ==='Admin'">Admin Actions</a>
             </button>
         </span>
+        <span *ngSwitchCase='"modifyCategories"'>
+            <button mat-button (click)="goBack()">
+                <mat-icon>
+                    arrow_back
+                </mat-icon> <a>Modify Categories</a>
+            </button>
+        </span>
+        <span *ngSwitchCase='"modifyLocations"'>
+            <button mat-button (click)="goBack()">
+                <mat-icon>
+                    arrow_back
+                </mat-icon> <a>Modify Locations</a>
+            </button>
+        </span>
         <!-- we are home, check for in search hierarchy -->
         <span *ngSwitchDefault>
             <span *ngIf='parent === null || parent?.ID === "root"'>Placewise</span>
@@ -29,9 +43,10 @@
         </span>
     </div>
     <span class="spacer"></span>
-    <button mat-icon-button [disabled]="this.locationString==='/settings'"  [routerLink]="['/settings']" routerLinkActive="router-link-active">
+    <button mat-icon-button *ngIf="checkLocation() !=='item' " [disabled]="this.locationString==='/settings'"  [routerLink]="['/settings']" routerLinkActive="router-link-active">
         <mat-icon *ngIf="this.role !== 'Admin'">person</mat-icon>
         <mat-icon *ngIf="this.role === 'Admin'">people</mat-icon> <!-- no built-in material admin button -->
     </button>
+    <button mat-icon-button *ngIf="checkLocation() ==='item' && this.role === 'Admin'" (click)="delete()"><mat-icon>delete</mat-icon></button>
     <button mat-icon-button [disabled]="checkLocation() ==='/' && (parent === null || parent.ID === 'root')" (click)="goHome()"><mat-icon>home</mat-icon></button>
 </mat-toolbar>

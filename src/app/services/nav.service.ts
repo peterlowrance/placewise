@@ -9,6 +9,8 @@ import { HierarchyItem } from '../models/HierarchyItem';
   providedIn: 'root'
 })
 export class NavService {
+  /**Delete message passer */
+  deleteMessage: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
   private returnClick: BehaviorSubject<boolean> = new BehaviorSubject(false); //emitter for return clicked
 
@@ -68,5 +70,26 @@ export class NavService {
   setSearchType(type: string){
     this.searchTypeRaw = type;
     this.searchType.next(type);
+  }
+
+    /**
+   * Sends delete message
+   */
+  setDelete(){
+    this.deleteMessage.next(true);
+  }
+
+  /**
+   * Returns the delete message passer
+   */
+  getDeleteMessage(){
+    return this.deleteMessage;
+  }
+
+  /**
+   * Resets delete message
+   */
+  resetDelete(){
+    this.deleteMessage.next(false);
   }
 }

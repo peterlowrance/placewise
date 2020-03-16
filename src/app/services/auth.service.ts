@@ -41,9 +41,7 @@ export class AuthService {
   /**User role, Admin or User */
   role: string;
 
-  _workspace: BehaviorSubject<WorkspaceInfo> = new BehaviorSubject(this.workspace);
-  _userInfo: BehaviorSubject<User> = new BehaviorSubject(this.userInfo);
-  _role: BehaviorSubject<string> = new BehaviorSubject(this.role);
+  currentRole: BehaviorSubject<string> = new BehaviorSubject<string>(this.role);
 
   constructor(private afAuth: AngularFireAuth,
               private afs: AngularFirestore,
@@ -55,6 +53,7 @@ export class AuthService {
                     user.getIdTokenResult().then(token => {
                       this.workspace.id = token.claims.workspace;
                       this.role = token.claims.role;
+                      this.currentRole.next(this.role);
                       console.log(token.claims);
                       const workDoc = this.getWorkspaceInfo(token.claims.workspace);
                       //subscribe to changes in workspace name
@@ -105,7 +104,7 @@ export class AuthService {
         workDoc.subscribe(
           val => this.workspace.name = val.name
         );
-        
+
         // const doc = this.ensureUserInWorkspace(workspace, userData.user.uid);
         // if(doc){ //user is in DB, get information for authentication
         //   doc.subscribe(
@@ -191,21 +190,25 @@ export class AuthService {
    * Gets the user information
    */
   getUser(){
-    return this._userInfo.asObservable();
+    return of(this.userInfo);
   }
 
   /**
    * Gets the workspace information
    */
   getWorkspace(){
-    return this._workspace.asObservable();
+    return of(this.workspace);
   }
 
   /**
    * Gets the role of the user
    */
   getRole(){
-    return this._role.asObservable();
+    return of(this.role);
+  }
+
+  getRoleCurrent(){
+    return this.currentRole.asObservable();
   }
 
   /**

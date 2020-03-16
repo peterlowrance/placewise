@@ -1,10 +1,10 @@
 // adapted tree control from https://material.angular.io/components/tree/examples
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, OnDestroy} from '@angular/core';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {Item} from 'src/app/models/Item';
 import {Report} from 'src/app/models/Report';
 import {ItemReportModalData} from 'src/app/models/ItemReportModalData';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {SearchService} from 'src/app/services/search.service';
 import {MatDialog} from '@angular/material/dialog';
 import {ReportDialogComponent} from '../report-dialog/report-dialog.component';
@@ -16,6 +16,11 @@ import {MatChipInputEvent} from '@angular/material/chips';
 import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
 import {AdminService} from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
+import {EditHierarchyDialogComponent} from "../edit-hierarchy-dialog/edit-hierarchy-dialog.component";
+import {ModifyHierarchyDialogComponent} from "../modify-hierarchy-dialog/modify-hierarchy-dialog.component";
+import { NavService } from 'src/app/services/nav.service';
+import { Subscription } from 'rxjs';
+import {Location} from '@angular/common';
 
 
 interface TreeNode {
@@ -30,7 +35,7 @@ interface TreeNode {
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css']
 })
-export class ItemComponent implements OnInit {
+export class ItemComponent implements OnInit, OnDestroy {
 
   // view child refs
   // @ViewChild("name", {read: ElementRef, static: false}) nameField: ElementRef;
@@ -41,12 +46,13 @@ export class ItemComponent implements OnInit {
   constructor(
     private searchService: SearchService,
     private adminService: AdminService,
-    private router: Router,
+    private routeLocation: Location,
     private route: ActivatedRoute,
     public dialog: MatDialog,
     private authService: AuthService,
     private formBuilder: FormBuilder,
-    private imageService: ImageService
+    private imageService: ImageService,
+    private navService: NavService,
   ) {
   }
   readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
@@ -89,6 +95,9 @@ export class ItemComponent implements OnInit {
     desc: boolean;
     tags: boolean;
   } = {name: false, desc: false, tags: false};
+
+
+  deleteSub: Subscription;//delete subscription
 
   toTree = (h: HierarchyItem) => ({name: h.name, imageUrl: h.imageUrl, children: [], ID: h.ID});
 
@@ -138,6 +147,13 @@ export class ItemComponent implements OnInit {
 
     // set up admin change forms
     // this.nameForm = this.formBuilder.group({name: this.nameControl})
+
+    //set up link to delete
+    this.deleteSub = this.navService.getDeleteMessage().subscribe(val => this.requestDelete(val));
+  }
+
+  ngOnDestroy(){
+    this.deleteSub.unsubscribe();
   }
 
   convertList(items: HierarchyItem[]): TreeNode {
@@ -236,6 +252,39 @@ export class ItemComponent implements OnInit {
       default:
         break;
     }
+  }
+
+  editLocation() {
+    // Deep copy locations
+    const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
+    const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
+      width: '75%',
+      data: {hierarchy: 'locations', parents: this.item.locations}
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log(result);
+        console.log(oldLocations);
+        this.item.locations = result;
+        this.adminService.updateItem(this.item, null, oldLocations);
+        setTimeout(() => location.reload(), 100);
+      }
+    });
+  }
+
+  editCategory() {
+    const oldCategory = this.item.category;
+    const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
+      width: '75%',
+      data: {hierarchy: 'categories', parents: [this.item.category]}
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.length > 0) {
+        this.item.category = result[0];
+        this.searchService.getCategory(result[0]).subscribe(c => this.category = c);
+        this.adminService.updateItem(this.item, oldCategory, null);
+      }
+    });
   }
 
   /**
@@ -370,13 +419,33 @@ export class ItemComponent implements OnInit {
     }
     // post to save item, on uccess update
     console.log('saving');
-    this.adminService.updateItem(this.item).subscribe(val => {
+    this.adminService.updateItem(this.item, null, null).subscribe(val => {
       if (val) {
         this.previousItem = JSON.parse(JSON.stringify(this.item));
         this.dirty = false;
         alert('Item save successful');
       } else { alert('Item save failed'); }
     });
+  }
+
+  /**
+   * Deletes the item when given the signal
+   * @param signal True for delete requested
+   */
+  requestDelete(signal: boolean){
+    if(signal){
+      if(confirm('Are you sure you want to delete the item?\nThis cannot be undone.')){
+        //TODO: remove image
+        this.adminService.removeItem(this.item.ID).subscribe(val =>{
+          if(val){
+            alert('Item successfully deleted.');
+            this.navService.returnState();
+            this.routeLocation.back();
+          }
+          else alert('Item deletion failed.');
+        });
+      }
+    }
   }
 
 }

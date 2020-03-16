@@ -40,6 +40,11 @@ import { ChangePassDialogComponent } from './components/change-pass-dialog/chang
 import {AngularFireStorageModule} from '@angular/fire/storage';
 import { ReportDetailViewComponent } from './components/report-detail-view/report-detail-view.component';
 import { AdminReportComponent } from './components/admin-report/admin-report.component'
+import { ModifyHierarchyComponent } from './components/modify-hierarchy/modify-hierarchy.component';
+import { EditHierarchyDialogComponent } from './components/edit-hierarchy-dialog/edit-hierarchy-dialog.component';
+import { ModifyHierarchyDialogComponent } from './components/modify-hierarchy-dialog/modify-hierarchy-dialog.component';
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MatRadioModule} from "@angular/material/radio";
 
 
 @NgModule({
@@ -54,9 +59,12 @@ import { AdminReportComponent } from './components/admin-report/admin-report.com
     ReportDialogComponent,
     AdminReportComponent,
     SettingsComponent,
+    ModifyHierarchyComponent,
+    EditHierarchyDialogComponent,
     ResetPassDialogComponent,
     ChangePassDialogComponent,
     ReportDetailViewComponent
+    ModifyHierarchyDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -82,10 +90,12 @@ import { AdminReportComponent } from './components/admin-report/admin-report.com
     AngularFireStorageModule,
     MatSnackBarModule,
     MatDividerModule,
-    SmdFabSpeedDialModule
+    SmdFabSpeedDialModule,
+    MatCheckboxModule,
+    MatRadioModule
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ReportDetailViewComponent]
+  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent]
 })
 export class AppModule { }

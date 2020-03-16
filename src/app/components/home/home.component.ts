@@ -6,10 +6,11 @@ import {FormControl} from '@angular/forms';
 import {SearchService} from '../../services/search.service';
 import {NavService} from '../../services/nav.service';
 import {Subscription} from 'rxjs';
-import { AuthService } from 'src/app/services/auth.service';
+import {AuthService} from 'src/app/services/auth.service';
 import {ImageService} from '../../services/image.service';
 import * as Fuse from 'fuse.js';
-import { AdminService } from 'src/app/services/admin.service';
+import {AdminService} from 'src/app/services/admin.service';
+import {subscribeOn} from "rxjs/operators";
 
 /**
  *
@@ -24,8 +25,7 @@ import { AdminService } from 'src/app/services/admin.service';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  control = new FormControl(); // TODO research this more
-  // options: string[] = ['Two', 'Inch', 'Galvanized'];
+  control = new FormControl();
   searchValue: string;
 
   selectedSearch = 'Categories';
@@ -34,18 +34,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   items: Item[];
   allChildrenItems: Item[];
   columns: number;
+  previousSearch = '';
 
   typeSub: Subscription;
   parentSub: Subscription;
   returnSub: Subscription;
 
   /**The user's role, used for fab loading */
-  role: String = '';
+  role: string = '';
 
   /**Admin fab open direction */
-  direction = "up";
+  direction = 'up';
   /**Admin fab open animation type */
-  animation = "fling";
+  animation = 'fling';
   /**Admin fab spin */
   spin = true;
   /**Admin fab icon */
@@ -71,7 +72,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private authService: AuthService,
     private adminService: AdminService) {
-    //subscribe to nav state
+    // subscribe to nav state
     this.returnSub = this.navService.getReturnState().subscribe(
       val => {
         if (val && this.root) { // if we returned
@@ -107,29 +108,15 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.searchService.getAllLocations().subscribe(l => console.log(l));
     const urlID = this.route.snapshot.paramMap.get('id');
     this.selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
 
-    this.displayDescendants(urlID, this.selectedSearch === 'Categories');
-
+    // this.displayDescendants(urlID, this.selectedSearch === 'Categories');
     this.loadLevel(urlID, this.selectedSearch);
 
-    // Load root and set nav bar name
-    if (this.selectedSearch === 'Categories') {
-      this.searchService.getCategory(urlID).subscribe(data => {
-        this.root = data;
-        this.navService.setParent(data);
-      });
-    } else {
-      this.searchService.getLocation(urlID).subscribe(data => {
-        this.root = data;
-        this.navService.setParent(data);
-      });
-    }
     this.determineCols();
 
-    //Get role
+    // Get role
     this.authService.getRole().subscribe(
       val => this.role = val
     );
@@ -141,22 +128,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadLevel(this.root.parent, this.selectedSearch);
   }
 
-  private loadLevel(urlID: string, urlSS: string) {
-    this.selectedSearch = urlSS;
+  private loadLevel(rootID: string, selectedSearch: string) {
+    this.selectedSearch = selectedSearch;
     this.navService.setSearchType(this.selectedSearch);
-    if (urlSS === 'Categories') {
-      this.searchService.getCategory(urlID).subscribe(data => {
-        this.root = data;
-        this.setNavParent(this.root);
-        this.displayDescendants(this.root.ID, this.selectedSearch === 'Categories');
-      });
-    } else {
-      this.searchService.getLocation(urlID).subscribe(data => {
-        this.root = data;
-        this.setNavParent(this.root);
-        this.displayDescendants(this.root.ID, this.selectedSearch === 'Categories');
-      });
-    }
+    const appropriateHierarchy = selectedSearch === 'Categories' ? this.searchService.getCategory(rootID) : this.searchService.getLocation(rootID);
+    appropriateHierarchy.subscribe(data => {
+      this.root = data;
+      this.setNavParent(this.root);
+      this.displayDescendants(this.root.ID, this.selectedSearch === 'Categories');
+    });
   }
 
   /**
@@ -176,11 +156,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   displayDescendants(rootID = this.root.ID, isCategory = this.selectedSearch === 'Categories') {
+    this.hierarchyItems = [];
     this.searchService.getDescendantsOfRoot(rootID ? rootID : 'root', isCategory).subscribe(data => {
       this.hierarchyItems = data;
     });
     // Load items that descend from root
-    this.items = [];
     // If root exists, display it's items, otherwise get root from db first
     if (this.root && this.root.items) {
       this.displayItems(this.root);
@@ -194,6 +174,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   displayItems(root: HierarchyItem) {
+    this.items = [];
     if (root.items) {
       for (const i of root.items) {
         this.searchService.getItem(i).subscribe(data => {
@@ -213,7 +194,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     const style = window.getComputedStyle(textField, null).getPropertyValue('font-size');
     const fontSize = parseFloat(style);
     const fontLine = fontSize * 7; // Sets max characters (not directly) on a line
-    console.log(window.innerWidth / fontLine);
     this.columns = window.innerWidth / fontLine;
   }
 
@@ -235,43 +215,43 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.searchTextChange('');
     window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + (this.root ? this.root.ID : 'root'));
     this.setNavType(event.value);
-    this.displayDescendants(this.root ? this.root.ID : 'root', event.value === 'Categories');
+    this.loadLevel('root', event.value);
   }
 
   /**Toggles the admin fab icon */
-  toggleIco(){
+  toggleIco() {
     this.ico = this.ico === 'add' ? 'close' : 'add';
   }
 
   /**Adds an item to the current depth */
-  addItem(){
-    if(this.ico === 'close')  this.toggleIco();
-    //add the item
-    var category = '';
-    var location = '';
-    //to category
-    if(this.selectedSearch === 'Categories'){
+  addItem() {
+    if (this.ico === 'close') { this.toggleIco(); }
+    // add the item
+    let category = 'root';
+    let location = 'root';
+    // to category
+    if (this.selectedSearch === 'Categories') {
       category = this.root.ID;
-    }
-    else { //add to locations
+    } else { // add to locations
       location = this.root.ID;
     }
-    this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '', location).then(
+    this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '../../../assets/notFound.png', location).then(
       () => alert('Item successfully added'),
       (err) => alert('Item successfully added. Error:\n' + err)
     );
   }
 
   /**Adds a hierarchy item to the current depth */
-  addHierarchy(){
-    if(this.ico === 'close')  this.toggleIco();
-    console.log('hierarchy');
+  addHierarchy() {
+    if (this.ico === 'close') { this.toggleIco(); }
   }
 
   searchTextChange(event) {
+    if (event === '' && this.previousSearch === '') {
+      return;
+    }
     // If the search is empty, load descendants normally
     if (event === '') {
-      console.log('empty search');
       this.displayDescendants(this.root.ID, this.selectedSearch === 'Categories');
     } else { // Otherwise, get all descendant hierarchy items and items and fuzzy match them
       this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
@@ -285,5 +265,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.hierarchyItems = hierarchySearcher.search(event);
       });
     }
+    this.previousSearch = event;
   }
 }
