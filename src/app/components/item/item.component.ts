@@ -405,7 +405,7 @@ export class ItemComponent implements OnInit {
     }
     // post to save item, on uccess update
     console.log('saving');
-    this.adminService.updateItem(this.item).subscribe(val => {
+    this.adminService.updateItem(this.item, null, null).subscribe(val => {
       if (val) {
         this.previousItem = JSON.parse(JSON.stringify(this.item));
         this.dirty = false;

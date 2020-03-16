@@ -229,7 +229,7 @@ export class AdminService // implements AdminInterfaceService
                 i.locations.push(remove.parent);
               }
               console.log(i);
-              this.updateItem(i);
+              this.updateItem(i, null, null);
             });
           });
         }
@@ -262,7 +262,7 @@ export class AdminService // implements AdminInterfaceService
             this.searchService.getItem(item).subscribe(i => {
               // Set the category
               i.category = toRemove.parent;
-              this.updateItem(i);
+              this.updateItem(i, null, null);
             });
           });
         }
