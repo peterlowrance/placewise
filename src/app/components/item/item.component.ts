@@ -222,7 +222,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.report.reportDate = new Date().toDateString();
 
         // TODO: issue report
-        console.log(this.report);
+        this.adminService.placeReport(this.report.item.ID,this.report.description);
       }
     });
   }
