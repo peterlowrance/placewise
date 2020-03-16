@@ -3,16 +3,10 @@ import {Router, NavigationEnd} from '@angular/router';
 import {Location} from '@angular/common';
 
 import {NavService} from '../../services/nav.service';
-<<<<<<< HEAD
-import { of } from 'rxjs';
-import { HierarchyItem } from 'src/app/models/HierarchyItem';
-import { AuthService } from 'src/app/services/auth.service';
-=======
 import {ItemComponent} from '../item/item.component';
 import {of} from 'rxjs';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
 import {AuthService} from 'src/app/services/auth.service';
->>>>>>> master
 
 @Component({
   selector: 'app-navbar',
