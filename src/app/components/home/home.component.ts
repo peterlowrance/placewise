@@ -25,13 +25,11 @@ import {AdminService} from 'src/app/services/admin.service';
 })
 export class HomeComponent implements OnInit, OnDestroy {
   control = new FormControl();
-  searchValue: string;
 
   selectedSearch = 'Categories';
   hierarchyItems: HierarchyItem[];
   root: HierarchyItem;
   items: Item[];
-  allChildrenItems: Item[];
   columns: number;
   previousSearch = '';
 
@@ -107,14 +105,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Get the url and set the selectedSearch
     const urlID = this.route.snapshot.paramMap.get('id');
     this.selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
-
-    // this.displayDescendants(urlID, this.selectedSearch === 'Categories');
+    // Load the current level
     this.loadLevel(urlID, this.selectedSearch);
 
     this.determineCols();
-
     // Get role
     this.authService.getRole().subscribe(
       val => this.role = val
@@ -127,12 +124,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadLevel(this.root.parent, this.selectedSearch);
   }
 
+  /**
+   * Load the items and category/locations that directly descend from the root
+   * @param rootID root to display children of
+   * @param selectedSearch category or location
+   */
   private loadLevel(rootID: string, selectedSearch: string) {
     this.selectedSearch = selectedSearch;
     this.navService.setSearchType(this.selectedSearch);
     const appropriateHierarchy = selectedSearch === 'Categories' ? this.searchService.getCategory(rootID) : this.searchService.getLocation(rootID);
-    appropriateHierarchy.subscribe(data => {
-      this.root = data;
+    appropriateHierarchy.subscribe(root => {
+      this.root = root;
       this.setNavParent(this.root);
       this.displayDescendants(this.root.ID, this.selectedSearch === 'Categories');
     });
@@ -156,8 +158,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   displayDescendants(rootID = this.root.ID, isCategory = this.selectedSearch === 'Categories') {
     this.hierarchyItems = [];
-    this.searchService.getDescendantsOfRoot(rootID ? rootID : 'root', isCategory).subscribe(data => {
-      this.hierarchyItems = data;
+    this.searchService.getDescendantsOfRoot(rootID ? rootID : 'root', isCategory).subscribe(descendants => {
+      this.hierarchyItems = descendants;
     });
     // Load items that descend from root
     // If root exists, display it's items, otherwise get root from db first
@@ -175,10 +177,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   displayItems(root: HierarchyItem) {
     this.items = [];
     if (root.items) {
-      for (const i of root.items) {
-        this.searchService.getItem(i).subscribe(data => {
-          this.items.push(data);
-          this.imageService.getImage(data.imageUrl).subscribe(link => data.imageUrl = link);
+      // For each itemID descending from root, get the item from the data and added to the global items array
+      for (const itemID of root.items) {
+        this.searchService.getItem(itemID).subscribe(returnedItem => {
+          this.items.push(returnedItem);
+          this.imageService.getImage(returnedItem.imageUrl).subscribe(link => returnedItem.imageUrl = link);
         });
       }
     }
