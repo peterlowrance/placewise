@@ -27,4 +27,11 @@ export class ImageService {
     //return new link
     return ref.getDownloadURL();
   }
+
+  removeImage(itemID: string): Promise<any>{
+    //get ref
+    const ref = this.afsg.ref(this.auth.workspace.id + '/' + itemID);
+    //erase
+    return ref.delete().toPromise();
+  }
 }

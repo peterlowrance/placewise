@@ -41,6 +41,8 @@ export class AuthService {
   /**User role, Admin or User */
   role: string;
 
+  currentRole: BehaviorSubject<string> = new BehaviorSubject<string>(this.role);
+
   constructor(private afAuth: AngularFireAuth,
               private afs: AngularFirestore,
               private router: Router) {
@@ -51,6 +53,7 @@ export class AuthService {
                     user.getIdTokenResult().then(token => {
                       this.workspace.id = token.claims.workspace;
                       this.role = token.claims.role;
+                      this.currentRole.next(this.role);
                       console.log(token.claims);
                       const workDoc = this.getWorkspaceInfo(token.claims.workspace);
                       //subscribe to changes in workspace name
@@ -202,6 +205,10 @@ export class AuthService {
    */
   getRole(){
     return of(this.role);
+  }
+
+  getRoleCurrent(){
+    return this.currentRole.asObservable();
   }
 
   /**

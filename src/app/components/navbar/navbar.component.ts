@@ -14,6 +14,7 @@ import {AuthService} from 'src/app/services/auth.service';
   styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent implements OnInit {
+
   /** The current location in the app */
   locationString = '/login';
 
@@ -48,7 +49,7 @@ export class NavbarComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.authService.getRole().subscribe(
+    this.authService.getRoleCurrent().subscribe(
       val => {
         console.log(val);
         this.role = val;
@@ -97,6 +98,14 @@ export class NavbarComponent implements OnInit {
   goHome() {
     this.navService.forgetParent();
     this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/root']);
+  }
+
+  /**
+   * Sets the delete message from the nav service
+   */
+  delete(){
+    this.navService.setDelete();
+    this.navService.resetDelete();
   }
 
 }
