@@ -256,7 +256,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     else { //add to locations
       location = this.root.ID;
     }
-    this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '', location)
+    this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '', location).then(
+      () => alert('Item successfully added'),
+      (err) => alert('Item successfully added. Error:\n' + err)
+    );
   }
 
   /**Adds a hierarchy item to the current depth */
