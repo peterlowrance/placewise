@@ -50,17 +50,30 @@ export class ModifyHierarchyComponent implements OnInit {
     });
     const appropriateHierarchy = this.isCategory ? this.searchService.getAllCategories() : this.searchService.getAllLocations();
     appropriateHierarchy.subscribe(hierarchy => {
-      this.searchService.getDescendantsOfRoot('root', this.isCategory).subscribe(descOfRoot => {
-        // Build the tree starting with each root node
-        descOfRoot.forEach(d => this.buildTree(d, hierarchy));
-        this.dataChange.next(descOfRoot);
-        // If parents are selected, expand the tree to see them
-        if (this.selectedParents) {
-          this.selectedParents.forEach(p => {
-            this.expandParents(this.findByID(p, descOfRoot));
-          });
-        }
-      });
+      if (!this.selectMode) {
+        this.searchService.getDescendantsOfRoot('root', this.isCategory).subscribe(descOfRoot => {
+          // Build the tree starting with each root node
+          descOfRoot.forEach(d => this.buildTree(d, hierarchy));
+          this.dataChange.next(descOfRoot);
+          // If parents are selected, expand the tree to see them
+          if (this.selectedParents) {
+            this.selectedParents.forEach(p => {
+              this.expandParents(this.findByID(p, descOfRoot));
+            });
+          }
+        });
+      } else { // If you are selecting new locations or categories, include the root
+        const appripriateRoot = this.isCategory ? this.searchService.getCategory('root') : this.searchService.getLocation('root');
+        appripriateRoot.subscribe(root => {
+          this.buildTree(root, hierarchy);
+          this.dataChange.next([root]);
+          if (this.selectedParents) {
+            this.selectedParents.forEach(p => {
+              this.expandParents(this.findByID(p, [root]));
+            });
+          }
+        });
+      }
     });
     this.selectedParentsOutput.emit(this.selectedParents);
   }

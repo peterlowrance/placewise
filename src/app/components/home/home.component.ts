@@ -10,6 +10,7 @@ import {AuthService} from 'src/app/services/auth.service';
 import {ImageService} from '../../services/image.service';
 import * as Fuse from 'fuse.js';
 import {AdminService} from 'src/app/services/admin.service';
+import {subscribeOn} from "rxjs/operators";
 
 /**
  *
@@ -24,8 +25,7 @@ import {AdminService} from 'src/app/services/admin.service';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  control = new FormControl(); // TODO research this more
-  // options: string[] = ['Two', 'Inch', 'Galvanized'];
+  control = new FormControl();
   searchValue: string;
 
   selectedSearch = 'Categories';
@@ -128,10 +128,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadLevel(this.root.parent, this.selectedSearch);
   }
 
-  private loadLevel(urlID: string, urlSS: string) {
-    this.selectedSearch = urlSS;
+  private loadLevel(rootID: string, selectedSearch: string) {
+    this.selectedSearch = selectedSearch;
     this.navService.setSearchType(this.selectedSearch);
-    const appropriateHierarchy = urlSS === 'Categories' ? this.searchService.getCategory(urlID) : this.searchService.getLocation(urlID);
+    const appropriateHierarchy = selectedSearch === 'Categories' ? this.searchService.getCategory(rootID) : this.searchService.getLocation(rootID);
     appropriateHierarchy.subscribe(data => {
       this.root = data;
       this.setNavParent(this.root);
@@ -156,6 +156,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   displayDescendants(rootID = this.root.ID, isCategory = this.selectedSearch === 'Categories') {
+    this.hierarchyItems = [];
     this.searchService.getDescendantsOfRoot(rootID ? rootID : 'root', isCategory).subscribe(data => {
       this.hierarchyItems = data;
     });
@@ -173,6 +174,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   displayItems(root: HierarchyItem) {
+    console.log('Displaying items of ' + root.name);
+    console.log(this.selectedSearch);
+    console.log(root.items);
     this.items = [];
     if (root.items) {
       for (const i of root.items) {
@@ -214,7 +218,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.searchTextChange('');
     window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + (this.root ? this.root.ID : 'root'));
     this.setNavType(event.value);
-    this.displayDescendants(this.root ? this.root.ID : 'root', event.value === 'Categories');
+    this.loadLevel('root', event.value);
   }
 
   /**Toggles the admin fab icon */
