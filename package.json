@@ -7,7 +7,8 @@
     "build": "ng build",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "test": "jest"
+    "test": "jest",
+    "debug": "node --inspect-brk node_modules/jest/bin/jest --runInBand"
   },
   "private": true,
   "dependencies": {
@@ -22,6 +23,7 @@
     "@angular/platform-browser": "~8.2.0",
     "@angular/platform-browser-dynamic": "~8.2.0",
     "@angular/router": "~8.2.0",
+    "@types/jest": "^25.1.4",
     "angular": "^1.7.9",
     "angular-speed-dial": "^9.0.0",
     "firebase": "^7.8.2",
@@ -56,6 +58,28 @@
   },
   "jest": {
     "preset": "jest-preset-angular",
-    "setupTestFrameworkScriptFile": "<rootDir>/src/setupJest.ts"
+    "setupTestFrameworkScriptFile": "<rootDir>/src/setupJest.ts",
+    "testPathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/dist/",
+      "<rootDir>/src/assets/",
+      "<rootDir>/src/environments/",
+      "<rootDir>/src/test.ts",
+      ".mock.service.ts",
+      "<rootDir>/src/app/components/*dialog/",
+      "<rootDir>/src/app/models/"
+    ],
+    "coveragePathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/dist/",
+      "<rootDir>/src/assets/",
+      "<rootDir>/src/environments/",
+      "<rootDir>/src/test.ts",
+      ".mock.service.ts",
+      "<rootDir>/src/app/components/change-pass-dialog/",
+      "<rootDir>/src/app/components/report-dialog/",
+      "<rootDir>/src/app/components/reset-pass-dialog/",
+      "<rootDir>/src/app/models/"
+    ]
   }
 }

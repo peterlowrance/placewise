@@ -198,3 +198,5 @@ upgrade-phonecat-3-final/rollup-config.js
 !schematics-for-libraries/projects/my-lib/package.json
 node_modules
 
+# remove coverage
+/coverage
