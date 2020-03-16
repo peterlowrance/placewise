@@ -8,9 +8,10 @@ import {AngularFirestore} from '@angular/fire/firestore';
 import {AuthService} from './auth.service';
 import {SentReport} from '../models/SentReport';
 import {map} from 'rxjs/operators';
-import { HierarchyItem } from '../models/HierarchyItem';
-import {SearchService} from "./search.service";
-declare var require: any
+import {HierarchyItem} from '../models/HierarchyItem';
+import {SearchService} from './search.service';
+
+declare var require: any;
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -21,18 +22,16 @@ const httpOptions = {
 @Injectable({
   providedIn: 'root'
 })
-export class AdminService // implements AdminInterfaceService
-{
+export class AdminService {
   placeReport(itemID: string, text: string): Observable<boolean> {
     var userID: string;
-    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID,text,x.uid))
+    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid))
 
 
     return of(true);
   }
 
-  placeReportHelper(itemID: string, text:string, userID:string)
-  {
+  placeReportHelper(itemID: string, text: string, userID: string) {
     this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
       desc: text,
       item: itemID,
@@ -51,18 +50,15 @@ export class AdminService // implements AdminInterfaceService
             return data;
           }
         );
-    }));
+      }));
   }
 
-  deleteReport(id : string)
-  {
+  deleteReport(id: string) {
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).delete();
   }
 
-  clearReports(reports: SentReport[]): Observable<Boolean> {
-    for(let i = 0; i < reports.length; i++)
-    {
-      console.log("reportdel")
+  clearReports(reports: SentReport[]): Observable<boolean> {
+    for (let i = 0; i < reports.length; i++) {
       this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + reports[i].ID).delete();
     }
     reports = [];
@@ -74,7 +70,7 @@ export class AdminService // implements AdminInterfaceService
     if (oldCategoryID) {
       // Remove from old category
       this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).get().pipe(
-        map( doc => doc.data())
+        map(doc => doc.data())
       ).toPromise().then(
         doc => {
           let ary: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
@@ -84,7 +80,7 @@ export class AdminService // implements AdminInterfaceService
       );
       // Add to new category
       this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).get().pipe(
-        map( doc => doc.data())
+        map(doc => doc.data())
       ).toPromise().then(
         doc => {
           const ary: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
@@ -113,7 +109,7 @@ export class AdminService // implements AdminInterfaceService
       item.locations.forEach(location => {
         console.log(location);
         this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
-          map( doc => doc.data())
+          map(doc => doc.data())
         ).toPromise().then(
           doc => {
             const ary: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
@@ -152,7 +148,7 @@ export class AdminService // implements AdminInterfaceService
     }).then(
       val => {
         this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
-          map( doc => doc.data())
+          map(doc => doc.data())
         ).toPromise().then(
           doc => {
             const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
@@ -161,7 +157,7 @@ export class AdminService // implements AdminInterfaceService
           }
         );
         this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + category).get().pipe(
-          map( doc => doc.data())
+          map(doc => doc.data())
         ).toPromise().then(
           doc => {
             const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
@@ -191,7 +187,7 @@ export class AdminService // implements AdminInterfaceService
     });
     // remove from old parent's child list
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParent).get().pipe(
-      map( doc => doc.data())
+      map(doc => doc.data())
     ).toPromise().then(
       doc => {
         let ary: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
@@ -202,7 +198,7 @@ export class AdminService // implements AdminInterfaceService
     );
     // Add to new parent's list
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + parentID).get().pipe(
-      map( doc => doc.data())
+      map(doc => doc.data())
     ).toPromise().then(
       doc => {
         const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
@@ -216,7 +212,7 @@ export class AdminService // implements AdminInterfaceService
     newItem.ID = newItem.name + Math.round((Math.random() * 1000000));
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + newItem.ID).set(newItem);
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + newParentID).get().pipe(
-      map( doc => doc.data())
+      map(doc => doc.data())
     ).toPromise().then(
       doc => {
         const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
@@ -258,7 +254,10 @@ export class AdminService // implements AdminInterfaceService
             });
           });
         }
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({children: newChildren, items: newItems});
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({
+          children: newChildren,
+          items: newItems
+        });
       }
     );
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.ID).delete();
@@ -293,7 +292,10 @@ export class AdminService // implements AdminInterfaceService
         }
         console.log(newItems);
         console.log(toRemove.items);
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({children: newChildren, items: newItems});
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({
+          children: newChildren,
+          items: newItems
+        });
       }
     );
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.ID).delete();
@@ -303,7 +305,7 @@ export class AdminService // implements AdminInterfaceService
     newItem.ID = newItem.name + Math.round((Math.random() * 1000000));
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + newItem.ID).set(newItem);
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + newParentID).get().pipe(
-      map( doc => doc.data())
+      map(doc => doc.data())
     ).toPromise().then(
       doc => {
         const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
@@ -318,7 +320,7 @@ export class AdminService // implements AdminInterfaceService
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + moveID).update({parent: parentID});
     // remove from old parent's child list
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + oldParentID).get().pipe(
-      map( doc => doc.data())
+      map(doc => doc.data())
     ).toPromise().then(
       doc => {
         let ary: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
@@ -329,7 +331,7 @@ export class AdminService // implements AdminInterfaceService
     );
     // Add to new parent's list
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + parentID).get().pipe(
-      map( doc => doc.data())
+      map(doc => doc.data())
     ).toPromise().then(
       doc => {
         const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
@@ -345,7 +347,5 @@ export class AdminService // implements AdminInterfaceService
   }
 
   constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService) {
-    // this.updateLocationPosition("K1l2fRAzAoz3hJsx6qHF","WzEIS9CQyRlB34s68Bfv");
-    // this.createItemAtLocation("Pizza Frank", "A pizza named Frank", ["Pizza", "Frank"],"FqYPTX6TfHKfWtaTJ7FS","https://cdn.discordapp.com/attachments/216020806587645954/681427611221884938/PizzaFrank.png","66RbfJWe0GA0AyU37v7a")
   }
 }

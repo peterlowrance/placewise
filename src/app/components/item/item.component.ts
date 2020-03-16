@@ -1,5 +1,5 @@
 // adapted tree control from https://material.angular.io/components/tree/examples
-import {Component, OnInit, OnDestroy} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {Item} from 'src/app/models/Item';
 import {Report} from 'src/app/models/Report';
@@ -16,10 +16,9 @@ import {MatChipInputEvent} from '@angular/material/chips';
 import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
 import {AdminService} from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
-import {EditHierarchyDialogComponent} from "../edit-hierarchy-dialog/edit-hierarchy-dialog.component";
-import {ModifyHierarchyDialogComponent} from "../modify-hierarchy-dialog/modify-hierarchy-dialog.component";
-import { NavService } from 'src/app/services/nav.service';
-import { Subscription } from 'rxjs';
+import {ModifyHierarchyDialogComponent} from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
+import {NavService} from 'src/app/services/nav.service';
+import {Subscription} from 'rxjs';
 import {Location} from '@angular/common';
 
 
@@ -37,12 +36,6 @@ interface TreeNode {
 })
 export class ItemComponent implements OnInit, OnDestroy {
 
-  // view child refs
-  // @ViewChild("name", {read: ElementRef, static: false}) nameField: ElementRef;
-
-  // nameControl = new FormControl('', Validators.required);
-  // nameForm: FormGroup;
-
   constructor(
     private searchService: SearchService,
     private adminService: AdminService,
@@ -55,6 +48,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     private navService: NavService,
   ) {
   }
+
   readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
 
   id: string; // item id
@@ -97,7 +91,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   } = {name: false, desc: false, tags: false};
 
 
-  deleteSub: Subscription;//delete subscription
+  deleteSub: Subscription; // delete subscription
 
   toTree = (h: HierarchyItem) => ({name: h.name, imageUrl: h.imageUrl, children: [], ID: h.ID});
 
@@ -148,11 +142,11 @@ export class ItemComponent implements OnInit, OnDestroy {
     // set up admin change forms
     // this.nameForm = this.formBuilder.group({name: this.nameControl})
 
-    //set up link to delete
+    // set up link to delete
     this.deleteSub = this.navService.getDeleteMessage().subscribe(val => this.requestDelete(val));
   }
 
-  ngOnDestroy(){
+  ngOnDestroy() {
     this.deleteSub.unsubscribe();
   }
 
@@ -222,7 +216,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.report.reportDate = new Date().toDateString();
 
         // TODO: issue report
-        this.adminService.placeReport(this.report.item.ID,this.report.description);
+        this.adminService.placeReport(this.report.item.ID, this.report.description);
       }
     });
   }
@@ -424,7 +418,9 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.previousItem = JSON.parse(JSON.stringify(this.item));
         this.dirty = false;
         alert('Item save successful');
-      } else { alert('Item save failed'); }
+      } else {
+        alert('Item save failed');
+      }
     });
   }
 
@@ -432,17 +428,16 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Deletes the item when given the signal
    * @param signal True for delete requested
    */
-  requestDelete(signal: boolean){
-    if(signal){
-      if(confirm('Are you sure you want to delete the item?\nThis cannot be undone.')){
+  requestDelete(signal: boolean) {
+    if (signal) {
+      if (confirm('Are you sure you want to delete the item?\nThis cannot be undone.')) {
         //TODO: remove image
-        this.adminService.removeItem(this.item.ID).subscribe(val =>{
-          if(val){
+        this.adminService.removeItem(this.item.ID).subscribe(val => {
+          if (val) {
             alert('Item successfully deleted.');
             this.navService.returnState();
             this.routeLocation.back();
-          }
-          else alert('Item deletion failed.');
+          } else alert('Item deletion failed.');
         });
       }
     }

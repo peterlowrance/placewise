@@ -6,9 +6,8 @@ import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {ActivatedRoute} from '@angular/router';
 import {MatDialog} from '@angular/material/dialog';
 import {EditHierarchyDialogComponent} from '../edit-hierarchy-dialog/edit-hierarchy-dialog.component';
-import {BehaviorSubject, EMPTY, of, zip} from 'rxjs';
-import {map} from 'rxjs/operators';
-import {AdminService} from "../../services/admin.service";
+import {BehaviorSubject} from 'rxjs';
+import {AdminService} from '../../services/admin.service';
 
 interface TreeHierarchyItem extends HierarchyItem {
   realChildren?: TreeHierarchyItem[];
@@ -32,8 +31,12 @@ export class ModifyHierarchyComponent implements OnInit {
 
   hasChild = (_: number, node: TreeHierarchyItem) => node && (!!node.realChildren && node.realChildren.length > 0);
   toHierarchyItem = (node: TreeHierarchyItem) => ({
-    ID: node.ID, name: node.name, imageUrl: node.imageUrl, children: node.realChildren ? node.realChildren.map(e => e.ID) : [],
-    parent: node.realParent ? node.realParent.ID : 'root', items: node.items
+    ID: node.ID,
+    name: node.name,
+    imageUrl: node.imageUrl,
+    children: node.realChildren ? node.realChildren.map(e => e.ID) : [],
+    parent: node.realParent ? node.realParent.ID : 'root',
+    items: node.items
   });
 
   constructor(private searchService: SearchService, private route: ActivatedRoute, public dialog: MatDialog, public adminService: AdminService) {
