@@ -174,9 +174,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   displayItems(root: HierarchyItem) {
-    console.log('Displaying items of ' + root.name);
-    console.log(this.selectedSearch);
-    console.log(root.items);
     this.items = [];
     if (root.items) {
       for (const i of root.items) {
