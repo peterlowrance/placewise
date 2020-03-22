@@ -12,6 +12,7 @@ import {NotFoundComponent} from './components/not-found/not-found.component';
 import {SettingsComponent} from './components/settings/settings.component'
 import { AdminReportComponent } from './components/admin-report/admin-report.component';
 import {ModifyHierarchyComponent} from "./components/modify-hierarchy/modify-hierarchy.component";
+import { ModerateUsersComponent } from './components/moderate-users/moderate-users.component';
 
 
 const routes: Routes = [
@@ -21,6 +22,7 @@ const routes: Routes = [
   {path: 'settings', component: SettingsComponent, canActivate: [AuthGuard]},
   {path: 'reports', component: AdminReportComponent, canActivate: [AuthGuard]},
   {path: 'modify/:selectedHierarchy', component: ModifyHierarchyComponent, canActivate: [AuthGuard]},
+  {path: 'users', component: ModerateUsersComponent, canActivate: [AuthGuard]},
   {path: '**', component: NotFoundComponent}
 ];
 

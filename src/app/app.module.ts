@@ -45,6 +45,7 @@ import { EditHierarchyDialogComponent } from './components/edit-hierarchy-dialog
 import { ModifyHierarchyDialogComponent } from './components/modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatRadioModule} from "@angular/material/radio";
+import { ModerateUsersComponent } from './components/moderate-users/moderate-users.component';
 
 
 @NgModule({
@@ -64,7 +65,8 @@ import {MatRadioModule} from "@angular/material/radio";
     ResetPassDialogComponent,
     ChangePassDialogComponent,
     ReportDetailViewComponent,
-    ModifyHierarchyDialogComponent
+    ModifyHierarchyDialogComponent,
+    ModerateUsersComponent
   ],
   imports: [
     BrowserModule,
