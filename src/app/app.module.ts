@@ -46,7 +46,7 @@ import { ModifyHierarchyDialogComponent } from './components/modify-hierarchy-di
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatRadioModule} from "@angular/material/radio";
 import { ModerateUsersComponent } from './components/moderate-users/moderate-users.component';
-
+import {MatTableModule} from '@angular/material/table';
 
 @NgModule({
   declarations: [
@@ -94,7 +94,8 @@ import { ModerateUsersComponent } from './components/moderate-users/moderate-use
     MatDividerModule,
     SmdFabSpeedDialModule,
     MatCheckboxModule,
-    MatRadioModule
+    MatRadioModule,
+    MatTableModule
   ],
   providers: [],
   bootstrap: [AppComponent],
