@@ -10,6 +10,7 @@ import {SentReport} from '../models/SentReport';
 import {map} from 'rxjs/operators';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {SearchService} from './search.service';
+import * as firebase from "firebase";
 
 declare var require: any;
 
@@ -69,56 +70,21 @@ export class AdminService {
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).set(item);
     if (oldCategoryID) {
       // Remove from old category
-      this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).get().pipe(
-        map(doc => doc.data())
-      ).toPromise().then(
-        doc => {
-          let ary: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
-          ary = ary.filter(obj => obj !== item.ID);
-          this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: ary});
-        }
-      );
+      this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
       // Add to new category
-      this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).get().pipe(
-        map(doc => doc.data())
-      ).toPromise().then(
-        doc => {
-          const ary: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
-          ary.push(item.ID);
-          this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: ary});
-        }
-      );
+      this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
     }
     if (oldLocationsID && oldLocationsID.length > 0) {
       // Remove from old locations
       oldLocationsID.forEach(location => {
         // If this location is no longer present
         if (item.locations.indexOf(location) === -1) {
-          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
-            map(doc => doc.data())
-          ).toPromise().then(
-            doc => {
-              let ary: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
-              ary = ary.filter(obj => obj !== item.ID);
-              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
-            }
-          );
+          this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
         }
       });
       // Add to new locations
       item.locations.forEach(location => {
-        console.log(location);
-        this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
-          map(doc => doc.data())
-        ).toPromise().then(
-          doc => {
-            const ary: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
-            if (ary.indexOf(item.ID) === -1) {
-              ary.push(item.ID);
-              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
-            }
-          }
-        );
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
       });
     }
     return of(true);

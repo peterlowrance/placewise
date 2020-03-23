@@ -267,7 +267,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   }
 
   editCategory() {
-    const oldCategory = this.item.category;
+    const oldCategory = this.item.category ? this.item.category : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '75%',
       data: {hierarchy: 'categories', parents: [this.item.category]}
@@ -276,6 +276,7 @@ export class ItemComponent implements OnInit, OnDestroy {
       if (result && result.length > 0) {
         this.item.category = result[0];
         this.searchService.getCategory(result[0]).subscribe(c => this.category = c);
+        console.log('updating');
         this.adminService.updateItem(this.item, oldCategory, null);
       }
     });
