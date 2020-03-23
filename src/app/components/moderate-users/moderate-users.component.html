@@ -30,3 +30,8 @@
     <tr mat-header-row *matHeaderRowDef="headers"></tr>
     <tr mat-row *matRowDef="let row; columns: headers"></tr>
 </table>
+
+<!-- Add FAB -->
+<button class="fab" mat-fab color="primary" (click)="addUsers()">
+    <mat-icon>add</mat-icon>
+</button>

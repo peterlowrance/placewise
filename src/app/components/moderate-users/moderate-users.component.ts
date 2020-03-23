@@ -37,7 +37,16 @@ export class ModerateUsersComponent implements OnInit {
   }
 
   deleteUser(user: UserData){
-    console.log(user);
+    if (confirm('Are you sure you want to delete this user?\n' +
+    'Their account will be deleted and all permissions revoked.')) {
+      //TODO: delete(user).then(() => {
+        alert(`${user.user.firstName} ${user.user.lastName}, at ${user.user.email}, a/an ${user.role}`);
+      //});
+    }
+  }
+
+  addUsers(){
+    //TODO: launch modal, add all email-like fields, prompt those that could not be added
   }
 
 }
