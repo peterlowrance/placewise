@@ -10,6 +10,8 @@ import {SentReport} from '../models/SentReport';
 import {map} from 'rxjs/operators';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {SearchService} from './search.service';
+import { combineLatest } from 'rxjs';
+import { User } from '../models/User';
 
 declare var require: any;
 
@@ -344,6 +346,38 @@ export class AdminService {
   updateHierarchy(node: HierarchyItem, isCategory: boolean) {
     const appropriateHierarchy = isCategory ? '/Category/' : '/Locations/';
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + appropriateHierarchy + node.ID).update(node);
+  }
+
+  getWorkspaceUsers(): Observable<any[]>{
+    try{
+    console.log(this.auth.workspace.id);
+    let users = this.afs.collection('/Users', ref => ref.where('workspace','==', this.auth.workspace.id)).snapshotChanges().pipe(map(a => {
+      return a.map(g => {
+      const data = g.payload.doc.data();
+      const id = g.payload.doc.id;
+      return {data:data, id:id};
+      })
+    }))
+    let wusers = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().pipe(map(a => {
+      return a.map(g => {
+      const data = g.payload.doc.data();
+      const id = g.payload.doc.id;
+      return {data:data, id:id};
+      })
+    }));
+    return combineLatest<any[]>(users, wusers, (user, wuser) =>{
+      let list = []
+      user.forEach((element, index) => {
+        list.push({user: element.data, role: wuser.find((elem) => elem.id === element.id).data.role});
+      });
+      return list;
+    }
+    )
+    
+    }
+    catch(err){
+      console.log(err)
+    }
   }
 
   constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService) {

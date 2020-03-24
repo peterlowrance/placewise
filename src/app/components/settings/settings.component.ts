@@ -16,7 +16,8 @@ export class SettingsComponent implements OnInit {
   user: User = {
     firstName: '',
     lastName: '',
-    email: ''
+    email: '',
+    workspace: ''
   };
   workspace: WorkspaceInfo = {
     name: '',

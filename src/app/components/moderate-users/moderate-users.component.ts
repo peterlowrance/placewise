@@ -10,9 +10,9 @@ interface UserData{
 }
 
 const TESTDATA: UserData[] = [
-  {user: {firstName:"Anna",lastName:"Bray",email:"abray@gamil.com"}, role:"User"}, 
-  {user: {firstName:"Lord",lastName:"Saladin",email:"headbutt@yahoo.com"}, role:"User"}, 
-  {user: {firstName:"Cayde",lastName:"Six",email:"fastmouth@gamil.com"}, role:"Admin"}
+  {user: {firstName:"Anna",lastName:"Bray",email:"abray@gamil.com", workspace:"aP87kgghQ8mqvvwcZGQV"}, role:"User"}, 
+  {user: {firstName:"Lord",lastName:"Saladin",email:"headbutt@yahoo.com", workspace: "aP87kgghQ8mqvvwcZGQV"}, role:"User"}, 
+  {user: {firstName:"Cayde",lastName:"Six",email:"fastmouth@gamil.com", workspace: "aP87kgghQ8mqvvwcZGQV"}, role:"Admin"}
 ]
 
 @Component({
@@ -22,14 +22,16 @@ const TESTDATA: UserData[] = [
 })
 export class ModerateUsersComponent implements OnInit {
   /** Array of workspace user data */
-  workspaceUsers: UserData[] = TESTDATA;
+  workspaceUsers: UserData[];
 
   headers: string[] = ['User', 'Admin','Delete'];
 
   constructor(private authService: AuthService, private adminService: AdminService) { }
 
   ngOnInit() {
-
+    this.adminService.getWorkspaceUsers().subscribe(
+      (users) => {this.workspaceUsers = users; console.log(users);}
+    )
   }
 
   toggleAdmin(change: MatCheckboxChange){

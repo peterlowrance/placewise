@@ -34,7 +34,8 @@ export class AuthService {
   userInfo: User = {
     firstName: '',
     lastName: '',
-    email: ''
+    email: '',
+    workspace:''
   }
   /**User role, Admin or User */
   role: string;
