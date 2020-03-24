@@ -3,11 +3,14 @@
     <mat-form-field>
       <input matInput [(ngModel)]="data.name">
     </mat-form-field>
+    <button class="trashBtn" mat-icon-button (click)="onDeleteClick()"><mat-icon>delete</mat-icon></button>
   </h1>
-  <button mat-icon-button (click)="onDeleteClick()"><mat-icon>delete</mat-icon></button>
   <!--<div class="image" [ngStyle]="{'background-image': 'url(' + data.imageUrl + ')'}"></div>-->
-  <img class="responsive-item-image container-img" src={{data.imageUrl}} layout-fit>
-  <button mat-icon-button class="container-button"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button>
+  <div class="container-img">
+    <img class="responsive-item-image" src={{data.imageUrl}} layout-fit>
+    <button mat-icon-button class="container-button"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button>
+  </div>
+
   <!-- hidden item uploader -->
   <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
   <div>Parent: {{data.realParent ? data.realParent.name : 'root'}} <button mat-icon-button (click)="onChangeParent()"><mat-icon>edit</mat-icon></button></div>

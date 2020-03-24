@@ -19,3 +19,7 @@
   flex-direction: column-reverse;
   align-items: center;
 }
+
+.mat-tree {
+  margin: auto;
+}

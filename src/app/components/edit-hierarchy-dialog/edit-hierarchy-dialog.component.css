@@ -21,3 +21,13 @@
 .container-img{
   display: block;
 }
+
+.container-button{
+  position: absolute;
+  right: 18%;
+}
+
+.trashBtn{
+  float: right;
+  position: absolute;
+}
