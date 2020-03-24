@@ -36,6 +36,6 @@
   </mat-nested-tree-node>
 </mat-tree>
 <button *ngIf="changeParentNode" mat-raised-button (click)="move(changeParentNode)">root</button>
-<button *ngIf="!selectMode" class="mat-fab" mat-fab (click)="openEditModal(null)">
+<button *ngIf="!selectMode" class="mat-fab" mat-fab color="primary" (click)="openEditModal(null)">
   <mat-icon class="icon">add</mat-icon>
 </button>
