@@ -24,7 +24,11 @@ export class ModerateUsersComponent implements OnInit {
   /** Array of workspace user data */
   workspaceUsers: UserData[];
 
+  /** Table headers */
   headers: string[] = ['User', 'Admin','Delete'];
+
+  /** Email of the singed-in user */
+  signedInEmail: string;
 
   constructor(private authService: AuthService, private adminService: AdminService) { }
 
@@ -32,23 +36,46 @@ export class ModerateUsersComponent implements OnInit {
     this.adminService.getWorkspaceUsers().subscribe(
       (users) => {this.workspaceUsers = users; console.log(users);}
     )
+
+    this.authService.getUser().subscribe(val => this.signedInEmail = val.email);
   }
 
-  toggleAdmin(change: MatCheckboxChange){
+  /**
+   * Toggles the given user's admin/user status
+   * @param change Matbox change value
+   */
+  toggleAdmin(change: MatCheckboxChange, user: UserData){
     console.log(change.checked);
   }
 
+  /**
+   * Deletes a given user from the application
+   * @param user The user to be deleted
+   */
   deleteUser(user: UserData){
-    if (confirm('Are you sure you want to delete this user?\n' +
+    if (confirm(`Are you sure you want to delete ${user.user.firstName} ${user.user.lastName}?\n` +
     'Their account will be deleted and all permissions revoked.')) {
-      //TODO: delete(user).then(() => {
-        alert(`${user.user.firstName} ${user.user.lastName}, at ${user.user.email}, a/an ${user.role}`);
-      //});
+      this.adminService.deleteUserByEmail(user.user.email)//.then(
+      //   () => alert(`${user.user.firstName} ${user.user.lastName} successfully deleted`)
+      // ).catch(
+      //   () => alert(`DELETION FAILED\n${user.user.firstName} ${user.user.lastName} could not be deleted`)
+      // );
     }
   }
 
+  /**
+   * Adds a user to this workspace
+   */
   addUsers(){
     //TODO: launch modal, add all email-like fields, prompt those that could not be added
   }
 
+  /**
+   * Returns true if the user in the given row is this user
+   * @param user The user for this row
+   * @returns true if the user in the row is this signed-in user, else false
+   */
+  isCurrentUser(user: UserData): boolean{
+    return this.signedInEmail === user.user.email;
+  }
 }

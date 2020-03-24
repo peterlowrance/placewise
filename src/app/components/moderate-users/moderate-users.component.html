@@ -14,7 +14,7 @@
     <ng-container matColumnDef="Admin">
         <th mat-header-cell *matHeaderCellDef> Admin </th>
         <td mat-cell *matCellDef="let user">
-            <mat-checkbox [checked]="user.role === 'Admin'" (change)="toggleAdmin($event)"></mat-checkbox>
+            <mat-checkbox [checked]="user.role === 'Admin'" [disabled]='isCurrentUser(user)' (change)="toggleAdmin($event, user)"></mat-checkbox>
         </td>
     </ng-container>
 
@@ -22,7 +22,7 @@
     <ng-container matColumnDef="Delete">
         <th mat-header-cell *matHeaderCellDef> Delete </th>
         <td mat-cell *matCellDef="let user">
-            <button mat-icon-button color="warn" (click)="deleteUser(user)"><mat-icon>delete</mat-icon></button>
+            <button mat-icon-button color="warn" [disabled]='isCurrentUser(user)' (click)="deleteUser(user)"><mat-icon>delete</mat-icon></button>
         </td>
     </ng-container>
 

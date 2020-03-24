@@ -1,7 +1,7 @@
 // import { AdminInterfaceService } from './admin-interface.service';
 
 import {Injectable} from '@angular/core';
-import {HttpHeaders} from '@angular/common/http';
+import {HttpHeaders, HttpClient, HttpResponse, HttpRequest} from '@angular/common/http';
 import {Observable, of} from 'rxjs';
 import {Item} from '../models/Item';
 import {AngularFirestore} from '@angular/fire/firestore';
@@ -20,6 +20,8 @@ const httpOptions = {
     'Content-Type': 'application/json'
   })
 };
+
+const adServe = 'http://10.18.110.183:3000';
 
 @Injectable({
   providedIn: 'root'
@@ -348,38 +350,104 @@ export class AdminService {
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + appropriateHierarchy + node.ID).update(node);
   }
 
+  /**
+   * Gets all users from the current signed-in user's workspace
+   */
   getWorkspaceUsers(): Observable<any[]>{
     try{
-    console.log(this.auth.workspace.id);
-    let users = this.afs.collection('/Users', ref => ref.where('workspace','==', this.auth.workspace.id)).snapshotChanges().pipe(map(a => {
-      return a.map(g => {
-      const data = g.payload.doc.data();
-      const id = g.payload.doc.id;
-      return {data:data, id:id};
-      })
-    }))
-    let wusers = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().pipe(map(a => {
-      return a.map(g => {
-      const data = g.payload.doc.data();
-      const id = g.payload.doc.id;
-      return {data:data, id:id};
-      })
-    }));
-    return combineLatest<any[]>(users, wusers, (user, wuser) =>{
-      let list = []
-      user.forEach((element, index) => {
-        list.push({user: element.data, role: wuser.find((elem) => elem.id === element.id).data.role});
+      //get all user metadata
+      let users = this.afs.collection('/Users', ref => ref.where('workspace','==', this.auth.workspace.id)).snapshotChanges().pipe(map(a => {
+        return a.map(g => {
+        const data = g.payload.doc.data();
+        const id = g.payload.doc.id;
+        return {data:data, id:id};
+        })
+      }));
+      //get all static user roles from db
+      let wusers = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().pipe(map(a => {
+        return a.map(g => {
+        const data = g.payload.doc.data();
+        const id = g.payload.doc.id;
+        return {data:data, id:id};
+        })
+      }));
+      //filter and combine by user ID
+      return combineLatest<any[]>(users, wusers, (user, wuser) =>{
+        let list = []
+        user.forEach((element, index) => {
+          list.push({user: element.data, role: wuser.find((elem) => elem.id === element.id).data.role});
+        });
+        return list;
       });
-      return list;
     }
-    )
-    
-    }
+    //error has occured
     catch(err){
       console.log(err)
     }
   }
 
-  constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService) {
+  /**
+   * Deletes a user from the DB and removes their metadata fields
+   * @param email The email of the user to delete
+   */
+  deleteUserByEmail(email: string){
+    //get ID token from auth state
+    return this.auth.getAuth().subscribe(
+      auth => {
+        console.log(auth);
+        auth.getIdTokenResult().then(
+          token => {
+            console.log(token);
+          //with token remove user by pinging server with token and email
+          return this.http.post(`${adServe}/removeUser`, {
+            idToken: token,
+            email: email
+          }).toPromise();
+        }
+        )
+      }
+    )
+  }
+
+  /**
+   * Sets a user's role in the DB
+   * @param email The email of the user to update
+   * @param role Role to update to, expects "Admin" or "User"
+   */
+  async setUserRole(email: string, role: string){
+    //ensure correct role change given
+    if(role === 'Admin' || role === 'User'){
+      //get ID token from auth state
+      const auth = await this.auth.getAuth().toPromise();
+      const token = await auth.getIdTokenResult();
+      //with token remove user by pinging server with token and email
+      return this.http.post(`${adServe}/setUserRole`, {
+        idToken: token,
+        email: email,
+        role: role
+      }).toPromise();
+    }
+  }
+
+  /**
+   * Adds a user to the DB and populates their metadata fields
+   * @param email the eamil of the user to add
+   * @param firstName the first name of the user to add
+   * @param lastName the last name of the user to add
+   */
+  async addUserToWorkspace(email: string, firstName: string, lastName: string){
+        //get ID token from auth state
+        const auth = await this.auth.getAuth().toPromise();
+        const token = await auth.getIdTokenResult();
+        //with token remove user by pinging server with token and email
+        return this.http.post(`${adServe}/createNewUser`, {
+          idToken: token,
+          email: email,
+          firstName: firstName,
+          lastName: lastName
+        }).toPromise();
+  }
+
+  constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService, private http: HttpClient) {
   }
 }
