@@ -8,6 +8,7 @@ import {NavService} from '../../services/nav.service';
 import {Subscription} from 'rxjs';
 import {ImageService} from '../../services/image.service';
 import * as Fuse from 'fuse.js';
+import {FuseOptions} from 'fuse.js';
 
 /**
  *
@@ -228,14 +229,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     } else { // Otherwise, get all descendant hierarchy items and items and fuzzy match them
       this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
         this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
-          // Search items
-          const itemSearcher = new Fuse(items, this.itemSearchOptions);
-          this.items = itemSearcher.search(event);
+          this.items = this.getSearchResults(items, this.itemSearchOptions, event)
         });
         // Search hierarchy items
-        const hierarchySearcher = new Fuse(hierarchyItems, this.hierarchySearchOptions);
-        this.hierarchyItems = hierarchySearcher.search(event);
+        this.hierarchyItems = this.getSearchResults(hierarchyItems, this.hierarchySearchOptions, event)
       });
     }
+  }
+
+  getSearchResults<T>(setToFilter: T[], options: FuseOptions<any>, text: string): T[] {
+    const searcher = new Fuse(setToFilter, options);
+    // @ts-ignore
+    return searcher.search(text);
   }
 }
