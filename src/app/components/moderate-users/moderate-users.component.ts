@@ -3,6 +3,8 @@ import { User } from '../../models/User';
 import { AuthService } from '../../services/auth.service';
 import { AdminService } from '../../services/admin.service';
 import { MatCheckboxChange } from '@angular/material/checkbox';
+import {MatDialog} from '@angular/material/dialog';
+import {AddUserDialogComponent} from '../add-user-dialog/add-user-dialog.component';
 
 interface UserData{
   user: User;
@@ -30,7 +32,7 @@ export class ModerateUsersComponent implements OnInit {
   /** Email of the singed-in user */
   signedInEmail: string;
 
-  constructor(private authService: AuthService, private adminService: AdminService) { }
+  constructor(private authService: AuthService, private adminService: AdminService, private diag: MatDialog) { }
 
   ngOnInit() {
     this.adminService.getWorkspaceUsers().subscribe(
@@ -78,7 +80,20 @@ export class ModerateUsersComponent implements OnInit {
    * Adds a user to this workspace
    */
   addUsers(){
-    //TODO: launch modal, add all email-like fields, prompt those that could not be added
+    //open add user dialog
+    this.diag.open(AddUserDialogComponent, {
+      width: '60%'
+    }
+  ).afterClosed().subscribe(val =>{
+    //if we have a user to add, add him/her
+    if(val !== null && typeof val !== 'undefined'){
+      this.adminService.addUserToWorkspace(val.email, val.firstName, val.lastName);
+      //   () => alert(`${val.firstName} ${val.lastName} successfully added as a User`)
+      // ).catch(
+      //   () => alert(`DELETION FAILED\n${val.firstName} ${val.lastName} could not be added`)
+      // );
+    }
+  });
   }
 
   /**
