@@ -17,13 +17,13 @@ export class ReportDetailViewComponent implements OnInit {
 
   onSendClick(){
     //set invalid report
-    this.data.remove=true;
+    this.data.toBeRemoved=true;
     this.dialogRef.close(this.data);
   }
 
   onCancelClick(){
     //set invalid report
-    this.data.remove=false;
+    this.data.toBeRemoved=false;
     this.dialogRef.close(this.data)
   }
   ngOnInit() {
