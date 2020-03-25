@@ -82,7 +82,7 @@ export class ModerateUsersComponent implements OnInit {
   addUsers(){
     //open add user dialog
     this.diag.open(AddUserDialogComponent, {
-      width: '60%'
+      width: '80%'
     }
   ).afterClosed().subscribe(val =>{
     //if we have a user to add, add him/her
@@ -93,6 +93,7 @@ export class ModerateUsersComponent implements OnInit {
       //   () => alert(`DELETION FAILED\n${val.firstName} ${val.lastName} could not be added`)
       // );
     }
+    console.log('closed');
   });
   }
 

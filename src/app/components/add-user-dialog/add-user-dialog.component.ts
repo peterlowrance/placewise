@@ -11,7 +11,7 @@ export class AddUserDialogComponent {
   firstName = new FormControl('', [Validators.required]);
   lastName = new FormControl('', [Validators.required]);
   email = new FormControl('', [Validators.required, Validators.email]);
-  addForm = this.formBuilder.group({firstName: this.firstName, lastNaem: this.lastName, email:this.email});
+  addForm = this.formBuilder.group({firstName: this.firstName, lastName: this.lastName, email:this.email});
 
   constructor(
     public dialogRef: MatDialogRef<AddUserDialogComponent>,

@@ -424,7 +424,7 @@ export class AdminService {
           auth.getIdTokenResult().then(
             token => {
               console.log(token);
-              //with token remove user by pinging server with token and email
+              //with token set user role by pinging server with token, email, and role
               return this.http.post(`${adServe}/setUserRole`, {
                 idToken: token,
                 email: email,
@@ -444,16 +444,24 @@ export class AdminService {
    * @param lastName the last name of the user to add
    */
   async addUserToWorkspace(email: string, firstName: string, lastName: string){
-        //get ID token from auth state
-        const auth = await this.auth.getAuth().toPromise();
-        const token = await auth.getIdTokenResult();
-        //with token remove user by pinging server with token and email
-        return this.http.post(`${adServe}/createNewUser`, {
-          idToken: token,
-          email: email,
-          firstName: firstName,
-          lastName: lastName
-        }).toPromise();
+      //get ID token from auth state
+      return this.auth.getAuth().subscribe(
+        auth => {
+          console.log(auth);
+          auth.getIdTokenResult().then(
+            token => {
+              console.log(token);
+              //with token add user by pinging server with token and email
+              return this.http.post(`${adServe}/createNewUser`, {
+                idToken: token,
+                email: email,
+                firstName: firstName,
+                lastName: lastName
+              }).toPromise();
+          }
+          )
+        }
+      )
   }
 
   constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService, private http: HttpClient) {
