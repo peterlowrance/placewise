@@ -414,18 +414,26 @@ export class AdminService {
    * @param email The email of the user to update
    * @param role Role to update to, expects "Admin" or "User"
    */
-  async setUserRole(email: string, role: string){
+  setUserRole(email: string, role: string){
     //ensure correct role change given
     if(role === 'Admin' || role === 'User'){
       //get ID token from auth state
-      const auth = await this.auth.getAuth().toPromise();
-      const token = await auth.getIdTokenResult();
-      //with token remove user by pinging server with token and email
-      return this.http.post(`${adServe}/setUserRole`, {
-        idToken: token,
-        email: email,
-        role: role
-      }).toPromise();
+      return this.auth.getAuth().subscribe(
+        auth => {
+          console.log(auth);
+          auth.getIdTokenResult().then(
+            token => {
+              console.log(token);
+              //with token remove user by pinging server with token and email
+              return this.http.post(`${adServe}/setUserRole`, {
+                idToken: token,
+                email: email,
+                role: role
+              }).toPromise();
+          }
+          )
+        }
+      )
     }
   }
 

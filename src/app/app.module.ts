@@ -48,6 +48,7 @@ import {MatRadioModule} from "@angular/material/radio";
 import { ModerateUsersComponent } from './components/moderate-users/moderate-users.component';
 import {MatTableModule} from '@angular/material/table';
 import {HttpClientModule} from '@angular/common/http';
+import { AddUserDialogComponent } from './components/add-user-dialog/add-user-dialog.component';
 
 @NgModule({
   declarations: [
@@ -67,7 +68,8 @@ import {HttpClientModule} from '@angular/common/http';
     ChangePassDialogComponent,
     ReportDetailViewComponent,
     ModifyHierarchyDialogComponent,
-    ModerateUsersComponent
+    ModerateUsersComponent,
+    AddUserDialogComponent
   ],
   imports: [
     BrowserModule,

@@ -45,7 +45,18 @@ export class ModerateUsersComponent implements OnInit {
    * @param change Matbox change value
    */
   toggleAdmin(change: MatCheckboxChange, user: UserData){
-    console.log(change.checked);
+    //checked is Admin, unchecked is User
+    let newRole = change.checked ? 'Admin' : 'User';
+    //if we confirm, set the new user role
+    if(confirm(`Are you sure you want to change ${user.user.firstName} ${user.user.lastName} to role ${newRole}?\nNew permissions will take effect on next token refresh.`)){
+      this.adminService.setUserRole(user.user.email, newRole)//.then(
+      //   () => alert(`${user.user.firstName} ${user.user.lastName} is now a/an ${newRole}`),
+      //   (err) => alert(`ERROR:\n${err}`)
+      // );
+    }
+    else{ //else reset the checkbox state
+      change.source.checked = !change.checked;
+    }
   }
 
   /**
