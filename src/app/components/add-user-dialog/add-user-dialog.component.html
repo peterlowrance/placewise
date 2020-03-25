@@ -1,1 +1,40 @@
-<p>add-user-dialog works!</p>
+<h1 mat-dialog-title>Password Change</h1>
+<form [formGroup]='addForm' (ngSubmit)='onSubmit()'>
+    <div mat-dialog-content>
+        <p>Please enter the new user's First Name</p>
+        <mat-form-field>
+            <input matInput
+                placeholder="First Name"
+                type="text"
+                formControlName="firstName"
+                [formControl]="firstName"
+                required
+            >
+            <mat-error *ngIf="firstName.invalid">First Name is required</mat-error>
+        </mat-form-field>
+        <br>
+        <mat-form-field>
+            <input matInput
+                placeholder="Last Name"
+                type="text"
+                formControlName="lastName"
+                [formControl]="lastName"
+                required
+            >
+            <mat-error *ngIf="newPass.invalid">Last Name is required</mat-error>
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput
+                placeholder="Email"
+                type="email"
+                formControlName="email"
+                [formControl]="email"
+                required
+            >
+            <mat-error *ngIf="email.hasError('required')">Email is required</mat-error>
+            <mat-error *ngIf="!email.hasError('required') && email.hasError('email')">Email is invalid</mat-error>
+        </mat-form-field>
+    </div>
+    <button mat-raised-button (click)="onCancel()">Cancel</button>
+    <button mat-raised-button type='submit' color='primary' [disabled]="!addForm.valid" >Change Password</button>
+</form>

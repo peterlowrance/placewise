@@ -103,6 +103,6 @@ import { AddUserDialogComponent } from './components/add-user-dialog/add-user-di
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent]
+  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent, AddUserDialogComponent]
 })
 export class AppModule { }
