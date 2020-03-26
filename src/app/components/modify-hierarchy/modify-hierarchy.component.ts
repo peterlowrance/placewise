@@ -151,7 +151,8 @@ export class ModifyHierarchyComponent implements OnInit {
         name: '',
         children: [],
         items: [],
-        parent: 'root'
+        parent: 'root',
+        imageUrl: '../../../assets/notFound.png'
       };
     }
     const dialogRef = this.dialog.open(EditHierarchyDialogComponent, {
