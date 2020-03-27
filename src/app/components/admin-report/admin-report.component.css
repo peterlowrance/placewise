@@ -11,8 +11,28 @@
 .report-table{
     width:100%
 }
+.row:hover{
+    background-color: beige;
+}
+.row:active:hover{
+    background-color: tan;
+}
+.clear-button
+{
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
+.button-container
+{
+    text-align: center;
+    width:100%;
+    align-items: center;
+    padding-top:5%;
+}
 
 img {
-    height: 90%;
-    width: 40px
+    width: 40px;
+    
 }
