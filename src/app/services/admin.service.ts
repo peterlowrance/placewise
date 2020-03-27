@@ -375,7 +375,7 @@ export class AdminService {
       return combineLatest<any[]>(users, wusers, (user, wuser) =>{
         let list = []
         user.forEach((element, index) => {
-          list.push({user: element.data, role: wuser.find((elem) => elem.id === element.id).data.role});
+          if(element)  list.push({user: element.data, role: wuser.find((elem) => elem.id === element.id).data.role});
         });
         return list;
       });
@@ -390,23 +390,28 @@ export class AdminService {
    * Deletes a user from the DB and removes their metadata fields
    * @param email The email of the user to delete
    */
-  deleteUserByEmail(email: string){
-    //get ID token from auth state
-    return this.auth.getAuth().subscribe(
-      auth => {
-        console.log(auth);
-        auth.getIdTokenResult().then(
-          token => {
-            console.log(token);
-          //with token remove user by pinging server with token and email
-          return this.http.post(`${adServe}/removeUser`, {
-            idToken: token,
-            email: email
-          }).toPromise();
+  deleteUserByEmail(email: string): Promise<string>{
+    return new Promise((resolve, reject) => {
+      //get ID token from auth state
+      return this.auth.getAuth().subscribe(
+        auth => {
+          //check if logged in
+          if(auth === null) reject('Auth token could not be retrieved. Perhaps you are logged out?');
+          auth.getIdTokenResult().then(
+            token => {
+              //with token remove user by pinging server with token and email
+              this.http.post(`${adServe}/removeUser`, {
+                idToken: token,
+                email: email
+              }).toPromise().then(
+                () => resolve(`Removed user ${email}`),
+                (err) => reject(err.error)
+              );
+            }
+          )
         }
-        )
-      }
-    )
+      )
+    })
   }
 
   /**
@@ -415,26 +420,36 @@ export class AdminService {
    * @param role Role to update to, expects "Admin" or "User"
    */
   setUserRole(email: string, role: string){
-    //ensure correct role change given
-    if(role === 'Admin' || role === 'User'){
-      //get ID token from auth state
-      return this.auth.getAuth().subscribe(
-        auth => {
-          console.log(auth);
-          auth.getIdTokenResult().then(
-            token => {
-              console.log(token);
-              //with token set user role by pinging server with token, email, and role
-              return this.http.post(`${adServe}/setUserRole`, {
-                idToken: token,
-                email: email,
-                role: role
-              }).toPromise();
+    return new Promise((resolve, reject) => {
+      //ensure correct role change given
+      if(role === 'Admin' || role === 'User'){
+        //get ID token from auth state
+        return this.auth.getAuth().subscribe(
+          auth => {
+            //if auth is null, return
+            if(auth === null) reject('Auth token could not be retrieved. Perhaps you are logged out?');
+            //not null, try token
+            auth.getIdTokenResult().then(
+              token => {
+                //with token set user role by pinging server with token, email, and role
+                this.http.post(`${adServe}/setUserRole`, {
+                  idToken: token,
+                  email: email,
+                  role: role
+                }).toPromise().then(
+                  () => resolve(role),
+                  //error in posting
+                  (err) => reject(err.error)
+                );
+              },
+              //reject, error getting auth token
+              (err) => reject(err)
+            )
           }
-          )
-        }
-      )
-    }
+        )
+      } //not right role, reject
+      else reject('Role not "Admin" or "User"');
+    });
   }
 
   /**
@@ -443,25 +458,34 @@ export class AdminService {
    * @param firstName the first name of the user to add
    * @param lastName the last name of the user to add
    */
-  async addUserToWorkspace(email: string, firstName: string, lastName: string){
+  async addUserToWorkspace(email: string, firstName: string, lastName: string): Promise<{user:User, role:string}>{
+    return new Promise((resolve, reject) => {
       //get ID token from auth state
-      return this.auth.getAuth().subscribe(
+      this.auth.getAuth().subscribe(
         auth => {
-          console.log(auth);
+          //if auth is null, reject
+          if(auth === null) reject('Auth token could not be retrieved. Perhaps you are logged out?');
+          //logged in, get goin'
           auth.getIdTokenResult().then(
             token => {
-              console.log(token);
               //with token add user by pinging server with token and email
-              return this.http.post(`${adServe}/createNewUser`, {
+              this.http.post(`${adServe}/createNewUser`, {
                 idToken: token,
                 email: email,
                 firstName: firstName,
                 lastName: lastName
-              }).toPromise();
-          }
+              }).toPromise().then(
+                () => resolve({user:{firstName: firstName, lastName: lastName, email:email, workspace: this.auth.workspace.id}, role:'User'}),
+                //error posting
+                (err) => reject(err.error)
+              );
+          },
+          //reject getIDToken
+          (err) => reject(err)
           )
         }
       )
+    });
   }
 
   constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService, private http: HttpClient) {

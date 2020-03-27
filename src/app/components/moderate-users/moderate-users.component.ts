@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { User } from '../../models/User';
 import { AuthService } from '../../services/auth.service';
 import { AdminService } from '../../services/admin.service';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import {MatDialog} from '@angular/material/dialog';
 import {AddUserDialogComponent} from '../add-user-dialog/add-user-dialog.component';
+import { Subscription } from 'rxjs';
 
 interface UserData{
   user: User;
@@ -22,7 +23,7 @@ const TESTDATA: UserData[] = [
   templateUrl: './moderate-users.component.html',
   styleUrls: ['./moderate-users.component.css']
 })
-export class ModerateUsersComponent implements OnInit {
+export class ModerateUsersComponent implements OnInit, OnDestroy {
   /** Array of workspace user data */
   workspaceUsers: UserData[];
 
@@ -32,14 +33,18 @@ export class ModerateUsersComponent implements OnInit {
   /** Email of the singed-in user */
   signedInEmail: string;
 
+  /** User subscription */
+  userSub: Subscription;
+
   constructor(private authService: AuthService, private adminService: AdminService, private diag: MatDialog) { }
 
   ngOnInit() {
-    this.adminService.getWorkspaceUsers().subscribe(
-      (users) => {this.workspaceUsers = users; console.log(users);}
-    )
+    this.adminService.getWorkspaceUsers().subscribe( (users) => this.workspaceUsers = users );
+    this.userSub = this.authService.getUser().subscribe(val => this.signedInEmail = val.email);
+  }
 
-    this.authService.getUser().subscribe(val => this.signedInEmail = val.email);
+  ngOnDestroy(){
+    this.userSub.unsubscribe();
   }
 
   /**
@@ -51,10 +56,10 @@ export class ModerateUsersComponent implements OnInit {
     let newRole = change.checked ? 'Admin' : 'User';
     //if we confirm, set the new user role
     if(confirm(`Are you sure you want to change ${user.user.firstName} ${user.user.lastName} to role ${newRole}?\nNew permissions will take effect on next token refresh.`)){
-      this.adminService.setUserRole(user.user.email, newRole)//.then(
-      //   () => alert(`${user.user.firstName} ${user.user.lastName} is now a/an ${newRole}`),
-      //   (err) => alert(`ERROR:\n${err}`)
-      // );
+      this.adminService.setUserRole(user.user.email, newRole).then(
+        () => alert(`${user.user.firstName} ${user.user.lastName} is now a/an ${newRole}`),
+        (err) => alert(`TOGGLE FAILED:\n${err}`)
+      );
     }
     else{ //else reset the checkbox state
       change.source.checked = !change.checked;
@@ -68,11 +73,11 @@ export class ModerateUsersComponent implements OnInit {
   deleteUser(user: UserData){
     if (confirm(`Are you sure you want to delete ${user.user.firstName} ${user.user.lastName}?\n` +
     'Their account will be deleted and all permissions revoked.')) {
-      this.adminService.deleteUserByEmail(user.user.email)//.then(
-      //   () => alert(`${user.user.firstName} ${user.user.lastName} successfully deleted`)
-      // ).catch(
-      //   () => alert(`DELETION FAILED\n${user.user.firstName} ${user.user.lastName} could not be deleted`)
-      // );
+      this.adminService.deleteUserByEmail(user.user.email).then(
+        () => alert(`${user.user.firstName} ${user.user.lastName} successfully deleted`)
+      ).catch(
+        () => alert(`DELETION FAILED\n${user.user.firstName} ${user.user.lastName} could not be deleted`)
+      );
     }
   }
 
@@ -87,13 +92,12 @@ export class ModerateUsersComponent implements OnInit {
   ).afterClosed().subscribe(val =>{
     //if we have a user to add, add him/her
     if(val !== null && typeof val !== 'undefined'){
-      this.adminService.addUserToWorkspace(val.email, val.firstName, val.lastName);
-      //   () => alert(`${val.firstName} ${val.lastName} successfully added as a User`)
-      // ).catch(
-      //   () => alert(`DELETION FAILED\n${val.firstName} ${val.lastName} could not be added`)
-      // );
+      this.adminService.addUserToWorkspace(val.email, val.firstName, val.lastName).then(
+        () => alert(`${val.firstName} ${val.lastName} successfully added as a User`)
+      ).catch(
+        () => alert(`ADD FAILED\n${val.firstName} ${val.lastName} could not be added`)
+      );
     }
-    console.log('closed');
   });
   }
 
