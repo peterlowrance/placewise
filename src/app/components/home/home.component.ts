@@ -185,7 +185,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       for (const itemID of root.items) {
         this.searchService.getItem(itemID).subscribe(returnedItem => {
           this.items.push(returnedItem);
-          this.imageService.getImage(returnedItem.imageUrl).subscribe(link => returnedItem.imageUrl = link);
         });
       }
     }
