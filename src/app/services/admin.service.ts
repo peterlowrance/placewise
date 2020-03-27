@@ -137,8 +137,16 @@ export class AdminService {
     //return of(true);
   }
 
-  removeItem(itemID: string) {
-    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + itemID).delete();
+  removeItem(item: Item) {
+    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item).delete();
+    if (item.category) {
+      this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+    }
+    if (item.locations && item.locations.length > 0) {
+      item.locations.forEach(location => {
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+      });
+    }
     return of(true);
   }
 
