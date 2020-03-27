@@ -123,14 +123,8 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.dataSource.data = this.parent.children;
       });
 
-      // Load image for item
+      // Load image for item TODO: Not any more
       console.log(this.item.imageUrl);
-      if (this.item.imageUrl != null) {
-        this.imageService.getImage(item.imageUrl).subscribe(link => {
-          console.log(link);
-          this.item.imageUrl = link;
-        });
-      }
 
       // get the category information
       this.searchService.getCategory(item.category).subscribe(val => this.category = val);
