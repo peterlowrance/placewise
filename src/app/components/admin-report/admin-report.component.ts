@@ -15,6 +15,7 @@ import { ReportDetailViewComponent } from '../report-detail-view/report-detail-v
 })
 export class AdminReportComponent implements OnInit {
   reports: SentReport[];
+  headers: string[] = ['Report'];
   constructor(
     private searchService: SearchService,
     private adminService: AdminService,
