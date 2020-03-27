@@ -10,7 +10,7 @@
         <mat-divider></mat-divider>
         <h3 mat-subheader>Shop Config</h3>
         <mat-list-item>
-            <button mat-raised-button class="equal-button">Users</button>
+            <button mat-raised-button class="equal-button" [routerLink]="['/users']">Users</button>
         </mat-list-item>
         <mat-list-item>
             <button mat-raised-button class="equal-button" (click)="goToModify(false)">Modify Locations</button>
