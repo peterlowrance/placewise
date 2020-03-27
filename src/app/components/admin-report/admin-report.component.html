@@ -1,3 +1,13 @@
+<table mat-table [dataSource]="reports" class="report-table">
+    <ng-container matColumnDef="Report">
+        <td mat-cell *matCellDef="let r"> 
+            <div>
+                <div>{{r.trueItem.name}}</div>
+            </div>
+        </td>
+    </ng-container>
+</table>
+
 <mat-list>
     <mat-list-item *ngFor = "let r of reports" (click) = "openModal(r)">
         <img src= {{r.trueItem.imageUrl}} alt= " {{r.trueItem.name}} Image">

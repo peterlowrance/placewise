@@ -8,6 +8,10 @@
     margin:0;
 }
 
+.report-table{
+    width:100%
+}
+
 img {
     height: 90%;
     width: 40px
