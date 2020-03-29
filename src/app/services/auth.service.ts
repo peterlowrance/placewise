@@ -39,7 +39,11 @@ export class AuthService {
   /**User role, Admin or User */
   role: string;
 
+  /**Current role behavior subject */
   currentRole: BehaviorSubject<string> = new BehaviorSubject<string>(this.role);
+
+  /**Workspace behaviour subject */
+  currentWorkspace: BehaviorSubject<WorkspaceInfo> = new BehaviorSubject<WorkspaceInfo>(this.workspace);
 
   constructor(private afAuth: AngularFireAuth,
               private afs: AngularFirestore,
@@ -56,13 +60,19 @@ export class AuthService {
   updateUserInformation(user: firebase.User){
     if(user){
       user.getIdTokenResult().then(token => {
+        //set raw workspace and role
         this.workspace.id = token.claims.workspace;
         this.role = token.claims.role;
-        console.log(token.claims);
+
+        //set behavior subject workspace and role
+        this.currentWorkspace.next(this.workspace);
+        this.currentRole.next(token.claims.role);
+        
+        //get info
         const workDoc = this.getWorkspaceInfo(token.claims.workspace);
-        //subscribe to changes in workspace name
+        //subscribe to changes in workspace name, re-ping current workspace
         workDoc.subscribe(
-          val => this.workspace.name = val.name
+          val => {this.workspace.name = val.name; this.currentWorkspace.next(this.workspace);}
         );
       });
       const userDoc = this.getUserInfo(user.uid);
@@ -70,6 +80,10 @@ export class AuthService {
       userDoc.subscribe(
         val => this.userInfo = val
       );
+    }
+    else{ //user not defined, set behavior subjects to null
+      this.currentRole.next(null);
+      this.currentWorkspace.next(null);
     }
   }
   
@@ -134,17 +148,13 @@ export class AuthService {
    * Gets the workspace information
    */
   getWorkspace(){
-    return of(this.workspace);
+    return this.currentWorkspace.asObservable();
   }
 
   /**
    * Gets the role of the user
    */
   getRole(){
-    return of(this.role);
-  }
-
-  getRoleCurrent(){
     return this.currentRole.asObservable();
   }
 
