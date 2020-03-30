@@ -1,0 +1,10 @@
+.user-table{
+    width:100%
+}
+
+.fab{
+    bottom: 2%;
+    right: 3%;
+    position: fixed;
+    z-index: 1;
+}

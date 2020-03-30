@@ -43,7 +43,10 @@ import {EditHierarchyDialogComponent} from './components/edit-hierarchy-dialog/e
 import {ModifyHierarchyDialogComponent} from './components/modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatRadioModule} from "@angular/material/radio";
-
+import { ModerateUsersComponent } from './components/moderate-users/moderate-users.component';
+import {MatTableModule} from '@angular/material/table';
+import {HttpClientModule} from '@angular/common/http';
+import { AddUserDialogComponent } from './components/add-user-dialog/add-user-dialog.component';
 
 @NgModule({
   declarations: [
@@ -62,7 +65,9 @@ import {MatRadioModule} from "@angular/material/radio";
     ResetPassDialogComponent,
     ChangePassDialogComponent,
     ReportDetailViewComponent,
-    ModifyHierarchyDialogComponent
+    ModifyHierarchyDialogComponent,
+    ModerateUsersComponent,
+    AddUserDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -90,10 +95,12 @@ import {MatRadioModule} from "@angular/material/radio";
     MatDividerModule,
     SmdFabSpeedDialModule,
     MatCheckboxModule,
-    MatRadioModule
+    MatRadioModule,
+    MatTableModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent]
+  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent, AddUserDialogComponent]
 })
 export class AppModule { }

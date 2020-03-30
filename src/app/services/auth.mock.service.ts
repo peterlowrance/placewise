@@ -20,6 +20,7 @@ export const MOCK_USER: User = {
   firstName: 'USER',
   lastName: 'McUSER',
   email: 'correct@correct.com',
+  workspace: 'aaaaaaa'
 }
 
 export const MOCK_WORKSPACE: WorkspaceInfo = {
