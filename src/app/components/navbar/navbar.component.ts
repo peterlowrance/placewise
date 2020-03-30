@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {Router, NavigationEnd} from '@angular/router';
+import {NavigationEnd, Router} from '@angular/router';
 import {Location} from '@angular/common';
 
 import {NavService} from '../../services/nav.service';
@@ -97,7 +97,16 @@ export class NavbarComponent implements OnInit {
    */
   goHome() {
     this.navService.forgetParent();
-    this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/root']);
+    // If we are going home from the search screen, navigate to blank then navigate home
+    if (this.router.url.indexOf('search') > -1) {
+      this.router.navigateByUrl('').then(() => this.router.navigateByUrl('search/' + (this.searchType ? this.searchType : 'categories') + '/root'));
+    } else {
+      this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/root']).then(result => {
+        if (result === null) {
+          this.router.navigateByUrl('').then(() => this.router.navigateByUrl('search/' + (this.searchType ? this.searchType : 'categories') + '/root'));
+        }
+      });
+    }
   }
 
   /**

@@ -123,14 +123,8 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.dataSource.data = this.parent.children;
       });
 
-      // Load image for item
+      // Load image for item TODO: Not any more
       console.log(this.item.imageUrl);
-      if (this.item.imageUrl != null) {
-        this.imageService.getImage(item.imageUrl).subscribe(link => {
-          console.log(link);
-          this.item.imageUrl = link;
-        });
-      }
 
       // get the category information
       this.searchService.getCategory(item.category).subscribe(val => this.category = val);
@@ -267,7 +261,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   }
 
   editCategory() {
-    const oldCategory = this.item.category;
+    const oldCategory = this.item.category ? this.item.category : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '75%',
       data: {hierarchy: 'categories', parents: [this.item.category]}
@@ -276,6 +270,7 @@ export class ItemComponent implements OnInit, OnDestroy {
       if (result && result.length > 0) {
         this.item.category = result[0];
         this.searchService.getCategory(result[0]).subscribe(c => this.category = c);
+        console.log('updating');
         this.adminService.updateItem(this.item, oldCategory, null);
       }
     });
@@ -432,7 +427,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     if (signal) {
       if (confirm('Are you sure you want to delete the item?\nThis cannot be undone.')) {
         //TODO: remove image
-        this.adminService.removeItem(this.item.ID).subscribe(val => {
+        this.adminService.removeItem(this.item).subscribe(val => {
           if (val) {
             alert('Item successfully deleted.');
             this.navService.returnState();

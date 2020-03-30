@@ -13,6 +13,13 @@
 # dependencies
 /node_modules
 
+# production
+dist/
+/dist
+/dist/
+.firebase/
+**/.firebaserc
+
 # profiling files
 chrome-profiler-events*.json
 speed-measure-plugin*.json
@@ -200,3 +207,9 @@ node_modules
 
 # remove coverage
 /coverage
+.firebaserc
+.firebase/hosting.ZGlzdFxwbGFjZXdpc2U.cache
+dist/placewise/index.html
+dist/placewise/favicon.ico
+dist/placewise/assets/notFound.png
+dist/placewise/assets/logo.svg

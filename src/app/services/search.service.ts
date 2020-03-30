@@ -104,7 +104,9 @@ export class SearchService implements SearchInterfaceService {
     return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as HierarchyItem;
       data.ID = a.payload.id;
-      this.setImageUrlAsync(data);
+      if(data.imageUrl == null){
+        data.imageUrl = '../../../assets/notFound.png';
+      }
       return data;
     }));
   }
@@ -113,7 +115,9 @@ export class SearchService implements SearchInterfaceService {
     return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as HierarchyItem;
       data.ID = a.payload.id;
-      this.setImageUrlAsync(data);
+      if(data.imageUrl == null){
+        data.imageUrl = '../../../assets/notFound.png';
+      }
       return data;
     }));
   }
@@ -219,21 +223,13 @@ export class SearchService implements SearchInterfaceService {
         appropriateCache = a.map(g => {
           const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
-          this.setImageUrlAsync(data);
+          if(data.imageUrl == null){
+            data.imageUrl = '../../../assets/notFound.png';
+          }
           return data;
         });
         return excludeRoot ? appropriateCache.filter(g => g.ID !== 'root') : appropriateCache;
       }));
-  }
-
-  private setImageUrlAsync(data: HierarchyItem) {
-    if (data.imageUrl) {
-      this.imageService.getImage(data.imageUrl).subscribe(link => {
-        data.imageUrl = link;
-      });
-    } else {
-      data.imageUrl = '../../../assets/notFound.png';
-    }
   }
 
   constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService) {

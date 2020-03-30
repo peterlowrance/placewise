@@ -24,7 +24,7 @@ export class AdminReportComponent implements OnInit {
     public dialog: MatDialog) { }
 
   ngOnInit() {
-    this.adminService.getReports().subscribe(x => {this.reports = x; 
+    this.adminService.getReports().subscribe(x => {this.reports = x;
       for(let i = 0; i < this.reports.length; i++)
       {
         this.searchService.getItem(this.reports[i].item).subscribe(z =>{
@@ -34,12 +34,12 @@ export class AdminReportComponent implements OnInit {
     });
   }
 
-  
+
   openModal(r : SentReport )
   {
         // reset report data, ensure clicking out defaults to fail and no double send
         var reportData : DetailedReportModalData = {
-          itemName:r.trueItem.name,reportDesc : r.desc,reportID : r.ID,remove:false
+          itemName:r.trueItem.name,reportDesc : r.desc,reportID : r.ID,toBeRemoved:false
         }
 
         const dialogRef = this.dialog.open(ReportDetailViewComponent, {
@@ -48,14 +48,14 @@ export class AdminReportComponent implements OnInit {
             itemName: reportData.itemName,
             reportDesc: reportData.reportDesc,
             reportID: reportData.reportID,
-            remove: reportData.remove
+            remove: reportData.toBeRemoved
           }
         });
-    
+
         dialogRef.afterClosed().subscribe(result => {
           reportData = result;
           // if it's valid, build and isue report, else leave
-          if (reportData.remove) {
+          if (reportData.toBeRemoved) {
             this.adminService.deleteReport(reportData.reportID);
           }
         });

@@ -90,13 +90,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     // subscirbe to routing home
     this.router.events.subscribe(val => {
-      console.log(val);
       if (val instanceof NavigationEnd) {
         if (this.route.snapshot.paramMap.get('id') === 'root') {
-          console.log('routed home bug?');
-          // TODO: BUG HERE!! This doesn't always call!
-          //this.searchService.getLocation('root').subscribe(r => this.goToHierarchy(r));
-          //this.displayDescendants('root', this.selectedSearch === 'Categories');
           this.navigateUpHierarchy();
         }
       }
@@ -127,7 +122,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     console.log('nav up hierarchy');
     const urlID = this.route.snapshot.paramMap.get('id');
     const urlSS = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
-    this.loadLevel(this.root.parent, this.selectedSearch);
+    this.loadLevel(this.root ? this.root.parent : 'root', this.selectedSearch);
   }
 
   /**
@@ -190,7 +185,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       for (const itemID of root.items) {
         this.searchService.getItem(itemID).subscribe(returnedItem => {
           this.items.push(returnedItem);
-          this.imageService.getImage(returnedItem.imageUrl).subscribe(link => returnedItem.imageUrl = link);
         });
       }
     }

@@ -66,8 +66,8 @@ export class ModifyHierarchyComponent implements OnInit {
           }
         });
       } else { // If you are selecting new locations or categories, include the root
-        const appripriateRoot = this.isCategory ? this.searchService.getCategory('root') : this.searchService.getLocation('root');
-        appripriateRoot.subscribe(root => {
+        const appropriateRoot = this.isCategory ? this.searchService.getCategory('root') : this.searchService.getLocation('root');
+        appropriateRoot.subscribe(root => {
           this.buildTree(root, hierarchy);
           this.dataChange.next([root]);
           if (this.selectedParents) {
