@@ -138,7 +138,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       console.log('loading levell');
       this.root = root;
       this.setNavParent(this.root);
-      this.displayDescendants(this.root.ID, this.selectedSearch === 'Categories');
+      this.displayDescendants(root ? root.ID : 'root', this.selectedSearch === 'Categories');
     });
   }
 
