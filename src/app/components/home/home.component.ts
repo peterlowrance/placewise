@@ -119,7 +119,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private navigateUpHierarchy() {
-    console.log('nav up hierarchy');
     const urlID = this.route.snapshot.paramMap.get('id');
     const urlSS = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
     this.loadLevel(this.root ? this.root.parent : 'root', this.selectedSearch);
@@ -135,7 +134,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.navService.setSearchType(this.selectedSearch);
     const appropriateHierarchy = selectedSearch === 'Categories' ? this.searchService.getCategory(rootID) : this.searchService.getLocation(rootID);
     appropriateHierarchy.subscribe(root => {
-      console.log('loading levell');
       this.root = root;
       this.setNavParent(this.root);
       this.displayDescendants(root ? root.ID : 'root', this.selectedSearch === 'Categories');
@@ -159,7 +157,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   displayDescendants(rootID = this.root.ID, isCategory = this.selectedSearch === 'Categories') {
-    console.log('display descendants');
     this.hierarchyItems = [];
     this.searchService.getDescendantsOfRoot(rootID ? rootID : 'root', isCategory).subscribe(descendants => {
       this.hierarchyItems = descendants;
@@ -178,7 +175,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   displayItems(root: HierarchyItem) {
-    console.log('displaying items');
     this.items = [];
     if (root.items) {
       // For each itemID descending from root, get the item from the data and added to the global items array
