@@ -28,6 +28,13 @@
                 </mat-icon> <a>Modify Locations</a>
             </button>
         </span>
+        <span *ngSwitchCase='"moderateUsers"'>
+            <button mat-button (click)="goBack()">
+                <mat-icon>
+                    arrow_back
+                </mat-icon> <a>Users</a>
+            </button>
+        </span>
         <!-- we are home, check for in search hierarchy -->
         <span *ngSwitchDefault>
             <span *ngIf='parent === null || parent?.ID === "root"'>Placewise</span>
