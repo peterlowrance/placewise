@@ -427,7 +427,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     if (signal) {
       if (confirm('Are you sure you want to delete the item?\nThis cannot be undone.')) {
         //TODO: remove image
-        this.adminService.removeItem(this.item.ID).subscribe(val => {
+        this.adminService.removeItem(this.item).subscribe(val => {
           if (val) {
             alert('Item successfully deleted.');
             this.navService.returnState();
