@@ -14,7 +14,6 @@ import {MatInputModule} from '@angular/material/input'
 import {MatDialogModule} from '@angular/material/dialog'
 import {MatTreeModule} from '@angular/material/tree'
 import {MatListModule} from '@angular/material/list'
-import { MatTableModule } from '@angular/material'  
 import {MatSnackBarModule} from '@angular/material/snack-bar'
 import {MatDividerModule} from '@angular/material/divider'
 
