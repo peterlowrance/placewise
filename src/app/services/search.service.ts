@@ -101,10 +101,13 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getLocation(id: string): Observable<HierarchyItem> {
+    if (!id) {
+      return of(null);
+    }
     return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as HierarchyItem;
       data.ID = a.payload.id;
-      if(data.imageUrl == null){
+      if (data.imageUrl == null) {
         data.imageUrl = '../../../assets/notFound.png';
       }
       return data;
@@ -112,10 +115,13 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getCategory(id: string): Observable<HierarchyItem> {
+    if (!id) {
+      return of(null);
+    }
     return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as HierarchyItem;
       data.ID = a.payload.id;
-      if(data.imageUrl == null){
+      if (data.imageUrl == null) {
         data.imageUrl = '../../../assets/notFound.png';
       }
       return data;
