@@ -93,7 +93,8 @@ export class SearchService implements SearchInterfaceService {
     return this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as Item;
       if (!data) {
-        console.error('Error when getting item ' + id);
+        console.error('Error when getting item ' + id + ', item may be removed.');
+        return;
       }
       data.ID = a.payload.id;
       return data;
