@@ -105,7 +105,7 @@ export class AuthService {
    * Gets user information from firebase
    * @param uid unique firebase user id
    */
-  private getUserInfo(uid: string){
+  getUserInfo(uid: string){
     return this.afs.doc<User>(`Users/${uid}`).valueChanges();
   }
 

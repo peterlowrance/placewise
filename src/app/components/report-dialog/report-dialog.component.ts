@@ -1,6 +1,8 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {ItemReportModalData} from 'src/app/models/ItemReportModalData'
+import { Item } from 'src/app/models/Item';
+import { Router } from '@angular/router';
 
 //placeholder error description
 const PLACEHOLDER: string = 'Something is wrong with this item.\nPlease follow-up.';
@@ -12,7 +14,7 @@ const PLACEHOLDER: string = 'Something is wrong with this item.\nPlease follow-u
 })
 export class ReportDialogComponent implements OnInit {
 
-  constructor(
+  constructor(private router: Router,
     public dialogRef: MatDialogRef<ReportDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ItemReportModalData
   ) { }

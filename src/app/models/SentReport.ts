@@ -6,4 +6,5 @@ export interface SentReport {
     user: string;
     ID: string;
     trueItem: Item;
+    userName: string;
 }
