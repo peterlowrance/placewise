@@ -73,6 +73,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.returnSub = this.navService.getReturnState().subscribe(
       val => {
         if (val && this.root) { // if we returned
+          console.log(val);
           this.navigateUpHierarchy();
         }
       }
@@ -87,15 +88,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.root = val;
       }
     );
-
-    // subscirbe to routing home
-    this.router.events.subscribe(val => {
-      if (val instanceof NavigationEnd) {
-        if (this.route.snapshot.paramMap.get('id') === 'root') {
-          this.navigateUpHierarchy();
-        }
-      }
-    });
   }
 
   ngOnDestroy() {
@@ -121,6 +113,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private navigateUpHierarchy() {
     const urlID = this.route.snapshot.paramMap.get('id');
     const urlSS = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
+    console.log(this.root);
     this.loadLevel(this.root ? this.root.parent : 'root', this.selectedSearch);
   }
 
