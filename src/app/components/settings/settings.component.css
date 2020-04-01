@@ -9,6 +9,7 @@ mat-list-item{
 .equal-button{
     width: 15em;
     min-width: unset;
+    justify-content: center;
 }
 
 .overall-settings{
@@ -16,4 +17,22 @@ mat-list-item{
     align-items: center;
     justify-content: center;
     text-align: center;
+}
+
+.settings-container
+{
+    text-align: center;
+    width: 100%;
+    align-items: center;
+}
+.settings-item
+{
+    text-align: center;
+    width: 100%;
+    align-items: center;
+}
+.headerName
+{
+    text-align:center;
+    justify-content: center;
 }
