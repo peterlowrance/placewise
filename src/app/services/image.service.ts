@@ -14,10 +14,16 @@ export class ImageService {
   putImage(file: File, itemID: string): Observable<string>{
     //get blob ref
     const ref = this.afsg.ref(this.auth.workspace.id + '/' + itemID);
-    //put
-    const put = ref.put(file);
-    //return new link
-    return ref.getDownloadURL();
+    return new Observable(obs => {
+      // Put the file
+      ref.put(file).then(f => {
+        // After it's put, return its url
+        ref.getDownloadURL().subscribe(url => {
+          obs.next(url);
+          obs.complete();
+        });
+      });
+    });
   }
 
   removeImage(itemID: string): Promise<any>{

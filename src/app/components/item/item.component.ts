@@ -403,10 +403,21 @@ export class ItemComponent implements OnInit, OnDestroy {
       }
       // post to upload image
       if (this.imageToSave) {
-        this.imageService.putImage(this.imageToSave, this.item.imageUrl).subscribe(link => this.item.imageUrl = link);
+        this.imageService.putImage(this.imageToSave, this.item.imageUrl).subscribe(link => {
+          this.item.imageUrl = link;
+          this.putItemToDB();
+        });
+      } else {
+        this.putItemToDB();
       }
+    } else {
+      this.putItemToDB();
     }
     // post to save item, on uccess update
+
+  }
+
+  putItemToDB() {
     console.log('saving');
     this.adminService.updateItem(this.item, null, null).subscribe(val => {
       if (val) {
