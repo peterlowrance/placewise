@@ -4,8 +4,16 @@
 }
 
 .userText {
-  font-size: 1rem;
+  word-wrap: break-word;
   padding: 0.35rem 0;
+}
+
+.userName {
+  font-size: 1rem;
+}
+
+.userBox {
+  max-width: 50vw;
 }
 
 .fab{
