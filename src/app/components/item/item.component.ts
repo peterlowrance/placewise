@@ -393,32 +393,24 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Saves the item to the database, sets not dirty, and sets previousItem
    */
   saveItem() {
-    // first, upload the image if edited
+    // first, upload the image if edited, upload when we get the new ID
     if (this.previousItem.imageUrl !== this.item.imageUrl) {
-      // if the URL previously existed, just upload, else get new imageURL
-      if (this.previousItem.imageUrl === null || this.previousItem.imageUrl === '') {
-        this.item.imageUrl = this.imageToSave.name;
-      } else {
-        this.item.imageUrl = this.previousItem.imageUrl;
-      }
       // post to upload image
       if (this.imageToSave) {
-        this.imageService.putImage(this.imageToSave, this.item.imageUrl).subscribe(link => {
+        this.imageService.putImage(this.imageToSave, this.item.ID).then(link =>{
           this.item.imageUrl = link;
-          this.putItemToDB();
+          this.placeIntoDB();
         });
-      } else {
-        this.putItemToDB();
       }
-    } else {
-      this.putItemToDB();
     }
-    // post to save item, on uccess update
-
+    else{
+      //else just place
+      this.placeIntoDB();
+    }
+    
   }
 
-  putItemToDB() {
-    console.log('saving');
+  placeIntoDB(){
     this.adminService.updateItem(this.item, null, null).subscribe(val => {
       if (val) {
         this.previousItem = JSON.parse(JSON.stringify(this.item));
@@ -437,16 +429,32 @@ export class ItemComponent implements OnInit, OnDestroy {
   requestDelete(signal: boolean) {
     if (signal) {
       if (confirm('Are you sure you want to delete the item?\nThis cannot be undone.')) {
-        //TODO: remove image
-        this.adminService.removeItem(this.item).subscribe(val => {
-          if (val) {
-            alert('Item successfully deleted.');
-            this.navService.returnState();
-            this.routeLocation.back();
-          } else alert('Item deletion failed.');
-        });
+        //remove image if exists, else just remove item
+        if(this.item.imageUrl !== null && typeof this.item.imageUrl !== 'undefined'
+          && this.item.imageUrl !== '../../../assets/notFound.png'){
+          this.imageService.removeImage(this.item.ID).then(() => {
+            this.removeFromDB();
+          });
+        }
+        else{ // else just delete from the DB
+          this.removeFromDB();
+        }
       }
     }
+  }
+
+  /**
+   * Removes the current item from the firebase DB
+   */
+  removeFromDB(){
+    //remove image
+    this.adminService.removeItem(this.item.ID).subscribe(val => {
+      if (val) {
+        alert('Item successfully deleted.');
+        this.navService.returnState();
+        this.routeLocation.back();
+      } else alert('Item deletion failed.');
+    });
   }
 
 }

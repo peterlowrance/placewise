@@ -173,7 +173,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       // For each itemID descending from root, get the item from the data and added to the global items array
       for (const itemID of root.items) {
         this.searchService.getItem(itemID).subscribe(returnedItem => {
-          this.items.push(returnedItem);
+          if(returnedItem !== null && typeof returnedItem !== 'undefined')  this.items.push(returnedItem);
         });
       }
     }
