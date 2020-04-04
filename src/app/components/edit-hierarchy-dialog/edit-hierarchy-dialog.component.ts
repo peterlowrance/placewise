@@ -47,6 +47,7 @@ export class EditHierarchyDialogComponent implements OnInit {
   }
 
   onDeleteClick() {
+    this.imageService.removeImage(this.data.imageUrl);
     this.dialogRef.close({data: this.data, action: 'delete'});
   }
 
