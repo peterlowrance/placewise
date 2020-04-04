@@ -22,7 +22,7 @@ const httpOptions = {
   })
 };
 
-const adServe = 'http://10.18.110.183:3000';
+const adServe = 'https://placewise-d040e.appspot.com/';
 
 @Injectable({
   providedIn: 'root'
