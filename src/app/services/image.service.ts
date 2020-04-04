@@ -11,13 +11,13 @@ export class ImageService {
 
   constructor(private afsg: AngularFireStorage, private auth: AuthService) { }
 
-  putImage(file: File, itemID: string): Observable<string>{
+  async putImage(file: File, itemID: string): Promise<string>{
     //get blob ref
     const ref = this.afsg.ref(this.auth.workspace.id + '/' + itemID);
     //put
-    const put = ref.put(file);
+    await ref.put(file);
     //return new link
-    return ref.getDownloadURL();
+    return ref.getDownloadURL().toPromise();
   }
 
   removeImage(itemID: string): Promise<any>{
