@@ -407,7 +407,7 @@ export class ItemComponent implements OnInit, OnDestroy {
       //else just place
       this.placeIntoDB();
     }
-    
+
   }
 
   placeIntoDB(){
@@ -456,7 +456,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   removeFromDB(){
     //remove image
-    this.adminService.removeItem(this.item.ID).subscribe(val => {
+    this.adminService.removeItem(this.item).subscribe(val => {
       if (val) {
         alert('Item successfully deleted.');
         this.navService.returnState();
