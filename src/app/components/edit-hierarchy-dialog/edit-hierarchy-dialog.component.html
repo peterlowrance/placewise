@@ -1,13 +1,17 @@
 <mat-dialog-content>
-  <h1 mat-dialog-title>Name
-    <mat-form-field>
-      <input matInput [(ngModel)]="data.name">
-    </mat-form-field>
-  </h1>
-  <button mat-icon-button (click)="onDeleteClick()"><mat-icon>delete</mat-icon></button>
+  <div class="header">
+    <h1 mat-dialog-title>Name
+      <mat-form-field>
+        <input matInput [(ngModel)]="data.name">
+      </mat-form-field>
+    </h1>
+    <button mat-icon-button class="trash" (click)="onDeleteClick()"><mat-icon>delete</mat-icon></button>
+  </div>
   <!--<div class="image" [ngStyle]="{'background-image': 'url(' + data.imageUrl + ')'}"></div>-->
-  <img class="responsive-item-image container-img" src={{data.imageUrl}} layout-fit>
-  <button mat-icon-button class="container-button"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button>
+  <div class="image">
+    <img class="responsive-item-image container-img" src={{data.imageUrl}} layout-fit>
+    <button mat-icon-button class="camera"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button>
+  </div>
   <!-- hidden item uploader -->
   <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
   <div>Parent: {{data.realParent ? data.realParent.name : 'root'}} <button mat-icon-button (click)="onChangeParent()"><mat-icon>edit</mat-icon></button></div>
