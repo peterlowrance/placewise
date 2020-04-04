@@ -439,6 +439,14 @@ export class ItemComponent implements OnInit, OnDestroy {
         else{ // else just delete from the DB
           this.removeFromDB();
         }
+        // Remove Item
+        this.adminService.removeItem(this.item).subscribe(val => {
+          if (val) {
+            alert('Item successfully deleted.');
+            this.navService.returnState();
+            this.routeLocation.back();
+          } else alert('Item deletion failed.');
+        });
       }
     }
   }

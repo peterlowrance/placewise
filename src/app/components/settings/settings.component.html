@@ -2,24 +2,38 @@
 <div *ngIf="role === 'Admin'">
     <mat-list class ="settings-container">
         <mat-list-item>
-            <button mat-raised-button class="equal-button">Manage Items</button>
+            <div class = "settings-item">
+                <button mat-raised-button class="equal-button" [routerLink] = "['/search/categories/root']">Manage Items</button>
+            </div>
         </mat-list-item>
         <mat-list-item>
-            <button mat-raised-button class="equal-button" [routerLink]="['/reports']" routerLinkActive="router-link-active">Reports</button>
+            <div class = "settings-item">
+                <button mat-raised-button class="equal-button" [routerLink]="['/reports']" routerLinkActive="router-link-active">Reports</button>
+            </div>
         </mat-list-item>
         <mat-divider></mat-divider>
-        <h3 mat-subheader>Shop Config</h3>
+        <div class = "settings-item">
+            <h3 mat-subheader class = "headerName">Shop Config</h3>
+        </div>
         <mat-list-item>
-            <button mat-raised-button class="equal-button">Users</button>
+            <div class = "settings-item">
+                <button mat-raised-button class="equal-button" [routerLink]="['/users']">Users</button>
+            </div>
         </mat-list-item>
         <mat-list-item>
-            <button mat-raised-button class="equal-button" (click)="goToModify(false)">Modify Locations</button>
+            <div class = "settings-item">
+                <button mat-raised-button class="equal-button" (click)="goToModify(false)">Modify Locations</button>
+            </div>
         </mat-list-item>
         <mat-list-item>
-            <button mat-raised-button class="equal-button" (click)="goToModify(true)">Modify Categories</button>
+            <div class = "settings-item">
+                <button mat-raised-button class="equal-button" (click)="goToModify(true)">Modify Categories</button>
+            </div>
         </mat-list-item>
         <mat-divider></mat-divider>
-        <h3 mat-subheader>My Settings</h3>
+        <div class = "settings-item">
+            <h3 mat-subheader class = "headerName">My Settings</h3>
+        </div>
     </mat-list>
 </div>
 <!-- load rest of settings -->

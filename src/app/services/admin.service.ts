@@ -1,7 +1,7 @@
 // import { AdminInterfaceService } from './admin-interface.service';
 
 import {Injectable} from '@angular/core';
-import {HttpHeaders} from '@angular/common/http';
+import {HttpHeaders, HttpClient, HttpResponse, HttpRequest} from '@angular/common/http';
 import {Observable, of} from 'rxjs';
 import {Item} from '../models/Item';
 import {AngularFirestore} from '@angular/fire/firestore';
@@ -10,6 +10,8 @@ import {SentReport} from '../models/SentReport';
 import {map} from 'rxjs/operators';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {SearchService} from './search.service';
+import { combineLatest } from 'rxjs';
+import { User } from '../models/User';
 import * as firebase from "firebase";
 
 declare var require: any;
@@ -19,6 +21,8 @@ const httpOptions = {
     'Content-Type': 'application/json'
   })
 };
+
+const adServe = 'http://10.18.110.183:3000';
 
 @Injectable({
   providedIn: 'root'
@@ -137,8 +141,16 @@ export class AdminService {
     //return of(true);
   }
 
-  removeItem(itemID: string) {
-    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + itemID).delete();
+  removeItem(item: Item) {
+    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item).delete();
+    if (item.category) {
+      this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+    }
+    if (item.locations && item.locations.length > 0) {
+      item.locations.forEach(location => {
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+      });
+    }
     return of(true);
   }
 
@@ -312,6 +324,144 @@ export class AdminService {
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + appropriateHierarchy + node.ID).update(node);
   }
 
-  constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService) {
+  /**
+   * Gets all users from the current signed-in user's workspace
+   */
+  getWorkspaceUsers(): Observable<any[]>{
+    try{
+      //get all user metadata
+      let users = this.afs.collection('/Users', ref => ref.where('workspace','==', this.auth.workspace.id)).snapshotChanges().pipe(map(a => {
+        return a.map(g => {
+        const data = g.payload.doc.data();
+        const id = g.payload.doc.id;
+        return {data:data, id:id};
+        })
+      }));
+      //get all static user roles from db
+      let wusers = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().pipe(map(a => {
+        return a.map(g => {
+        const data = g.payload.doc.data();
+        const id = g.payload.doc.id;
+        return {data:data, id:id};
+        })
+      }));
+      //filter and combine by user ID
+      return combineLatest<any[]>(users, wusers, (user, wuser) =>{
+        let list = []
+        user.forEach((element, index) => {
+          if(element)  list.push({user: element.data, role: wuser.find((elem) => elem.id === element.id).data.role});
+        });
+        return list;
+      });
+    }
+    //error has occured
+    catch(err){
+      console.log(err)
+    }
+  }
+
+  /**
+   * Deletes a user from the DB and removes their metadata fields
+   * @param email The email of the user to delete
+   */
+  deleteUserByEmail(email: string): Promise<string>{
+    return new Promise((resolve, reject) => {
+      //get ID token from auth state
+      return this.auth.getAuth().subscribe(
+        auth => {
+          //check if logged in
+          if(auth === null) reject('Auth token could not be retrieved. Perhaps you are logged out?');
+          auth.getIdTokenResult().then(
+            token => {
+              //with token remove user by pinging server with token and email
+              this.http.post(`${adServe}/removeUser`, {
+                idToken: token,
+                email: email
+              }).toPromise().then(
+                () => resolve(`Removed user ${email}`),
+                (err) => reject(err.error)
+              );
+            }
+          )
+        }
+      )
+    })
+  }
+
+  /**
+   * Sets a user's role in the DB
+   * @param email The email of the user to update
+   * @param role Role to update to, expects "Admin" or "User"
+   */
+  setUserRole(email: string, role: string){
+    return new Promise((resolve, reject) => {
+      //ensure correct role change given
+      if(role === 'Admin' || role === 'User'){
+        //get ID token from auth state
+        return this.auth.getAuth().subscribe(
+          auth => {
+            //if auth is null, return
+            if(auth === null) reject('Auth token could not be retrieved. Perhaps you are logged out?');
+            //not null, try token
+            auth.getIdTokenResult().then(
+              token => {
+                //with token set user role by pinging server with token, email, and role
+                this.http.post(`${adServe}/setUserRole`, {
+                  idToken: token,
+                  email: email,
+                  role: role
+                }).toPromise().then(
+                  () => resolve(role),
+                  //error in posting
+                  (err) => reject(err.error)
+                );
+              },
+              //reject, error getting auth token
+              (err) => reject(err)
+            )
+          }
+        )
+      } //not right role, reject
+      else reject('Role not "Admin" or "User"');
+    });
+  }
+
+  /**
+   * Adds a user to the DB and populates their metadata fields
+   * @param email the eamil of the user to add
+   * @param firstName the first name of the user to add
+   * @param lastName the last name of the user to add
+   */
+  async addUserToWorkspace(email: string, firstName: string, lastName: string): Promise<{user:User, role:string}>{
+    return new Promise((resolve, reject) => {
+      //get ID token from auth state
+      this.auth.getAuth().subscribe(
+        auth => {
+          //if auth is null, reject
+          if(auth === null) reject('Auth token could not be retrieved. Perhaps you are logged out?');
+          //logged in, get goin'
+          auth.getIdTokenResult().then(
+            token => {
+              //with token add user by pinging server with token and email
+              this.http.post(`${adServe}/createNewUser`, {
+                idToken: token,
+                email: email,
+                firstName: firstName,
+                lastName: lastName
+              }).toPromise().then(
+                () => resolve({user:{firstName: firstName, lastName: lastName, email:email, workspace: this.auth.workspace.id}, role:'User'}),
+                //error posting
+                (err) => reject(err.error)
+              );
+          },
+          //reject getIDToken
+          (err) => reject(err)
+          )
+        }
+      )
+    });
+  }
+
+  constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService, private http: HttpClient) {
   }
 }

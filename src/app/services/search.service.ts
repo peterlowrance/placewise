@@ -79,7 +79,7 @@ export class SearchService implements SearchInterfaceService {
     return new Observable(obs => {
       appropriateHierarchyItems.subscribe(hierarchyItems => {
         hierarchyItems.forEach(cat => {
-          if (cat.parent === rootID) {
+          if (cat.parent === rootID && result.filter(x => x.ID === cat.ID).length === 0) {
             result.push(cat);
           }
         });
@@ -102,10 +102,13 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getLocation(id: string): Observable<HierarchyItem> {
+    if (!id) {
+      return of(null);
+    }
     return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as HierarchyItem;
       data.ID = a.payload.id;
-      if(data.imageUrl == null){
+      if (data.imageUrl == null) {
         data.imageUrl = '../../../assets/notFound.png';
       }
       return data;
@@ -113,10 +116,13 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getCategory(id: string): Observable<HierarchyItem> {
+    if (!id) {
+      return of(null);
+    }
     return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as HierarchyItem;
       data.ID = a.payload.id;
-      if(data.imageUrl == null){
+      if (data.imageUrl == null) {
         data.imageUrl = '../../../assets/notFound.png';
       }
       return data;
@@ -214,22 +220,23 @@ export class SearchService implements SearchInterfaceService {
 
   private getAllHierarchy(excludeRoot: boolean, isCategory: boolean): Observable<HierarchyItem[]> {
     // TODO: proper caching and checking for updated version?
-    let appropriateCache = isCategory ? this.categories : this.locations;
+    const appropriateCache = isCategory ? this.categories : this.locations;
     // If the data is cached, return it
     if (appropriateCache) {
+      console.log('returning from cache');
       return of(excludeRoot ? appropriateCache.filter(c => c.ID !== 'root') : appropriateCache);
     }
     return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + (isCategory ? '/Category' : '/Locations'))
       .snapshotChanges().pipe(map(a => {
-        appropriateCache = a.map(g => {
+        let returnedHierarchy = a.map(g => {
           const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
-          if(data.imageUrl == null){
+          if (data.imageUrl == null) {
             data.imageUrl = '../../../assets/notFound.png';
           }
           return data;
         });
-        return excludeRoot ? appropriateCache.filter(g => g.ID !== 'root') : appropriateCache;
+        return excludeRoot ? returnedHierarchy.filter(g => g.ID !== 'root') : returnedHierarchy;
       }));
   }
 

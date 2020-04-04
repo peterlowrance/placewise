@@ -70,7 +70,12 @@ export class NavbarComponent implements OnInit {
       return 'modifyCategories';
     } else if (this.locationString === '/modify/locations') {
       return 'modifyLocations';
-    } else {
+    } else if (this.locationString === '/users') {
+      return 'moderateUsers';
+    } else if (this.locationString === '/reports') {
+      return 'reports';
+    }
+    else {
       return '/';
     }
   }

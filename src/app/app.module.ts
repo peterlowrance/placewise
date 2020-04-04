@@ -1,24 +1,25 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-//Imports for material design modules
-import {MatToolbar} from '@angular/material/toolbar'
-import {MatExpansionModule} from '@angular/material/expansion'
-import {MatChipsModule} from '@angular/material/chips'
-import {MatIconModule} from '@angular/material/icon'
-import {MatGridListModule} from '@angular/material/grid-list'
-import {MatButtonModule} from '@angular/material/button'
-import {MatCardModule} from '@angular/material/card'
-import {MatAutocompleteModule, MatButtonToggleModule} from '@angular/material';
-import {MatInputModule} from '@angular/material/input'
-import {MatDialogModule} from '@angular/material/dialog'
-import {MatTreeModule} from '@angular/material/tree'
-import {MatListModule} from '@angular/material/list'
-import {MatSnackBarModule} from '@angular/material/snack-bar'
-import {MatDividerModule} from '@angular/material/divider'
 
-import {SmdFabSpeedDialModule} from 'node_modules/angular-speed-dial'
-//Imports for all Placewise modules
+// Imports for material design modules
+import {MatToolbar} from '@angular/material/toolbar';
+import {MatExpansionModule} from '@angular/material/expansion';
+import {MatChipsModule} from '@angular/material/chips';
+import {MatIconModule} from '@angular/material/icon';
+import {MatGridListModule} from '@angular/material/grid-list';
+import {MatButtonModule} from '@angular/material/button';
+import {MatCardModule} from '@angular/material/card';
+import {MatAutocompleteModule, MatButtonToggleModule, MatTableModule} from '@angular/material';
+import {MatInputModule} from '@angular/material/input';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatTreeModule} from '@angular/material/tree';
+import {MatListModule} from '@angular/material/list';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatDividerModule} from '@angular/material/divider';
+
+import {SmdFabSpeedDialModule} from 'node_modules/angular-speed-dial';
+// Imports for all Placewise modules
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
@@ -37,13 +38,15 @@ import {ResetPassDialogComponent} from './components/reset-pass-dialog/reset-pas
 import {ChangePassDialogComponent} from './components/change-pass-dialog/change-pass-dialog.component';
 import {AngularFireStorageModule} from '@angular/fire/storage';
 import {ReportDetailViewComponent} from './components/report-detail-view/report-detail-view.component';
-import {AdminReportComponent} from './components/admin-report/admin-report.component'
+import {AdminReportComponent} from './components/admin-report/admin-report.component';
 import {ModifyHierarchyComponent} from './components/modify-hierarchy/modify-hierarchy.component';
 import {EditHierarchyDialogComponent} from './components/edit-hierarchy-dialog/edit-hierarchy-dialog.component';
 import {ModifyHierarchyDialogComponent} from './components/modify-hierarchy-dialog/modify-hierarchy-dialog.component';
-import {MatCheckboxModule} from "@angular/material/checkbox";
-import {MatRadioModule} from "@angular/material/radio";
-
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatRadioModule} from '@angular/material/radio';
+import {ModerateUsersComponent} from './components/moderate-users/moderate-users.component';
+import {HttpClientModule} from '@angular/common/http';
+import {AddUserDialogComponent} from './components/add-user-dialog/add-user-dialog.component';
 
 @NgModule({
   declarations: [
@@ -62,7 +65,9 @@ import {MatRadioModule} from "@angular/material/radio";
     ResetPassDialogComponent,
     ChangePassDialogComponent,
     ReportDetailViewComponent,
-    ModifyHierarchyDialogComponent
+    ModifyHierarchyDialogComponent,
+    ModerateUsersComponent,
+    AddUserDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -81,6 +86,7 @@ import {MatRadioModule} from "@angular/material/radio";
     MatDialogModule,
     MatTreeModule,
     MatListModule,
+    MatTableModule,
     MatAutocompleteModule,
     AngularFireModule.initializeApp(environment.firebase, 'clientpanel'),
     AngularFirestoreModule,
@@ -90,10 +96,12 @@ import {MatRadioModule} from "@angular/material/radio";
     MatDividerModule,
     SmdFabSpeedDialModule,
     MatCheckboxModule,
-    MatRadioModule
+    MatRadioModule,
+    MatTableModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent]
+  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent, AddUserDialogComponent]
 })
 export class AppModule { }

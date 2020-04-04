@@ -1,0 +1,39 @@
+<div class="pageData">
+  <table mat-table [dataSource]="workspaceUsers" class="user-table">
+      <!-- User -->
+      <ng-container matColumnDef="User">
+          <th mat-header-cell *matHeaderCellDef> User </th>
+          <td mat-cell class="userBox" *matCellDef="let user">
+              <div class="userText">
+                  <div class="userName">{{user.user.firstName}} {{user.user.lastName}}</div>
+                  <div>{{user.user.email}}</div>
+              </div>
+          </td>
+      </ng-container>
+
+      <!-- Admin? -->
+      <ng-container matColumnDef="Admin">
+          <th class="adminHeader" mat-header-cell *matHeaderCellDef> Admin </th>
+          <td mat-cell *matCellDef="let user">
+              <mat-checkbox [checked]="user.role === 'Admin'" [disabled]='isCurrentUser(user)' (change)="toggleAdmin($event, user)" color="accent"></mat-checkbox>
+          </td>
+      </ng-container>
+
+      <!-- Delete button -->
+      <ng-container class="deleteHeader" matColumnDef="Delete">
+          <th mat-header-cell *matHeaderCellDef> Delete </th>
+          <td class="deleteButton" mat-cell *matCellDef="let user">
+              <button mat-icon-button color="warn" [disabled]='isCurrentUser(user)' (click)="deleteUser(user)"><mat-icon>delete</mat-icon></button>
+          </td>
+      </ng-container>
+
+      <!-- Rows -->
+      <tr mat-header-row *matHeaderRowDef="headers"></tr>
+      <tr mat-row *matRowDef="let row; columns: headers"></tr>
+  </table>
+
+  <!-- Add FAB -->
+  <button class="fab" mat-fab color="primary" (click)="addUsers()">
+      <mat-icon>add</mat-icon>
+  </button>
+</div>

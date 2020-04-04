@@ -7,6 +7,7 @@ import { SentReport } from 'src/app/models/SentReport';
 import { DetailedReportModalData } from 'src/app/models/DetailedReportModalData';
 import { MatDialog } from '@angular/material';
 import { ReportDetailViewComponent } from '../report-detail-view/report-detail-view.component';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-admin-report',
@@ -15,9 +16,12 @@ import { ReportDetailViewComponent } from '../report-detail-view/report-detail-v
 })
 export class AdminReportComponent implements OnInit {
   reports: SentReport[];
+  headers: string[] = ['Image','Item','User'];
+
   constructor(
     private searchService: SearchService,
     private adminService: AdminService,
+    private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
     private imageService: ImageService,
@@ -30,6 +34,7 @@ export class AdminReportComponent implements OnInit {
         this.searchService.getItem(this.reports[i].item).subscribe(z =>{
           this.reports[i].trueItem = z;
         })
+        this.authService.getUserInfo(this.reports[i].user).subscribe(z => this.reports[i].userName = z.firstName + " " + z.lastName);
       }
     });
   }
@@ -39,16 +44,18 @@ export class AdminReportComponent implements OnInit {
   {
         // reset report data, ensure clicking out defaults to fail and no double send
         var reportData : DetailedReportModalData = {
-          itemName:r.trueItem.name,reportDesc : r.desc,reportID : r.ID,toBeRemoved:false
+          itemName:r.trueItem.name,itemID: r.trueItem.ID, reportDesc : r.desc,reportID : r.ID,toBeRemoved:false, toGoToItem: false
         }
 
+
         const dialogRef = this.dialog.open(ReportDetailViewComponent, {
-          width: '240px',
+          width: '280px',
           data: {
             itemName: reportData.itemName,
             reportDesc: reportData.reportDesc,
             reportID: reportData.reportID,
-            remove: reportData.toBeRemoved
+            remove: reportData.toBeRemoved,
+            itemID: reportData.itemID
           }
         });
 
