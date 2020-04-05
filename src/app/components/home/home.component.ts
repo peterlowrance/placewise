@@ -5,7 +5,7 @@ import {HierarchyItem} from '../../models/HierarchyItem';
 import {FormControl} from '@angular/forms';
 import {SearchService} from '../../services/search.service';
 import {NavService} from '../../services/nav.service';
-import {Subscription} from 'rxjs';
+import {Observable, of, Subscription} from 'rxjs';
 import {AuthService} from 'src/app/services/auth.service';
 import {ImageService} from '../../services/image.service';
 import * as Fuse from 'fuse.js';
@@ -173,7 +173,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       // For each itemID descending from root, get the item from the data and added to the global items array
       for (const itemID of root.items) {
         this.searchService.getItem(itemID).subscribe(returnedItem => {
-          if(returnedItem !== null && typeof returnedItem !== 'undefined')  this.items.push(returnedItem);
+          if (returnedItem !== null && typeof returnedItem !== 'undefined')  this.items.push(returnedItem);
         });
       }
     }
