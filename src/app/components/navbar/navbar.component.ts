@@ -47,12 +47,7 @@ export class NavbarComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.authService.getRole().subscribe(
-      val => {
-        console.log(val);
-        this.role = val;
-      }
-    );
+    this.authService.getRole().subscribe(val =>  this.role = val);
   }
 
   /**
@@ -98,13 +93,13 @@ export class NavbarComponent implements OnInit {
   /**
    * Returns home, forgets parent state
    */
-  goHome() {
+  async goHome() {
     this.navService.forgetParent();
     // If we are going home from the search screen, navigate to blank then navigate home
     if (this.router.url.indexOf('search') > -1) {
-      this.router.navigateByUrl('').then(() => this.router.navigateByUrl('search/' + (this.searchType ? this.searchType : 'categories') + '/root'));
+      await this.router.navigateByUrl('').then(() => this.router.navigateByUrl('search/' + (this.searchType ? this.searchType : 'categories') + '/root'));
     } else {
-      this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/root']).then(result => {
+      await this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/root']).then(result => {
         if (result === null) {
           this.router.navigateByUrl('').then(() => this.router.navigateByUrl('search/' + (this.searchType ? this.searchType : 'categories') + '/root'));
         }
