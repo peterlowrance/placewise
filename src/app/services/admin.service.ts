@@ -210,8 +210,12 @@ export class AdminService {
         let newChildren: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
         newChildren = newChildren.filter(obj => obj !== remove.ID);
         if (remove.children) {
-          newChildren.concat(remove.children);
+          newChildren = newChildren.concat(remove.children);
           // Update children's parents
+          if(remove.parent)
+          {
+            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({children: newChildren});
+          }
           remove.children.forEach(child => this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + child).update({parent: remove.parent}));
         }
         // Update parent's items
@@ -251,7 +255,12 @@ export class AdminService {
         let newChildren: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
         newChildren = newChildren.filter(obj => obj !== toRemove.ID);
         if (toRemove.children) {
-          newChildren.concat(toRemove.children);
+          newChildren = newChildren.concat(toRemove.children);
+          // Update parent's children
+          if(toRemove.parent)
+          {
+            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({children: newChildren});
+          }
           // Update children's parents
           toRemove.children.forEach(child => this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + child).update({parent: toRemove.parent}));
         }
