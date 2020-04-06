@@ -8,11 +8,8 @@ export class ImageMockService {
 
   constructor() { }
 
-  getImage(ID: string): Observable<string> {
-
-    // If it's already a firestorage URL, then don't poll for one
-    if (ID.substring(0, 5) === 'gs://') { return; }
-
-    return of('https://crouton.net/crouton.png');
-  }
+  /*async putImage(file: File, itemID: string): Observable<string> {
+    let ret = 'https://crouton.net/crouton.png'
+    return of(ret).toPromise();
+  }*/
 }
