@@ -93,7 +93,7 @@ export class AuthMockService {
    * Gets the authentication state
    */
   getAuth(){
-    if(loggedIn) return of({});
+    if(loggedIn) return of({uid : "100"});
     return of(null);
   }
 
