@@ -118,9 +118,17 @@ describe('HomeComponent', () => {
     });
 
     it('should display items and categories', async () => {
-      await component.displayDescendants({ID: 'root', name: 'root', children: [], items: ['999']}, true);
+      await component.displayDescendants({ID: 'root', name: 'root', children: ['554', '553'], items: ['999']}, true);
       expect(component.items.pop().ID).toBe('999');
-      console.log(component.hierarchyItems);
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('554');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('553');
+    });
+
+    it('should display items and locations', async () => {
+      await component.displayDescendants({ID: 'root', name: 'root', children: ['100', '200'], items: ['999']}, false);
+      expect(component.items.pop().ID).toBe('999');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('100');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('200');
     });
   });
 });
