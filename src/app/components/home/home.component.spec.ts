@@ -130,5 +130,23 @@ describe('HomeComponent', () => {
       expect(component.hierarchyItems.map(x => x.ID)).toContain('100');
       expect(component.hierarchyItems.map(x => x.ID)).toContain('200');
     });
+
+    it('should load level category', async () => {
+      await component.loadLevel('root', 'Categories');
+      expect(component.selectedSearch).toBe('Categories');
+      expect(component.root.name).toBe('root');
+      expect(component.items.length).toBe(0);
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('554');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('553');
+    });
+
+    it('should load level location', async () => {
+      await component.loadLevel('root', 'Locations');
+      expect(component.selectedSearch).toBe('Locations');
+      expect(component.root.name).toBe('root');
+      expect(component.items.length).toBe(0);
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('100');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('200');
+    });
   });
 });

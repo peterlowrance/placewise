@@ -122,7 +122,7 @@ export class HomeComponent implements OnInit, OnDestroy {
    * @param rootID root to display children of
    * @param selectedSearch category or location
    */
-  private loadLevel(rootID: string, selectedSearch: string) {
+  loadLevel(rootID: string, selectedSearch: string) {
     this.selectedSearch = selectedSearch;
     this.navService.setSearchType(this.selectedSearch);
     const appropriateHierarchy = selectedSearch === 'Categories' ? this.searchService.getCategory(rootID) : this.searchService.getLocation(rootID);
