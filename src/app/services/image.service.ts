@@ -20,7 +20,10 @@ export class ImageService {
     return ref.getDownloadURL().toPromise();
   }
 
-  removeImage(itemID: string): Promise<any>{
+  removeImage(itemID: string): Promise<any> {
+    if (itemID === '../../../assets/notFound.png') {
+      return;
+    }
     //get ref
     const ref = this.afsg.ref(this.auth.workspace.id + '/' + itemID);
     //erase
