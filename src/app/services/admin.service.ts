@@ -42,7 +42,8 @@ export class AdminService {
   }
   placeReport(itemID: string, text: string){
     var userID: string;
-    return this.auth.getAuth().toPromise().then(x => this.placeReportHelper(itemID, text, x.uid)).then(x => x.id)
+    var rID: string;
+    return this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid).then(x => rID = x.id))
   }
 
   placeReportHelper(itemID: string, text: string, userID: string): Promise<DocumentReference> {
@@ -74,7 +75,7 @@ export class AdminService {
     for (let i = 0; i < reports.length; i++) {
       this.deleteReport(reports[i].ID);
     }
-    reports = [];
+    return [];
   }
 
 

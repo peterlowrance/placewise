@@ -69,7 +69,7 @@ export class AdminReportComponent implements OnInit {
   }
 
   clearReports() {
-    this.adminService.clearReports(this.reports);
+    this.reports = this.adminService.clearReports(this.reports);
   }
 
 }
