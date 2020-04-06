@@ -54,7 +54,6 @@ export class SearchService implements SearchInterfaceService {
         result.push(ancestors);
         // Find all parents in this ancestor list
         // While the last parent of the last array of ancestors is not the root
-        console.log(result);
         while (result[result.length - 1][result[result.length - 1].length - 1].ID !== 'root') {
           for (const parentL2 of locations) {
             // If the item has the same ID as the parent of the last item in the ancestor list, add it
@@ -130,7 +129,6 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getAllItems(): Observable<Item[]> {
-    // this.afs.collection<Item>().snapshotChanges('/Workspaces/'+ auth.workspace.id +'/Items').subscribe(data => console.log(data));
     return this.afs.collection<Item>('/Workspaces/' + this.auth.workspace.id + '/Items').snapshotChanges().pipe(map(a => {
       return a.map(g => {
           const data = g.payload.doc.data() as Item;
@@ -228,7 +226,7 @@ export class SearchService implements SearchInterfaceService {
     }
     return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + (isCategory ? '/Category' : '/Locations'))
       .snapshotChanges().pipe(map(a => {
-        let returnedHierarchy = a.map(g => {
+        const returnedHierarchy = a.map(g => {
           const data = g.payload.doc.data() as HierarchyItem;
           data.ID = g.payload.doc.id;
           if (data.imageUrl == null) {

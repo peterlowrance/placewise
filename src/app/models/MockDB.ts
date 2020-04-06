@@ -90,7 +90,7 @@ export const ITEMS: Item[] = [
 
 export const CATEGORIES: HierarchyItem[] = [
 {
-    ID: '555',
+    ID: 'root',
     name: 'root',
     parent: null,
     children: [
@@ -103,15 +103,15 @@ export const CATEGORIES: HierarchyItem[] = [
 {
     ID: '554',
     name: 'numbers',
-    parent: null,
+    parent: 'root',
     children: [],
-    items: ['997','999'],
+    items: ['997', '999'],
     imageUrl: 'crouton.png'
 },
 {
     ID: '553',
     name: 'letters?',
-    parent: null,
+    parent: 'root',
     children: [],
     items: ['998'],
     imageUrl: 'crouton.png'
