@@ -89,7 +89,7 @@ export const ITEMS: Item[] = [
 
 export const CATEGORIES: HierarchyItem[] = [
 {
-    ID: '555',
+    ID: 'root',
     name: 'root',
     parent: null,
     children: [
