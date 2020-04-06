@@ -2,14 +2,9 @@ import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {HomeComponent} from './home.component';
 
-import {FormBuilder} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
 import {ActivatedRoute, convertToParamMap, Router} from '@angular/router';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {MatDialog} from '@angular/material/dialog';
-import {ReactiveFormsModule} from '@angular/forms';
-import {FormsModule} from '@angular/forms';
-
 //Imports for material design modules
 import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from '@angular/material/card';
@@ -18,7 +13,6 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatGridListModule} from '@angular/material/grid-list';
 import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatInputModule} from '@angular/material/input';
-
 //Mocks
 import * as AuthTest from '../../services/auth.mock.service';
 import {RouterTestingModule} from '@angular/router/testing';
@@ -29,12 +23,9 @@ import {ImageService} from '../../services/image.service';
 import * as ImageTest from '../../services/image.mock.service';
 
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {HierarchyItem} from '../../models/HierarchyItem';
-import {BehaviorSubject, from, Observable, of} from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 import {SmdFabSpeedDialModule} from "angular-speed-dial";
-import {AngularFireAuthModule} from "@angular/fire/auth";
-import {AngularFirestore, AngularFirestoreModule} from "@angular/fire/firestore";
-import {AngularFireModule} from "@angular/fire";
+import {AngularFirestore} from "@angular/fire/firestore";
 import {HttpClientModule} from "@angular/common/http";
 
 let navMock = {
@@ -116,7 +107,28 @@ describe('HomeComponent', () => {
   describe('Display Things', () => {
     it('should show root\'s items', async () => {
       await component.displayItems({ID: 'root', name: 'root', children: [], items: ['999']});
-      expect(component.items.pop().ID).toBe( '999');
+      expect(component.items.pop().ID).toBe('999');
+    });
+
+    it('should show no items', async () => {
+      await component.displayItems({ID: 'root', name: 'root', children: [], items: ['fakeID']});
+      expect(component.items.length).toBe(0);
+      await component.displayItems({ID: 'root', name: 'root', children: [], items: []});
+      expect(component.items.length).toBe(0);
+    });
+
+    it('should display items and categories', async () => {
+      await component.displayDescendants({ID: 'root', name: 'root', children: ['554', '553'], items: ['999']}, true);
+      expect(component.items.pop().ID).toBe('999');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('554');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('553');
+    });
+
+    it('should display items and locations', async () => {
+      await component.displayDescendants({ID: 'root', name: 'root', children: ['100', '200'], items: ['999']}, false);
+      expect(component.items.pop().ID).toBe('999');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('100');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('200');
     });
   });
 });

@@ -4,7 +4,7 @@ import {Injectable} from '@angular/core';
 import {HttpHeaders, HttpClient, HttpResponse, HttpRequest} from '@angular/common/http';
 import {Observable, of} from 'rxjs';
 import {Item} from '../models/Item';
-import {AngularFirestore} from '@angular/fire/firestore';
+import {AngularFirestore, DocumentReference} from '@angular/fire/firestore';
 import {AuthService} from './auth.service';
 import {SentReport} from '../models/SentReport';
 import {map} from 'rxjs/operators';
@@ -13,6 +13,7 @@ import {SearchService} from './search.service';
 import { combineLatest } from 'rxjs';
 import { User } from '../models/User';
 import * as firebase from "firebase";
+import { promise } from 'protractor';
 
 declare var require: any;
 
@@ -28,16 +29,24 @@ const adServe = 'https://placewise-d040e.appspot.com/';
   providedIn: 'root'
 })
 export class AdminService {
-  placeReport(itemID: string, text: string): Observable<boolean> {
+
+  getReport(id: string){
+    return this.afs.doc<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).snapshotChanges().pipe(map(a => {
+      const data = a.payload.data() as SentReport;
+      if (!data) {
+        return;
+      }
+      data.ID = a.payload.id;
+      return data;
+    }));
+  }
+  placeReport(itemID: string, text: string){
     var userID: string;
-    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid))
-
-
-    return of(true);
+    return this.auth.getAuth().toPromise().then(x => this.placeReportHelper(itemID, text, x.uid)).then(x => x.id)
   }
 
-  placeReportHelper(itemID: string, text: string, userID: string) {
-    this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
+  placeReportHelper(itemID: string, text: string, userID: string): Promise<DocumentReference> {
+    return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
       desc: text,
       item: itemID,
       user: userID,
@@ -46,7 +55,6 @@ export class AdminService {
   }
 
   getReports(): Observable<SentReport[]> {
-    console.log('/Workspaces/' + this.auth.workspace.id + '/Reports');
     return this.afs.collection<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports').snapshotChanges().pipe(
       map(a => {
         return a.map(g => {
@@ -62,13 +70,13 @@ export class AdminService {
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).delete();
   }
 
-  clearReports(reports: SentReport[]): Observable<boolean> {
+  clearReports(reports: SentReport[]) {
     for (let i = 0; i < reports.length; i++) {
-      this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + reports[i].ID).delete();
+      this.deleteReport(reports[i].ID);
     }
     reports = [];
-    return of(true);
   }
+
 
   updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Observable<boolean> {
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).set(item);

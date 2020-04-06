@@ -43,7 +43,6 @@ export class ItemComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     public dialog: MatDialog,
     private authService: AuthService,
-    private formBuilder: FormBuilder,
     private imageService: ImageService,
     private navService: NavService,
   ) {
@@ -197,22 +196,28 @@ export class ItemComponent implements OnInit, OnDestroy {
       }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      this.errorDesc = result;
-      // if it's valid, build and isue report, else leave
-      if (this.errorDesc.valid) {
-        this.report.description = this.errorDesc.desc;
-        this.report.item.name = this.item.name;
-        this.report.item.ID = this.item.ID;
-        this.report.item.imageUrl = this.item.imageUrl;
-        // TODO: input reporter name from auth service
-        // this.report.reporter
-        this.report.reportDate = new Date().toDateString();
+    dialogRef.afterClosed().subscribe(result => this.issueReport(result));
+  }
 
-        // TODO: issue report
-        this.adminService.placeReport(this.report.item.ID, this.report.description);
-      }
-    });
+  /**
+   * Issues a report to the backend DB
+   * @param result The resulting report from the report modal
+   */
+  issueReport(result: ItemReportModalData){
+    this.errorDesc = result;
+    // if it's valid, build and isue report, else leave
+    if (this.errorDesc.valid) {
+      this.report.description = this.errorDesc.desc;
+      this.report.item.name = this.item.name;
+      this.report.item.ID = this.item.ID;
+      this.report.item.imageUrl = this.item.imageUrl;
+      // TODO: input reporter name from auth service
+      // this.report.reporter
+      this.report.reportDate = new Date().toDateString();
+
+      // TODO: issue report
+      return this.adminService.placeReport(this.report.item.ID, this.report.description);
+    }
   }
 
   /**
@@ -242,6 +247,9 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Changes the item's locations to new locations
+   */
   editLocation() {
     // Deep copy locations
     const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
@@ -249,31 +257,48 @@ export class ItemComponent implements OnInit, OnDestroy {
       width: '75%',
       data: {hierarchy: 'locations', parents: this.item.locations}
     });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        console.log(result);
-        console.log(oldLocations);
-        this.item.locations = result;
-        this.adminService.updateItem(this.item, null, oldLocations);
-        setTimeout(() => location.reload(), 100);
-      }
-    });
+    dialogRef.afterClosed().subscribe(result => this.updateItemLocations(result, oldLocations));
   }
 
+  /**
+   * Updates the item's locations
+   * @param result locations chosen
+   * @param oldLocations old locations
+   */
+  updateItemLocations(result: string[], oldLocations: string[]){
+    if (result) {
+      console.log(result);
+      console.log(oldLocations);
+      this.item.locations = result;
+      this.adminService.updateItem(this.item, null, oldLocations);
+      setTimeout(() => location.reload(), 100);
+    }
+  }
+
+  /**
+   * Changes the item's category
+   */
   editCategory() {
     const oldCategory = this.item.category ? this.item.category : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '75%',
       data: {hierarchy: 'categories', parents: [this.item.category]}
     });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result && result.length > 0) {
-        this.item.category = result[0];
-        this.searchService.getCategory(result[0]).subscribe(c => this.category = c);
-        console.log('updating');
-        this.adminService.updateItem(this.item, oldCategory, null);
-      }
-    });
+    dialogRef.afterClosed().subscribe(result => this.updateItemCategory(result, oldCategory));
+  }
+
+  /**
+   * Updates the item's category
+   * @param result The new category/s chosen
+   * @param oldCategory old category
+   */
+  updateItemCategory(result: string[], oldCategory: string){
+    if (result && result.length > 0) {
+      this.item.category = result[0];
+      this.searchService.getCategory(result[0]).subscribe(c => this.category = c);
+      console.log('updating');
+      this.adminService.updateItem(this.item, oldCategory, null);
+    }
   }
 
   /**
@@ -343,7 +368,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Adds a tag to the list
    * @param event tag input event
    */
-  add(event: MatChipInputEvent): void {
+  add(event: MatChipInputEvent | any): void {
     const input = event.input;
     const value = event.value;
 
@@ -392,12 +417,12 @@ export class ItemComponent implements OnInit, OnDestroy {
   /**
    * Saves the item to the database, sets not dirty, and sets previousItem
    */
-  saveItem() {
+  async saveItem() {
     // first, upload the image if edited, upload when we get the new ID
     if (this.previousItem.imageUrl !== this.item.imageUrl) {
       // post to upload image
       if (this.imageToSave) {
-        this.imageService.putImage(this.imageToSave, this.item.ID).then(link =>{
+        return this.imageService.putImage(this.imageToSave, this.item.ID).then(link =>{
           this.item.imageUrl = link;
           this.placeIntoDB();
         });
@@ -405,13 +430,16 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
     else{
       //else just place
-      this.placeIntoDB();
+      return this.placeIntoDB();
     }
 
   }
 
-  placeIntoDB(){
-    this.adminService.updateItem(this.item, null, null).subscribe(val => {
+  /**
+   * Places the item into the database
+   */
+  async placeIntoDB(){
+    return this.adminService.updateItem(this.item, null, null).toPromise().then(val => {
       if (val) {
         this.previousItem = JSON.parse(JSON.stringify(this.item));
         this.dirty = false;
@@ -426,27 +454,19 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Deletes the item when given the signal
    * @param signal True for delete requested
    */
-  requestDelete(signal: boolean) {
+  async requestDelete(signal: boolean) {
     if (signal) {
       if (confirm('Are you sure you want to delete the item?\nThis cannot be undone.')) {
         //remove image if exists, else just remove item
         if(this.item.imageUrl !== null && typeof this.item.imageUrl !== 'undefined'
           && this.item.imageUrl !== '../../../assets/notFound.png'){
-          this.imageService.removeImage(this.item.ID).then(() => {
+          return this.imageService.removeImage(this.item.ID).then(() => {
             this.removeFromDB();
           });
         }
         else{ // else just delete from the DB
-          this.removeFromDB();
+          return this.removeFromDB();
         }
-        // Remove Item
-        this.adminService.removeItem(this.item).subscribe(val => {
-          if (val) {
-            alert('Item successfully deleted.');
-            this.navService.returnState();
-            this.routeLocation.back();
-          } else alert('Item deletion failed.');
-        });
       }
     }
   }
@@ -454,9 +474,9 @@ export class ItemComponent implements OnInit, OnDestroy {
   /**
    * Removes the current item from the firebase DB
    */
-  removeFromDB(){
+  async removeFromDB(){
     //remove image
-    this.adminService.removeItem(this.item).subscribe(val => {
+    return this.adminService.removeItem(this.item).toPromise().then(val => {
       if (val) {
         alert('Item successfully deleted.');
         this.navService.returnState();
