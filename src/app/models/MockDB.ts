@@ -1,5 +1,6 @@
 import { Item } from './Item';
 import { HierarchyItem } from './HierarchyItem';
+import { SentReport } from './SentReport';
 
 export const LOCATIONS: HierarchyItem[] = [
 {
@@ -116,3 +117,30 @@ export const CATEGORIES: HierarchyItem[] = [
     imageUrl: 'crouton.png'
 }
 ]
+
+export const REPORTS: SentReport[] = [
+    {
+        item: '999',
+        desc: 'This is problematic',
+        user: "111",
+        ID: '000',
+        trueItem: null,
+        userName: ""
+    },
+    {
+        item: '998',
+        desc: 'Send help',
+        user: "112",
+        ID: '001',
+        trueItem: null,
+        userName: ""
+    },
+    {
+        item: '998',
+        desc: 'The item can see into my soul',
+        user: "113",
+        ID: '002',
+        trueItem: null,
+        userName: ""
+    }
+    ]
