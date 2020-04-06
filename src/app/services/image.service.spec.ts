@@ -6,11 +6,12 @@ import {AuthService} from './auth.service';
 import * as AuthTest from './auth.mock.service';
 import {HomeComponent} from '../components/home/home.component';
 
-const FirestorageStub = {
+const FireStorageStub = {
   ref: (url: string) => {
-
   }
 }
+
+
 
 describe('ImageService', () => {
 
@@ -18,7 +19,7 @@ describe('ImageService', () => {
     TestBed.configureTestingModule({
 
       providers: [
-        { provide: AngularFireStorage, useValue: FirestorageStub},
+        { provide: AngularFireStorage, useValue: FireStorageStub},
         { provide: AuthService, useClass: AuthTest.AuthMockService}
       ]
 
