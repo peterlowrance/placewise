@@ -1,4 +1,4 @@
-<div *ngIf="item">
+<div class="allContent" *ngIf="item">
 <!-- item name goes here, switch by edit val -->
 <div [ngSwitch]="this.textEditFields.name">
     <div *ngSwitchCase=true>
@@ -15,9 +15,13 @@
             </mat-form-field>
         </form>
     </div>
-    <div *ngSwitchDefault><h2>{{item.name}}</h2></div>
+    <div *ngSwitchDefault>
+      <h2>
+        {{item.name}}
+        <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
+      </h2>
+    </div>
 </div>
- <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
 
 <mat-grid-list cols="3" rowHeight="2:1">
     <!-- first is image -->
@@ -30,7 +34,7 @@
         </div>
     </mat-grid-tile>
     <!-- report button -->
-    <mat-grid-tile>
+    <mat-grid-tile class="reportButton">
         <button mat-raised-button color="primary" (click)="createReport()"> Report
             <mat-icon>report_problem</mat-icon>
         </button>
@@ -47,7 +51,7 @@
 
 <!-- more info expansion panel -->
 <mat-accordion>
-    <mat-expansion-panel>
+    <mat-expansion-panel class="moreInfo">
         <mat-expansion-panel-header>
             <mat-panel-title>
                 More Information
@@ -59,7 +63,7 @@
         <!-- description -->
         <mat-card>
             <mat-card-header>
-                <mat-card-title>Description <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button></mat-card-title>
+                <mat-card-title>Description <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button></mat-card-title>
             </mat-card-header>
             <mat-card-content>
                 <div [ngSwitch]="this.textEditFields.desc">
@@ -86,16 +90,16 @@
         </mat-card>
 
         <!-- category -->
-        <mat-card>
+        <mat-card class="categoryCard">
             <mat-card-header>
-                <mat-card-title>Category <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></mat-card-title>
+                <mat-card-title>Category <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></mat-card-title>
                 <mat-card-subtitle>{{category?.name}}</mat-card-subtitle>
-                <div mat-card-avatar> <img src={{category?.imageUrl}}> </div>
+                <div mat-card-avatar> <img class="categoryImg" src={{category?.imageUrl}}> </div>
             </mat-card-header>
         </mat-card>
 
         <!-- tags -->
-        <h3>Tags <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editField('tags')"><mat-icon>add</mat-icon></button></h3>
+        <h3>Tags <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('tags')"><mat-icon>add</mat-icon></button></h3>
         <div [ngSwitch]="this.textEditFields.tags">
             <div *ngSwitchCase=true>
                 <form>
@@ -128,15 +132,16 @@
 
 <!-- steps to find -->
 <!-- adapted from https://material.angular.io/components/tree/examples -->
-<h2>Steps to Find:</h2> <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
-<mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="example-tree">
+<h2>Steps to Find: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
+</h2>
+  <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="example-tree">
     <!-- This is the tree node template for leaf nodes -->
     <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding matTreeNodePaddingIndent="5">
         <li class="mat-tree-node  mat-elevation-z4">
-            <div>
+            <div class="bottomLocation">
                 {{node.name}}
                 <br>
-                <img src={{node?.imageUrl}}>
+                <img class="bottomImage" src={{node?.imageUrl}}>
             </div>
         </li>
     </mat-tree-node>
@@ -144,15 +149,18 @@
     <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePaddingIndent="5">
         <li class=" mat-elevation-z4">
             <div class="mat-tree-node">
-                <div>
+                <div class="expandButton">
                     <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'toggle ' + node.name">
                         <mat-icon class="mat-icon-rtl-mirror">
                             {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
                         </mat-icon>
                     </button>
-                    {{node.name}}
-                    <br>
-                    <img src={{node.imageUrl}}>
+                </div>
+                <div class="locText">
+                  {{node.name}}
+                </div>
+                <div class="picHolder">
+                  <img class="locationPic" src={{node.imageUrl}}>
                 </div>
             </div>
             <ul [ngClass]="{invisible: !treeControl.isExpanded(node)}">

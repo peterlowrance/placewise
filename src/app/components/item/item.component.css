@@ -1,28 +1,14 @@
 .responsive-item-image {
-    width: 100%;
-    max-width: 100%;
-    max-height: 100%;
-    height: auto;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
-/*Adapted from https://stackoverflow.com/questions/46841648/make-all-images-in-mat-card-image-same-size-but-scale-correctly?answertab=votes#tab-top*/
-mat-card img{
-    object-fit: cover; /*this makes the image in src fit to the size specified below*/
-    width: 100%; /* Here you can use wherever you want to specify the width and also the height of the <img>*/
-    height: 100%;
-}
-
-mat-card{
-    margin-bottom: 5px;
-}
-
-mat-expansion-panel{
-    margin-left: 5px;
-    margin-right: 5px;
-}
-
-h2{
-    margin: 5px;
+h2 {
+    margin: 0 0.2rem;
+    padding-top: 0.8rem;
 }
 
 
@@ -37,11 +23,6 @@ h2{
     align-content: center;
 }
 
-mat-tree{
-    margin-left: 5px;
-    margin-right: 5px;
-}
-
 /*Photo Container CSS*/
 /*Ref: https://stackoverflow.com/questions/54508374/how-can-i-position-an-icon-over-an-image*/
 
@@ -53,6 +34,7 @@ mat-tree{
     position: absolute;
     top: 0%;
     right: 0%;
+    filter: drop-shadow(0 0 0.2rem white);
 }
 
 /*Form display fields*/
@@ -66,4 +48,80 @@ mat-tree{
     right: 3%;
     position: fixed;
     z-index: 1;
+}
+
+.locationPic {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  object-position: right;
+}
+
+.picHolder {
+  height: 4rem;
+  width: 100%
+}
+
+.mat-tree-node {
+  padding: 0.4rem;
+  font-size: 1rem;
+}
+
+ul {
+  padding-left: 0.5rem;
+}
+
+.locText {
+  width: 50vw;
+}
+
+.allContent {
+  padding: 2vw;
+  max-width: 50rem;
+  position: center;
+  margin: auto;
+}
+
+.reportButton {
+  margin-left: 0.25rem;
+}
+
+.categoryImg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+}
+
+.moreInfo {
+  margin-top: 0.8rem;
+}
+
+.mat-expansion-panel-header-title {
+  font-size: 1rem;
+}
+
+.mat-card-subtitle {
+  font-size: 1rem;
+}
+
+p {
+  font-size: 1rem;
+}
+
+.categoryCard {
+  margin-top: 0.4rem;
+}
+
+.bottomLocation {
+  margin-left: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.bottomImage {
+  margin-top: 0.2rem;
+}
+
+.editButton {
+  top: 0;
+  bottom: auto;
 }
