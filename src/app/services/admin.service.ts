@@ -142,7 +142,7 @@ export class AdminService {
   }
 
   removeItem(item: Item) {
-    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item).delete();
+    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).delete();
     if (item.category) {
       this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
     }
