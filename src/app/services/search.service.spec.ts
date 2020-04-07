@@ -43,4 +43,10 @@ describe('SearchService', () => {
     const service: SearchService = TestBed.get(SearchService);
     expect(service).toBeTruthy();
   });
+
+  it('should get ancestors', () => {
+    const service: SearchService = TestBed.get(SearchService);
+    expect(service.getAncestors('root', [{ID: 'root', name: 'root', children: ['554', '553'], items: ['999']}]).length).toBe(0);
+    expect(service.getAncestors('999', [{ID: 'root', name: 'root', children: ['554', '553'], items: ['999']}]).pop().map(x => x.ID)).toContain('root');
+  });
 });
