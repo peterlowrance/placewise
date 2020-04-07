@@ -81,7 +81,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // subscribe to change keeping
     this.typeSub = this.navService.getSearchType().subscribe(val => {
       this.selectedSearch = val;
-    });c
+    });
     // change if parent is different
     this.parentSub = this.navService.getParent().subscribe(val => {
         this.root = val;
