@@ -1,11 +1,11 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Item} from '../../models/Item';
-import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {HierarchyItem} from '../../models/HierarchyItem';
 import {FormControl} from '@angular/forms';
 import {SearchService} from '../../services/search.service';
 import {NavService} from '../../services/nav.service';
-import {Observable, of, Subscription} from 'rxjs';
+import {Subscription} from 'rxjs';
 import {AuthService} from 'src/app/services/auth.service';
 import {ImageService} from '../../services/image.service';
 import * as Fuse from 'fuse.js';
@@ -110,10 +110,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
   }
 
-  private navigateUpHierarchy() {
+  navigateUpHierarchy() {
     const urlID = this.route.snapshot.paramMap.get('id');
     const urlSS = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
-    console.log(this.root);
+    console.log(urlID + ': ' + urlSS);
     this.loadLevel(this.root ? this.root.parent : 'root', this.selectedSearch);
   }
 

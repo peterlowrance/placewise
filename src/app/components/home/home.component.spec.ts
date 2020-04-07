@@ -148,5 +148,13 @@ describe('HomeComponent', () => {
       expect(component.hierarchyItems.map(x => x.ID)).toContain('100');
       expect(component.hierarchyItems.map(x => x.ID)).toContain('200');
     });
+
+    it('should load level location when navUpHierarchy', async () => {
+      await component.navigateUpHierarchy();
+      expect(component.selectedSearch).toBe('Locations');
+      expect(component.items.length).toBe(0);
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('100');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('200');
+    });
   });
 });
