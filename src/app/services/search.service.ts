@@ -221,7 +221,6 @@ export class SearchService implements SearchInterfaceService {
     const appropriateCache = isCategory ? this.categories : this.locations;
     // If the data is cached, return it
     if (appropriateCache) {
-      console.log('returning from cache');
       return of(excludeRoot ? appropriateCache.filter(c => c.ID !== 'root') : appropriateCache);
     }
     return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + (isCategory ? '/Category' : '/Locations'))
