@@ -5,10 +5,21 @@ import {AngularFireStorage} from '@angular/fire/storage';
 import {AuthService} from './auth.service';
 import * as AuthTest from './auth.mock.service';
 import {HomeComponent} from '../components/home/home.component';
+import {BehaviorSubject} from 'rxjs';
+
 
 const FireStorageStub = {
-  ref: (url: string) => {
-  }
+  ref: (url: string) => ({
+    put: (file: File) => {},
+      delete: () => {},
+      getDownloadURL: () => {
+        return ({
+          toPromise: () => {
+            return new Promise((resolve, _reject) => resolve('Yay!'));
+          }
+        });
+      }
+  })
 }
 
 
@@ -37,5 +48,12 @@ describe('ImageService', () => {
     let spy = spyOn(TestBed.get(AngularFireStorage), 'ref');
     service.putImage(null, 'hacker');
     expect(spy).toHaveBeenCalledWith('000111000/hacker')
+  })
+
+  it('putImage basic method test', () => {
+    const service = TestBed.get(ImageService);
+    return service.putImage(null, 'hacker').then( data => {
+      expect(data).toBe('Yay!');
+    })
   })
 });
