@@ -232,13 +232,13 @@ export class HomeComponent implements OnInit, OnDestroy {
       (err) => alert('Item successfully added. Error:\n' + err)
     );
   }
-
-  /**Adds a hierarchy item to the current depth */
+/*
+  /!**Adds a hierarchy item to the current depth *!/
   addHierarchy() {
     if (this.ico === 'close') {
       this.toggleIco();
     }
-  }
+  }*/
 
   searchTextChange(event) {
     if (event === '' && this.previousSearch === '') {
