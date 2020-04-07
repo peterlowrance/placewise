@@ -43,7 +43,8 @@ export class AdminService {
   placeReport(itemID: string, text: string){
     var userID: string;
     var rID: string;
-    return this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid).then(x => rID = x.id))
+    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid).then(x => rID = x.id))
+    return of(true)
   }
 
   placeReportHelper(itemID: string, text: string, userID: string): Promise<DocumentReference> {
@@ -117,13 +118,7 @@ export class AdminService {
     if (!location) {
       location = 'root';
     }
-    return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
-      name: name,
-      desc: desc,
-      tags: tags,
-      locations: [location],
-      category: category,
-      imageUrl: imageUrl
+    return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({name: name,desc: desc,tags: tags,locations: [location],category: category,imageUrl: imageUrl
     }).then(
       val => {
         this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
@@ -178,7 +173,6 @@ export class AdminService {
     ).toPromise().then(
       doc => {
         let ary: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
-        // ary.remove(moveID);
         ary = ary.filter(obj => obj !== moveID);
         this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParent).update({children: ary});
       }
@@ -236,15 +230,11 @@ export class AdminService {
               if (i.locations.indexOf(remove.parent) === -1) {
                 i.locations.push(remove.parent);
               }
-              console.log(i);
               this.updateItem(i, null, null);
             });
           });
         }
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({
-          children: newChildren,
-          items: newItems
-        });
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({children: newChildren,items: newItems});
       }
     );
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.ID).delete();
@@ -277,12 +267,7 @@ export class AdminService {
             });
           });
         }
-        console.log(newItems);
-        console.log(toRemove.items);
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({
-          children: newChildren,
-          items: newItems
-        });
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({children: newChildren,items: newItems});
       }
     );
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.ID).delete();
@@ -415,10 +400,7 @@ export class AdminService {
             auth.getIdTokenResult().then(
               token => {
                 //with token set user role by pinging server with token, email, and role
-                this.http.post(`${adServe}/setUserRole`, {
-                  idToken: token,
-                  email: email,
-                  role: role
+                this.http.post(`${adServe}/setUserRole`, { idToken: token, email: email, role: role
                 }).toPromise().then(
                   () => resolve(role),
                   //error in posting
@@ -452,11 +434,7 @@ export class AdminService {
           auth.getIdTokenResult().then(
             token => {
               //with token add user by pinging server with token and email
-              this.http.post(`${adServe}/createNewUser`, {
-                idToken: token,
-                email: email,
-                firstName: firstName,
-                lastName: lastName
+              this.http.post(`${adServe}/createNewUser`, {idToken: token,email: email,firstName: firstName,lastName: lastName
               }).toPromise().then(
                 () => resolve({user:{firstName: firstName, lastName: lastName, email:email, workspace: this.auth.workspace.id}, role:'User'}),
                 //error posting

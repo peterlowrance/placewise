@@ -124,11 +124,9 @@ describe('ItemComponent', () => {
     expect(component.expanded).not.toBe(before);
   });
 
-  it('should place report if valid', () => {
+  it('should place report if valid', async () => {
     let reportData = {desc:'desc',valid:true};
-    component.issueReport(reportData).toPromise().then(
-      val => expect(val).toBeTruthy()
-    );
+    await component.issueReport(reportData).subscribe(val => expect(val).toBeTruthy)
   });
 
   it('should not place report on cancel/invalid', () => {
