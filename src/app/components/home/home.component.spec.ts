@@ -188,4 +188,20 @@ describe('HomeComponent', () => {
       expect(component.hierarchyItems.map(x => x.ID)).toContain('200');
     });
   });
+
+  describe('GoTo Things', () => {
+    it('should return null with empty event', () => {
+      expect(component.searchTextChange('')).toBeFalsy();
+      component.previousSearch = '';
+      expect(component.searchTextChange('asdf')).toBeFalsy();
+    });
+
+    it('should display descendants with empty event', async () => {
+      component.previousSearch = 'asdf';
+      component.selectedSearch = 'Categories';
+      component.searchTextChange('');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('554');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('553');
+    });
+  });
 });
