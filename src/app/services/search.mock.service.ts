@@ -21,29 +21,55 @@ export class SearchMockService {
    * @param id item to find ancestors of
    */
   getAncestorsOfItem(id: string): Observable<HierarchyItem[][]> {
-    let ret: HierarchyItem[][];
-    const item = MOCKDB.ITEMS.find((value, index, obj) => {value.ID === id})
-    for(let i = 0; i < item.locations.length; i++){
-        ret.push([]);
-        let current = item.locations[i];
-        while(current !== 'root'){
-            let hitem = MOCKDB.LOCATIONS.find((value, index, obj) => value.ID === current);
-            ret[i].push(hitem);
-            current = hitem.parent;
+    return new Observable(obs => {
+      this.getAllLocations().subscribe(locs => {
+        obs.next(this.getAncestors(id, locs));
+        obs.complete();
+      });
+    });
+  }
+
+  /**
+   * Returns the ancestors when you have an array of locations.
+   * @param id item to find ancestors of
+   * @param locations array of locations to find ancestors out of
+   */
+  getAncestors(id: string, locations: HierarchyItem[]): HierarchyItem[][] {
+    const result: HierarchyItem[][] = [];
+    // Find all parents of items and add an array for each parent
+    for (const parentL1 of locations) {
+      if (parentL1.items && parentL1.items.indexOf(id) > -1) {
+        const ancestors: HierarchyItem[] = [parentL1];
+        result.push(ancestors);
+        // Find all parents in this ancestor list
+        // While the last parent of the last array of ancestors is not the root
+        while (result[result.length - 1][result[result.length - 1].length - 1].ID !== 'root') {
+          for (const parentL2 of locations) {
+            // If the item has the same ID as the parent of the last item in the ancestor list, add it
+            if (parentL2.ID === result[result.length - 1][result[result.length - 1].length - 1].parent) {
+              result[result.length - 1].push(parentL2);
+            }
+          }
         }
+      }
     }
-    return of(ret);
+    return result;
   }
 
-  getDescendantsOfRoot(id: string, isCategory: boolean): Observable<HierarchyItem[]> {
-    if(isCategory){
-        return of(MOCKDB.CATEGORIES.filter((value, index, array) => value.parent === id))
-    }
-    else return of(MOCKDB.LOCATIONS.filter((value, index, array) => value.parent === id))
-  }
-
-  search(term: string): Observable<Item[]> {
-    return of(null);//TODO
+  getDescendantsOfRoot(rootID: string, isCategory: boolean): Observable<HierarchyItem[]> {
+    const result: HierarchyItem[] = [];
+    const appropriateHierarchyItems = isCategory ? this.getAllCategories() : this.getAllLocations();
+    return new Observable(obs => {
+      appropriateHierarchyItems.subscribe(hierarchyItems => {
+        hierarchyItems.forEach(cat => {
+          if (cat.parent === rootID && result.filter(x => x.ID === cat.ID).length === 0) {
+            result.push(cat);
+          }
+        });
+        obs.next(result);
+        obs.complete();
+      });
+    });
   }
 
   getItem(id: string): Observable<Item> {
@@ -64,13 +90,13 @@ export class SearchMockService {
 
   getAllDescendantItems(root: HierarchyItem, allParents: HierarchyItem[]): Observable<Item[]> {
     if (root.ID === 'root') {
-      return of(MOCKDB.ITEMS)
+      return of(MOCKDB.ITEMS);
     }
-    let IDS: string[] = [];
-    for(let parent of allParents){
-        for(let item of parent.items) if(!(item in IDS)) IDS.push(item);
+    const IDS: string[] = [];
+    for (const parent of allParents) {
+      for (const item of parent.items) if (!(item in IDS)) IDS.push(item);
     }
-    return of(IDS.map((value) => MOCKDB.ITEMS.find( (v) => v.ID ===  value)));
+    return of(IDS.map((value) => MOCKDB.ITEMS.find((v) => v.ID === value)));
   }
 
   getAllDescendantHierarchyItems(id: string, isCategory: boolean): Observable<HierarchyItem[]> {
@@ -103,12 +129,12 @@ export class SearchMockService {
   }
 
   getAllCategories(excludeRoot: boolean = false): Observable<HierarchyItem[]> {
-    if(excludeRoot) return of(MOCKDB.CATEGORIES.slice(1));
-    else return of(MOCKDB.CATEGORIES)
+    if (excludeRoot) return of(MOCKDB.CATEGORIES.slice(1));
+    else return of(MOCKDB.CATEGORIES);
   }
 
   getAllLocations(excludeRoot: boolean = false): Observable<HierarchyItem[]> {
-    if(excludeRoot) return of(MOCKDB.LOCATIONS.slice(1));
+    if (excludeRoot) return of(MOCKDB.LOCATIONS.slice(1));
     else return of(MOCKDB.LOCATIONS);
   }
 

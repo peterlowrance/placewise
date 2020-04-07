@@ -44,7 +44,7 @@
     "codelyzer": "^5.0.0",
     "jasmine-core": "~3.4.0",
     "jasmine-spec-reporter": "~4.2.1",
-    "jest": "^25.1.0",
+    "jest": "^25.2.7",
     "jest-preset-angular": "^8.0.0",
     "karma": "~4.1.0",
     "karma-chrome-launcher": "~2.2.0",
@@ -67,7 +67,12 @@
       "<rootDir>/src/test.ts",
       ".mock.service.ts",
       "<rootDir>/src/app/components/*dialog/",
-      "<rootDir>/src/app/models/"
+      "<rootDir>/src/app/models/",
+      "<rootDir>/src/app/components/add-user-dialog/",
+      "<rootDir>/src/app/components/admin-report/",
+      "<rootDir>/src/app/components/edit-hierarchy-dialog/",
+      "<rootDir>/src/app/components/modify-hierarchy-dialog/",
+      "<rootDir>/src/app/components/report-detail-view/"
     ],
     "coveragePathIgnorePatterns": [
       "<rootDir>/node_modules/",
@@ -79,7 +84,12 @@
       "<rootDir>/src/app/components/change-pass-dialog/",
       "<rootDir>/src/app/components/report-dialog/",
       "<rootDir>/src/app/components/reset-pass-dialog/",
-      "<rootDir>/src/app/models/"
+      "<rootDir>/src/app/models/",
+      "<rootDir>/src/app/components/add-user-dialog/",
+      "<rootDir>/src/app/components/admin-report/",
+      "<rootDir>/src/app/components/edit-hierarchy-dialog/",
+      "<rootDir>/src/app/components/modify-hierarchy-dialog/",
+      "<rootDir>/src/app/components/report-detail-view/"
     ]
   }
 }

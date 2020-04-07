@@ -4,7 +4,7 @@ import {Injectable} from '@angular/core';
 import {HttpHeaders, HttpClient, HttpResponse, HttpRequest} from '@angular/common/http';
 import {Observable, of} from 'rxjs';
 import {Item} from '../models/Item';
-import {AngularFirestore} from '@angular/fire/firestore';
+import {AngularFirestore, DocumentReference} from '@angular/fire/firestore';
 import {AuthService} from './auth.service';
 import {SentReport} from '../models/SentReport';
 import {map} from 'rxjs/operators';
@@ -13,6 +13,7 @@ import {SearchService} from './search.service';
 import { combineLatest } from 'rxjs';
 import { User } from '../models/User';
 import * as firebase from "firebase";
+import { promise } from 'protractor';
 
 declare var require: any;
 
@@ -28,16 +29,26 @@ const adServe = 'https://placewise-d040e.appspot.com/';
   providedIn: 'root'
 })
 export class AdminService {
-  placeReport(itemID: string, text: string): Observable<boolean> {
+
+  getReport(id: string){
+    return this.afs.doc<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).snapshotChanges().pipe(map(a => {
+      const data = a.payload.data() as SentReport;
+      if (!data) {
+        return;
+      }
+      data.ID = a.payload.id;
+      return data;
+    }));
+  }
+  placeReport(itemID: string, text: string){
     var userID: string;
-    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid))
-
-
-    return of(true);
+    var rID: string;
+    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid).then(x => rID = x.id))
+    return of(true)
   }
 
-  placeReportHelper(itemID: string, text: string, userID: string) {
-    this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
+  placeReportHelper(itemID: string, text: string, userID: string): Promise<DocumentReference> {
+    return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
       desc: text,
       item: itemID,
       user: userID,
@@ -46,7 +57,6 @@ export class AdminService {
   }
 
   getReports(): Observable<SentReport[]> {
-    console.log('/Workspaces/' + this.auth.workspace.id + '/Reports');
     return this.afs.collection<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports').snapshotChanges().pipe(
       map(a => {
         return a.map(g => {
@@ -62,13 +72,13 @@ export class AdminService {
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).delete();
   }
 
-  clearReports(reports: SentReport[]): Observable<boolean> {
+  clearReports(reports: SentReport[]) {
     for (let i = 0; i < reports.length; i++) {
-      this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + reports[i].ID).delete();
+      this.deleteReport(reports[i].ID);
     }
-    reports = [];
-    return of(true);
+    return [];
   }
+
 
   updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Observable<boolean> {
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).set(item);
@@ -108,13 +118,7 @@ export class AdminService {
     if (!location) {
       location = 'root';
     }
-    return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
-      name: name,
-      desc: desc,
-      tags: tags,
-      locations: [location],
-      category: category,
-      imageUrl: imageUrl
+    return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({name: name,desc: desc,tags: tags,locations: [location],category: category,imageUrl: imageUrl
     }).then(
       val => {
         this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
@@ -169,7 +173,6 @@ export class AdminService {
     ).toPromise().then(
       doc => {
         let ary: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
-        // ary.remove(moveID);
         ary = ary.filter(obj => obj !== moveID);
         this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParent).update({children: ary});
       }
@@ -227,15 +230,11 @@ export class AdminService {
               if (i.locations.indexOf(remove.parent) === -1) {
                 i.locations.push(remove.parent);
               }
-              console.log(i);
               this.updateItem(i, null, null);
             });
           });
         }
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({
-          children: newChildren,
-          items: newItems
-        });
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({children: newChildren,items: newItems});
       }
     );
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.ID).delete();
@@ -268,12 +267,7 @@ export class AdminService {
             });
           });
         }
-        console.log(newItems);
-        console.log(toRemove.items);
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({
-          children: newChildren,
-          items: newItems
-        });
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({children: newChildren,items: newItems});
       }
     );
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.ID).delete();
@@ -406,10 +400,7 @@ export class AdminService {
             auth.getIdTokenResult().then(
               token => {
                 //with token set user role by pinging server with token, email, and role
-                this.http.post(`${adServe}/setUserRole`, {
-                  idToken: token,
-                  email: email,
-                  role: role
+                this.http.post(`${adServe}/setUserRole`, { idToken: token, email: email, role: role
                 }).toPromise().then(
                   () => resolve(role),
                   //error in posting
@@ -443,11 +434,7 @@ export class AdminService {
           auth.getIdTokenResult().then(
             token => {
               //with token add user by pinging server with token and email
-              this.http.post(`${adServe}/createNewUser`, {
-                idToken: token,
-                email: email,
-                firstName: firstName,
-                lastName: lastName
+              this.http.post(`${adServe}/createNewUser`, {idToken: token,email: email,firstName: firstName,lastName: lastName
               }).toPromise().then(
                 () => resolve({user:{firstName: firstName, lastName: lastName, email:email, workspace: this.auth.workspace.id}, role:'User'}),
                 //error posting

@@ -6,6 +6,22 @@ import {Observable, of} from 'rxjs';
 import {Item} from '../models/Item';
 import {SentReport} from '../models/SentReport';
 import {Report} from '../models/Report';
+import { User } from '../models/User';
+
+interface UserData{
+  user: User;
+  role: string;
+}
+
+/**
+ * NOTE: all requests to change users will only work for Anna Bray, all others will fail
+ */
+
+const TESTDATA: UserData[] = [
+  {user: {firstName:"Anna",lastName:"Bray",email:"abray@gamil.com", workspace:"aP87kgghQ8mqvvwcZGQV"}, role:"User"}, 
+  {user: {firstName:"Lord",lastName:"Saladin",email:"headbutt@yahoo.com", workspace: "aP87kgghQ8mqvvwcZGQV"}, role:"User"}, 
+  {user: {firstName:"Cayde",lastName:"Six",email:"fastmouth@gamil.com", workspace: "aP87kgghQ8mqvvwcZGQV"}, role:"Admin"}
+]
 
 @Injectable({
   providedIn: 'root'
@@ -39,6 +55,34 @@ export class AdminMockService {
 
   updateHierarchyPosition(parentID: number, moveID: number) {
     throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Gets the workspace users
+   */
+  getWorkspaceUsers(){
+    return of(TESTDATA);
+  }
+
+  /**
+   * Sets the user role, 
+   * @param email 
+   * @param role 
+   */
+  setUserRole(email:string, role:string){
+    console.log(email);
+    if(email === "abray@gamil.com") return of(role).toPromise();
+    else return of('ERROR').toPromise();
+  }
+
+  addUserToWorkspace(email:string, firstName:string, lastName:string): Promise<{user:User, role:string}>{
+    if(email === 'abray@gamil.com') return of(TESTDATA[0]).toPromise();
+    else return new Promise<{user:User, role:string}>((resolve, reject) => reject('ERROR'));
+  }
+
+  deleteUserByEmail(email: string){
+    if(email === "abray@gamil.com") return new Promise<{user:User, role:string}>((resolve, reject) => resolve());
+    else return new Promise<{user:User, role:string}>((resolve, reject) => reject('ERROR'));
   }
 
   constructor() {}

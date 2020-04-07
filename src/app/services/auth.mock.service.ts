@@ -30,7 +30,7 @@ export const MOCK_WORKSPACE: WorkspaceInfo = {
 
 export let MOCK_ROLE = 'Admin';
 
-export let changeRoll = () => 
+export let changeRoll = () =>
   MOCK_ROLE = MOCK_ROLE === 'Admin' ? 'User' : 'Admin';
 
 export let loggedIn = false;
@@ -58,6 +58,7 @@ export class AuthMockService {
 
   /**User role, Admin or User */
   role: string;
+  workspace: WorkspaceInfo = MOCK_WORKSPACE;
 
   constructor() {}
 
@@ -92,7 +93,7 @@ export class AuthMockService {
    * Gets the authentication state
    */
   getAuth(){
-    if(loggedIn) return of({});
+    if(loggedIn) return of({uid : "100"});
     return of(null);
   }
 

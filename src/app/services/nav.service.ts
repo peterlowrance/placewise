@@ -51,7 +51,6 @@ export class NavService {
   }
 
   returnState(){
-    console.log('returned');
     this.returnClick.next(true);
   }
 

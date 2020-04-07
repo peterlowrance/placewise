@@ -14,8 +14,11 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 //Mocks
 import * as AuthTest from '../../services/auth.mock.service';
+import { RouterTestingModule } from '@angular/router/testing';
+import { Router } from '@angular/router';
 
 let auth: any = null;
+let routerImp;
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
@@ -25,7 +28,7 @@ describe('SettingsComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ SettingsComponent ],
       providers: [{provide: AuthService, useClass: AuthTest.AuthMockService}, {provide: MatDialog}],
-      imports: [MatButtonModule, MatListModule, MatIconModule, BrowserAnimationsModule]
+      imports: [MatButtonModule, MatListModule, MatIconModule, RouterTestingModule.withRoutes([]), BrowserAnimationsModule]
     })
     .compileComponents();
   }));
@@ -42,6 +45,7 @@ describe('SettingsComponent', () => {
       AuthTest.EXPECTED_TEST_CREDENTIALS.password,
       AuthTest.EXPECTED_TEST_CREDENTIALS.workspace
     );
+    routerImp = TestBed.get(Router);
   });
 
   afterEach(() => {
@@ -109,5 +113,25 @@ describe('SettingsComponent', () => {
     auth.getAuth().subscribe(
       val => expect(val).toBeNull()
     )
+  });
+
+  it('should go to modify category', () => {
+    let routeMock = jest.fn();
+    let originalRoute = routerImp.navigate;
+    routerImp.navigate = routeMock;
+
+    component.goToModify(true);
+    expect(routeMock).toHaveBeenCalledWith(['modify/categories']);
+    routerImp.navigate = originalRoute;
+  });
+
+  it('should go to modify location', () => {
+    let routeMock = jest.fn();
+    let originalRoute = routerImp.navigate;
+    routerImp.navigate = routeMock;
+
+    component.goToModify(false);
+    expect(routeMock).toHaveBeenCalledWith(['modify/locations']);
+    routerImp.navigate = originalRoute;
   });
 });
