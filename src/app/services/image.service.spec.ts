@@ -11,14 +11,18 @@ import {BehaviorSubject} from 'rxjs';
 const FireStorageStub = {
   ref: (url: string) => ({
     put: (file: File) => {},
-      delete: () => {},
-      getDownloadURL: () => {
-        return ({
-          toPromise: () => {
-            return new Promise((resolve, _reject) => resolve('Yay!'));
-          }
-        });
+    delete: () => ({
+      toPromise: () => {
+        return new Promise((resolve, _reject) => resolve('Yay!'));
       }
+    }),
+    getDownloadURL: () => {
+      return ({
+        toPromise: () => {
+          return new Promise((resolve, _reject) => resolve('Yay!'));
+        }
+      });
+    }
   })
 }
 
@@ -53,6 +57,13 @@ describe('ImageService', () => {
   it('putImage basic method test', () => {
     const service = TestBed.get(ImageService);
     return service.putImage(null, 'hacker').then( data => {
+      expect(data).toBe('Yay!');
+    })
+  })
+
+  it('removeImage basic method test', () => {
+    const service = TestBed.get(ImageService);
+    return service.removeImage( 'hacker').then( data => {
       expect(data).toBe('Yay!');
     })
   })
