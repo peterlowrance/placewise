@@ -148,5 +148,44 @@ describe('HomeComponent', () => {
       expect(component.hierarchyItems.map(x => x.ID)).toContain('100');
       expect(component.hierarchyItems.map(x => x.ID)).toContain('200');
     });
+
+    it('should load level location when navUpHierarchy', async () => {
+      await component.navigateUpHierarchy();
+      expect(component.selectedSearch).toBe('Locations');
+      expect(component.items.length).toBe(0);
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('100');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('200');
+    });
+  });
+
+  describe('GoTo Things', () => {
+    it('should go to item', async () => {
+      await component.goToItem({ID: '999', name: 'Niner', locations: [], category: '554'});
+      expect(navMock.navigate).toHaveBeenCalledWith(['/item/', '999']);
+    });
+
+    it('should go to location root', async () => {
+      await component.goToHierarchy({ID: 'root', name: 'root', children: ['100', '200'], items: ['999']});
+      expect(component.items.pop().ID).toBe('999');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('100');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('200');
+    });
+
+    it('should go to category root', async () => {
+      component.selectedSearch = 'Categories';
+      await component.goToHierarchy({ID: 'root', name: 'root', children: ['554', '553'], items: ['999']});
+      expect(component.items.pop().ID).toBe('999');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('554');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('553');
+    });
+
+    it('should toggle hierarchy', async () => {
+      await component.toggleHierarchy({value: 'Categories'});
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('554');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('553');
+      await component.toggleHierarchy({value: 'Locations'});
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('100');
+      expect(component.hierarchyItems.map(x => x.ID)).toContain('200');
+    });
   });
 });
