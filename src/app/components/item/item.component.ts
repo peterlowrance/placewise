@@ -167,11 +167,13 @@ export class ItemComponent implements OnInit, OnDestroy {
     const m = {}, newarr = [];
     for (let i = 0; i < node.children.length; i++) {
       const v = node.children[i];
-      if (!m[v.ID]) {
-        m[v.ID] = v;
-        newarr.push(v);
-      } else {
-        m[v.ID].children = m[v.ID].children.concat(v.children);
+      if (v) {
+        if (!m[v.ID]) {
+          m[v.ID] = v;
+          newarr.push(v);
+        } else {
+          m[v.ID].children = m[v.ID].children.concat(v.children);
+        }
       }
     }
     node.children = newarr;
