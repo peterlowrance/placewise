@@ -162,31 +162,13 @@ export class AdminService {
     throw new Error('Method not implemented.');
   }
 
-  updateLocationPosition(parentID: string, moveID: string, oldParent: string) {
+  updateLocationPosition(parentID: string, moveID: string, oldParentID: string) {
     // update new parent id
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + moveID).update({
-      parent: parentID
-    });
+    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + moveID).update({parent: parentID});
     // remove from old parent's child list
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParent).get().pipe(
-      map(doc => doc.data())
-    ).toPromise().then(
-      doc => {
-        let ary: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
-        ary = ary.filter(obj => obj !== moveID);
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParent).update({children: ary});
-      }
-    );
+    this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParentID).update({children: firebase.firestore.FieldValue.arrayRemove(moveID)});
     // Add to new parent's list
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + parentID).get().pipe(
-      map(doc => doc.data())
-    ).toPromise().then(
-      doc => {
-        const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
-        ary.push(moveID);
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + parentID).update({children: ary});
-      }
-    );
+    this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + parentID).update({children: firebase.firestore.FieldValue.arrayUnion(moveID)});
   }
 
   addLocation(newItem: HierarchyItem, newParentID: string) {
@@ -300,26 +282,9 @@ export class AdminService {
     // update new parent id
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + moveID).update({parent: parentID});
     // remove from old parent's child list
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + oldParentID).get().pipe(
-      map(doc => doc.data())
-    ).toPromise().then(
-      doc => {
-        let ary: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
-        // ary.remove(moveID);
-        ary = ary.filter(obj => obj !== moveID);
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldParentID).update({children: ary});
-      }
-    );
+    this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldParentID).update({children: firebase.firestore.FieldValue.arrayRemove(moveID)});
     // Add to new parent's list
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + parentID).get().pipe(
-      map(doc => doc.data())
-    ).toPromise().then(
-      doc => {
-        const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
-        ary.push(moveID);
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + parentID).update({children: ary});
-      }
-    );
+    this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + parentID).update({children: firebase.firestore.FieldValue.arrayUnion(moveID)});
   }
 
   updateHierarchy(node: HierarchyItem, isCategory: boolean) {

@@ -50,7 +50,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ico = 'add';
   itemSearchOptions = {
     shouldSort: true,
-    keys: ['name', 'desc', 'tags'],
+    keys: ['name', 'tags'],
     distance: 50,
     threshold: .5
   };

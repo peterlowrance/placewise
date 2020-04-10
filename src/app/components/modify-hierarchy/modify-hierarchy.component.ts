@@ -181,7 +181,6 @@ export class ModifyHierarchyComponent implements OnInit {
    * @param newNode the node to be set
    */
   add(newNode: TreeHierarchyItem, parent?: TreeHierarchyItem, updateDB: boolean = true) {
-    console.log('adding new item');
     if (updateDB) {
       const parentID = parent ? parent.ID : 'root';
       newNode.parent = parentID;
@@ -201,7 +200,6 @@ export class ModifyHierarchyComponent implements OnInit {
       // If the item is already a child, update it
       const indexOfChild = parent.realChildren.indexOf(newNode);
       if (indexOfChild > -1) {
-        console.log('already a child of its parent');
         parent.realChildren[indexOfChild] = newNode;
       } else { // Otherwise add the new item
         parent.realChildren.push(newNode);
@@ -215,7 +213,6 @@ export class ModifyHierarchyComponent implements OnInit {
       // Check if the item already exists as a root child
       const indexOfChild = this.dataChange.value.indexOf(newNode);
       if (indexOfChild > -1) {
-        console.log('already exists!!!');
         this.dataChange[indexOfChild] = newNode;
         this.dataChange.next(this.dataChange.value);
       } else { // Otherwise, add new item to root level
@@ -230,7 +227,6 @@ export class ModifyHierarchyComponent implements OnInit {
   }
 
   update(node: TreeHierarchyItem) {
-    console.log('update ' + node.ID);
     this.adminService.updateHierarchy(this.toHierarchyItem(node), this.isCategory);
   }
 
@@ -276,8 +272,7 @@ export class ModifyHierarchyComponent implements OnInit {
    * @param newParent new parent of the node. If it is null, the parent is the root
    */
   move(node: TreeHierarchyItem, newParent?: TreeHierarchyItem) {
-    // TODO: database
-    const newParentID = newParent ? newParent.ID : 'root'
+    const newParentID = newParent ? newParent.ID : 'root';
     const hasCorrectParent = (node.realParent && node.realParent.ID === newParentID) || (!node.realParent && !newParent);
     // If the node doesn't already have the correct parent, delete it and add it in the new position
     if (!hasCorrectParent) {
@@ -290,6 +285,9 @@ export class ModifyHierarchyComponent implements OnInit {
       }
     }
     this.changeParentNode = null;
+    this.openEditModal(node);
+    // In .1 seconds, expand the parents of the moved item
+    setTimeout(() => { this.expandParents(this.findByID(node.ID, this.dataSource.data));}, 100);
   }
 
   // Recursive function to check if a node is a descendent of another node (includes itself)
