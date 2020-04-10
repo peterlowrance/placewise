@@ -39,7 +39,7 @@
 </div>
 
 <!-- add homescreen fab for admins here -->
-<smd-fab-speed-dial class="fab" [(open)]="open" [direction]="direction" [animationMode]="animation">
+<smd-fab-speed-dial *ngIf="previousSearch === ''" class="fab" [(open)]="open" [direction]="direction" [animationMode]="animation">
   <smd-fab-trigger [spin]="spin">
     <button mat-fab matTooltip="Add to this hierarchy level" color="primary" (click)="toggleIco()"><mat-icon>{{ico}}</mat-icon></button>
   </smd-fab-trigger>
