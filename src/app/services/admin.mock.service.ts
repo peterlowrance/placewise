@@ -72,7 +72,7 @@ export class AdminMockService {
   setUserRole(email:string, role:string){
     console.log(email);
     if(email === "abray@gamil.com") return of(role).toPromise();
-    else return of('ERROR').toPromise();
+    else return new Promise<{user:User, role:string}>((resolve, reject) => reject('ERROR'));
   }
 
   addUserToWorkspace(email:string, firstName:string, lastName:string): Promise<{user:User, role:string}>{

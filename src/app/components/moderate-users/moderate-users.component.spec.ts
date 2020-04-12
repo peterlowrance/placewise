@@ -23,6 +23,10 @@ let auth;
 
 let snackImp;
 
+let snackMock = {
+  open: jest.fn((message: string, button: string, options: {duration: number}) => {})
+}
+
 describe('ModerateUsersComponent', () => {
   let component: ModerateUsersComponent;
   let fixture: ComponentFixture<ModerateUsersComponent>;
@@ -30,7 +34,7 @@ describe('ModerateUsersComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ ModerateUsersComponent ],
-      providers: [ {provide: AuthService, useClass: AuthTest.AuthMockService}, {provide: AdminService, useClass: AdminMockService}, {provide: MatDialog}, {provide: MatSnackBar} ],
+      providers: [ {provide: AuthService, useClass: AuthTest.AuthMockService}, {provide: AdminService, useClass: AdminMockService}, {provide: MatDialog}, {provide: MatSnackBar, useValue: snackMock} ],
       imports: [MatButtonModule, MatIconModule, MatTableModule, MatCheckboxModule, MatDialogModule]
     })
     .compileComponents();
@@ -49,6 +53,10 @@ describe('ModerateUsersComponent', () => {
     );
     snackImp = TestBed.get(MatSnackBar);
   });
+
+  afterEach(() => {
+    snackImp.open.mockClear();
+  })
 
   it('should create', () => {
     expect(component).toBeTruthy();

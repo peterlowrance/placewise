@@ -38,6 +38,10 @@ let routerMock = {
   navigate: jest.fn((url: string[]) => {})
 }
 
+let snackMock = {
+  open: jest.fn((message: string, button: string, options: {duration: number}) => {})
+}
+
 let activatedRouteStub = {
   snapshot: {
     paramMap: {
@@ -67,7 +71,7 @@ describe('ItemComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ ItemComponent ],
-      providers: [{provide: SearchService, useClass: SearchTest.SearchMockService}, {provide: AdminService, useClass: AdminMockService}, {provide: Location, useValue: locationStub}, {provide: ActivatedRoute, useValue: activatedRouteStub}, {provide: MatDialog}, {provide: AuthService, useClass: AuthTest.AuthMockService},{provide: ImageService, useClass: ImageTest.ImageMockService}, {provide: NavService, useValue: new NavService()}, {provide: MatSnackBar}],
+      providers: [{provide: SearchService, useClass: SearchTest.SearchMockService}, {provide: AdminService, useClass: AdminMockService}, {provide: Location, useValue: locationStub}, {provide: ActivatedRoute, useValue: activatedRouteStub}, {provide: MatDialog}, {provide: AuthService, useClass: AuthTest.AuthMockService},{provide: ImageService, useClass: ImageTest.ImageMockService}, {provide: NavService, useValue: new NavService()}, {provide: MatSnackBar, useValue: snackMock}],
       imports: [ReactiveFormsModule, FormsModule, MatButtonModule, MatCardModule, MatInputModule, MatTreeModule, MatIconModule, MatExpansionModule, MatChipsModule, MatGridListModule, MatSnackBarModule, RouterTestingModule.withRoutes([]), BrowserAnimationsModule]
     })
     .compileComponents();
@@ -90,6 +94,10 @@ describe('ItemComponent', () => {
     searchImp = TestBed.get(SearchService);
     snackImp = TestBed.get(MatSnackBar);
   });
+
+  afterEach(() => {
+    snackImp.open.mockClear();
+  })
 
   it('should create', () => {
     expect(component).toBeTruthy();
