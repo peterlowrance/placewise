@@ -74,11 +74,9 @@ describe('LoginComponent', () => {
       //Don't use the control name, use the key in formBuilder.group
       let email = component.loginForm.controls.email;
       let pass = component.loginForm.controls.password;
-      let work = component.loginForm.controls.CID;
 
       email.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.email);
       pass.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.password);
-      work.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.workspace);
 
       expect(component.loginForm.valid).toBe(true);
     })
@@ -86,12 +84,10 @@ describe('LoginComponent', () => {
     it('should be invalid with one empty value', () => {
       let email = component.loginForm.controls.email;
       let pass = component.loginForm.controls.password;
-      let work = component.loginForm.controls.CID;
 
       //email empty
       //email.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.email);
       pass.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.password);
-      work.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.workspace);
 
       expect(component.loginForm.valid).toBe(false);
 
@@ -100,23 +96,15 @@ describe('LoginComponent', () => {
       pass.setValue('');
 
       expect(component.loginForm.valid).toBe(false);
-
-      //workspace empty
-      pass.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.password);
-      work.setValue('');
-
-      expect(component.loginForm.valid).toBe(false);
-    })
+    });
 
     it('should be invalid with malformatted email and pass', () => {
       let email = component.loginForm.controls.email;
       let pass = component.loginForm.controls.password;
-      let work = component.loginForm.controls.CID;
 
       //email not a real email
       email.setValue('WRONG@');
       pass.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.password);
-      work.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.workspace);
 
       expect(component.loginForm.valid).toBe(false);
     })
@@ -150,15 +138,6 @@ describe('LoginComponent', () => {
 
       expect(component.getPassErrors()).toBe('Password is required');
     });
-
-    it('should display workspace required error', () => {
-      let work = component.loginForm.controls.CID;
-
-      //email not a real email
-      work.setValue('');
-
-      expect(component.getCIDErrors()).toBe('Company ID is required');
-    });
   });
 
   describe('Reset Email', () => {
@@ -178,11 +157,9 @@ describe('LoginComponent', () => {
     it('should not log in with incorrect password', async () => {
       let email = component.loginForm.controls.email;
       let pass = component.loginForm.controls.password;
-      let work = component.loginForm.controls.CID;
 
       email.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.email);
       pass.setValue('incorrect');
-      work.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.workspace);
 
       await component.onSubmit();
 
@@ -192,11 +169,9 @@ describe('LoginComponent', () => {
     it('should not log in with incorrect email', async () => {
       let email = component.loginForm.controls.email;
       let pass = component.loginForm.controls.password;
-      let work = component.loginForm.controls.CID;
 
       email.setValue('incorrect');
       pass.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.password);
-      work.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.workspace);
 
       await component.onSubmit();
 
@@ -213,11 +188,9 @@ describe('LoginComponent', () => {
     it('should log in with correct credentials', async () => {
       let email = component.loginForm.controls.email;
       let pass = component.loginForm.controls.password;
-      let work = component.loginForm.controls.CID;
 
       email.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.email);
       pass.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.password);
-      work.setValue(AuthTest.EXPECTED_TEST_CREDENTIALS.workspace);
 
       await component.onSubmit();
 
