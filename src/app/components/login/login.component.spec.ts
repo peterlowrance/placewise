@@ -144,12 +144,17 @@ describe('LoginComponent', () => {
     it('sends when email is in fake DB', async () => {
       await component.sendPasswordEmail(AuthTest.MOCK_USER.email);
       await expect(snackImp.open).toHaveBeenCalledWith("Password reset email has been sent", "OK", { duration: 3000 });
-    })
+    });
 
     it('does not send when email is not in fake DB', async () => {
       await component.sendPasswordEmail('fake');
       return await expect(snackImp.open).toHaveBeenCalledWith('failure', "OK", {duration: 3000})
-    })
+    });
+
+    it('should do nothing if modal was cancelled', async () => {
+      await component.sendPasswordEmail(null);
+      expect(snackImp.open).toHaveBeenCalledTimes(0);
+    });
   })
 
   describe('Login', () => {

@@ -82,10 +82,12 @@ export class LoginComponent implements OnInit {
    * @param emailInfo Email address to send password reset to
    */
   sendPasswordEmail(emailInfo: string){
-    return this.authService.sendPasswordResetEmail(emailInfo).then(
-      () => this.snack.open("Password reset email has been sent", "OK", {duration: 3000}),
-      (fail) => this.snack.open(fail, "OK", {duration: 3000})
-    )
+    if(emailInfo){
+      return this.authService.sendPasswordResetEmail(emailInfo).then(
+        () => this.snack.open("Password reset email has been sent", "OK", {duration: 3000}),
+        (fail) => this.snack.open(fail, "OK", {duration: 3000})
+      )
+    }
   }
 
   /**
