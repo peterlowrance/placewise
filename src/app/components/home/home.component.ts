@@ -10,6 +10,7 @@ import {AuthService} from 'src/app/services/auth.service';
 import {ImageService} from '../../services/image.service';
 import * as Fuse from 'fuse.js';
 import {AdminService} from 'src/app/services/admin.service';
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 /**
  *
@@ -68,7 +69,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
-    private adminService: AdminService) {
+    private adminService: AdminService,
+    private snack: MatSnackBar) {
     // subscribe to nav state
     this.returnSub = this.navService.getReturnState().subscribe(
       val => {
@@ -226,10 +228,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     } else { // add to locations
       location = this.root.ID;
     }
-    this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '../../../assets/notFound.png', location).then(
-      () => alert('Item successfully added'),
-      (err) => alert('Item successfully added. Error:\n' + err)
-    );
+    this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
+      this.snack.open('Item Creation Successful', 'OK', {duration: 3000, panelClass: ['mat-toolbar']});
+      this.router.navigate(['/item/' + id]);
+    });
   }
 /*
   /!**Adds a hierarchy item to the current depth *!/
