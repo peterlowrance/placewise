@@ -29,7 +29,7 @@
 </table>
 
 <div  class = 'button-container' *ngIf="reports">
-        <button *ngIf = "reports.length > 0" mat-raised-button class = "clear-button" (click)="clearReports()">Clear All Reports</button>
+        <button *ngIf = "reports.length > 0" mat-raised-button class = "clear-button" (click)="confirmClear()">Clear All Reports</button>
         <div *ngIf = "reports.length == 0">
             No reports to show.
         </div>
