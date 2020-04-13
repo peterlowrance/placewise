@@ -47,6 +47,7 @@ import {MatRadioModule} from '@angular/material/radio';
 import {ModerateUsersComponent} from './components/moderate-users/moderate-users.component';
 import {HttpClientModule} from '@angular/common/http';
 import {AddUserDialogComponent} from './components/add-user-dialog/add-user-dialog.component';
+import { ConfirmComponent } from './components/confirm/confirm.component';
 
 @NgModule({
   declarations: [
@@ -67,7 +68,8 @@ import {AddUserDialogComponent} from './components/add-user-dialog/add-user-dial
     ReportDetailViewComponent,
     ModifyHierarchyDialogComponent,
     ModerateUsersComponent,
-    AddUserDialogComponent
+    AddUserDialogComponent,
+    ConfirmComponent
   ],
   imports: [
     BrowserModule,
@@ -102,6 +104,6 @@ import {AddUserDialogComponent} from './components/add-user-dialog/add-user-dial
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent, AddUserDialogComponent]
+  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent, AddUserDialogComponent, ConfirmComponent]
 })
 export class AppModule { }
