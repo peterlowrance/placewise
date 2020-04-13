@@ -15,7 +15,6 @@ import {AuthService} from '../../services/auth.service';
 export class LoginComponent implements OnInit {
   emailControl = new FormControl('', [Validators.required, Validators.email]);
   passControl = new FormControl('', Validators.required);
-  CIDControl = new FormControl('', Validators.required);
   loginForm: FormGroup;
 
   constructor(
@@ -30,8 +29,7 @@ export class LoginComponent implements OnInit {
   ngOnInit() {
     this.loginForm = this.formBuilder.group({
       email: this.emailControl,
-      password: this.passControl,
-      CID: this.CIDControl
+      password: this.passControl
     });
 
     //If we are already logged in, redirect to homescreen
@@ -59,16 +57,10 @@ export class LoginComponent implements OnInit {
       "Password is incorrect"
   }
 
-  getCIDErrors() {
-    return this.CIDControl.hasError('required') ? "Company ID is required" :
-      "Company ID is incorrect"
-  }
-
   onSubmit() {
     return this.authService.login(
       this.loginForm.value.email,
-      this.loginForm.value.password,
-      this.loginForm.value.CID).then(res => {
+      this.loginForm.value.password).then(res => {
       this.router.navigate(['/search/locations/root']);
     }).catch(err => {
       this.snack.open('Login Failed: ' + err, "OK", {duration: 3000});
@@ -90,10 +82,12 @@ export class LoginComponent implements OnInit {
    * @param emailInfo Email address to send password reset to
    */
   sendPasswordEmail(emailInfo: string){
-    return this.authService.sendPasswordResetEmail(emailInfo).then(
-      () => this.snack.open("Password reset email has been sent", "OK", {duration: 3000}),
-      (fail) => this.snack.open(fail, "OK", {duration: 3000})
-    )
+    if(emailInfo){
+      return this.authService.sendPasswordResetEmail(emailInfo).then(
+        () => this.snack.open("Password reset email has been sent", "OK", {duration: 3000}),
+        (fail) => this.snack.open(fail, "OK", {duration: 3000})
+      )
+    }
   }
 
   /**
