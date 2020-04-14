@@ -8,7 +8,7 @@
 
 h2 {
     margin: 0 0.2rem;
-    padding-top: 0.8rem;
+    padding-top: 1.4rem;
 }
 
 
@@ -76,7 +76,7 @@ ul {
 }
 
 .allContent {
-  padding: 1rem 2vw 3rem 2vw;
+  padding: 0 2vw 3rem 2vw;
   max-width: 50rem;
   position: center;
   margin: auto;
@@ -132,6 +132,11 @@ p {
 }
 
 .editButton {
-  top: 0;
-  bottom: auto;
+  float: end;
+  top: -0.3rem;
+  left: -0.3rem;
+}
+
+.titleHolder{
+  padding-bottom: 0.2rem;
 }

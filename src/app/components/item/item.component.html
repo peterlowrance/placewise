@@ -15,7 +15,7 @@
             </mat-form-field>
         </form>
     </div>
-    <div *ngSwitchDefault>
+    <div class="titleHolder" *ngSwitchDefault>
       <h2>
         {{item.name}}
         <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
