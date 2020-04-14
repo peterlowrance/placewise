@@ -36,3 +36,21 @@ mat-list-item{
     text-align:center;
     justify-content: center;
 }
+
+h5 {
+  margin: 0;
+}
+
+h3 {
+  margin: 0.5rem 0;
+}
+
+button {
+  margin: 0.2rem;
+}
+
+mat-divider {
+  max-width: 16rem;
+  position: center;
+  margin: auto;
+}

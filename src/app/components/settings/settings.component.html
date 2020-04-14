@@ -1,6 +1,10 @@
 <!-- load admin components if admin -->
 <div *ngIf="role === 'Admin'">
+  <br>
     <mat-list class ="settings-container">
+      <div class = "settings-item">
+        <h3 mat-subheader class = "headerName">Admin Duties</h3>
+      </div>
         <mat-list-item>
             <div class = "settings-item">
                 <button mat-raised-button class="equal-button" [routerLink] = "['/search/categories/root']">Manage Items</button>
@@ -11,9 +15,11 @@
                 <button mat-raised-button class="equal-button" [routerLink]="['/reports']" routerLinkActive="router-link-active">Reports</button>
             </div>
         </mat-list-item>
+      <br>
         <mat-divider></mat-divider>
+      <br>
         <div class = "settings-item">
-            <h3 mat-subheader class = "headerName">Shop Config</h3>
+            <h3 mat-subheader class = "headerName">Shop Configuration</h3>
         </div>
         <mat-list-item>
             <div class = "settings-item">
@@ -30,9 +36,11 @@
                 <button mat-raised-button class="equal-button" (click)="goToModify(true)">Modify Categories</button>
             </div>
         </mat-list-item>
+      <br>
         <mat-divider></mat-divider>
+      <br>
         <div class = "settings-item">
-            <h3 mat-subheader class = "headerName">My Settings</h3>
+            <h3 mat-subheader class = "headerName">Settings</h3>
         </div>
     </mat-list>
 </div>
@@ -53,9 +61,12 @@
     <h5>{{workspace.name}}</h5>
 
     <br>
+    <br>
     <!-- buttons here -->
     <button mat-raised-button class="equal-button" color="primary" (click)="requestPasswordChange()">Change Password</button>
     <br>
-    <br>
     <button mat-raised-button class="equal-button" color="warn" (click)="logout()">Logout <mat-icon>exit_to_app</mat-icon></button>
+    <br>
+    <br>
+    <br>
 </div>
