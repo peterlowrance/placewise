@@ -8,6 +8,7 @@ import { DetailedReportModalData } from 'src/app/models/DetailedReportModalData'
 import { MatDialog } from '@angular/material';
 import { ReportDetailViewComponent } from '../report-detail-view/report-detail-view.component';
 import { AuthService } from 'src/app/services/auth.service';
+import { ConfirmComponent } from '../confirm/confirm.component';
 
 @Component({
   selector: 'app-admin-report',
@@ -67,6 +68,21 @@ export class AdminReportComponent implements OnInit {
           }
         });
   }
+
+  confirmClear() {
+    // reset report data, ensure clicking out defaults to fail and no double send
+    let data = {confirm: false, desc: 'You sure you want to clear reports?'};
+
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      width: '240px',
+      data: {
+        confirm: data.confirm,
+        desc: data.desc
+      }
+    });
+    dialogRef.afterClosed().subscribe(result => {if(result.confirm) {this.clearReports()}});
+  }
+
 
   clearReports() {
     this.reports = this.adminService.clearReports(this.reports);

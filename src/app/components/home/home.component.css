@@ -50,7 +50,7 @@ mat-button-toggle {
 }
 
 .hierarchySelector {
-  margin: 2% 0% 3% 0%;
+  margin: 0 0% 3% 0%;
 }
 
 /*FAB display field*/
@@ -59,4 +59,10 @@ mat-button-toggle {
   right: 3%;
   position: fixed;
   z-index: 1;
+}
+
+.top {
+  max-width: calc(30rem + 30vw);
+  position: center;
+  margin: 0.5rem auto auto auto;
 }

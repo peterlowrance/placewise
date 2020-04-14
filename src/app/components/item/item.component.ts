@@ -20,6 +20,7 @@ import {ModifyHierarchyDialogComponent} from '../modify-hierarchy-dialog/modify-
 import {NavService} from 'src/app/services/nav.service';
 import {Subscription} from 'rxjs';
 import {Location} from '@angular/common';
+import { MatSnackBar } from '@angular/material';
 
 
 interface TreeNode {
@@ -45,6 +46,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private imageService: ImageService,
     private navService: NavService,
+    private snack: MatSnackBar
   ) {
   }
 
@@ -445,9 +447,9 @@ export class ItemComponent implements OnInit, OnDestroy {
       if (val) {
         this.previousItem = JSON.parse(JSON.stringify(this.item));
         this.dirty = false;
-        alert('Item save successful');
+        this.snack.open('Item Save Successful', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
       } else {
-        alert('Item save failed');
+        this.snack.open('Item Save Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
       }
     });
   }
@@ -480,10 +482,10 @@ export class ItemComponent implements OnInit, OnDestroy {
     //remove image
     return this.adminService.removeItem(this.item).toPromise().then(val => {
       if (val) {
-        alert('Item successfully deleted.');
+        this.snack.open('Item Successfully Deleted', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
         this.navService.returnState();
         this.routeLocation.back();
-      } else alert('Item deletion failed.');
+      } else this.snack.open('Item Deletion Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
     });
   }
 
