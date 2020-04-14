@@ -76,14 +76,19 @@ ul {
 }
 
 .allContent {
-  padding: 2vw;
+  padding: 1rem 2vw 3rem 2vw;
   max-width: 50rem;
   position: center;
   margin: auto;
 }
 
+.reportButtonHolder {
+  margin-left: 0.15rem;
+}
+
 .reportButton {
-  margin-left: 0.25rem;
+  width: calc(5rem + 2.5vw);
+  max-width: 28vw;
 }
 
 .categoryImg {
