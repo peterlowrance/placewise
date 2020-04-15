@@ -1,5 +1,5 @@
 // adapted tree control from https://material.angular.io/components/tree/examples
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ElementRef, ViewChild} from '@angular/core';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {Item} from 'src/app/models/Item';
 import {Report} from 'src/app/models/Report';
@@ -51,6 +51,10 @@ export class ItemComponent implements OnInit, OnDestroy {
   }
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
+  //edit fields for name and description
+  @ViewChild('name', {static:false}) nameField: ElementRef;
+  @ViewChild('desc', {static:false}) descField: ElementRef;
+  @ViewChild('tags', {static:false}) tagsField: ElementRef;
 
   id: string; // item id
   item: Item; // item returned by id
@@ -234,17 +238,17 @@ export class ItemComponent implements OnInit, OnDestroy {
       case 'name':
         this.textEditFields.name = true;
         // focus
-        // this.nameField.nativeElement.focus();
+        setTimeout(() =>this.nameField.nativeElement.focus(), 0);
         break;
       case 'desc':
         this.textEditFields.desc = true;
         // focus
-
+        setTimeout(() =>this.descField.nativeElement.focus(), 0);
         break;
       case 'tags':
         this.textEditFields.tags = true;
         // focus
-
+        setTimeout(() =>this.tagsField.nativeElement.focus(), 0);
         break;
       default:
         break;

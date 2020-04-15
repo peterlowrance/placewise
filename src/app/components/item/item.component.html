@@ -111,7 +111,7 @@
                             {{tag}}
                             <mat-icon matChipRemove>cancel</mat-icon>
                           </mat-chip>
-                          <input placeholder="New tag"
+                          <input #tags placeholder="New tag"
                                  [matChipInputFor]="tagList"
                                  [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                                  [matChipInputAddOnBlur]="addOnBlur"
