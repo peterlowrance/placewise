@@ -35,15 +35,18 @@
     </mat-grid-tile>
     <!-- report button -->
     <mat-grid-tile class="reportButton">
-        <button mat-raised-button color="primary" (click)="createReport()"> Report
+        <button mat-raised-button color="warn" (click)="createReport()"> Report
             <mat-icon>report_problem</mat-icon>
         </button>
     </mat-grid-tile>
-
-    <!-- spacers -->
-    <mat-grid-tile>
-
+    <!-- more info button -->
+    <mat-grid-tile class="reportButton">
+        <button mat-raised-button (click)="toggleMoreInfo()"> More Info
+            <mat-icon *ngIf="!expanded">keyboard_arrow_down</mat-icon>
+            <mat-icon *ngIf="expanded">keyboard_arrow_up</mat-icon>
+        </button>
     </mat-grid-tile>
+    <!-- spacers -->
     <mat-grid-tile>
 
     </mat-grid-tile>
@@ -51,14 +54,14 @@
 
 <!-- more info expansion panel -->
 <mat-accordion>
-    <mat-expansion-panel class="moreInfo">
-        <mat-expansion-panel-header>
+    <mat-expansion-panel class="moreInfo" [expanded]="expanded" [ngClass]="{moreInfoOpen: expanded}">
+        <!-- <mat-expansion-panel-header>
             <mat-panel-title>
                 More Information
             </mat-panel-title>
             <mat-panel-description>
             </mat-panel-description>
-        </mat-expansion-panel-header>
+        </mat-expansion-panel-header> -->
 
         <!-- description -->
         <mat-card>
