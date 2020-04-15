@@ -3,14 +3,13 @@
 <div [ngSwitch]="this.textEditFields.name">
     <div *ngSwitchCase=true>
         <form (ngSubmit)="onNameSubmit()">
-            <mat-form-field>
+            <mat-form-field class="form-appear">
                 <input matInput #name type="text"
                 placeholder="Name"
                 [(ngModel)]="item.name"
                 name="name"
                 (focusout)="onNameSubmit()"
                 required
-                class="form-appear"
                 >
             </mat-form-field>
         </form>
@@ -68,19 +67,18 @@
             <mat-card-header>
                 <mat-card-title>Description <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button></mat-card-title>
             </mat-card-header>
-            <mat-card-content>
+            <mat-card-content class="form-appear">
                 <div [ngSwitch]="this.textEditFields.desc">
                     <div *ngSwitchCase=true>
-                        <form (ngSubmit)="onDescSubmit()">
-                            <mat-form-field>
-                                <input matInput #desc type="text"
+                        <form (ngSubmit)="onDescSubmit()" class="form-appear">
+                            <mat-form-field class="form-appear">
+                                <textarea matInput #desc type="text"
                                 placeholder="Desc"
                                 [(ngModel)]="item.desc"
                                 name="desc"
                                 (focusout)="onDescSubmit()"
                                 required
-                                class="form-appear"
-                                >
+                                ></textarea>
                             </mat-form-field>
                         </form>
                     </div>
