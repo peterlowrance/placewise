@@ -126,6 +126,30 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.collapseNodes(this.parent);
 
         this.dataSource.data = this.parent.children;
+
+        //check through to see if we have one child
+        let oneAncestor = true;
+        let data = this.dataSource.data;
+        if(data.length == 1){
+          //while I still have children and they aren't leaves
+          while(data[0].children.length > 0){
+            if(data[0].children.length > 1){
+              //check to see if these children are leaves
+              for(let child of data[0].children){
+                if(child.children.length > 0){
+                  oneAncestor = false;
+                  break;
+                }
+              }
+              if(!oneAncestor) break;
+            }
+            data = data[0].children;
+          }
+        }
+        else oneAncestor = false;
+
+        this.treeControl.dataNodes = this.dataSource.data;
+        if(oneAncestor) this.treeControl.expandAll();
       });
 
       // Load image for item TODO: Not any more
