@@ -403,7 +403,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   add(event: MatChipInputEvent | any): void {
     const input = event.input;
     const value = event.value;
-
+    if(this.item.tags == null) this.item.tags = [];
     // Add our fruit
     if ((value || '').trim()) {
       this.item.tags.push(value.trim());
@@ -437,7 +437,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Checks to see if the current item is dirty (edited)
    */
   checkDirty() {
-    if (this.item === this.previousItem) {
+    if (JSON.stringify(this.item) === JSON.stringify(this.previousItem)) {
       this.dirty = false;
       return false;
     } else {

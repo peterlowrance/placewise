@@ -104,7 +104,7 @@
         <div [ngSwitch]="this.textEditFields.tags">
             <div *ngSwitchCase=true>
                 <form>
-                    <mat-form-field>
+                    <mat-form-field class="form-appear">
                         <mat-chip-list #tagList>
                           <mat-chip *ngFor="let tag of item.tags" [selectable]=true
                                    [removable]=true (removed)="removeTag(tag)">
@@ -122,7 +122,7 @@
                       </mat-form-field>
                 </form>
             </div>
-            <div *ngSwitchDefault>
+            <div *ngSwitchDefault class="form-appear">
                 <mat-chip-list selectable=false>
                     <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
                 </mat-chip-list>
