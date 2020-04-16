@@ -80,28 +80,28 @@ export class AdminService {
   }
 
 
-  updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Observable<boolean> {
-    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).set(item);
+  async updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Promise<boolean> {
+    await this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).set(item);
     if (oldCategoryID) {
       // Remove from old category
-      this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+      await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
       // Add to new category
-      this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
+      await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
     }
     if (oldLocationsID && oldLocationsID.length > 0) {
       // Remove from old locations
-      oldLocationsID.forEach(location => {
+      oldLocationsID.forEach(async location => {
         // If this location is no longer present
         if (item.locations.indexOf(location) === -1) {
-          this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+          await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
         }
       });
       // Add to new locations
-      item.locations.forEach(location => {
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
+      item.locations.forEach(async location => {
+        await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
       });
     }
-    return of(true);
+    return true;
   }
 
   createItem(item: Item): Observable<boolean> {

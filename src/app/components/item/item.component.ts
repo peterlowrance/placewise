@@ -443,8 +443,8 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Places the item into the database
    */
   async placeIntoDB(){
-    return this.adminService.updateItem(this.item, null, null).toPromise().then(val => {
-      if (val) {
+    return this.adminService.updateItem(this.item, null, null).then(val => {
+      if (val === true) {
         this.previousItem = JSON.parse(JSON.stringify(this.item));
         this.dirty = false;
         this.snack.open('Item Save Successful', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
