@@ -3,14 +3,13 @@
 <div [ngSwitch]="this.textEditFields.name">
     <div *ngSwitchCase=true>
         <form (ngSubmit)="onNameSubmit()">
-            <mat-form-field>
+            <mat-form-field class="form-appear">
                 <input matInput #name type="text"
                 placeholder="Name"
                 [(ngModel)]="item.name"
                 name="name"
                 (focusout)="onNameSubmit()"
                 required
-                class="form-appear"
                 >
             </mat-form-field>
         </form>
@@ -26,8 +25,8 @@
 <mat-grid-list cols="3" rowHeight="2:1">
     <!-- first is image -->
     <mat-grid-tile [colspan]="2" [rowspan]="3">
-        <div>
-            <img class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
+        <div class="container-img">
+            <img class="responsive-item-image" src={{item.imageUrl}} layout-fit>
             <button mat-icon-button *ngIf="this.role === 'Admin'" class="container-button"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button>
             <!-- hidden item uploader -->
             <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
@@ -35,15 +34,18 @@
     </mat-grid-tile>
     <!-- report button -->
     <mat-grid-tile class="reportButton">
-        <button mat-raised-button color="primary" (click)="createReport()"> Report
+        <button mat-raised-button color="warn" (click)="createReport()"> Report
             <mat-icon>report_problem</mat-icon>
         </button>
     </mat-grid-tile>
-
-    <!-- spacers -->
-    <mat-grid-tile>
-
+    <!-- more info button -->
+    <mat-grid-tile class="reportButton">
+        <button mat-raised-button (click)="toggleMoreInfo()"> More Info
+            <mat-icon *ngIf="!expanded">keyboard_arrow_down</mat-icon>
+            <mat-icon *ngIf="expanded">keyboard_arrow_up</mat-icon>
+        </button>
     </mat-grid-tile>
+    <!-- spacers -->
     <mat-grid-tile>
 
     </mat-grid-tile>
@@ -51,33 +53,32 @@
 
 <!-- more info expansion panel -->
 <mat-accordion>
-    <mat-expansion-panel class="moreInfo">
-        <mat-expansion-panel-header>
+    <mat-expansion-panel class="moreInfo" [expanded]="expanded" [ngClass]="{moreInfoOpen: expanded}">
+        <!-- <mat-expansion-panel-header>
             <mat-panel-title>
                 More Information
             </mat-panel-title>
             <mat-panel-description>
             </mat-panel-description>
-        </mat-expansion-panel-header>
+        </mat-expansion-panel-header> -->
 
         <!-- description -->
         <mat-card>
             <mat-card-header>
                 <mat-card-title>Description <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button></mat-card-title>
             </mat-card-header>
-            <mat-card-content>
+            <mat-card-content class="form-appear">
                 <div [ngSwitch]="this.textEditFields.desc">
                     <div *ngSwitchCase=true>
-                        <form (ngSubmit)="onDescSubmit()">
-                            <mat-form-field>
-                                <input matInput #desc type="text"
+                        <form (ngSubmit)="onDescSubmit()" class="form-appear">
+                            <mat-form-field class="form-appear">
+                                <textarea matInput #desc type="text"
                                 placeholder="Desc"
                                 [(ngModel)]="item.desc"
                                 name="desc"
                                 (focusout)="onDescSubmit()"
                                 required
-                                class="form-appear"
-                                >
+                                ></textarea>
                             </mat-form-field>
                         </form>
                     </div>
@@ -103,14 +104,14 @@
         <div [ngSwitch]="this.textEditFields.tags">
             <div *ngSwitchCase=true>
                 <form>
-                    <mat-form-field>
+                    <mat-form-field class="form-appear">
                         <mat-chip-list #tagList>
                           <mat-chip *ngFor="let tag of item.tags" [selectable]=true
                                    [removable]=true (removed)="removeTag(tag)">
                             {{tag}}
                             <mat-icon matChipRemove>cancel</mat-icon>
                           </mat-chip>
-                          <input placeholder="New tag"
+                          <input #tags placeholder="New tag"
                                  [matChipInputFor]="tagList"
                                  [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                                  [matChipInputAddOnBlur]="addOnBlur"
@@ -121,7 +122,7 @@
                       </mat-form-field>
                 </form>
             </div>
-            <div *ngSwitchDefault>
+            <div *ngSwitchDefault class="form-appear">
                 <mat-chip-list selectable=false>
                     <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
                 </mat-chip-list>
