@@ -53,11 +53,13 @@ mat-button-toggle {
   margin: 0 0% 3% 0%;
 }
 
-/*FAB display field*/
-.fab{
-  bottom: 2%;
-  right: 3%;
+.mat-fab {
   position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
   z-index: 1;
 }
 

@@ -9,7 +9,7 @@
       <mat-icon matSuffix>search</mat-icon>
     </mat-form-field>
   </form>
-  <mat-button-toggle-group class="hierarchySelector" *ngIf="!root || root?.name === 'root'" [(value)]="selectedSearch" name="hierarchySelector" (change)="toggleHierarchy($event)">
+  <mat-button-toggle-group class="hierarchySelector" *ngIf="(!root || root?.name === 'root') && previousSearch === ''" [(value)]="selectedSearch" name="hierarchySelector" (change)="toggleHierarchy($event)">
     <mat-button-toggle value="Categories">Category</mat-button-toggle>
     <mat-button-toggle value="Locations">Location</mat-button-toggle>
   </mat-button-toggle-group>
@@ -40,13 +40,6 @@
   </mat-grid-list>
 </div>
 
-<!-- add homescreen fab for admins here -->
-<smd-fab-speed-dial *ngIf="previousSearch === ''" class="fab" [(open)]="open" [direction]="direction" [animationMode]="animation">
-  <smd-fab-trigger [spin]="spin">
-    <button mat-fab matTooltip="Add to this hierarchy level" color="primary" (click)="toggleIco()"><mat-icon>{{ico}}</mat-icon></button>
-  </smd-fab-trigger>
-  <smd-fab-actions>
-    <button mat-mini-fab matTooltip="Add item" color="primary" (click)="addItem()"><mat-icon>post_add</mat-icon></button>
-    <!-- <button mat-mini-fab matTooltip="Add hierarchy level" color="primary" (click)="addHierarchy()"><mat-icon>account_tree</mat-icon></button> -->
-  </smd-fab-actions>
-</smd-fab-speed-dial>
+<button *ngIf="previousSearch === ''" class="mat-fab" mat-fab (click)="addItem()">
+  <mat-icon class="icon">add</mat-icon>
+</button>

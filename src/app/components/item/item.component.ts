@@ -1,5 +1,5 @@
 // adapted tree control from https://material.angular.io/components/tree/examples
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ElementRef, ViewChild} from '@angular/core';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {Item} from 'src/app/models/Item';
 import {Report} from 'src/app/models/Report';
@@ -51,6 +51,10 @@ export class ItemComponent implements OnInit, OnDestroy {
   }
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
+  //edit fields for name and description
+  @ViewChild('name', {static:false}) nameField: ElementRef;
+  @ViewChild('desc', {static:false}) descField: ElementRef;
+  @ViewChild('tags', {static:false}) tagsField: ElementRef;
 
   id: string; // item id
   item: Item; // item returned by id
@@ -122,6 +126,30 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.collapseNodes(this.parent);
 
         this.dataSource.data = this.parent.children;
+
+        //check through to see if we have one child
+        let oneAncestor = true;
+        let data = this.dataSource.data;
+        if(data.length == 1){
+          //while I still have children and they aren't leaves
+          while(data[0].children.length > 0){
+            if(data[0].children.length > 1){
+              //check to see if these children are leaves
+              for(let child of data[0].children){
+                if(child.children.length > 0){
+                  oneAncestor = false;
+                  break;
+                }
+              }
+              if(!oneAncestor) break;
+            }
+            data = data[0].children;
+          }
+        }
+        else oneAncestor = false;
+
+        this.treeControl.dataNodes = this.dataSource.data;
+        if(oneAncestor) this.treeControl.expandAll();
       });
 
       // Load image for item TODO: Not any more
@@ -234,17 +262,17 @@ export class ItemComponent implements OnInit, OnDestroy {
       case 'name':
         this.textEditFields.name = true;
         // focus
-        // this.nameField.nativeElement.focus();
+        setTimeout(() =>this.nameField.nativeElement.focus(), 0);
         break;
       case 'desc':
         this.textEditFields.desc = true;
         // focus
-
+        setTimeout(() =>this.descField.nativeElement.focus(), 0);
         break;
       case 'tags':
         this.textEditFields.tags = true;
         // focus
-
+        setTimeout(() =>this.tagsField.nativeElement.focus(), 0);
         break;
       default:
         break;
@@ -375,7 +403,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   add(event: MatChipInputEvent | any): void {
     const input = event.input;
     const value = event.value;
-
+    if(this.item.tags == null) this.item.tags = [];
     // Add our fruit
     if ((value || '').trim()) {
       this.item.tags.push(value.trim());
@@ -409,7 +437,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Checks to see if the current item is dirty (edited)
    */
   checkDirty() {
-    if (this.item === this.previousItem) {
+    if (JSON.stringify(this.item) === JSON.stringify(this.previousItem)) {
       this.dirty = false;
       return false;
     } else {
@@ -443,8 +471,8 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Places the item into the database
    */
   async placeIntoDB(){
-    return this.adminService.updateItem(this.item, null, null).toPromise().then(val => {
-      if (val) {
+    return this.adminService.updateItem(this.item, null, null).then(val => {
+      if (val === true) {
         this.previousItem = JSON.parse(JSON.stringify(this.item));
         this.dirty = false;
         this.snack.open('Item Save Successful', "OK", {duration: 3000, panelClass: ['mat-toolbar']});

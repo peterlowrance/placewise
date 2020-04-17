@@ -8,7 +8,7 @@
 
 h2 {
     margin: 0 0.2rem;
-    padding-top: 1.4rem;
+    padding-top: 0.8rem;
 }
 
 
@@ -76,7 +76,7 @@ ul {
 }
 
 .allContent {
-  padding: 0 2vw 3rem 2vw;
+  padding: 0.6rem 2vw 3rem 2vw;
   max-width: 50rem;
   position: center;
   margin: auto;
@@ -89,6 +89,18 @@ ul {
 .reportButton {
   width: calc(5rem + 2.5vw);
   max-width: 28vw;
+  padding: 0 1vw;
+}
+
+.moreInfoButtonHolder {
+  margin-left: 0.15rem;
+  align-items: end;
+}
+
+.moreInfoButton {
+  width: calc(5rem + 2.5vw);
+  max-width: 28vw;
+  padding: 0 1vw;
 }
 
 .categoryImg {
@@ -99,6 +111,14 @@ ul {
 
 .moreInfo {
   margin-top: 0.8rem;
+}
+
+.moreInfoOpen {
+  padding-top: 0.8rem;
+}
+
+mat-grid-list {
+  margin-bottom: 0.6rem;
 }
 
 .mat-expansion-panel-header-title {
@@ -140,3 +160,4 @@ p {
 .titleHolder{
   padding-bottom: 0.2rem;
 }
+
