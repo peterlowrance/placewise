@@ -24,7 +24,8 @@ export class AddUserDialogComponent {
 
   /**Cancels the operation, does not send email */
   onCancel(){
-    this.dialogRef.close(null);
+    this.data = null;
+    this.dialogRef.close(this.data);
   }
 
   /**Submits the email for sending */
