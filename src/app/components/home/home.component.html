@@ -1,17 +1,19 @@
 <!--Search Bar-->
-<form class="search" (submit)="null">
-  <mat-form-field class="full-width">
-    <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : selectedSearch}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null"> <!--[matAutocomplete]="auto"-->
-    <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="control.setValue('')">
-      <mat-icon>close</mat-icon>
-    </button>
-    <mat-icon matSuffix>search</mat-icon>
-  </mat-form-field>
-</form>
-<mat-button-toggle-group class="hierarchySelector" *ngIf="(!root || root?.name === 'root') && previousSearch === ''" [(value)]="selectedSearch" name="hierarchySelector" (change)="toggleHierarchy($event)">
-  <mat-button-toggle value="Categories">Category</mat-button-toggle>
-  <mat-button-toggle value="Locations">Location</mat-button-toggle>
-</mat-button-toggle-group>
+<div class="top">
+  <form class="search" (submit)="null">
+    <mat-form-field class="full-width">
+      <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : selectedSearch}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null"> <!--[matAutocomplete]="auto"-->
+      <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="control.setValue('')">
+        <mat-icon>close</mat-icon>
+      </button>
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+  </form>
+  <mat-button-toggle-group class="hierarchySelector" *ngIf="(!root || root?.name === 'root') && previousSearch === ''" [(value)]="selectedSearch" name="hierarchySelector" (change)="toggleHierarchy($event)">
+    <mat-button-toggle value="Categories">Category</mat-button-toggle>
+    <mat-button-toggle value="Locations">Location</mat-button-toggle>
+  </mat-button-toggle-group>
+</div>
 <!--Hierarchy Items-->
 <div *ngIf="hierarchyItems && hierarchyItems.length > 0" (window:resize)="onResize($event)">
   <!--Show header if there are both items and hierarchies or if there is no toggle-->

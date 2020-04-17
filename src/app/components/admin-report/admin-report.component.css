@@ -34,5 +34,16 @@
 
 img {
     width: 40px;
-    
+
+}
+
+.allContent {
+  max-width: 48rem;
+  position: center;
+  margin: auto;
+}
+
+.item {
+  padding-left: 0.4rem;
+  padding-right: 0.4rem;
 }
