@@ -97,7 +97,7 @@ export class NavbarComponent implements OnInit {
     this.navService.forgetParent();
     // If we are going home from the search screen, navigate to blank then navigate home
     if (this.router.url.indexOf('search') > -1) {
-      await this.router.navigateByUrl('').then(() => this.router.navigateByUrl('search/' + (this.searchType ? this.searchType : 'categories') + '/root'));
+      await this.router.navigateByUrl('blank').then(() => this.router.navigateByUrl('search/' + (this.searchType ? this.searchType : 'categories') + '/root'));
     } else {
       await this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/root']).then(result => {
         if (result === null) {
