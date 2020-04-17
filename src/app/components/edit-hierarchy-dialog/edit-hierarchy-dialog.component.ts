@@ -36,8 +36,6 @@ export class EditHierarchyDialogComponent implements OnInit {
   onSaveClick() {
     if (this.imageToSave) {
       this.imageService.putImage(this.imageToSave, this.data.ID).then(link => {
-        console.log('here');
-        console.log(link);
         this.data.imageUrl = link;
         this.dialogRef.close({data: this.data, action: 'save'});
       });
