@@ -70,8 +70,11 @@ export class NavbarComponent implements OnInit {
     } else if (this.locationString === '/reports') {
       return 'reports';
     }
-    else {
+    else if(this.locationString.startsWith('/search/') && this.locationString.split('/').length === 4) {
       return '/';
+    }
+    else{ 
+      return 'notFound';
     }
   }
 
