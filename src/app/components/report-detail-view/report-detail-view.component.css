@@ -1,4 +1,7 @@
-.btn-spacer
-{
-    margin-left: 5px;
+button {
+  margin: 0 0.4rem 0.6rem 0;
+}
+
+.reportText {
+  margin-bottom: 1.2rem;
 }
