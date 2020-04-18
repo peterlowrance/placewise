@@ -286,7 +286,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     // Deep copy locations
     const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
-      width: '75%',
+      width: '90%',
       data: {hierarchy: 'locations', parents: this.item.locations}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemLocations(result, oldLocations));
@@ -313,7 +313,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   editCategory() {
     const oldCategory = this.item.category ? this.item.category : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
-      width: '75%',
+      width: '90%',
       data: {hierarchy: 'categories', parents: [this.item.category]}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemCategory(result, oldCategory));

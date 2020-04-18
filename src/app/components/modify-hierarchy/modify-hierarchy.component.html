@@ -22,9 +22,9 @@
             {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
           </mat-icon>
         </button>
-        <button *ngIf="changeParentNode" mat-raised-button [disabled]="isDescendantOf(node, changeParentNode)" (click)="move(changeParentNode, node)">{{node.name}}</button>
+        <button *ngIf="changeParentNode" mat-raised-button [disabled]="isDescendantOf(node, changeParentNode)" (click)="move(changeParentNode, node)">{{node.name !== 'root' ? node.name : (isCategory ? 'Main Category' : workspace)}}</button>
         <div *ngIf="!changeParentNode">
-          {{node.name}}
+          {{node.name !== 'root' ? node.name : (isCategory ? 'Main Category' : workspace)}}
           <button *ngIf="!selectMode" mat-icon-button (click)="openEditModal(node)"><mat-icon>edit</mat-icon></button>
           <mat-checkbox *ngIf="selectMode && !isCategory" [checked]="selectedParents.indexOf(node.ID) > -1" (change)="selectedParentsToggle(node)"></mat-checkbox>
           <mat-radio-button *ngIf="selectMode && isCategory" [checked]="selectedParents.indexOf(node.ID) > -1" (change)="setParent(node)"></mat-radio-button>
