@@ -8,6 +8,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {EditHierarchyDialogComponent} from '../edit-hierarchy-dialog/edit-hierarchy-dialog.component';
 import {BehaviorSubject} from 'rxjs';
 import {AdminService} from '../../services/admin.service';
+import {AuthService} from "../../services/auth.service";
 
 interface TreeHierarchyItem extends HierarchyItem {
   realChildren?: TreeHierarchyItem[];
@@ -28,6 +29,7 @@ export class ModifyHierarchyComponent implements OnInit {
   treeControl = new NestedTreeControl<TreeHierarchyItem>(node => node.realChildren);
   dataSource = new MatTreeNestedDataSource<TreeHierarchyItem>();
   dataChange = new BehaviorSubject<TreeHierarchyItem[]>([]);
+  workspace: string;
 
   hasChild = (_: number, node: TreeHierarchyItem) => node && (!!node.realChildren && node.realChildren.length > 0);
   toHierarchyItem = (node: TreeHierarchyItem) => ({
@@ -39,13 +41,17 @@ export class ModifyHierarchyComponent implements OnInit {
     items: node.items
   });
 
-  constructor(private searchService: SearchService, private route: ActivatedRoute, public dialog: MatDialog, public adminService: AdminService) {
+  constructor(private searchService: SearchService, private route: ActivatedRoute, public dialog: MatDialog, public adminService: AdminService, private authService: AuthService) {
   }
 
   ngOnInit() {
     if (!this.selectMode) {
       this.isCategory = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories';
     }
+
+    this.authService.getWorkspace().subscribe(
+      val => this.workspace = val.name
+    );
 
     this.dataChange.subscribe(changedData => {
       this.dataSource.data = null;

@@ -1,3 +1,4 @@
+<button *ngIf="changeParentNode" mat-raised-button (click)="move(changeParentNode)">{{isCategory ? 'Main Category' : workspace}}</button>
 <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="tree">
   <!--Leaf Nodes-->
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
@@ -35,7 +36,6 @@
     </ul>
   </mat-nested-tree-node>
 </mat-tree>
-<button *ngIf="changeParentNode" mat-raised-button (click)="move(changeParentNode)">root</button>
 <button *ngIf="!selectMode" class="mat-fab" mat-fab (click)="openEditModal(null)">
   <mat-icon class="icon">add</mat-icon>
 </button>
