@@ -38,7 +38,6 @@ export class NavbarComponent implements OnInit {
     router.events.subscribe(val => {
       if (val instanceof NavigationEnd) {
         this.locationString = val.url;
-        console.log(this.locationString);
       }
     });
 
@@ -73,7 +72,7 @@ export class NavbarComponent implements OnInit {
     else if(this.locationString.startsWith('/search/') && this.locationString.split('/').length === 4) {
       return '/';
     }
-    else{ 
+    else{
       return 'notFound';
     }
   }

@@ -92,7 +92,7 @@
         <mat-card class="categoryCard">
             <mat-card-header>
                 <mat-card-title>Category <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></mat-card-title>
-                <mat-card-subtitle>{{category?.name}}</mat-card-subtitle>
+                <mat-card-subtitle>{{category?.name !== 'root' ? category?.name : 'Main Category'}}</mat-card-subtitle>
                 <div mat-card-avatar> <img class="categoryImg" src={{category?.imageUrl}}> </div>
             </mat-card-header>
         </mat-card>
