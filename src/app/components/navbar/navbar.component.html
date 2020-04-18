@@ -59,7 +59,7 @@
     <span class="spacer"></span>
     <button mat-icon-button *ngIf="checkLocation() !=='item' " [disabled]="this.locationString==='/settings'"  [routerLink]="['/settings']" routerLinkActive="router-link-active">
         <mat-icon *ngIf="this.role !== 'Admin'">person</mat-icon>
-        <mat-icon *ngIf="this.role === 'Admin'">people</mat-icon> <!-- no built-in material admin button -->
+        <mat-icon *ngIf="this.role === 'Admin'">settings</mat-icon> <!-- no built-in material admin button -->
     </button>
     <button mat-icon-button *ngIf="checkLocation() ==='item' && this.role === 'Admin'" (click)="delete()"><mat-icon>delete</mat-icon></button>
     <button mat-icon-button [disabled]="checkLocation() ==='/' && (parent === null || parent.ID === 'root')" (click)="goHome()"><mat-icon>home</mat-icon></button>
