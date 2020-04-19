@@ -303,8 +303,12 @@ export class ItemComponent implements OnInit, OnDestroy {
   updateItemLocations(result: string[], oldLocations: string[]) {
     if (result) {
       this.item.locations = result;
-      this.adminService.updateItem(this.item, null, oldLocations);
-      setTimeout(() => location.reload(), 100);
+      // Update the item locations then refresh
+      this.adminService.updateItem(this.item, null, oldLocations).then(val => {
+        if (val) {
+          location.reload();
+        }
+      });
     }
   }
 
