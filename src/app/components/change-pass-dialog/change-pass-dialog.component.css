@@ -1,0 +1,15 @@
+p {
+  margin-block-start: 0;
+}
+
+.mat-form-field {
+  margin-right: 1rem;
+}
+
+.btn-spacer {
+  flex: 1 1 auto;
+}
+
+button {
+  margin-bottom: 0.4rem;
+}

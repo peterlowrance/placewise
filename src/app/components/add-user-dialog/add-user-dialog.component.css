@@ -1,4 +1,11 @@
-.button-span{
-    align-items: flex;
-    align-content: flex;
+p {
+  margin-block-start: 0;
+}
+
+.mat-form-field {
+  margin-right: 1rem;
+}
+
+.btn-spacer {
+  flex: 1 1 auto;
 }
