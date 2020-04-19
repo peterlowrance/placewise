@@ -15,31 +15,33 @@
   </mat-button-toggle-group>
 </div>
 <!--Hierarchy Items-->
-<div *ngIf="hierarchyItems && hierarchyItems.length > 0" (window:resize)="onResize($event)">
-  <!--Show header if there are both items and hierarchies or if there is no toggle-->
-  <div class="header" *ngIf="(items && items.length > 0) || (root && root.name != 'root')">{{selectedSearch}}</div>
-  <mat-grid-list class="row" [cols]="columns" rowHeight="10em">
-    <mat-grid-tile class="holder" *ngFor="let hierarchyItem of hierarchyItems">
-      <div class="element" (click)="goToHierarchy(hierarchyItem)">
-        <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
-        <div class="text">{{hierarchyItem.name}}</div>
-      </div>
-    </mat-grid-tile>
-  </mat-grid-list>
-</div>
-<!--Items-->
-<div *ngIf="items && items.length > 0">
-  <div class="header" *ngIf="hierarchyItems && hierarchyItems.length > 0">Items</div>
-  <mat-grid-list class="row" [cols]="columns" rowHeight="10em">
-    <mat-grid-tile class="holder" *ngFor="let item of items">
-      <div class="element" (click)="goToItem(item)">
-        <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
-        <div class="text">{{item.name}}</div>
-      </div>
-    </mat-grid-tile>
-  </mat-grid-list>
-</div>
+<div class="bottom">
+  <div *ngIf="hierarchyItems && hierarchyItems.length > 0" (window:resize)="onResize($event)">
+    <!--Show header if there are both items and hierarchies or if there is no toggle-->
+    <div class="header" *ngIf="(items && items.length > 0) || (root && root.name != 'root')">{{selectedSearch}}</div>
+    <mat-grid-list class="row" [cols]="columns" rowHeight="10em">
+      <mat-grid-tile class="holder" *ngFor="let hierarchyItem of hierarchyItems">
+        <div class="element" (click)="goToHierarchy(hierarchyItem)">
+          <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
+          <div class="text">{{hierarchyItem.name}}</div>
+        </div>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </div>
+  <!--Items-->
+  <div *ngIf="items && items.length > 0">
+    <div class="header" *ngIf="hierarchyItems && hierarchyItems.length > 0">Items</div>
+    <mat-grid-list class="row" [cols]="columns" rowHeight="10em">
+      <mat-grid-tile class="holder" *ngFor="let item of items">
+        <div class="element" (click)="goToItem(item)">
+          <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
+          <div class="text">{{item.name}}</div>
+        </div>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </div>
 
-<button *ngIf="previousSearch === ''" class="mat-fab" mat-fab (click)="addItem()">
-  <mat-icon class="icon">add</mat-icon>
-</button>
+  <button *ngIf="previousSearch === ''" class="mat-fab" mat-fab (click)="addItem()">
+    <mat-icon class="icon">add</mat-icon>
+  </button>
+</div>

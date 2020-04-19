@@ -82,7 +82,7 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
   addUsers(){
     //open add user dialog
     this.diag.open(AddUserDialogComponent, {
-      width: '80%'
+      width: '60vh'
     }
   ).afterClosed().subscribe(val =>{
     this.addUserToDB(val);
@@ -94,7 +94,6 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
    * @param user The user info returned by the modal
    */
   async addUserToDB(user: {firstName:string, lastName:string, email:string}){
-    debugger;
     //if we have a user to add, add him/her
     if(user !== null && typeof user !== 'undefined' && user.firstName != "" && user.lastName != "" && user.email != ""){
       return this.adminService.addUserToWorkspace(user.email, user.firstName, user.lastName).then(

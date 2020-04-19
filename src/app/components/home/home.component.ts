@@ -177,7 +177,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   determineCols(fontSize: number = this.getFontSize(), width = window.innerWidth) {
     const fontLine = fontSize * 7; // Sets max characters (but not directly) on a line
-    this.columns = width / fontLine;
+    this.columns = width / fontLine * 0.96;
   }
 
   getFontSize() {

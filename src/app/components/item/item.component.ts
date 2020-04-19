@@ -195,7 +195,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    * @param node
    */
   collapseNodes(node: TreeNode) {
-    if (node) {
+    if (node && node.children) {
       const m = {}, newarr = [];
       for (let i = 0; i < node.children.length; i++) {
         const v = node.children[i];
@@ -224,14 +224,14 @@ export class ItemComponent implements OnInit, OnDestroy {
     this.errorDesc = {valid: false, desc: ''};
 
     const dialogRef = this.dialog.open(ReportDialogComponent, {
-      width: '240px',
+      width: '50vh',
       data: {
         valid: this.errorDesc.valid,
         desc: this.errorDesc.desc
       }
     });
 
-    dialogRef.afterClosed().subscribe(result => this.issueReport(result));
+    dialogRef.afterClosed().subscribe(result => {if (result) this.issueReport(result)});
   }
 
   /**
@@ -289,7 +289,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     // Deep copy locations
     const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
-      width: '90%',
+      width: '90vh',
       data: {hierarchy: 'locations', parents: this.item.locations}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemLocations(result, oldLocations));
@@ -318,7 +318,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   editCategory() {
     const oldCategory = this.item.category ? this.item.category : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
-      width: '90%',
+      width: '90vh',
       data: {hierarchy: 'categories', parents: [this.item.category]}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemCategory(result, oldCategory));

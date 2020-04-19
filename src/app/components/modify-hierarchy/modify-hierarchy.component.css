@@ -19,3 +19,11 @@
   flex-direction: column-reverse;
   align-items: center;
 }
+
+.allContent {
+  padding: 0.4rem 1.5vw;
+}
+
+ul {
+  padding-left: 0.8rem;
+}
