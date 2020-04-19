@@ -1,4 +1,4 @@
-<div class="allContent">
+<div class="allContent horiz-scroll">
   <button *ngIf="changeParentNode" mat-raised-button (click)="move(changeParentNode)">{{isCategory ? 'Main Category' : workspace}}</button>
   <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="tree">
     <!--Leaf Nodes-->

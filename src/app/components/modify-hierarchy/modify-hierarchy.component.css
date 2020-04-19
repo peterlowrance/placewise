@@ -27,3 +27,15 @@
 ul {
   padding-left: 0.8rem;
 }
+
+mat-tree{
+  flex: 0 0 auto;
+}
+
+
+/*Adapted: https://stackoverflow.com/questions/56964570/mat-tree-horizontal-scrolling-how-to-add-it*/
+.horiz-scroll {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto !important;
+}
