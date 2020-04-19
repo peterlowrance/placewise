@@ -1,1 +1,26 @@
-<p>not-found works!</p>
+<div class="not-found-center">
+    <h1>Page not found!</h1>
+    <div>
+        <img src="../../../assets/notFound.png">
+    </div>
+    <div>
+
+    </div>
+    <div>
+        <p>
+            The resource you requested could not be located.
+            Perhaps the asset you were looking for has been removed?
+        </p>
+    </div>
+    <div>
+        <div [ngSwitch]="auth.role === 'Admin'">
+            <p *ngSwitchCase=true>
+                If you believe this to be an issue, you can re-add the asset from the location/hierarchy search.
+            </p>
+            <p *ngSwitchDefault>
+                If you believe this to be an issue,
+                <strong class="warn-admin">please contact your administrator.</strong>
+            </p>
+        </div>
+    </div>
+</div>

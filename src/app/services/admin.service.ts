@@ -201,7 +201,7 @@ export class AdminService {
           newChildren = newChildren.concat(remove.children);
           // Update children's parents
           if (remove.parent) {
-            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + remove.parent).update({children: newChildren});
+            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({children: newChildren});
           }
           remove.children.forEach(child => this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + child).update({parent: remove.parent}));
         }

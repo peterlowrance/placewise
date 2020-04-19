@@ -92,7 +92,7 @@
         <mat-card class="categoryCard">
             <mat-card-header>
                 <mat-card-title>Category <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></mat-card-title>
-                <mat-card-subtitle>{{category?.name}}</mat-card-subtitle>
+                <mat-card-subtitle>{{category?.name !== 'root' ? category?.name : 'Main Category'}}</mat-card-subtitle>
                 <div mat-card-avatar> <img class="categoryImg" src={{category?.imageUrl}}> </div>
             </mat-card-header>
         </mat-card>
@@ -146,10 +146,10 @@
     </mat-tree-node>
     <!-- This is the tree node template for expandable nodes -->
     <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePaddingIndent="5">
-        <li class=" mat-elevation-z4">
+        <li class=" mat-elevation-z4" matTreeNodeToggle [attr.aria-label]="'toggle ' + node.name">
             <div class="mat-tree-node">
                 <div class="expandButton">
-                    <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'toggle ' + node.name">
+                    <button mat-icon-button matTreeNodeToggle>
                         <mat-icon class="mat-icon-rtl-mirror">
                             {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
                         </mat-icon>

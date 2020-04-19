@@ -67,8 +67,10 @@ export class SettingsComponent implements OnInit {
    * @param val password change object sent by modal
    */
   sendPasswordChangeRequest(val: {oldPass:string, newPass:string, newPassConfirm:string}){
+    debugger;
     //if returned a confirm
-    if(val && val.newPass === val.newPassConfirm){
+    if(val !== null && typeof val !== 'undefined' && val.newPass === val.newPassConfirm
+    && val.oldPass !== '' && val.newPass !== '' && val.newPassConfirm !== ''){
       return this.authService.changePassword(val.oldPass, val.newPass).then(
         () => alert('Password successfully changed'),
         (error) => alert('Password change failed:\n'+error)

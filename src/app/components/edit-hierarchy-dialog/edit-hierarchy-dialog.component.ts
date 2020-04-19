@@ -4,6 +4,7 @@ import {MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {HierarchyItem} from '../../models/HierarchyItem';
 import {AuthService} from "../../services/auth.service";
 import {ImageService} from "../../services/image.service";
+import {ActivatedRoute} from "@angular/router";
 
 interface TreeHierarchyItem extends HierarchyItem {
   realChildren?: TreeHierarchyItem[];
@@ -18,15 +19,23 @@ interface TreeHierarchyItem extends HierarchyItem {
 export class EditHierarchyDialogComponent implements OnInit {
 
   imageToSave: File;
+  workspace: string;
+  isCategory: boolean;
 
   constructor(
     public dialogRef: MatDialogRef<EditHierarchyDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: TreeHierarchyItem,
-    public imageService: ImageService
+    public imageService: ImageService,
+    private authService: AuthService,
+    private route: ActivatedRoute
   ) {
   }
 
   ngOnInit() {
+    this.authService.getWorkspace().subscribe(
+      val => this.workspace = val.name
+    );
+    this.isCategory = window.location.href.indexOf('categories') > -1;
   }
 
   onCancelClick() {
