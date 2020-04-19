@@ -12,7 +12,6 @@
             >
             <mat-error *ngIf="firstName.invalid">First Name is required</mat-error>
         </mat-form-field>
-        <br>
         <mat-form-field>
             <input matInput
                 placeholder="Last Name"
@@ -23,6 +22,7 @@
             >
             <mat-error *ngIf="lastName.invalid">Last Name is required</mat-error>
         </mat-form-field>
+        <br>
         <mat-form-field>
             <input matInput
                 placeholder="Email"
@@ -35,8 +35,10 @@
             <mat-error *ngIf="!email.hasError('required') && email.hasError('email')">Email is invalid</mat-error>
         </mat-form-field>
     </div>
-    <span class="button-span">
-        <button mat-raised-button (click)="onCancel()">Cancel</button>
-        <button mat-raised-button type='submit' color='primary' [disabled]="!addForm.valid" >Add User</button>
-    </span>
+    <br>
+  <div mat-dialog-actions>
+    <button mat-raised-button (click)="onCancel()">Cancel</button>
+    <span class="btn-spacer"></span>
+    <button mat-raised-button type='submit' color='primary' [disabled]="!addForm.valid" >Add User</button>
+  </div>
 </form>

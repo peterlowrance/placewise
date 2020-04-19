@@ -56,7 +56,7 @@ export class SettingsComponent implements OnInit {
 
     this.diag.open(ChangePassDialogComponent,
       {
-        width: '60%',
+        width: '50vh',
         data: data
       }
     ).afterClosed().subscribe(val => this.sendPasswordChangeRequest(val));
@@ -67,7 +67,6 @@ export class SettingsComponent implements OnInit {
    * @param val password change object sent by modal
    */
   sendPasswordChangeRequest(val: {oldPass:string, newPass:string, newPassConfirm:string}){
-    debugger;
     //if returned a confirm
     if(val !== null && typeof val !== 'undefined' && val.newPass === val.newPassConfirm
     && val.oldPass !== '' && val.newPass !== '' && val.newPassConfirm !== ''){
