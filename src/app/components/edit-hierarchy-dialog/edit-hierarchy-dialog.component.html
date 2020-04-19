@@ -1,6 +1,6 @@
 <mat-dialog-content>
   <div class="header">
-    <h1 mat-dialog-title>Name
+    <h1 mat-dialog-title>Name:
       <mat-form-field>
         <input matInput [(ngModel)]="data.name">
       </mat-form-field>
@@ -14,7 +14,7 @@
   </div>
   <!-- hidden item uploader -->
   <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
-  <div>Parent: {{data.realParent ? data.realParent.name : 'root'}} <button mat-icon-button (click)="onChangeParent()"><mat-icon>edit</mat-icon></button></div>
+  <div>Found within: {{data.realParent ? data.realParent.name : (isCategory ? 'Main Category' : workspace)}} <button mat-icon-button (click)="onChangeParent()"><mat-icon>edit</mat-icon></button></div>
 </mat-dialog-content>
 <div mat-dialog-actions>
   <button mat-raised-button (click)="onCancelClick()">Cancel</button>

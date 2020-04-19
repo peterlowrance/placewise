@@ -20,7 +20,7 @@ import {ModifyHierarchyDialogComponent} from '../modify-hierarchy-dialog/modify-
 import {NavService} from 'src/app/services/nav.service';
 import {Subscription} from 'rxjs';
 import {Location} from '@angular/common';
-import { MatSnackBar } from '@angular/material';
+import {MatSnackBar} from '@angular/material';
 
 
 interface TreeNode {
@@ -52,9 +52,9 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
   //edit fields for name and description
-  @ViewChild('name', {static:false}) nameField: ElementRef;
-  @ViewChild('desc', {static:false}) descField: ElementRef;
-  @ViewChild('tags', {static:false}) tagsField: ElementRef;
+  @ViewChild('name', {static: false}) nameField: ElementRef;
+  @ViewChild('desc', {static: false}) descField: ElementRef;
+  @ViewChild('tags', {static: false}) tagsField: ElementRef;
 
   id: string; // item id
   item: Item; // item returned by id
@@ -108,6 +108,9 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     // get the item from the id
     this.searchService.getItem(this.id).subscribe(item => {
+      if (!item) {
+        return;
+      }
       // get the item ref
       this.item = item;
       this.previousItem = JSON.parse(JSON.stringify(item)); // deep copy
@@ -130,30 +133,28 @@ export class ItemComponent implements OnInit, OnDestroy {
         //check through to see if we have one child
         let oneAncestor = true;
         let data = this.dataSource.data;
-        if(data.length == 1){
+        if (data.length == 1) {
           //while I still have children and they aren't leaves
-          while(data[0].children.length > 0){
-            if(data[0].children.length > 1){
+          while (data[0].children.length > 0) {
+            if (data[0].children.length > 1) {
               //check to see if these children are leaves
-              for(let child of data[0].children){
-                if(child.children.length > 0){
+              for (let child of data[0].children) {
+                if (child.children.length > 0) {
                   oneAncestor = false;
                   break;
                 }
               }
-              if(!oneAncestor) break;
+              if (!oneAncestor) break;
             }
             data = data[0].children;
           }
-        }
-        else oneAncestor = false;
+        } else oneAncestor = false;
 
         this.treeControl.dataNodes = this.dataSource.data;
-        if(oneAncestor) this.treeControl.expandAll();
+        if (oneAncestor) this.treeControl.expandAll();
       });
 
       // Load image for item TODO: Not any more
-      console.log(this.item.imageUrl);
 
       // get the category information
       this.searchService.getCategory(item.category).subscribe(val => this.category = val);
@@ -194,21 +195,23 @@ export class ItemComponent implements OnInit, OnDestroy {
    * @param node
    */
   collapseNodes(node: TreeNode) {
-    const m = {}, newarr = [];
-    for (let i = 0; i < node.children.length; i++) {
-      const v = node.children[i];
-      if (v) {
-        if (!m[v.ID]) {
-          m[v.ID] = v;
-          newarr.push(v);
-        } else {
-          m[v.ID].children = m[v.ID].children.concat(v.children);
+    if (node) {
+      const m = {}, newarr = [];
+      for (let i = 0; i < node.children.length; i++) {
+        const v = node.children[i];
+        if (v) {
+          if (!m[v.ID]) {
+            m[v.ID] = v;
+            newarr.push(v);
+          } else {
+            m[v.ID].children = m[v.ID].children.concat(v.children);
+          }
         }
       }
-    }
-    node.children = newarr;
-    for (const child of node.children) {
-      this.collapseNodes(child);
+      node.children = newarr;
+      for (const child of node.children) {
+        this.collapseNodes(child);
+      }
     }
   }
 
@@ -235,7 +238,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Issues a report to the backend DB
    * @param result The resulting report from the report modal
    */
-  issueReport(result: ItemReportModalData){
+  issueReport(result: ItemReportModalData) {
     this.errorDesc = result;
     // if it's valid, build and isue report, else leave
     if (this.errorDesc.valid) {
@@ -262,17 +265,17 @@ export class ItemComponent implements OnInit, OnDestroy {
       case 'name':
         this.textEditFields.name = true;
         // focus
-        setTimeout(() =>this.nameField.nativeElement.focus(), 0);
+        setTimeout(() => this.nameField.nativeElement.focus(), 0);
         break;
       case 'desc':
         this.textEditFields.desc = true;
         // focus
-        setTimeout(() =>this.descField.nativeElement.focus(), 0);
+        setTimeout(() => this.descField.nativeElement.focus(), 0);
         break;
       case 'tags':
         this.textEditFields.tags = true;
         // focus
-        setTimeout(() =>this.tagsField.nativeElement.focus(), 0);
+        setTimeout(() => this.tagsField.nativeElement.focus(), 0);
         break;
       default:
         break;
@@ -286,7 +289,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     // Deep copy locations
     const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
-      width: '75%',
+      width: '90%',
       data: {hierarchy: 'locations', parents: this.item.locations}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemLocations(result, oldLocations));
@@ -297,10 +300,8 @@ export class ItemComponent implements OnInit, OnDestroy {
    * @param result locations chosen
    * @param oldLocations old locations
    */
-  updateItemLocations(result: string[], oldLocations: string[]){
+  updateItemLocations(result: string[], oldLocations: string[]) {
     if (result) {
-      console.log(result);
-      console.log(oldLocations);
       this.item.locations = result;
       this.adminService.updateItem(this.item, null, oldLocations);
       setTimeout(() => location.reload(), 100);
@@ -313,7 +314,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   editCategory() {
     const oldCategory = this.item.category ? this.item.category : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
-      width: '75%',
+      width: '90%',
       data: {hierarchy: 'categories', parents: [this.item.category]}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemCategory(result, oldCategory));
@@ -324,11 +325,10 @@ export class ItemComponent implements OnInit, OnDestroy {
    * @param result The new category/s chosen
    * @param oldCategory old category
    */
-  updateItemCategory(result: string[], oldCategory: string){
+  updateItemCategory(result: string[], oldCategory: string) {
     if (result && result.length > 0) {
       this.item.category = result[0];
       this.searchService.getCategory(result[0]).subscribe(c => this.category = c);
-      console.log('updating');
       this.adminService.updateItem(this.item, oldCategory, null);
     }
   }
@@ -388,7 +388,6 @@ export class ItemComponent implements OnInit, OnDestroy {
           // set dirty and save for upload
           this.checkDirty();
           this.imageToSave = file;
-          console.log(this.item.imageUrl);
         }
       };
     }
@@ -403,7 +402,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   add(event: MatChipInputEvent | any): void {
     const input = event.input;
     const value = event.value;
-    if(this.item.tags == null) this.item.tags = [];
+    if (this.item.tags == null) this.item.tags = [];
     // Add our fruit
     if ((value || '').trim()) {
       this.item.tags.push(value.trim());
@@ -454,13 +453,12 @@ export class ItemComponent implements OnInit, OnDestroy {
     if (this.previousItem.imageUrl !== this.item.imageUrl) {
       // post to upload image
       if (this.imageToSave) {
-        return this.imageService.putImage(this.imageToSave, this.item.ID).then(link =>{
+        return this.imageService.putImage(this.imageToSave, this.item.ID).then(link => {
           this.item.imageUrl = link;
           this.placeIntoDB();
         });
       }
-    }
-    else{
+    } else {
       //else just place
       return this.placeIntoDB();
     }
@@ -470,7 +468,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   /**
    * Places the item into the database
    */
-  async placeIntoDB(){
+  async placeIntoDB() {
     return this.adminService.updateItem(this.item, null, null).then(val => {
       if (val === true) {
         this.previousItem = JSON.parse(JSON.stringify(this.item));
@@ -490,13 +488,12 @@ export class ItemComponent implements OnInit, OnDestroy {
     if (signal) {
       if (confirm('Are you sure you want to delete the item?\nThis cannot be undone.')) {
         //remove image if exists, else just remove item
-        if(this.item.imageUrl !== null && typeof this.item.imageUrl !== 'undefined'
-          && this.item.imageUrl !== '../../../assets/notFound.png'){
+        if (this.item.imageUrl !== null && typeof this.item.imageUrl !== 'undefined'
+          && this.item.imageUrl !== '../../../assets/notFound.png') {
           return this.imageService.removeImage(this.item.ID).then(() => {
             this.removeFromDB();
           });
-        }
-        else{ // else just delete from the DB
+        } else { // else just delete from the DB
           return this.removeFromDB();
         }
       }
@@ -506,7 +503,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   /**
    * Removes the current item from the firebase DB
    */
-  async removeFromDB(){
+  async removeFromDB() {
     //remove image
     return this.adminService.removeItem(this.item).toPromise().then(val => {
       if (val) {
