@@ -161,22 +161,24 @@ export class ModifyHierarchyComponent implements OnInit {
       };
     }
     const dialogRef = this.dialog.open(EditHierarchyDialogComponent, {
-      width: '75%',
+      width: '60hv',
       data: node
     });
     dialogRef.afterClosed().subscribe(result => {
-      if (result.action === 'delete') {
-        this.delete(result.data);
-      } else if (result.action === 'changeParent') {
-        // If this is a new item, add it
-        if (!result.data.ID) {
+      if (result) {
+        if (result.action === 'delete') {
+          this.delete(result.data);
+        } else if (result.action === 'changeParent') {
+          // If this is a new item, add it
+          if (!result.data.ID) {
+            this.add(result.data);
+          }
+          this.changeParentNode = result.data;
+        } else if (newItem && result.data) {
           this.add(result.data);
+        } else if (!newItem && result.data) {
+          this.update(result.data);
         }
-        this.changeParentNode = result.data;
-      } else if (newItem && result.data) {
-        this.add(result.data);
-      } else if (!newItem && result.data) {
-        this.update(result.data);
       }
     });
   }

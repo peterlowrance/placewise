@@ -5,3 +5,7 @@ button {
 .reportText {
   margin-bottom: 1.2rem;
 }
+
+.btn-spacer {
+  flex: 1 1 auto;
+}
