@@ -9,6 +9,7 @@
   max-width: 45vh !important;
   border: dimgray 1px solid;
   position: relative;
+  margin: auto;
 }
 
 .responsive-item-image {
@@ -37,4 +38,16 @@
 
 .header {
   position: relative;
+}
+
+.foundWithin {
+  margin-top: 0.8rem;
+}
+
+.mat-dialog-title {
+  margin: 0;
+}
+
+.mat-form-field {
+  width: 10rem;
 }
