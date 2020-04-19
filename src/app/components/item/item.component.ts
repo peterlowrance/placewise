@@ -251,7 +251,10 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.report.reportDate = new Date().toDateString();
 
       // TODO: issue report
-      return this.adminService.placeReport(this.report.item.ID, this.report.description);
+      return this.adminService.placeReport(this.report.item.ID, this.report.description).toPromise().then(
+        () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
+        (err) => this.snack.open("Report Failed, Please Try Later", "OK", {duration: 3000, panelClass: ['mat-toolbar']})
+      );
     }
   }
 

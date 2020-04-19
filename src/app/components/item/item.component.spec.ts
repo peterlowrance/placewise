@@ -137,13 +137,16 @@ describe('ItemComponent', () => {
   });
 
   it('should place report if valid', async () => {
+    let alertMock = spyOn(snackImp, 'open').and.callFake(() => {});
+
     let reportData = {desc:'desc',valid:true};
-    await component.issueReport(reportData).subscribe(val => expect(val).toBeTruthy)
+    await component.issueReport(reportData).then(() => expect(alertMock).toHaveBeenCalledWith('Report Sent', "OK", {duration: 3000, panelClass: ['mat-toolbar']}))
   });
 
-  it('should not place report on cancel/invalid', () => {
+  it('should not place report on cancel/invalid', async () => {
+    let alertMock = spyOn(snackImp, 'open').and.callFake(() => {});
     let reportData = {desc:'desc',valid:false};
-    expect(component.issueReport(reportData)).toBeFalsy();
+    await component.issueReport(reportData).then(() => expect(alertMock).toHaveBeenCalledWith('Report Failed, Please Try Later', "OK", {duration: 3000, panelClass: ['mat-toolbar']}))
   });
 
   describe('focuses on fields on edit', () => {
@@ -322,8 +325,6 @@ describe('ItemComponent', () => {
     expect(component.dirty).toBeFalsy();
     expect(component.item).toEqual(component.previousItem);
     expect(alertMock).toHaveBeenCalledWith('Item Save Successful', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
-
-    window.alert = alert;
   });
 
   it('should alert fail if saving failed', async () => {
