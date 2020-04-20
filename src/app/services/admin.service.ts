@@ -155,6 +155,18 @@ export class AdminService {
         this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
       });
     }
+    
+    var reports;
+
+    this.getReports().subscribe(x => reports = x)
+    
+    for (let i = 0; i < reports.length; i++) {
+      if(reports[i].itemID == item.ID)
+      {
+        this.deleteReport(reports[i].ID);
+      }
+    }
+
     return of(true);
   }
 
