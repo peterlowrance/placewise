@@ -56,8 +56,10 @@ export class EditHierarchyDialogComponent implements OnInit {
   }
 
   onDeleteClick() {
-    this.imageService.removeImage(this.data.imageUrl);
-    this.dialogRef.close({data: this.data, action: 'delete'});
+    if (confirm('Are you sure you want to delete the ' + (this.isCategory ? 'category?\nCategories and items within ' : 'location?\nLocations and items within ') + this.data.name + ' will not be deleted.\nThis cannot be undone.')) {
+      this.imageService.removeImage(this.data.imageUrl);
+      this.dialogRef.close({data: this.data, action: 'delete'});
+    }
   }
 
   onChangeParent() {

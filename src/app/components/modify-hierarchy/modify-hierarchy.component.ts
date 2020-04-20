@@ -246,7 +246,6 @@ export class ModifyHierarchyComponent implements OnInit {
    * although they are kept as children of the removed item
    */
   delete(node: TreeHierarchyItem, promoteChildren: boolean = true, updateDB: boolean = true) {
-    // TODO: database (remember special case for when not promoting children)
     if (updateDB) {
       if (this.isCategory) {
         this.adminService.removeCategory(this.toHierarchyItem(node));
