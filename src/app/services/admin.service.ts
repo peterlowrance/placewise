@@ -161,14 +161,19 @@ export class AdminService {
     
     var reports;
 
-    this.getReports().subscribe(x => reports = x)
-    
-    for (let i = 0; i < reports.length; i++) {
-      if(reports[i].itemID == item.ID)
-      {
-        this.deleteReport(reports[i].ID);
+    this.getReports().subscribe(x => {
+      reports = x;     
+      for (let i = 0; i < reports.length; i++) {
+        console.log(reports[i] + " " + item.ID)
+        if(reports[i].item == item.ID)
+        {
+          this.deleteReport(reports[i].ID);
+        }
       }
     }
+    )
+    
+
 
     return of(true);
   }
