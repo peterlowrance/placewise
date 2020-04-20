@@ -12,7 +12,7 @@ import {HierarchyItem} from '../models/HierarchyItem';
 import {SearchService} from './search.service';
 import { combineLatest } from 'rxjs';
 import { User } from '../models/User';
-import * as firebase from "firebase";
+import * as firebase from 'firebase';
 import { promise } from 'protractor';
 
 declare var require: any;
@@ -30,7 +30,7 @@ const adServe = 'https://placewise-d040e.appspot.com/';
 })
 export class AdminService {
 
-  getReport(id: string){
+  getReport(id: string) {
     return this.afs.doc<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as SentReport;
       if (!data) {
@@ -40,11 +40,11 @@ export class AdminService {
       return data;
     }));
   }
-  placeReport(itemID: string, text: string){
-    var userID: string;
-    var rID: string;
-    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid).then(x => rID = x.id))
-    return of(true)
+  placeReport(itemID: string, text: string) {
+    let userID: string;
+    let rID: string;
+    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid).then(x => rID = x.id));
+    return of(true);
   }
 
   placeReportHelper(itemID: string, text: string, userID: string): Promise<DocumentReference> {
@@ -80,28 +80,28 @@ export class AdminService {
   }
 
 
-  updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Observable<boolean> {
-    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).set(item);
+  async updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Promise<boolean> {
+    await this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).set(item);
     if (oldCategoryID) {
       // Remove from old category
-      this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+      await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
       // Add to new category
-      this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
+      await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
     }
     if (oldLocationsID && oldLocationsID.length > 0) {
       // Remove from old locations
-      oldLocationsID.forEach(location => {
+      oldLocationsID.forEach(async location => {
         // If this location is no longer present
         if (item.locations.indexOf(location) === -1) {
-          this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+          await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
         }
       });
       // Add to new locations
-      item.locations.forEach(location => {
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
+      item.locations.forEach(async location => {
+        await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
       });
     }
-    return of(true);
+    return true;
   }
 
   createItem(item: Item): Observable<boolean> {
@@ -111,38 +111,41 @@ export class AdminService {
     return of(true);
   }
 
-  createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string) {
+  createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string): Observable<string> {
     if (!category) {
       category = 'root';
     }
     if (!location) {
       location = 'root';
     }
-    return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({name: name,desc: desc,tags: tags,locations: [location],category: category,imageUrl: imageUrl
-    }).then(
-      val => {
-        this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
-          map(doc => doc.data())
-        ).toPromise().then(
-          doc => {
-            const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
-            ary.push(val.id);
-            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
-          }
-        );
-        this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + category).get().pipe(
-          map(doc => doc.data())
-        ).toPromise().then(
-          doc => {
-            const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
-            ary.push(val.id);
-            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + category).update({items: ary});
-          }
-        );
-      }
-    );
-
-    //return of(true);
+    return new Observable(obs => {
+      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({name, desc, tags, locations: [location], category, imageUrl
+      }).then(
+        val => {
+          obs.next(val.id);
+          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
+            map(doc => doc.data())
+          ).toPromise().then(
+            doc => {
+              const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+              ary.push(val.id);
+              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
+            }
+          );
+          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + category).get().pipe(
+            map(doc => doc.data())
+          ).toPromise().then(
+            doc => {
+              const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+              ary.push(val.id);
+              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + category).update({items: ary});
+            }
+          );
+          obs.complete();
+        }
+      );
+    });
+    // return of(true);
   }
 
   removeItem(item: Item) {
@@ -209,9 +212,8 @@ export class AdminService {
         if (remove.children) {
           newChildren = newChildren.concat(remove.children);
           // Update children's parents
-          if(remove.parent)
-          {
-            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + remove.parent).update({children: newChildren});
+          if (remove.parent) {
+            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({children: newChildren});
           }
           remove.children.forEach(child => this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + child).update({parent: remove.parent}));
         }
@@ -232,7 +234,7 @@ export class AdminService {
             });
           });
         }
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({children: newChildren,items: newItems});
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({children: newChildren, items: newItems});
       }
     );
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.ID).delete();
@@ -250,8 +252,7 @@ export class AdminService {
         if (toRemove.children) {
           newChildren = newChildren.concat(toRemove.children);
           // Update parent's children
-          if(toRemove.parent)
-          {
+          if (toRemove.parent) {
             this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({children: newChildren});
           }
           // Update children's parents
@@ -270,7 +271,7 @@ export class AdminService {
             });
           });
         }
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({children: newChildren,items: newItems});
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({children: newChildren, items: newItems});
       }
     );
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.ID).delete();
@@ -307,36 +308,34 @@ export class AdminService {
   /**
    * Gets all users from the current signed-in user's workspace
    */
-  getWorkspaceUsers(): Observable<any[]>{
-    try{
-      //get all user metadata
-      let users = this.afs.collection('/Users', ref => ref.where('workspace','==', this.auth.workspace.id)).snapshotChanges().pipe(map(a => {
+  getWorkspaceUsers(): Observable<any[]> {
+    try {
+      // get all user metadata
+      const users = this.afs.collection('/Users', ref => ref.where('workspace', '==', this.auth.workspace.id)).snapshotChanges().pipe(map(a => {
         return a.map(g => {
         const data = g.payload.doc.data();
         const id = g.payload.doc.id;
-        return {data:data, id:id};
-        })
+        return {data, id};
+        });
       }));
-      //get all static user roles from db
-      let wusers = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().pipe(map(a => {
+      // get all static user roles from db
+      const wusers = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().pipe(map(a => {
         return a.map(g => {
         const data = g.payload.doc.data();
         const id = g.payload.doc.id;
-        return {data:data, id:id};
-        })
+        return {data, id};
+        });
       }));
-      //filter and combine by user ID
-      return combineLatest<any[]>(users, wusers, (user, wuser) =>{
-        let list = []
+      // filter and combine by user ID
+      return combineLatest<any[]>(users, wusers, (user, wuser) => {
+        const list = [];
         user.forEach((element, index) => {
-          if(element)  list.push({user: element.data, role: wuser.find((elem) => elem.id === element.id).data.role});
+          if (element) {  list.push({user: element.data, role: wuser.find((elem) => elem.id === element.id).data.role}); }
         });
         return list;
       });
-    }
-    //error has occured
-    catch(err){
-      console.log(err)
+    } catch (err) {
+      console.log(err);
     }
   }
 
@@ -344,28 +343,28 @@ export class AdminService {
    * Deletes a user from the DB and removes their metadata fields
    * @param email The email of the user to delete
    */
-  deleteUserByEmail(email: string): Promise<string>{
+  deleteUserByEmail(email: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      //get ID token from auth state
+      // get ID token from auth state
       return this.auth.getAuth().subscribe(
         auth => {
-          //check if logged in
-          if(auth === null) reject('Auth token could not be retrieved. Perhaps you are logged out?');
+          // check if logged in
+          if (auth === null) { reject('Auth token could not be retrieved. Perhaps you are logged out?'); }
           auth.getIdTokenResult().then(
             token => {
-              //with token remove user by pinging server with token and email
+              // with token remove user by pinging server with token and email
               this.http.post(`${adServe}/removeUser`, {
                 idToken: token,
-                email: email
+                email
               }).toPromise().then(
                 () => resolve(`Removed user ${email}`),
                 (err) => reject(err.error)
               );
             }
-          )
+          );
         }
-      )
-    })
+      );
+    });
   }
 
   /**
@@ -373,33 +372,32 @@ export class AdminService {
    * @param email The email of the user to update
    * @param role Role to update to, expects "Admin" or "User"
    */
-  setUserRole(email: string, role: string){
+  setUserRole(email: string, role: string) {
     return new Promise((resolve, reject) => {
-      //ensure correct role change given
-      if(role === 'Admin' || role === 'User'){
-        //get ID token from auth state
+      // ensure correct role change given
+      if (role === 'Admin' || role === 'User') {
+        // get ID token from auth state
         return this.auth.getAuth().subscribe(
           auth => {
-            //if auth is null, return
-            if(auth === null) reject('Auth token could not be retrieved. Perhaps you are logged out?');
-            //not null, try token
+            // if auth is null, return
+            if (auth === null) { reject('Auth token could not be retrieved. Perhaps you are logged out?'); }
+            // not null, try token
             auth.getIdTokenResult().then(
               token => {
-                //with token set user role by pinging server with token, email, and role
-                this.http.post(`${adServe}/setUserRole`, { idToken: token, email: email, role: role
+                // with token set user role by pinging server with token, email, and role
+                this.http.post(`${adServe}/setUserRole`, { idToken: token, email, role
                 }).toPromise().then(
                   () => resolve(role),
-                  //error in posting
+                  // error in posting
                   (err) => reject(err.error)
                 );
               },
-              //reject, error getting auth token
+              // reject, error getting auth token
               (err) => reject(err)
-            )
+            );
           }
-        )
-      } //not right role, reject
-      else reject('Role not "Admin" or "User"');
+        );
+      } else { reject('Role not "Admin" or "User"'); }
     });
   }
 
@@ -409,29 +407,29 @@ export class AdminService {
    * @param firstName the first name of the user to add
    * @param lastName the last name of the user to add
    */
-  async addUserToWorkspace(email: string, firstName: string, lastName: string): Promise<{user:User, role:string}>{
+  async addUserToWorkspace(email: string, firstName: string, lastName: string): Promise<{user: User, role: string}> {
     return new Promise((resolve, reject) => {
-      //get ID token from auth state
+      // get ID token from auth state
       this.auth.getAuth().subscribe(
         auth => {
-          //if auth is null, reject
-          if(auth === null) reject('Auth token could not be retrieved. Perhaps you are logged out?');
-          //logged in, get goin'
+          // if auth is null, reject
+          if (auth === null) { reject('Auth token could not be retrieved. Perhaps you are logged out?'); }
+          // logged in, get goin'
           auth.getIdTokenResult().then(
             token => {
-              //with token add user by pinging server with token and email
-              this.http.post(`${adServe}/createNewUser`, {idToken: token,email: email,firstName: firstName,lastName: lastName
+              // with token add user by pinging server with token and email
+              this.http.post(`${adServe}/createNewUser`, {idToken: token, email, firstName, lastName
               }).toPromise().then(
-                () => resolve({user:{firstName: firstName, lastName: lastName, email:email, workspace: this.auth.workspace.id}, role:'User'}),
-                //error posting
+                () => resolve({user: {firstName, lastName, email, workspace: this.auth.workspace.id}, role: 'User'}),
+                // error posting
                 (err) => reject(err.error)
               );
           },
-          //reject getIDToken
+          // reject getIDToken
           (err) => reject(err)
-          )
+          );
         }
-      )
+      );
     });
   }
 

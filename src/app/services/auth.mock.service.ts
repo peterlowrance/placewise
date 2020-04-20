@@ -69,12 +69,11 @@ export class AuthMockService {
    * @param password The password associated with this email
    * @param workspace The workspace ID corresponding to the workspace the user is trying to sign into
    */
-  login(email: string, password: string, workspace: string){
+  login(email: string, password: string){
     //promise return login
     return new Promise((resolve, reject) => {
       if(email === EXPECTED_TEST_CREDENTIALS.email
-        && password === EXPECTED_TEST_CREDENTIALS.password
-        && workspace === EXPECTED_TEST_CREDENTIALS.workspace){
+        && password === EXPECTED_TEST_CREDENTIALS.password){
           loggedIn = true;
           resolve('LOGGED-IN');
         }

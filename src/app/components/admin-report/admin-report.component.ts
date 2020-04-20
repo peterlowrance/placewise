@@ -50,7 +50,7 @@ export class AdminReportComponent implements OnInit {
 
 
         const dialogRef = this.dialog.open(ReportDetailViewComponent, {
-          width: '280px',
+          width: '55vh',
           data: {
             itemName: reportData.itemName,
             reportDesc: reportData.reportDesc,
@@ -63,7 +63,7 @@ export class AdminReportComponent implements OnInit {
         dialogRef.afterClosed().subscribe(result => {
           reportData = result;
           // if it's valid, build and isue report, else leave
-          if (reportData.toBeRemoved) {
+          if (reportData && reportData.toBeRemoved) {
             this.adminService.deleteReport(reportData.reportID);
           }
         });
@@ -74,13 +74,13 @@ export class AdminReportComponent implements OnInit {
     let data = {confirm: false, desc: 'You sure you want to clear reports?'};
 
     const dialogRef = this.dialog.open(ConfirmComponent, {
-      width: '240px',
+      width: '55vh',
       data: {
         confirm: data.confirm,
         desc: data.desc
       }
     });
-    dialogRef.afterClosed().subscribe(result => {if(result.confirm) {this.clearReports()}});
+    dialogRef.afterClosed().subscribe(result => {if(result && result.confirm) {this.clearReports()}});
   }
 
 

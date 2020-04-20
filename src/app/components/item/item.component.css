@@ -8,7 +8,7 @@
 
 h2 {
     margin: 0 0.2rem;
-    padding-top: 0.8rem;
+    padding-top: 1rem;
 }
 
 
@@ -59,6 +59,7 @@ h2 {
 
 .picHolder {
   height: 4rem;
+  padding-left: 1.2rem;
   width: 100%
 }
 
@@ -76,14 +77,31 @@ ul {
 }
 
 .allContent {
-  padding: 2vw;
+  padding: 0.4rem 2vw 3rem 2vw;
   max-width: 50rem;
   position: center;
   margin: auto;
 }
 
+.reportButtonHolder {
+  margin-left: 0.15rem;
+}
+
 .reportButton {
-  margin-left: 0.25rem;
+  width: calc(5rem + 2.5vw);
+  max-width: 28vw;
+  padding: 0 1vw;
+}
+
+.moreInfoButtonHolder {
+  margin-left: 0.15rem;
+  align-items: end;
+}
+
+.moreInfoButton {
+  width: calc(5rem + 2.5vw);
+  max-width: 28vw;
+  padding: 0 1vw;
 }
 
 .categoryImg {
@@ -94,6 +112,14 @@ ul {
 
 .moreInfo {
   margin-top: 0.8rem;
+}
+
+.moreInfoOpen {
+  padding-top: 0.8rem;
+}
+
+mat-grid-list {
+  margin-bottom: 0.6rem;
 }
 
 .mat-expansion-panel-header-title {
@@ -113,15 +139,26 @@ p {
 }
 
 .bottomLocation {
-  margin-left: 0.4rem;
-  margin-top: 0.4rem;
+  margin: 0.8rem 0.4rem;
+  text-align: center;
+  width: 100%
 }
 
 .bottomImage {
-  margin-top: 0.2rem;
+  margin-top: 0.4rem;
+  width: 100%;
+  max-height: 20rem;
+  object-fit: contain;
+  object-position: center;
 }
 
 .editButton {
-  top: 0;
-  bottom: auto;
+  float: end;
+  top: -0.3rem;
+  left: -0.3rem;
 }
+
+.titleHolder{
+  padding-bottom: 0.2rem;
+}
+

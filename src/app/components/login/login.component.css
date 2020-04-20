@@ -18,43 +18,27 @@
   width: 100%;
 }
 
-@media only screen and (orientation: landscape) {
-  .logo {
-    padding: 20px;
-    margin: auto;
-    min-width: 200px;
-    width: 20%;
-  }
-
-
-  .login-form {
-    justify-content: center;
-    margin: auto;
-    min-width: 200px;
-    width: 20%;
-  }
+.logo {
+  padding: 20px;
+  margin: auto;
+  width: 12rem;
+  max-width: 40vw;
 }
 
-@media only screen and (orientation: portrait) {
-  .logo {
-    padding: 5%;
-    justify-content: center;
-    min-width: 200px;
-    margin: auto;
-    width: 40%;
-  }
 
-
-  .login-form {
-    justify-content: center;
-    margin: auto;
-    min-width: 200px;
-    width: 40%;
-  }
+.login-form {
+  justify-content: center;
+  margin: auto;
+  width: 15rem;
+  max-width: 80vw;
 }
 
 .new-link {
   bottom: 2%;
   right: 2%;
   position: fixed;
+}
+
+.forgotText {
+  padding-top: 0.2rem;
 }

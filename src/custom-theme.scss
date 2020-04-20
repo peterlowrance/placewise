@@ -13,7 +13,7 @@
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
 $placewise-primary:  mat-palette($mat-brown, 900);
-$placewise-accent: mat-palette($mat-brown, 600);
+$placewise-accent: mat-palette($mat-brown, 500);
 
 // The warn palette is optional (defaults to red).
 $placewise-warn: mat-palette($mat-red);

@@ -38,7 +38,6 @@ export class NavbarComponent implements OnInit {
     router.events.subscribe(val => {
       if (val instanceof NavigationEnd) {
         this.locationString = val.url;
-        console.log(this.locationString);
       }
     });
 
@@ -70,8 +69,11 @@ export class NavbarComponent implements OnInit {
     } else if (this.locationString === '/reports') {
       return 'reports';
     }
-    else {
+    else if(this.locationString.startsWith('/search/') && this.locationString.split('/').length === 4) {
       return '/';
+    }
+    else{
+      return 'notFound';
     }
   }
 
@@ -97,7 +99,7 @@ export class NavbarComponent implements OnInit {
     this.navService.forgetParent();
     // If we are going home from the search screen, navigate to blank then navigate home
     if (this.router.url.indexOf('search') > -1) {
-      await this.router.navigateByUrl('').then(() => this.router.navigateByUrl('search/' + (this.searchType ? this.searchType : 'categories') + '/root'));
+      await this.router.navigateByUrl('blank').then(() => this.router.navigateByUrl('search/' + (this.searchType ? this.searchType : 'categories') + '/root'));
     } else {
       await this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/root']).then(result => {
         if (result === null) {

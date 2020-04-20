@@ -6,6 +6,7 @@ import { MatCheckboxChange } from '@angular/material/checkbox';
 import {MatDialog} from '@angular/material/dialog';
 import {AddUserDialogComponent} from '../add-user-dialog/add-user-dialog.component';
 import { Subscription } from 'rxjs';
+import { MatSnackBar } from '@angular/material';
 
 interface UserData{
   user: User;
@@ -30,7 +31,7 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
   /** User subscription */
   userSub: Subscription;
 
-  constructor(private authService: AuthService, private adminService: AdminService, private diag: MatDialog) { }
+  constructor(private authService: AuthService, private adminService: AdminService, private diag: MatDialog, private snack: MatSnackBar) { }
 
   ngOnInit() {
     this.adminService.getWorkspaceUsers().subscribe( (users) => this.workspaceUsers = users );
@@ -51,8 +52,8 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
     //if we confirm, set the new user role
     if(confirm(`Are you sure you want to change ${user.user.firstName} ${user.user.lastName} to role ${newRole}?\nNew permissions will take effect on next token refresh.`)){
       return this.adminService.setUserRole(user.user.email, newRole).then(
-        () => alert(`${user.user.firstName} ${user.user.lastName} is now a/an ${newRole}`),
-        (err) => alert(`TOGGLE FAILED:\n${err}`)
+        () => this.snack.open(`${user.user.firstName} is now a/an ${newRole}`, "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
+        (err) => this.snack.open(`TOGGLE FAILED:\n${err}`, "OK", {duration: 3000, panelClass: ['mat-warn']})
       );
     }
     else{ //else reset the checkbox state
@@ -68,9 +69,9 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
     if (confirm(`Are you sure you want to delete ${user.user.firstName} ${user.user.lastName}?\n` +
     'Their account will be deleted and all permissions revoked.')) {
       return this.adminService.deleteUserByEmail(user.user.email).then(
-        () => alert(`${user.user.firstName} ${user.user.lastName} successfully deleted`)
+        () => this.snack.open(`${user.user.firstName} successfully deleted`, "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
       ).catch(
-        () => alert(`DELETION FAILED\n${user.user.firstName} ${user.user.lastName} could not be deleted`)
+        () => this.snack.open(`DELETION FAILED\n${user.user.firstName} could not be deleted`, "OK", {duration: 3000, panelClass: ['mat-warn']})
       );
     }
   }
@@ -81,7 +82,7 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
   addUsers(){
     //open add user dialog
     this.diag.open(AddUserDialogComponent, {
-      width: '80%'
+      width: '60vh'
     }
   ).afterClosed().subscribe(val =>{
     this.addUserToDB(val);
@@ -94,11 +95,11 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
    */
   async addUserToDB(user: {firstName:string, lastName:string, email:string}){
     //if we have a user to add, add him/her
-    if(user !== null && typeof user !== 'undefined'){
+    if(user !== null && typeof user !== 'undefined' && user.firstName != "" && user.lastName != "" && user.email != ""){
       return this.adminService.addUserToWorkspace(user.email, user.firstName, user.lastName).then(
-        () => alert(`${user.firstName} ${user.lastName} successfully added as a User`)
+        () => this.snack.open(`${user.firstName} successfully added as a User`, "OK", {duration: 3000, panelClass: ['mat-toolbar']})
       ).catch(
-        () => alert(`ADD FAILED\n${user.firstName} ${user.lastName} could not be added`)
+        () => this.snack.open(`ADD FAILED\n${user.firstName} could not be added`, "OK", {duration: 3000, panelClass: ['mat-warn']})
       );
     }
   }

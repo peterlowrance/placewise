@@ -23,6 +23,8 @@ const routes: Routes = [
   {path: 'reports', component: AdminReportComponent, canActivate: [AuthGuard]},
   {path: 'modify/:selectedHierarchy', component: ModifyHierarchyComponent, canActivate: [AuthGuard]},
   {path: 'users', component: ModerateUsersComponent, canActivate: [AuthGuard]},
+  {path: '', redirectTo:'/search/locations/root', pathMatch:'full', canActivate:[AuthGuard]},
+  {path: '', redirectTo:'/login', pathMatch:'full'},
   {path: '**', component: NotFoundComponent}
 ];
 

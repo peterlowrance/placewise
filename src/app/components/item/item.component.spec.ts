@@ -32,9 +32,14 @@ import { Router, ActivatedRoute } from '@angular/router';
 
 import * as MockDB from '../../models/MockDB';
 import { of } from 'rxjs';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material';
 
 let routerMock = {
   navigate: jest.fn((url: string[]) => {})
+}
+
+let snackMock = {
+  open: jest.fn((message: string, button: string, options: {duration: number}) => {})
 }
 
 let activatedRouteStub = {
@@ -57,6 +62,8 @@ let adminImp;
 
 let searchImp;
 
+let snackImp;
+
 describe('ItemComponent', () => {
   let component: ItemComponent;
   let fixture: ComponentFixture<ItemComponent>;
@@ -64,8 +71,8 @@ describe('ItemComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ ItemComponent ],
-      providers: [{provide: SearchService, useClass: SearchTest.SearchMockService}, {provide: AdminService, useClass: AdminMockService}, {provide: Location, useValue: locationStub}, {provide: ActivatedRoute, useValue: activatedRouteStub}, {provide: MatDialog}, {provide: AuthService, useClass: AuthTest.AuthMockService},{provide: ImageService, useClass: ImageTest.ImageMockService}, {provide: NavService, useValue: new NavService()}],
-      imports: [ReactiveFormsModule, FormsModule, MatButtonModule, MatCardModule, MatInputModule, MatTreeModule, MatIconModule, MatExpansionModule, MatChipsModule, MatGridListModule, RouterTestingModule.withRoutes([]), BrowserAnimationsModule]
+      providers: [{provide: SearchService, useClass: SearchTest.SearchMockService}, {provide: AdminService, useClass: AdminMockService}, {provide: Location, useValue: locationStub}, {provide: ActivatedRoute, useValue: activatedRouteStub}, {provide: MatDialog}, {provide: AuthService, useClass: AuthTest.AuthMockService},{provide: ImageService, useClass: ImageTest.ImageMockService}, {provide: NavService, useValue: new NavService()}, {provide: MatSnackBar, useValue: snackMock}],
+      imports: [ReactiveFormsModule, FormsModule, MatButtonModule, MatCardModule, MatInputModule, MatTreeModule, MatIconModule, MatExpansionModule, MatChipsModule, MatGridListModule, MatSnackBarModule, RouterTestingModule.withRoutes([]), BrowserAnimationsModule]
     })
     .compileComponents();
   }));
@@ -85,7 +92,12 @@ describe('ItemComponent', () => {
     routerImp = TestBed.get(Router);
     adminImp = TestBed.get(AdminService);
     searchImp = TestBed.get(SearchService);
+    snackImp = TestBed.get(MatSnackBar);
   });
+
+  afterEach(() => {
+    snackImp.open.mockClear();
+  })
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -125,13 +137,16 @@ describe('ItemComponent', () => {
   });
 
   it('should place report if valid', async () => {
+    let alertMock = spyOn(snackImp, 'open').and.callFake(() => {});
+
     let reportData = {desc:'desc',valid:true};
-    await component.issueReport(reportData).subscribe(val => expect(val).toBeTruthy)
+    await component.issueReport(reportData).then(() => expect(alertMock).toHaveBeenCalledWith('Report Sent', "OK", {duration: 3000, panelClass: ['mat-toolbar']}))
   });
 
-  it('should not place report on cancel/invalid', () => {
+  it('should not place report on cancel/invalid', async () => {
+    let alertMock = spyOn(snackImp, 'open').and.callFake(() => {});
     let reportData = {desc:'desc',valid:false};
-    expect(component.issueReport(reportData)).toBeFalsy();
+    await component.issueReport(reportData).then(() => expect(alertMock).toHaveBeenCalledWith('Report Failed, Please Try Later', "OK", {duration: 3000, panelClass: ['mat-toolbar']}))
   });
 
   describe('focuses on fields on edit', () => {
@@ -300,9 +315,7 @@ describe('ItemComponent', () => {
   });
 
   it('should alert if an item was saved', async () => {
-    let alertMock = jest.fn();
-    let alert = window.alert;
-    window.alert = alertMock;
+    let alertMock = spyOn(snackImp, 'open').and.callFake(() => {});
     //edit item
     component.item.name = 'EDITED';
     component.dirty = true;
@@ -311,15 +324,11 @@ describe('ItemComponent', () => {
 
     expect(component.dirty).toBeFalsy();
     expect(component.item).toEqual(component.previousItem);
-    expect(alertMock).toHaveBeenCalledWith('Item save successful');
-
-    window.alert = alert;
+    expect(alertMock).toHaveBeenCalledWith('Item Save Successful', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
   });
 
   it('should alert fail if saving failed', async () => {
-    let alertMock = jest.fn();
-    let alert = window.alert;
-    window.alert = alertMock;
+    let alertMock = spyOn(snackImp, 'open').and.callFake(() => {});
     //edit item
     component.item.name = 'EDITEDFORFAIL';
     component.dirty = true;
@@ -331,9 +340,7 @@ describe('ItemComponent', () => {
 
     expect(component.dirty).toBeTruthy();
     expect(component.item).not.toEqual(component.previousItem);
-    expect(alertMock).toHaveBeenCalledWith('Item save failed');
-
-    window.alert = alert;
+    expect(alertMock).toHaveBeenCalledWith('Item Save Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
   });
 
   it('should delete from images and DB', async () => {
@@ -388,9 +395,7 @@ describe('ItemComponent', () => {
   });
 
   it('should alert if an item was deleted', async () => {
-    let alertMock = jest.fn();
-    let alert = window.alert;
-    window.alert = alertMock;
+    let alertMock = spyOn(snackImp, 'open').and.callFake(() => {});
     let navImp = TestBed.get(NavService);
     let navSpy = spyOn(navImp, 'returnState').and.callFake(() => {});
     
@@ -398,25 +403,21 @@ describe('ItemComponent', () => {
     
     expect(navSpy).toHaveBeenCalled();
     //expect(locationStub.back).toHaveBeenCalled();
-    expect(alertMock).toHaveBeenCalledWith('Item successfully deleted.');
+    expect(alertMock).toHaveBeenCalledWith('Item Successfully Deleted', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
 
     locationStub.back.mockClear();
-    window.alert = alert;
   });
 
   it('should alert fail if deletion failed', async () => {
-    let alertMock = jest.fn();
-    let alert = window.alert;
-    window.alert = alertMock;
+    let alertMock = spyOn(snackImp, 'open').and.callFake(() => {});
     let rI = adminImp.removeItem;
     adminImp.removeItem = jest.fn(() => of(false));
 
     await component.removeFromDB();
     
-    expect(alertMock).toHaveBeenCalledWith('Item deletion failed.');
+    expect(alertMock).toHaveBeenCalledWith('Item Deletion Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
 
     adminImp.removeItem = rI;
-    window.alert = alert;
   });
 
   //Update categories/items

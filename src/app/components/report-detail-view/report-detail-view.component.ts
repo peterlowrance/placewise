@@ -26,11 +26,10 @@ export class ReportDetailViewComponent implements OnInit {
   onCancelClick(){
     //set invalid report
     this.data.toBeRemoved=false;
-    this.dialogRef.close(this.data)
+    this.dialogRef.close(this.data);
   }
 
   goToItem() {
-    console.log(this.data.itemID)
     this.router.navigate(['/item/', this.data.itemID]);
     this.dialogRef.close(this.data);
   }

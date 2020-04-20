@@ -95,7 +95,7 @@ export class AuthService {
    * @param password The password associated with this email
    * @param workspace The workspace ID corresponding to the workspace the user is trying to sign into
    */
-  login(email: string, password: string, workspace: string){
+  login(email: string, password: string){
     //promise return login
     return new Promise((resolve, reject) => {
       //try to log in

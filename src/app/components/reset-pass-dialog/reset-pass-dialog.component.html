@@ -13,6 +13,9 @@
             <mat-error *ngIf="emailControl.invalid">{{errors()}}</mat-error>
         </mat-form-field>
     </div>
+  <div mat-dialog-actions>
     <button mat-raised-button (click)="onCancel()">Cancel</button>
+    <span class="btn-spacer"></span>
     <button mat-raised-button type='submit' color='primary' [disabled]="!resetForm.valid" >Send Email</button>
+  </div>
 </form>

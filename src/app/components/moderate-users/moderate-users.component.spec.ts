@@ -17,8 +17,15 @@ import { of } from 'rxjs';
 import { AdminMockService } from 'src/app/services/admin.mock.service';
 import { AdminService } from 'src/app/services/admin.service';
 import {MatDialogModule, MatDialog, MatDialogRef} from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material';
 
 let auth;
+
+let snackImp;
+
+let snackMock = {
+  open: jest.fn((message: string, button: string, options: {duration: number}) => {})
+}
 
 describe('ModerateUsersComponent', () => {
   let component: ModerateUsersComponent;
@@ -27,7 +34,7 @@ describe('ModerateUsersComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ ModerateUsersComponent ],
-      providers: [ {provide: AuthService, useClass: AuthTest.AuthMockService}, {provide: AdminService, useClass: AdminMockService}, {provide: MatDialog} ],
+      providers: [ {provide: AuthService, useClass: AuthTest.AuthMockService}, {provide: AdminService, useClass: AdminMockService}, {provide: MatDialog}, {provide: MatSnackBar, useValue: snackMock} ],
       imports: [MatButtonModule, MatIconModule, MatTableModule, MatCheckboxModule, MatDialogModule]
     })
     .compileComponents();
@@ -44,7 +51,12 @@ describe('ModerateUsersComponent', () => {
       AuthTest.EXPECTED_TEST_CREDENTIALS.password,
       AuthTest.EXPECTED_TEST_CREDENTIALS.workspace
     );
+    snackImp = TestBed.get(MatSnackBar);
   });
+
+  afterEach(() => {
+    snackImp.open.mockClear();
+  })
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -65,100 +77,75 @@ describe('ModerateUsersComponent', () => {
   });
 
   it('should add user to DB if valid credentials', async () => {
-    let mockAlert = jest.fn();
-    let alert = window.alert;
-    window.alert = mockAlert;
+    let mockAlert = spyOn(snackImp, 'open').and.callFake(() => {});
 
     //default passing email for testing jig
     let user = {firstName:"Anna",lastName:"Bray",email:"abray@gamil.com"};
 
     await component.addUserToDB(user);
-    expect(mockAlert).toHaveBeenCalledWith(`${user.firstName} ${user.lastName} successfully added as a User`);
-
-    window.alert = alert;
+    expect(mockAlert).toHaveBeenCalledWith(`${user.firstName} successfully added as a User`, "OK", {duration: 3000, panelClass: ['mat-toolbar']});
   });
 
   it('should error correctly', async () => {
-    let mockAlert = jest.fn();
-    let alert = window.alert;
-    window.alert = mockAlert;
+    let mockAlert = spyOn(snackImp, 'open').and.callFake(() => {});
     //send different email, will fail the testing jig
     let user = {firstName:"Anna",lastName:"Bray",email:"MALFORMATTED"};
 
     await component.addUserToDB(user);
-    expect(mockAlert).toHaveBeenCalledWith(`ADD FAILED\n${user.firstName} ${user.lastName} could not be added`);
-
-    window.alert = alert;
+    expect(mockAlert).toHaveBeenCalledWith(`ADD FAILED\n${user.firstName} could not be added`, "OK", {duration: 3000, panelClass: ['mat-warn']});
   });
 
   it('should do nothing if modal returns nothing', async () => {
-    let mockAlert = jest.fn();
-    let alert = window.alert;
-    window.alert = mockAlert;
+    let mockAlert = spyOn(snackImp, 'open').and.callFake(() => {});
     //send different email, will fail the testing jig
     let user = null
 
     await component.addUserToDB(user);
     expect(mockAlert).toHaveBeenCalledTimes(0);
-
-    window.alert = alert;
   });
 
   it('should do nothing if modal returns nothing', async () => {
-    let mockAlert = jest.fn();
-    let alert = window.alert;
-    window.alert = mockAlert;
+    let mockAlert = spyOn(snackImp, 'open').and.callFake(() => {});
     //send different email, will fail the testing jig
     let user = undefined
 
     await component.addUserToDB(user);
     expect(mockAlert).toHaveBeenCalledTimes(0);
-
-    window.alert = alert;
   });
 
   it('should delete an existing user', async () => {
-    let mockAlert2 = jest.fn();
-    let alert = window.alert;
+    let mockAlert2 = spyOn(snackImp, 'open').and.callFake(() => {});
     let mockConfirm = jest.fn(() => true);
     let confirm = window.confirm;
-    window.alert = mockAlert2;
     window.confirm = mockConfirm;
 
     //default passing email for testing jig
     let userr = {user:{firstName:"Anna",lastName:"Bray",email:"abray@gamil.com", workspace:'aaaaaaa'}, role:'User'};
 
     await component.deleteUser(userr);
-    expect(mockAlert2).toHaveBeenCalledWith(`${userr.user.firstName} ${userr.user.lastName} successfully deleted`);
-
-    window.alert = alert;
+    expect(mockAlert2).toHaveBeenCalledWith(`${userr.user.firstName} successfully deleted`, "OK", {duration: 3000, panelClass: ['mat-toolbar']});
     window.confirm = confirm;
   });
 
   it('should fail on malformatted', async () => {
-    let mockAlert = jest.fn();
-    let alert = window.alert;
+    let mockAlert = spyOn(snackImp, 'open').and.callFake(() => {});
     let mockConfirm = jest.fn(() => true);
     let confirm = window.confirm;
-    window.alert = mockAlert;
     window.confirm = mockConfirm;
 
     //miss default passing email for testing jig
     let user = {user:{firstName:"Anna",lastName:"Bray",email:"MALFORMATTED", workspace:'aaaaaaa'}, role:'User'};
 
     await component.deleteUser(user)
-    expect(mockAlert).toHaveBeenCalledWith(`DELETION FAILED\n${user.user.firstName} ${user.user.lastName} could not be deleted`);
+    expect(mockAlert).toHaveBeenCalledWith(`DELETION FAILED\n${user.user.firstName} could not be deleted`, "OK", {duration: 3000, panelClass: ['mat-warn']});
 
-    window.alert = alert;
     window.confirm = confirm;
   });
 
   it('should fail on cancel from modal', async () => {
-    let mockAlert = jest.fn();
-    let alert = window.alert;
+    let mockAlert = spyOn(snackImp, 'open').and.callFake(() => {});
     let mockConfirm = jest.fn(() => false);
     let confirm = window.confirm;
-    window.alert = mockAlert;
     window.confirm = mockConfirm;
 
     //default passing email for testing jig
@@ -167,16 +154,13 @@ describe('ModerateUsersComponent', () => {
     await component.deleteUser(user);
     expect(mockAlert).toHaveBeenCalledTimes(0);
 
-    window.alert = alert;
     window.confirm = confirm;
   });
 
   it('should toggle admin', async () => {
-    let mockAlert = jest.fn();
-    let alert = window.alert;
+    let mockAlert = spyOn(snackImp, 'open').and.callFake(() => {});
     let mockConfirm = jest.fn(() => true);
     let confirm = window.confirm;
-    window.alert = mockAlert;
     window.confirm = mockConfirm;
 
     //default passing email for testing jig
@@ -185,18 +169,15 @@ describe('ModerateUsersComponent', () => {
     change.checked = true;
 
     await component.toggleAdmin(change, user);
-    expect(mockAlert).toHaveBeenCalledWith(`${user.user.firstName} ${user.user.lastName} is now a/an Admin`);
+    expect(mockAlert).toHaveBeenCalledWith(`${user.user.firstName} is now a/an Admin`, "OK", {duration: 3000, panelClass: ['mat-toolbar']});
 
-    window.alert = alert;
     window.confirm = confirm;
   });
 
   it('should fail to toggle admin with incorrect creds', async () => {
-    let mockAlert = jest.fn();
-    let alert = window.alert;
+    let mockAlert = spyOn(snackImp, 'open').and.callFake(() => {});
     let mockConfirm = jest.fn(() => true);
     let confirm = window.confirm;
-    window.alert = mockAlert;
     window.confirm = mockConfirm;
 
     //ignore default passing email for testing jig
@@ -205,9 +186,8 @@ describe('ModerateUsersComponent', () => {
     change.checked = true;
 
     await component.toggleAdmin(change, userr);
-    expect(mockAlert).toHaveBeenCalledWith('TOGGLE FAILED:\nERROR');
+    expect(mockAlert).toHaveBeenCalledWith(`TOGGLE FAILED:\nERROR`, "OK", {duration: 3000, panelClass: ['mat-warn']});
 
-    window.alert = alert;
     window.confirm = confirm;
   });
 });
