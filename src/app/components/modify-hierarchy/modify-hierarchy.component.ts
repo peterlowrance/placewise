@@ -154,10 +154,11 @@ export class ModifyHierarchyComponent implements OnInit {
     const newItem = !node;
     if (newItem) {
       node = {
-        name: '',
+        name: 'NEW ' + (this.isCategory ? 'CATEGORY' : 'LOCATION'),
         children: [],
         items: [],
-        parent: 'root'
+        parent: 'root',
+        imageUrl: '../../../assets/notFound.png'
       };
     }
     const dialogRef = this.dialog.open(EditHierarchyDialogComponent, {
