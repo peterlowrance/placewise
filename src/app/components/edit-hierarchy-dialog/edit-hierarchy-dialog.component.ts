@@ -5,6 +5,7 @@ import {HierarchyItem} from '../../models/HierarchyItem';
 import {AuthService} from "../../services/auth.service";
 import {ImageService} from "../../services/image.service";
 import {ActivatedRoute} from "@angular/router";
+import {FormControl, Validators} from "@angular/forms";
 
 interface TreeHierarchyItem extends HierarchyItem {
   realChildren?: TreeHierarchyItem[];
@@ -17,6 +18,7 @@ interface TreeHierarchyItem extends HierarchyItem {
   styleUrls: ['./edit-hierarchy-dialog.component.css']
 })
 export class EditHierarchyDialogComponent implements OnInit {
+  control = new FormControl('', Validators.required);
 
   imageToSave: File;
   workspace: string;

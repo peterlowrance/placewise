@@ -3,7 +3,8 @@
     <div class="header">
       <h1 mat-dialog-title>Name:
         <mat-form-field>
-          <input matInput [(ngModel)]="data.name">
+          <input matInput [(ngModel)]="data.name" [formControl]="control">
+          <mat-error *ngIf="control.invalid">Name is required</mat-error>
         </mat-form-field>
       </h1>
       <button mat-icon-button class="trash" (click)="onDeleteClick()"><mat-icon>delete</mat-icon></button>
@@ -20,7 +21,7 @@
   <div mat-dialog-actions>
     <button mat-raised-button (click)="onCancelClick()">Cancel</button>
     <span class="btn-spacer"></span>
-    <button mat-raised-button color="primary" (click)="onSaveClick()">Save</button>
+    <button mat-raised-button color="primary" (click)="onSaveClick()" [disabled]="control.invalid">Save</button>
   </div>
 </div>
 
