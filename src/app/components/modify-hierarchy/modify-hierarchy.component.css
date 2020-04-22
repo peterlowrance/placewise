@@ -39,3 +39,11 @@ mat-tree{
   flex-wrap: nowrap;
   overflow-x: auto !important;
 }
+
+h3 {
+  margin: 1rem calc(1.5vw) 0 calc(1.5vw);
+}
+
+.parentButtonHolder {
+  padding-bottom: 0.2rem;
+}
