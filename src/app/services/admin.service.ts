@@ -335,7 +335,7 @@ export class AdminService {
       return combineLatest<any[]>(users, wusers, (user, wuser) => {
         const list = [];
         user.forEach((element, index) => {
-          if (element) {  list.push({user: element.data, role: wuser.find((elem) => elem.id === element.id).data.role}); }
+          if (element && element.data) {  list.push({user: element.data, role: wuser.find((elem) => elem.id === element.id && elem.data).data.role}); }
         });
         return list;
       });
