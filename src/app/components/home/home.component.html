@@ -41,7 +41,7 @@
     </mat-grid-list>
   </div>
 
-  <button *ngIf="previousSearch === ''" class="mat-fab" mat-fab (click)="addItem()">
+  <button *ngIf="previousSearch === '' && this.role === 'admin'" class="mat-fab" mat-fab (click)="addItem()">
     <mat-icon class="icon">add</mat-icon>
   </button>
 </div>
