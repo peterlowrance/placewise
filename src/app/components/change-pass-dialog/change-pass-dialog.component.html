@@ -34,10 +34,10 @@
             >
             <mat-error *ngIf="changeForm.hasError('notEqual')">Passwords <strong>must</strong> match</mat-error>
         </mat-form-field>
+        <div mat-dialog-actions>
+            <button mat-raised-button (click)="onCancel()">Cancel</button>
+            <span class="btn-spacer"></span>
+            <button mat-raised-button type='submit' color='primary' [disabled]="!changeForm.valid" >Change Password</button>
+        </div>
     </div>
-  <div mat-dialog-actions>
-    <button mat-raised-button (click)="onCancel()">Cancel</button>
-    <span class="btn-spacer"></span>
-    <button mat-raised-button type='submit' color='primary' [disabled]="!changeForm.valid" >Change Password</button>
-  </div>
 </form>

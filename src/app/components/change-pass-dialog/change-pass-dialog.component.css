@@ -13,3 +13,7 @@ p {
 button {
   margin-bottom: 0.4rem;
 }
+
+.mat-dialog-actions {
+  margin-bottom: 0;
+}

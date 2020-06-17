@@ -72,7 +72,7 @@ export class LoginComponent implements OnInit {
    */
   forgotPassword() {
     this.diag.open(ResetPassDialogComponent, {
-        width: '50vh'
+        width: '20rem'
       }
     ).afterClosed().subscribe(val => this.sendPasswordEmail(val));
   }

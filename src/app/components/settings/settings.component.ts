@@ -56,7 +56,7 @@ export class SettingsComponent implements OnInit {
 
     this.diag.open(ChangePassDialogComponent,
       {
-        width: '50vh',
+        width: '30rem',
         data: data
       }
     ).afterClosed().subscribe(val => this.sendPasswordChangeRequest(val));

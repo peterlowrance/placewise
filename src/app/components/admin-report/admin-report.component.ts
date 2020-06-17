@@ -50,7 +50,7 @@ export class AdminReportComponent implements OnInit {
 
 
         const dialogRef = this.dialog.open(ReportDetailViewComponent, {
-          width: '55vh',
+          width: '28rem',
           data: {
             itemName: reportData.itemName,
             reportDesc: reportData.reportDesc,
@@ -74,7 +74,7 @@ export class AdminReportComponent implements OnInit {
     let data = {confirm: false, desc: 'You sure you want to clear reports?'};
 
     const dialogRef = this.dialog.open(ConfirmComponent, {
-      width: '55vh',
+      width: '14rem',
       data: {
         confirm: data.confirm,
         desc: data.desc

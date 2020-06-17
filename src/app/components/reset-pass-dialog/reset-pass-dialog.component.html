@@ -1,21 +1,21 @@
 <h1 mat-dialog-title>Password Reset</h1>
 <form [formGroup]='resetForm' (ngSubmit)='onSubmit(loginForm)'>
-    <div mat-dialog-content>
-        <p>Please enter your email</p>
-        <mat-form-field>
-            <input matInput
-                placeholder="Email"
-                type="email"
-                formControlName="email"
-                [formControl]="emailControl"
-                required
-            >
-            <mat-error *ngIf="emailControl.invalid">{{errors()}}</mat-error>
-        </mat-form-field>
+  <div mat-dialog-content>
+    <p>Please enter your email</p>
+    <mat-form-field>
+        <input matInput
+            placeholder="Email"
+            type="email"
+            formControlName="email"
+            [formControl]="emailControl"
+            required
+        >
+        <mat-error *ngIf="emailControl.invalid">{{errors()}}</mat-error>
+    </mat-form-field>
+    <div mat-dialog-actions>
+      <button mat-raised-button (click)="onCancel()">Cancel</button>
+      <span class="btn-spacer"></span>
+      <button mat-raised-button type='submit' color='primary' [disabled]="!resetForm.valid" >Send Email</button>
     </div>
-  <div mat-dialog-actions>
-    <button mat-raised-button (click)="onCancel()">Cancel</button>
-    <span class="btn-spacer"></span>
-    <button mat-raised-button type='submit' color='primary' [disabled]="!resetForm.valid" >Send Email</button>
   </div>
 </form>

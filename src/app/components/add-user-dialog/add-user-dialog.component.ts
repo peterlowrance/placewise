@@ -1,6 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import {FormControl, FormGroup, FormBuilder, Validators} from '@angular/forms';
 import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {AuthService} from '../../services/auth.service';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-add-user-dialog',
@@ -14,6 +16,8 @@ export class AddUserDialogComponent {
   addForm = this.formBuilder.group({firstName: this.firstName, lastName: this.lastName, email:this.email});
 
   constructor(
+    private snack: MatSnackBar,
+    private authService: AuthService,
     public dialogRef: MatDialogRef<AddUserDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: {firstName: string, lastName: string, email: string},
     private formBuilder: FormBuilder

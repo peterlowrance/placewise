@@ -49,6 +49,11 @@ button {
   margin: 0.2rem;
 }
 
+.version {
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
 mat-divider {
   max-width: 16rem;
   position: center;

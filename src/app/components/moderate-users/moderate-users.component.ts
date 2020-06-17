@@ -82,7 +82,8 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
   addUsers(){
     //open add user dialog
     this.diag.open(AddUserDialogComponent, {
-      width: '60vh'
+      width: '88%',
+      maxWidth: '32rem'
     }
   ).afterClosed().subscribe(val =>{
     this.addUserToDB(val);
@@ -97,7 +98,13 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
     //if we have a user to add, add him/her
     if(user !== null && typeof user !== 'undefined' && user.firstName != "" && user.lastName != "" && user.email != ""){
       return this.adminService.addUserToWorkspace(user.email, user.firstName, user.lastName).then(
-        () => this.snack.open(`${user.firstName} successfully added as a User`, "OK", {duration: 3000, panelClass: ['mat-toolbar']})
+        () => this.authService.sendPasswordResetEmail(user.email).then(
+          () => this.snack.open(`${user.firstName} successfully added as a User`, "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
+          (fail) => {
+            this.snack.open(fail, "OK", {duration: 3000});
+            console.log(fail);
+          }
+        )
       ).catch(
         () => this.snack.open(`ADD FAILED\n${user.firstName} could not be added`, "OK", {duration: 3000, panelClass: ['mat-warn']})
       );

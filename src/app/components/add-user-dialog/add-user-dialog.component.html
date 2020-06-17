@@ -34,11 +34,11 @@
             <mat-error *ngIf="email.hasError('required')">Email is required</mat-error>
             <mat-error *ngIf="!email.hasError('required') && email.hasError('email')">Email is invalid</mat-error>
         </mat-form-field>
+        <br>
+        <div mat-dialog-actions>
+            <button mat-raised-button (click)="onCancel()">Cancel</button>
+            <span class="btn-spacer"></span>
+            <button mat-raised-button type='submit' color='primary' [disabled]="!addForm.valid" >Add User</button>
+        </div>
     </div>
-    <br>
-  <div mat-dialog-actions>
-    <button mat-raised-button (click)="onCancel()">Cancel</button>
-    <span class="btn-spacer"></span>
-    <button mat-raised-button type='submit' color='primary' [disabled]="!addForm.valid" >Add User</button>
-  </div>
 </form>

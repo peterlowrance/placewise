@@ -224,7 +224,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     this.errorDesc = {valid: false, desc: ''};
 
     const dialogRef = this.dialog.open(ReportDialogComponent, {
-      width: '50vh',
+      width: '30rem',
       data: {
         valid: this.errorDesc.valid,
         desc: this.errorDesc.desc
@@ -292,7 +292,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     // Deep copy locations
     const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
-      width: '90vh',
+      width: '45rem',
       data: {hierarchy: 'locations', parents: this.item.locations}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemLocations(result, oldLocations));
@@ -321,7 +321,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   editCategory() {
     const oldCategory = this.item.category ? this.item.category : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
-      width: '90vh',
+      width: '45rem',
       data: {hierarchy: 'categories', parents: [this.item.category]}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemCategory(result, oldCategory));
@@ -391,10 +391,12 @@ export class ItemComponent implements OnInit, OnDestroy {
       reader.readAsDataURL(file);
       reader.onload = (ev) => {
         if (typeof reader.result === 'string') {
-          this.item.imageUrl = reader.result;
-          // set dirty and save for upload
-          this.checkDirty();
-          this.imageToSave = file;
+          this.imageService.resizeImage(reader.result).then(url => {
+            this.item.imageUrl = url;
+            // set dirty and save for upload
+            this.checkDirty();
+            this.imageToSave = file;
+          });
         }
       };
     }
@@ -460,7 +462,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     if (this.previousItem.imageUrl !== this.item.imageUrl) {
       // post to upload image
       if (this.imageToSave) {
-        return this.imageService.putImage(this.imageToSave, this.item.ID).then(link => {
+        return this.imageService.putImage(this.item.imageUrl, this.item.ID).then(link => {
           this.item.imageUrl = link;
           this.placeIntoDB();
         });

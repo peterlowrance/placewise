@@ -67,10 +67,10 @@ export class AuthService {
 
         //set behavior subject workspace and role
         this.currentWorkspace.next(this.workspace);
-        this.currentRole.next(token.claims.role);
+        this.currentRole.next(this.role);
         
         //get info
-        const workDoc = this.getWorkspaceInfo(token.claims.workspace);
+        const workDoc = this.getWorkspaceInfo(this.workspace.id);
         //subscribe to changes in workspace name, re-ping current workspace
         workDoc.subscribe(
           val => {this.workspace.name = val.name; this.currentWorkspace.next(this.workspace);}
