@@ -13,7 +13,7 @@
         </p>
     </div>
     <div>
-        <div [ngSwitch]="auth.role === 'Admin'">
+        <div [ngSwitch]="role === 'Admin'">
             <p *ngSwitchCase=true>
                 If you believe this to be an issue, you can re-add the asset from the location/hierarchy search.
             </p>

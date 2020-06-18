@@ -1,7 +1,7 @@
 <h3 *ngIf="changeParentNode">Select what this is inside of:</h3>
 <div class="allContent">
   <div class="parentButtonHolder">
-    <button class="parentButton" *ngIf="changeParentNode" mat-raised-button (click)="move(changeParentNode)">{{isCategory ? 'Main Category' : workspace}}</button>
+    <button class="parentButton" *ngIf="changeParentNode" mat-raised-button (click)="move(changeParentNode)">{{isCategory ? 'Unassigned' : workspace}}</button>
   </div>
   <div class="horiz-scroll">
     <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="tree">
@@ -27,9 +27,9 @@
                 {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
               </mat-icon>
             </button>
-            <button *ngIf="changeParentNode" mat-raised-button [disabled]="isDescendantOf(node, changeParentNode)" (click)="move(changeParentNode, node)">{{node.name !== 'root' ? node.name : (isCategory ? 'Main Category' : workspace)}}</button>
+            <button *ngIf="changeParentNode" mat-raised-button [disabled]="isDescendantOf(node, changeParentNode)" (click)="move(changeParentNode, node)">{{node.name !== 'root' ? node.name : (isCategory ? 'Unassigned' : workspace)}}</button>
             <div *ngIf="!changeParentNode">
-              {{node.name !== 'root' ? node.name : (isCategory ? 'Main Category' : workspace)}}
+              {{node.name !== 'root' ? node.name : (isCategory ? 'Unassigned' : workspace)}}
               <button *ngIf="!selectMode" mat-icon-button (click)="openEditModal(node)"><mat-icon>edit</mat-icon></button>
               <mat-checkbox *ngIf="selectMode && !isCategory" [checked]="selectedParents.indexOf(node.ID) > -1" (change)="selectedParentsToggle(node)"></mat-checkbox>
               <mat-radio-button *ngIf="selectMode && isCategory" [checked]="selectedParents.indexOf(node.ID) > -1" (change)="setParent(node)"></mat-radio-button>

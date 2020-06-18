@@ -23,6 +23,7 @@
     "@angular/platform-browser": "~8.2.0",
     "@angular/platform-browser-dynamic": "~8.2.0",
     "@angular/router": "~8.2.0",
+    "@material/icon-button": "^6.0.0",
     "@types/jest": "^25.1.4",
     "angular": "^1.7.9",
     "angular-speed-dial": "^9.0.1",

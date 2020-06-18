@@ -96,6 +96,7 @@ export class ImageService {
   // Crops and shrinks image to conserve size and fit better in the UI
   resizeImage(imageURL: string): Promise<string> {
     return new Promise((resolve, reject) => {
+
       //    STEP 0: Init image
       var canvas = document.createElement('canvas');
       var ctx = canvas.getContext("2d");
@@ -117,10 +118,26 @@ export class ImageService {
         canvas.width = img.width - (cutx * 2);
         canvas.height = img.height - (cuty * 2);
 
-        // Render
+        //    STEP 2: Shrink so that it's not taller than 1000 pixels
+        if(canvas.height > 1000){
+          canvas.width = 1000 * canvas.width / canvas.height;
+          canvas.height = 1000;
+        }
+
+        //    STEP 3: Render
         ctx.drawImage(img, cutx, cuty, img.width - (cutx * 2), img.height - (cuty * 2), 0, 0, canvas.width, canvas.height);
 
-        const str = canvas.toDataURL();
+        //    STEP 4: Determine quality of image. If the image is rather small, keep as much quality as possible.
+        var quality = 0.6;
+        var difference = 1000 - canvas.height;
+        if(difference > 700){
+          quality = 1.0;
+        }
+        else if(difference > 1){
+          quality = quality + (difference/1750); // meaning: difference / 700 (possible difference of pixels) * 0.4 (rest of quality available)
+        }
+
+        const str = canvas.toDataURL('image/jpeg', quality);
         resolve(str);
       }
       img.src = imageURL;

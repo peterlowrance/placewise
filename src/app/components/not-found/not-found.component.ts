@@ -8,7 +8,11 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class NotFoundComponent implements OnInit {
 
-  constructor(private auth: AuthService) { }
+  constructor(private auth: AuthService) { 
+    this.role = auth.role;
+  }
+
+  role: string;
 
   ngOnInit() {
   }
