@@ -1,5 +1,4 @@
 .search {
-  width: 90%;
   margin: 5px auto 0;
 }
 
@@ -8,8 +7,7 @@
 }
 
 mat-button-toggle-group {
-  width: 90%;
-  left: 5%;
+  width: 100%;
 }
 
 mat-button-toggle {
@@ -19,29 +17,31 @@ mat-button-toggle {
 .image {
   background: 50% 50% no-repeat;
   background-size: cover;
-  width: 5.5em;
-  height: 5.5em;
-  border: dimgray 1px solid;
+  width: 5rem;
+  height: 60%;
   margin: auto;
 }
 
 .item.image {
-  border-radius: 2px;
+  width: 100%;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
 }
 
 .hierarchy.image {
-  border-radius: 50%;
+  width: 100%;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
 }
 
 .element {
   width: 95%;
   height: 95%;
-  font-size: 100%;
 }
 
-.text {
+p {
   text-align: center;
-  padding: 0% 0.3em;
+  font-size: 100%;
 }
 
 .header {
@@ -63,12 +63,19 @@ mat-button-toggle {
   z-index: 1;
 }
 
-.top {
-  max-width: calc(30rem + 30vw);
+.allContent {
+  padding: 0 0.6rem;
+  max-width: 50rem;
   position: center;
   margin: 0.5rem auto auto auto;
 }
 
-.bottom {
-  padding: 0 2vw;
+mat-card {
+  padding: 0;
+  width: 90%;
+  height: 90%;
+}
+
+mat-card-content {
+  padding: calc(0.1rem + 4%) calc(0.2rem + 6%) ;
 }

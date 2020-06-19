@@ -1,5 +1,5 @@
 <!--Search Bar-->
-<div class="top">
+<div class="allContent">
   <form class="search" (submit)="null">
     <mat-form-field class="full-width">
       <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : selectedSearch}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null"> <!--[matAutocomplete]="auto"-->
@@ -13,30 +13,32 @@
     <mat-button-toggle value="Categories">Category</mat-button-toggle>
     <mat-button-toggle value="Locations">Location</mat-button-toggle>
   </mat-button-toggle-group>
-</div>
 <!--Hierarchy Items-->
-<div class="bottom">
   <div *ngIf="hierarchyItems && hierarchyItems.length > 0" (window:resize)="onResize($event)">
     <!--Show header if there are both items and hierarchies or if there is no toggle-->
     <div class="header" *ngIf="(items && items.length > 0) || (root && root.name != 'root')">{{selectedSearch}}</div>
-    <mat-grid-list class="row" [cols]="columns" rowHeight="10em">
+    <mat-grid-list class="row" [cols]="columns" rowHeight="3:4">
       <mat-grid-tile class="holder" *ngFor="let hierarchyItem of hierarchyItems">
-        <div class="element" (click)="goToHierarchy(hierarchyItem)">
+        <mat-card (click)="goToHierarchy(hierarchyItem)" [class.mat-elevation-z2]="true">
           <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
-          <div class="text">{{hierarchyItem.name}}</div>
-        </div>
+          <mat-card-content>
+            <p>{{hierarchyItem.name}}</p>
+          </mat-card-content>
+        </mat-card>
       </mat-grid-tile>
     </mat-grid-list>
   </div>
   <!--Items-->
   <div *ngIf="items && items.length > 0">
     <div class="header" *ngIf="hierarchyItems && hierarchyItems.length > 0">Items</div>
-    <mat-grid-list class="row" [cols]="columns" rowHeight="10em">
+    <mat-grid-list class="row" [cols]="columns" rowHeight="2:3">
       <mat-grid-tile class="holder" *ngFor="let item of items">
-        <div class="element" (click)="goToItem(item)">
+        <mat-card (click)="goToItem(item)" [class.mat-elevation-z3]="true">
           <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
-          <div class="text">{{item.name}}</div>
-        </div>
+          <mat-card-content>
+            <p>{{item.name}}</p>
+          </mat-card-content>
+        </mat-card>
       </mat-grid-tile>
     </mat-grid-list>
   </div>
