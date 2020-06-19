@@ -81,9 +81,10 @@ export class EditHierarchyDialogComponent implements OnInit {
       reader.readAsDataURL(file);
       reader.onload = (ev) => {
         if (typeof reader.result === 'string') {
-          this.data.imageUrl = reader.result;
-          // set dirty and save for upload
-          this.imageToSave = file;
+          this.imageService.resizeImage(reader.result).then(url => {
+            this.data.imageUrl = url;
+            this.imageToSave = file;
+          });
         }
       };
     }

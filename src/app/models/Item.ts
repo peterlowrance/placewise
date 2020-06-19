@@ -6,4 +6,5 @@ export interface Item {
   locations: string[];
   category: string;
   imageUrl?: string;
+  attributes?: {[key:string]: {val:string}};
 }
