@@ -10,6 +10,8 @@ import {AuthService} from 'src/app/services/auth.service';
 import {ImageService} from '../../services/image.service';
 import * as Fuse from 'fuse.js';
 import {AdminService} from 'src/app/services/admin.service';
+import {MatDialog} from '@angular/material/dialog';
+import {EditHierarchyDialogComponent} from '../edit-hierarchy-dialog/edit-hierarchy-dialog.component';
 
 /**
  *
@@ -68,7 +70,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
-    private adminService: AdminService) {
+    private adminService: AdminService,
+    public dialog: MatDialog) {
     // subscribe to nav state
     this.returnSub = this.navService.getReturnState().subscribe(
       val => {

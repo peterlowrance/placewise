@@ -45,18 +45,28 @@ p {
 }
 
 .header {
-  padding: 1em;
+  padding: 1rem 0.4rem;
   font-weight: bold;
 }
 
-.hierarchySelector {
-  margin: 0 0% 3% 0%;
+.top-components {
+  padding: 0 0.4rem;
 }
 
-.mat-fab {
+.hierarchySelector {
+  margin: 0.275rem 0% 0.2rem 0%;
+}
+
+@media screen and (max-width: 599px){
+  .hierarchySelector {
+    margin: 0 0% 0.05rem 0%;
+  }
+}
+
+.fab {
   position: fixed;
-  bottom: 1rem;
-  right: 1rem;
+  bottom: 10vmin;
+  right: 10vmin;
   display: flex;
   flex-direction: column-reverse;
   align-items: center;
@@ -72,8 +82,8 @@ p {
 
 mat-card {
   padding: 0;
-  width: 90%;
-  height: 90%;
+  width: 92%;
+  height: 92%;
 }
 
 mat-card-content {

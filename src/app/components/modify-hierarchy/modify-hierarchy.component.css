@@ -21,7 +21,10 @@
 }
 
 .allContent {
-  padding: 0.4rem 1.5vw;
+  padding: 0.4rem 0.8rem;
+  max-width: 32rem;
+  position: center;
+  margin: auto;
 }
 
 ul {
@@ -46,4 +49,42 @@ h3 {
 
 .parentButtonHolder {
   padding-bottom: 0.2rem;
+}
+
+.responsive-item-image {
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.container-button {
+  position: absolute;
+  top: 0%;
+  right: 0%;
+  filter: drop-shadow(0 0 0.2rem white);
+}
+
+.image-block {
+  position: relative;
+}
+
+h2 {
+  margin: 0 0.2rem;
+  padding-top: 1rem;
+}
+
+.titleHolder {
+  padding-bottom: 0.2rem;
+}
+
+.form-appear {
+  width: 100%;
+}
+
+.editButton {
+  float: end;
+  top: -0.3rem;
+  left: -0.3rem;
 }

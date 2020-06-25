@@ -305,9 +305,10 @@ export class AdminService {
     this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + parentID).update({children: firebase.firestore.FieldValue.arrayUnion(moveID)});
   }
 
-  updateHierarchy(node: HierarchyItem, isCategory: boolean) {
+  async updateHierarchy(node: HierarchyItem, isCategory: boolean): Promise<boolean> {
     const appropriateHierarchy = isCategory ? '/Category/' : '/Locations/';
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + appropriateHierarchy + node.ID).update(node);
+    await this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + appropriateHierarchy + node.ID).update(node);
+    return true;
   }
 
   /**

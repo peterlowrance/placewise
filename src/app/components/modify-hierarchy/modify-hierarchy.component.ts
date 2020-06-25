@@ -25,6 +25,8 @@ export class ModifyHierarchyComponent implements OnInit {
   @Input() selectedParents: string[];
   @Output() selectedParentsOutput = new EventEmitter<string[]>();
   @Input() isCategory = true;
+  @Input() singleSelection = true;
+  @Input() id: string = null; // Use if we are viewing this from a hierarchy item to remove it from being selected
   changeParentNode: TreeHierarchyItem;
   treeControl = new NestedTreeControl<TreeHierarchyItem>(node => node.realChildren);
   dataSource = new MatTreeNestedDataSource<TreeHierarchyItem>();
@@ -45,9 +47,10 @@ export class ModifyHierarchyComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (!this.selectMode) {
-      this.isCategory = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories';
-    }
+    console.log("Recieved type: " + this.route.snapshot.paramMap.get('selectedHierarchy'));
+    this.isCategory = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories';
+
+    console.log("Recieved type2: " + this.isCategory);
 
     this.authService.getWorkspace().subscribe(
       val => this.workspace = val.name

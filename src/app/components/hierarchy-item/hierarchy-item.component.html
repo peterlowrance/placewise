@@ -1,0 +1,34 @@
+<div class="allContent">
+    <div [ngSwitch]="this.textEditFields.name">
+      <div *ngSwitchCase=true>
+        <form (ngSubmit)="onNameSubmit()">
+          <mat-form-field class="form-appear">
+              <input matInput #name type="text"
+              placeholder="Name"
+              [(ngModel)]="hierarchyItem.name"
+              name="name"
+              (focusout)="onNameSubmit()"
+              required
+              >
+          </mat-form-field>
+        </form>
+      </div>
+      <div class="titleHolder" *ngSwitchDefault>
+        <h2>
+          {{hierarchyItem.name}}
+          <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
+        </h2>
+      </div>
+    </div>
+    <div class="image-block">
+      <img class="responsive-item-image container-img" src={{hierarchyItem.imageUrl}} layout-fit>
+      <button mat-icon-button *ngIf="this.role === 'Admin'" class="container-button"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button>
+      <!-- hidden item uploader -->
+      <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
+    </div>
+    <h2>Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editHierarchy()"><mat-icon>edit</mat-icon></button></h2>
+  
+  <button class="fab" *ngIf="this.role === 'Admin' && this.dirty" mat-fab color="primary" (click)="saveItem()">
+    <mat-icon>save</mat-icon>
+  </button>
+</div>

@@ -48,6 +48,8 @@ import {ModerateUsersComponent} from './components/moderate-users/moderate-users
 import {HttpClientModule} from '@angular/common/http';
 import {AddUserDialogComponent} from './components/add-user-dialog/add-user-dialog.component';
 import { ConfirmComponent } from './components/confirm/confirm.component';
+import { AncestorViewComponent } from './components/ancestor-view/ancestor-view.component';
+import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-item.component';
 
 @NgModule({
   declarations: [
@@ -68,7 +70,9 @@ import { ConfirmComponent } from './components/confirm/confirm.component';
     ModifyHierarchyDialogComponent,
     ModerateUsersComponent,
     AddUserDialogComponent,
-    ConfirmComponent
+    ConfirmComponent,
+    AncestorViewComponent,
+    HierarchyItemComponent
   ],
   imports: [
     BrowserModule,
