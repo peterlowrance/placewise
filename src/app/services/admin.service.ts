@@ -191,7 +191,8 @@ export class AdminService {
     this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + parentID).update({children: firebase.firestore.FieldValue.arrayUnion(moveID)});
   }
 
-  addLocation(newItem: HierarchyItem, newParentID: string) {
+  // Originally "Add Location"
+  setLocation(newItem: HierarchyItem, newParentID: string) {
     newItem.ID = newItem.name + Math.round((Math.random() * 1000000));
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + newItem.ID).set(newItem);
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + newParentID).get().pipe(
@@ -205,7 +206,26 @@ export class AdminService {
     );
   }
 
-  removeLocation(remove: HierarchyItem) {
+  // New method for adding without generating our own ID and returning the new ID from firebase
+  addLocation(newItem: HierarchyItem, newParentID: string): Observable<string> {
+    return new Observable(obs => {
+      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Locations').add(newItem).then(
+        val => {
+          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + newParentID).get().pipe(
+            map(doc => doc.data())
+          ).toPromise().then(
+            doc => {
+              const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
+              ary.push(val.id);
+              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + newParentID).update({children: ary});
+              obs.next(val.id);
+              obs.complete();
+        });
+      });
+    });
+  }
+
+  removeLocation(remove: HierarchyItem): Promise<void> {
     // Remove from parent and promote children and items to parent
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).get().pipe(
       map(doc => doc.data())
@@ -242,10 +262,10 @@ export class AdminService {
         this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({children: newChildren, items: newItems});
       }
     );
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.ID).delete();
+    return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.ID).delete();
   }
 
-  removeCategory(toRemove: HierarchyItem) {
+  removeCategory(toRemove: HierarchyItem): Promise<void> {
     // Remove from parent and promote children and items to parent
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).get().pipe(
       map(doc => doc.data())
@@ -279,10 +299,11 @@ export class AdminService {
         this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({children: newChildren, items: newItems});
       }
     );
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.ID).delete();
+    return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.ID).delete();
   }
 
-  addCategory(newItem: HierarchyItem, newParentID: string) {
+  // Originally "Add Category"
+  setCategory(newItem: HierarchyItem, newParentID: string) {
     newItem.ID = newItem.name + Math.round((Math.random() * 1000000));
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + newItem.ID).set(newItem);
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + newParentID).get().pipe(
@@ -294,6 +315,25 @@ export class AdminService {
         this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + newParentID).update({children: ary});
       }
     );
+  }
+
+  // New method for adding without generating our own ID and returning the new ID from firebase
+  addCategory(newItem: HierarchyItem, newParentID: string): Observable<string> {
+    return new Observable(obs => {
+      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Category').add(newItem).then(
+        val => {
+          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + newParentID).get().pipe(
+            map(doc => doc.data())
+          ).toPromise().then(
+            doc => {
+              const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
+              ary.push(val.id);
+              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + newParentID).update({children: ary});
+              obs.next(val.id);
+              obs.complete();
+        });
+      });
+    });
   }
 
   updateCategoryPosition(parentID: string, moveID: string, oldParentID: string) {

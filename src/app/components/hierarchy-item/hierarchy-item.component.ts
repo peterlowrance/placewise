@@ -8,6 +8,7 @@ import {ImageService} from '../../services/image.service';
 import {MatSnackBar} from '@angular/material';
 import {AdminService} from '../../services/admin.service';
 import {MatDialog} from '@angular/material/dialog';
+import {Router} from '@angular/router';
 import {ModifyHierarchyDialogComponent} from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 
 @Component({
@@ -42,7 +43,8 @@ export class HierarchyItemComponent implements OnInit {
     private imageService: ImageService,
     private snack: MatSnackBar, 
     public adminService: AdminService,
-    public dialog: MatDialog
+    private router: Router,
+    public dialog: MatDialog,
     ) { }
 
   ngOnInit() {
@@ -184,7 +186,7 @@ export class HierarchyItemComponent implements OnInit {
     const oldLocation = this.hierarchyItem.parent ? this.hierarchyItem.parent : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
-      data: {hierarchy: this.isCategory ? 'category' : 'location', singleSelection: true, id: this.hierarchyItem.ID, parents: this.hierarchyItem.parent}
+      data: {hierarchy: this.isCategory ? 'categories' : 'locations', singleSelection: true, id: this.hierarchyItem.ID, parents: [this.hierarchyItem.parent]}
     });
     dialogRef.afterClosed().subscribe(result => {
       if(result[0])
@@ -195,6 +197,27 @@ export class HierarchyItemComponent implements OnInit {
           this.adminService.updateLocationPosition(result[0], this.hierarchyItem.ID, oldLocation)
         }
     });
+  }
+
+  requestDelete(){
+    if (confirm('Are you sure you want to delete the ' + (this.isCategory ? 'category?\nCategories and items within ' : 'location?\nLocations and items within ') + this.hierarchyItem.name + ' will not be deleted.\nThis cannot be undone.')) {
+      if (this.isCategory) {
+        this.adminService.removeCategory(this.hierarchyItem).then(() => {
+          this.snack.open('Category Successfully Deleted', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
+          this.router.navigate(['search/categories/' + this.hierarchyItem.parent]);
+        }).catch(err => {
+          this.snack.open('Category Deletion Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
+        });
+      } else {
+        this.adminService.removeLocation(this.hierarchyItem).then(() => {
+          this.snack.open('Location Successfully Deleted', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
+          this.router.navigate(['search/locations/' + this.hierarchyItem.parent]);
+        }).catch(err => {
+          this.snack.open('Location Deletion Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
+        });
+      }
+      
+    }
   }
 
   // /**

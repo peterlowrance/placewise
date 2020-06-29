@@ -27,6 +27,7 @@
       <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
     </div>
     <h2>Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editHierarchy()"><mat-icon>edit</mat-icon></button></h2>
+    <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete</button>
   
   <button class="fab" *ngIf="this.role === 'Admin' && this.dirty" mat-fab color="primary" (click)="saveItem()">
     <mat-icon>save</mat-icon>

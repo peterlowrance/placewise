@@ -19,12 +19,12 @@
   <div *ngIf="hierarchyItems && hierarchyItems.length > 0" (window:resize)="onResize($event)">
     <!--Show header if there are both items and hierarchies or if there is no toggle-->
     <div class="header" *ngIf="(items && items.length > 0) || (root && root.name != 'root')">{{selectedSearch}}</div>
-    <mat-grid-list class="row" [cols]="columns" rowHeight="2:3">
+    <mat-grid-list class="row" [cols]="columns" rowHeight="3:4">
       <mat-grid-tile class="holder" *ngFor="let hierarchyItem of hierarchyItems">
         <mat-card (click)="goToHierarchy(hierarchyItem)" [class.mat-elevation-z2]="true">
           <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
           <mat-card-content>
-            <p>{{hierarchyItem.name}}</p>
+            <div class='item-text'><p>{{hierarchyItem.name}}</p></div>
           </mat-card-content>
         </mat-card>
       </mat-grid-tile>
@@ -33,12 +33,12 @@
   <!--Items-->
   <div *ngIf="items && items.length > 0">
     <div class="header" *ngIf="hierarchyItems && hierarchyItems.length > 0">Items</div>
-    <mat-grid-list class="row" [cols]="columns" rowHeight="2:3">
+    <mat-grid-list class="row" [cols]="columns" rowHeight="3:4">
       <mat-grid-tile class="holder" *ngFor="let item of items">
         <mat-card (click)="goToItem(item)" [class.mat-elevation-z3]="true">
           <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
           <mat-card-content>
-            <p>{{item.name}}</p>
+            <div class='item-text'><p>{{item.name}}</p></div>
           </mat-card-content>
         </mat-card>
       </mat-grid-tile>
@@ -54,7 +54,12 @@
       <button mat-fab matTooltip="Add to this hierarchy level" color="accent" (click)="toggleIco()"><mat-icon>{{ico}}</mat-icon></button>
     </smd-fab-trigger>
     <smd-fab-actions>
-      <button mat-mini-fab matTooltip="Add item" color="primary" (click)="addItem()">Cateogry</button>
+      <button mat-mini-fab class="extended-fab-button" [@button-extention-item]="miniFabState" matTooltip="Add item" color="accent" (click)="addItem()">
+        <span class="extended-fab-button__text">Item</span>
+      </button>
+      <button mat-mini-fab class="extended-fab-button" [@button-extention-hierarchy]="miniFabState" matTooltip="Add item" color="accent" (click)="addHierarchy()">
+        <span class="extended-fab-button__text">{{selectedSearch === 'Categories' ? 'Category' : 'Location'}}</span>
+      </button>
       <!-- <button mat-mini-fab matTooltip="Add hierarchy level" color="primary" (click)="addHierarchy()"><mat-icon>account_tree</mat-icon></button> -->
     </smd-fab-actions>
   </smd-fab-speed-dial>

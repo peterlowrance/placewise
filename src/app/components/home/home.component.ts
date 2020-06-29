@@ -12,6 +12,7 @@ import * as Fuse from 'fuse.js';
 import {AdminService} from 'src/app/services/admin.service';
 import {MatDialog} from '@angular/material/dialog';
 import {EditHierarchyDialogComponent} from '../edit-hierarchy-dialog/edit-hierarchy-dialog.component';
+import { trigger, state, style, transition, animate, keyframes} from '@angular/animations';
 
 /**
  *
@@ -23,7 +24,19 @@ import {EditHierarchyDialogComponent} from '../edit-hierarchy-dialog/edit-hierar
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.css'],
+  animations:[
+    trigger('button-extention-item', [
+      state('shrunk', style({width: '40px', visibility: 'hidden', pointerEvents: 'none'})),
+      state('extended', style({width: '80px', visibility: 'visible', pointerEvents: 'auto'})),
+      transition('shrunk <=> extended', animate('300ms'))
+    ]),
+    trigger('button-extention-hierarchy', [
+      state('shrunk', style({width: '40px', visibility: 'hidden', pointerEvents: 'none'})),
+      state('extended', style({width: '140px', visibility: 'visible', pointerEvents: 'auto'})),
+      transition('shrunk <=> extended', animate('300ms'))
+    ])
+  ]
 })
 export class HomeComponent implements OnInit, OnDestroy {
   control = new FormControl();
@@ -43,13 +56,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   role: string = '';
 
   /**Admin fab open direction */
-  direction = 'up';
+  direction = 'left';
   /**Admin fab open animation type */
   animation = 'fling';
   /**Admin fab spin */
   spin = true;
   /**Admin fab icon */
   ico = 'add';
+  miniFabState = 'shrunk'
   itemSearchOptions = {
     shouldSort: true,
     keys: ['name', 'tags'],
@@ -179,8 +193,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   determineCols(fontSize: number = this.getFontSize(), width = window.innerWidth) {
-    const fontLine = fontSize * 6; // Sets max characters (but not directly) on a line
-    const calcWidth = width > (fontSize*50) ? fontSize*50 : width;
+    const fontLine = fontSize * 7.5; // Sets max characters (but not directly) on a line
+    const calcWidth = width > (fontSize*60) ? fontSize*60 : width;
     this.columns = Math.floor(calcWidth / fontLine * 0.96);
   }
 
@@ -214,6 +228,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   /**Toggles the admin fab icon */
   toggleIco() {
     this.ico = this.ico === 'add' ? 'close' : 'add';
+    this.miniFabState = this.ico === 'add' ? 'shrunk' : 'extended';
   }
 
   /**Adds an item to the current depth */
@@ -234,13 +249,36 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.router.navigate(['/item/' + id]);
     });
   }
-/*
-  /!**Adds a hierarchy item to the current depth *!/
+
+  /** Adds a hierarchy item to the current depth */
   addHierarchy() {
     if (this.ico === 'close') {
       this.toggleIco();
     }
-  }*/
+
+    if (this.selectedSearch === 'Categories') {
+
+      this.adminService.addCategory({
+        name: 'NEW CATEGORY',
+        parent: this.root.ID,
+        children: [],
+        items: []
+      } as HierarchyItem, this.root.ID).subscribe(id => {
+        this.router.navigate(['/hierarchyItem/categories/' + id]);
+      });
+    }
+    else {
+
+      this.adminService.addLocation({
+        name: 'NEW LOCATION',
+        parent: this.root.ID,
+        children: [],
+        items: []
+      } as HierarchyItem, this.root.ID).subscribe(id => {
+        this.router.navigate(['/hierarchyItem/locations/' + id]);
+      });
+    }
+  }
 
   searchTextChange(event) {
     if (event === '' && this.previousSearch === '') {

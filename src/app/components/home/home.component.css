@@ -18,7 +18,7 @@ mat-button-toggle {
   background: 50% 50% no-repeat;
   background-size: cover;
   width: 5rem;
-  height: 60%;
+  height: 65%;
   margin: auto;
 }
 
@@ -42,6 +42,9 @@ mat-button-toggle {
 p {
   text-align: center;
   font-size: 100%;
+  margin-top: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .header {
@@ -65,17 +68,18 @@ p {
 
 .fab {
   position: fixed;
-  bottom: 10vmin;
-  right: 10vmin;
+  bottom: 8vmin;
+  right: 6vmin;
   display: flex;
   flex-direction: column-reverse;
-  align-items: center;
+  align-items: flex-end;
   z-index: 1;
+  -webkit-box-align: end;
 }
 
 .allContent {
   padding: 0 0.6rem;
-  max-width: 50rem;
+  max-width: 60rem;
   position: center;
   margin: 0.5rem auto auto auto;
 }
@@ -87,5 +91,33 @@ mat-card {
 }
 
 mat-card-content {
-  padding: calc(0.1rem + 4%) calc(0.2rem + 6%) ;
+  padding: calc(5% - 0.1rem) calc(0.2rem + 6%) ;
+}
+
+.extended-fab-button {
+  align-items: flex-end;
+  position: relative;
+  padding: 0 0.8rem;
+  border-radius: 10rem;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.extended-fab-button__text {
+  font-weight: 400;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-overflow: clip;
+}
+
+.middle-man {
+  -webkit-box-align: end;
+}
+
+.item-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

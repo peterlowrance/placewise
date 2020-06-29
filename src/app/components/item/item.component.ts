@@ -167,11 +167,11 @@ export class ItemComponent implements OnInit, OnDestroy {
     // this.nameForm = this.formBuilder.group({name: this.nameControl})
 
     // set up link to delete
-    this.deleteSub = this.navService.getDeleteMessage().subscribe(val => this.requestDelete(val));
+    // this.deleteSub = this.navService.getDeleteMessage().subscribe(val => this.requestDelete(val));
   }
 
   ngOnDestroy() {
-    this.deleteSub.unsubscribe();
+    //this.deleteSub.unsubscribe();
   }
 
   convertList(items: HierarchyItem[]): TreeNode {
@@ -489,12 +489,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Deletes the item when given the signal
-   * @param signal True for delete requested
-   */
-  async requestDelete(signal: boolean) {
-    if (signal) {
+  async requestDelete() {
       if (confirm('Are you sure you want to delete the item?\nThis cannot be undone.')) {
         //remove image if exists, else just remove item
         if (this.item.imageUrl !== null && typeof this.item.imageUrl !== 'undefined'
@@ -506,7 +501,6 @@ export class ItemComponent implements OnInit, OnDestroy {
           return this.removeFromDB();
         }
       }
-    }
   }
 
   /**

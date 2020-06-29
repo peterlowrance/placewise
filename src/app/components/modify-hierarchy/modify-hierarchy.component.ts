@@ -47,11 +47,6 @@ export class ModifyHierarchyComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log("Recieved type: " + this.route.snapshot.paramMap.get('selectedHierarchy'));
-    this.isCategory = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories';
-
-    console.log("Recieved type2: " + this.isCategory);
-
     this.authService.getWorkspace().subscribe(
       val => this.workspace = val.name
     );
@@ -80,6 +75,7 @@ export class ModifyHierarchyComponent implements OnInit {
           this.buildTree(root, hierarchy);
           this.dataChange.next([root]);
           if (this.selectedParents) {
+            console.log("Foreached?!");
             this.selectedParents.forEach(p => {
               this.expandParents(this.findByID(p, [root]));
             });
@@ -197,9 +193,9 @@ export class ModifyHierarchyComponent implements OnInit {
       const parentID = parent ? parent.ID : 'root';
       newNode.parent = parentID;
       if (this.isCategory) {
-        this.adminService.addCategory(newNode, parentID);
+        this.adminService.setCategory(newNode, parentID);
       } else {
-        this.adminService.addLocation(newNode, parentID);
+        this.adminService.setLocation(newNode, parentID);
       }
     }
     // Add new node to parent

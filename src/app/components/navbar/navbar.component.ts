@@ -109,14 +109,6 @@ export class NavbarComponent implements OnInit {
     }
   }
 
-  /**
-   * Sets the delete message from the nav service
-   */
-  delete(){
-    this.navService.setDelete();
-    this.navService.resetDelete();
-  }
-
   goToModify() {
     this.router.navigate(['hierarchyItem/' + (this.searchType === 'categories' ? 'categories' : 'locations') + '/' + this.parent.ID]);
   }
