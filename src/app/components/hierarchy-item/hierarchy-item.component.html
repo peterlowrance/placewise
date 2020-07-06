@@ -1,4 +1,4 @@
-<div class="allContent">
+<div class="allContent" *ngIf="hierarchyItem">
     <div [ngSwitch]="this.textEditFields.name">
       <div *ngSwitchCase=true>
         <form (ngSubmit)="onNameSubmit()">
@@ -26,7 +26,9 @@
       <!-- hidden item uploader -->
       <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
     </div>
+    <br>
     <h2>Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editHierarchy()"><mat-icon>edit</mat-icon></button></h2>
+    <app-ancestor-view [childToDisplay]="hierarchyItem"></app-ancestor-view>
     <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete</button>
   
   <button class="fab" *ngIf="this.role === 'Admin' && this.dirty" mat-fab color="primary" (click)="saveItem()">

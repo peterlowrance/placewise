@@ -21,7 +21,7 @@
     <div class="header" *ngIf="(items && items.length > 0) || (root && root.name != 'root')">{{selectedSearch}}</div>
     <mat-grid-list class="row" [cols]="columns" rowHeight="3:4">
       <mat-grid-tile class="holder" *ngFor="let hierarchyItem of hierarchyItems">
-        <mat-card (click)="goToHierarchy(hierarchyItem)" [class.mat-elevation-z2]="true">
+        <mat-card class="hierarchyCard" (click)="goToHierarchy(hierarchyItem)" [class.mat-elevation-z2]="true">
           <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
           <mat-card-content>
             <div class='item-text'><p>{{hierarchyItem.name}}</p></div>
@@ -49,7 +49,7 @@
   <br>
 
   <!-- add homescreen fab for admins here -->
-  <smd-fab-speed-dial class="fab" [(open)]="open" [direction]="direction" [animationMode]="animation">
+  <smd-fab-speed-dial class="fab" [direction]="direction" [animationMode]="animation">
     <smd-fab-trigger [spin]="spin">
       <button mat-fab matTooltip="Add to this hierarchy level" color="accent" (click)="toggleIco()"><mat-icon>{{ico}}</mat-icon></button>
     </smd-fab-trigger>

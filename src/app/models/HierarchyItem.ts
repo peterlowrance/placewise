@@ -1,6 +1,6 @@
-export interface HierarchyItem {
-  ID?: string;
-  name: string;
+import {HierarchyObject} from './HierarchyObject';
+
+export interface HierarchyItem extends HierarchyObject {
   parent?: string;
   children: string[];
   items: string[];

@@ -17,10 +17,10 @@
 }
 
 .fab{
-    bottom: 2%;
-    right: 3%;
-    position: fixed;
-    /*z-index: 1;*/
+  bottom: 8vmin;
+  right: 6vmin;
+  position: fixed;
+  /*z-index: 1;*/
 }
 
 .pageData {

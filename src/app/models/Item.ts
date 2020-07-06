@@ -1,6 +1,6 @@
-export interface Item {
-  ID: string;
-  name: string;
+import { HierarchyObject } from './HierarchyObject';
+
+export interface Item extends HierarchyObject {
   desc?: string;
   tags?: string[];
   locations: string[];

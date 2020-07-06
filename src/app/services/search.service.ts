@@ -2,14 +2,15 @@ import {SearchInterfaceService} from './search-interface.service';
 
 import {Injectable} from '@angular/core';
 import {HttpHeaders} from '@angular/common/http';
-import {Observable, of} from 'rxjs';
+import {Observable, of, observable} from 'rxjs';
 
 import {Item} from '../models/Item';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {AngularFirestore} from '@angular/fire/firestore';
-import {map} from 'rxjs/operators';
+import {map, first} from 'rxjs/operators';
 import {AuthService} from './auth.service';
 import {ImageService} from './image.service';
+import { HierarchyObject } from '../models/HierarchyObject';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -26,45 +27,87 @@ export class SearchService implements SearchInterfaceService {
   locations: HierarchyItem[];
   categories: HierarchyItem[];
 
-  /**
-   * Finds all the ancestors of an item and returns them in a 2D array.
-   * The first dimension of the array are arrays of ancestors, the second dimension is each individual ancestor.
-   * @param id item to find ancestors of
-   */
-  getAncestorsOfItem(id: string): Observable<HierarchyItem[][]> {
-    return new Observable(obs => {
-      this.getAllLocations().subscribe(locs => {
-        obs.next(this.getAncestors(id, locs));
-        obs.complete();
-      });
-    });
-  }
+  // /**
+  //  * Finds all the ancestors of an item and returns them in a 2D array.
+  //  * The first dimension of the array are arrays of ancestors, the second dimension is each individual ancestor.
+  //  * @param id item to find ancestors of
+  //  */
+  // getAncestorsOfItem(id: string): Observable<HierarchyItem[][]> {
+  //   return new Observable(obs => {
+  //     this.getAllLocations().subscribe(locs => {
+  //       obs.next(this.getAncestors(id, locs));
+  //       obs.complete();
+  //     });
+  //   });
+  // }
 
   /**
-   * Returns the ancestors when you have an array of locations.
-   * @param id item to find ancestors of
-   * @param locations array of locations to find ancestors out of
+   * Returns the ancestors from IDs of whichever type you are searching by.
+   * @param parents the parent or parents of what something is located in
+   * @param locations array of hierarchy items to find ancestors out of
    */
-  getAncestors(id: string, locations: HierarchyItem[]): HierarchyItem[][] {
+  getAncestors(parentIDs: string[], hierItems: HierarchyItem[]): HierarchyItem[][] {
     const result: HierarchyItem[][] = [];
     // Find all parents of items and add an array for each parent
-    for (const parentL1 of locations) {
-      if (parentL1.items && parentL1.items.indexOf(id) > -1) {
-        const ancestors: HierarchyItem[] = [parentL1];
+    for(const parentID of parentIDs)                                            // TODO: YIKES
+    for(const firstParent of hierItems) {
+      if (firstParent.ID === parentID) {
+        const ancestors: HierarchyItem[] = [firstParent];
         result.push(ancestors);
         // Find all parents in this ancestor list
         // While the last parent of the last array of ancestors is not the root
         while (result[result.length - 1][result[result.length - 1].length - 1].ID !== 'root') {
-          for (const parentL2 of locations) {
+          for (const nextParent of hierItems) {
             // If the item has the same ID as the parent of the last item in the ancestor list, add it
-            if (parentL2.ID === result[result.length - 1][result[result.length - 1].length - 1].parent) {
-              result[result.length - 1].push(parentL2);
+            if (nextParent.ID === result[result.length - 1][result[result.length - 1].length - 1].parent) {
+              result[result.length - 1].push(nextParent);
+              break;
             }
           }
         }
       }
     }
+    console.log("Length: " + result.length);
     return result;
+  }
+
+  /**
+   * A general ancestor call for any type of thing in a hierarchy (item, category, location)
+   * The first dimension of the array are arrays of ancestors, the second dimension is each individual ancestor.
+   * @param id item to find ancestors of
+   */
+  getAncestorsOf(item: HierarchyObject): Observable<HierarchyItem[][]> {
+    
+    return new Observable(obs => {
+    if(item.type === "item"){
+        this.getAllLocations().subscribe(locs => {
+          obs.next(this.getAncestors((item as Item).locations, locs));
+          obs.complete();
+        });
+    }
+    else {
+        let hierItem = item as HierarchyItem;
+        if(hierItem.type === 'category'){
+          this.getAllCategories().subscribe(categories =>
+            {
+              obs.next(this.getAncestors([hierItem.parent], categories));
+
+              if(categories.length > 1){  // Finish when we have all the data (It always has at least a length of one ??)
+                obs.complete();
+              }
+            })
+        } else {
+          this.getAllLocations().subscribe(locations =>
+            {
+              obs.next(this.getAncestors([hierItem.parent], locations));
+              
+              if(locations.length > 1){  // Finish when we have all the data (It always has at least a length of one ??)
+                obs.complete();
+              }
+            })
+        }
+      }
+    });
   }
 
   /**
@@ -95,6 +138,7 @@ export class SearchService implements SearchInterfaceService {
         return;
       }
       data.ID = a.payload.id;
+      data.type = "item";
       return data;
     }));
   }
@@ -109,6 +153,7 @@ export class SearchService implements SearchInterfaceService {
       if (data.imageUrl == null) {
         data.imageUrl = '../../../assets/notFound.png';
       }
+      data.type = "location";
       return data;
     }));
   }
@@ -123,6 +168,7 @@ export class SearchService implements SearchInterfaceService {
       if (data.imageUrl == null) {
         data.imageUrl = '../../../assets/notFound.png';
       }
+      data.type = "category";
       return data;
     }));
   }
@@ -132,6 +178,7 @@ export class SearchService implements SearchInterfaceService {
       return a.map(g => {
           const data = g.payload.doc.data() as Item;
           data.ID = g.payload.doc.id;
+          data.type = "item";
           return data;
         }
       );
@@ -230,6 +277,7 @@ export class SearchService implements SearchInterfaceService {
           if (data.imageUrl == null) {
             data.imageUrl = '../../../assets/notFound.png';
           }
+          data.type = isCategory ? 'category' : 'location';
           return data;
         });
         return excludeRoot ? returnedHierarchy.filter(g => g.ID !== 'root') : returnedHierarchy;

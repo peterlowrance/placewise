@@ -48,6 +48,7 @@ export class HierarchyItemComponent implements OnInit {
     ) { }
 
   ngOnInit() {
+    console.log("EH?");
     let id = this.route.snapshot.paramMap.get('id');
     this.isCategory = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories';
     this.role = this.authService.role;
@@ -55,6 +56,7 @@ export class HierarchyItemComponent implements OnInit {
     if(this.isCategory){
       this.searchService.getCategory(id).subscribe(cat => {
         this.hierarchyItem = cat;
+        console.log("OHNO: " + cat);
         this.previousItem = JSON.parse(JSON.stringify(this.hierarchyItem)); // deep copy
       })
     } else {

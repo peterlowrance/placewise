@@ -12,17 +12,6 @@ h2 {
 }
 
 
-/*Tree CSS*/
-.invisible {
-    display: none;
-}
-
-.example-tree ul,
-.example-tree li {
-    list-style-type: none;
-    align-content: center;
-}
-
 /*Photo Container CSS*/
 /*Ref: https://stackoverflow.com/questions/54508374/how-can-i-position-an-icon-over-an-image*/
 
@@ -48,32 +37,6 @@ h2 {
     right: 3%;
     position: fixed;
     z-index: 1;
-}
-
-.locationPic {
-  height: 100%;
-  width: 100%;
-  object-fit: contain;
-  object-position: right;
-}
-
-.picHolder {
-  height: 4rem;
-  padding-left: 1.2rem;
-  width: 100%
-}
-
-.mat-tree-node {
-  padding: 0.4rem;
-  font-size: 1rem;
-}
-
-ul {
-  padding-left: 0.5rem;
-}
-
-.locText {
-  width: 50vw;
 }
 
 .allContent {
@@ -118,10 +81,6 @@ ul {
   padding-top: 0.8rem;
 }
 
-mat-grid-list {
-  margin-bottom: 0.6rem;
-}
-
 .mat-expansion-panel-header-title {
   font-size: 1rem;
 }
@@ -136,20 +95,6 @@ p {
 
 .categoryCard {
   margin-top: 0.4rem;
-}
-
-.bottomLocation {
-  margin: 0.8rem 0.4rem;
-  text-align: center;
-  width: 100%
-}
-
-.bottomImage {
-  margin-top: 0.4rem;
-  width: 100%;
-  max-height: 20rem;
-  object-fit: contain;
-  object-position: center;
 }
 
 .editButton {

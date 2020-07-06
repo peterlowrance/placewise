@@ -5,17 +5,18 @@
                 <button mat-icon-button (click)="goBack()">
                     <mat-icon>
                         arrow_back
-                    </mat-icon> Go Back
+                    </mat-icon>
                 </button>
             </span>
             <span *ngSwitchCase='"settings"'>
                 <button mat-icon-button (click)="goBack()">
                     <mat-icon>
                         arrow_back
-                    </mat-icon> <a *ngIf="this.role !=='Admin'">User Settings</a> <a *ngIf="role ==='Admin'">Admin Actions</a>
+                    </mat-icon>
                 </button>
+                <span class="nav-text">Settings</span>
             </span>
-            <span *ngSwitchCase='"modifyCategories"'>
+            <!-- <span *ngSwitchCase='"modifyCategories"'>
                 <button mat-icon-button (click)="goBack()">
                     <mat-icon>
                         arrow_back
@@ -28,20 +29,22 @@
                         arrow_back
                     </mat-icon> <a>Modify Locations</a>
                 </button>
-            </span>
+            </span> -->
             <span *ngSwitchCase='"moderateUsers"'>
                 <button mat-icon-button (click)="goBack()">
                     <mat-icon>
                         arrow_back
-                    </mat-icon> <a>Users</a>
+                    </mat-icon>
                 </button>
+                <span class="nav-text">Users</span>
             </span>
             <span *ngSwitchCase='"reports"'>
                 <button mat-icon-button (click)="goBack()">
                     <mat-icon>
                         arrow_back
-                    </mat-icon> <a>All Reports</a>
+                    </mat-icon>
                 </button>
+                <span class="nav-text">Reports</span>
             </span>
             <!-- we are home, check for in search hierarchy -->
             <span *ngSwitchDefault>
@@ -62,6 +65,7 @@
         <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/reports'" [routerLink]="['/reports']" routerLinkActive="router-link-active">
             <mat-icon>report_problem</mat-icon>
         </button>
+        <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/users'" [routerLink]="['/users']" routerLinkActive="router-link-active"><mat-icon>people</mat-icon></button>
         <button mat-icon-button [disabled]="this.locationString==='/settings'"  [routerLink]="['/settings']" routerLinkActive="router-link-active">
             <mat-icon>settings</mat-icon>
         </button>

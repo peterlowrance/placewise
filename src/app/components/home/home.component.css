@@ -90,6 +90,10 @@ mat-card {
   height: 92%;
 }
 
+.hierarchyCard {
+  border-radius: 16px;
+}
+
 mat-card-content {
   padding: calc(5% - 0.1rem) calc(0.2rem + 6%) ;
 }

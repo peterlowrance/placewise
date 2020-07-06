@@ -1,0 +1,54 @@
+.invisible {
+    display: none;
+}
+
+.example-tree ul,
+.example-tree li {
+    list-style-type: none;
+    align-content: center;
+}
+
+.bottomImage {
+  margin-top: 0.4rem;
+  width: 100%;
+  max-height: 20rem;
+  object-fit: contain;
+  object-position: center;
+}
+
+.locationPic {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  object-position: right;
+}
+
+.picHolder {
+  height: 4rem;
+  padding-left: 1.2rem;
+  width: 100%
+}
+
+ul {
+  padding-left: 0.5rem;
+  padding-bottom: 0.1rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+.locText {
+  width: 50vw;
+}
+
+.bottomLocation {
+  margin: 0.8rem 0.4rem;
+  text-align: center;
+  width: 100%
+}
+
+.mat-tree-node {
+  padding: 0.4rem 0.4rem 0.4rem 0.2rem;
+  font-size: 1rem;
+}
