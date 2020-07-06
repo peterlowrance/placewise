@@ -101,6 +101,7 @@ export class ImageService {
       var canvas = document.createElement('canvas');
       var ctx = canvas.getContext("2d");
       var img = new Image();
+      let maxImageHeight = 600, imageQualityForMaxSize = 0.7, minImageHeight = 300;
       img.onload = function() {
 
         //    STEP 1: CROP to ratio between 4:3 to 1:1, whatever is closer to the image
@@ -115,26 +116,27 @@ export class ImageService {
         }
 
         // Size canvas for cutting
-        canvas.width = img.width - (cutx * 2);
+        canvas.width = img.width - (cutx * 2) + 1; // Tends to be one short
         canvas.height = img.height - (cuty * 2);
 
         //    STEP 2: Shrink so that it's not taller than 1000 pixels
-        if(canvas.height > 1000){
-          canvas.width = 1000 * canvas.width / canvas.height;
-          canvas.height = 1000;
+        if(canvas.height > maxImageHeight){
+          canvas.width = maxImageHeight * canvas.width / canvas.height;
+          canvas.height = maxImageHeight;
         }
 
         //    STEP 3: Render
         ctx.drawImage(img, cutx, cuty, img.width - (cutx * 2), img.height - (cuty * 2), 0, 0, canvas.width, canvas.height);
 
         //    STEP 4: Determine quality of image. If the image is rather small, keep as much quality as possible.
-        var quality = 0.6;
-        var difference = 1000 - canvas.height;
-        if(difference > 700){
+        var quality = imageQualityForMaxSize;
+        var difference = maxImageHeight - canvas.height;
+        let possibleDifference = maxImageHeight - minImageHeight;
+        if(difference > possibleDifference){
           quality = 1.0;
         }
         else if(difference > 1){
-          quality = quality + (difference/1750); // meaning: difference / 700 (possible difference of pixels) * 0.4 (rest of quality available)
+          quality = quality + (difference/possibleDifference/(1-imageQualityForMaxSize)); // meaning: difference / 700 (possible difference of pixels) / 0.4 (rest of quality available)
         }
 
         const str = canvas.toDataURL('image/jpeg', quality);
