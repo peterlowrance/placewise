@@ -7,11 +7,9 @@ import {SearchService} from '../../services/search.service';
 import {NavService} from '../../services/nav.service';
 import {Subscription} from 'rxjs';
 import {AuthService} from 'src/app/services/auth.service';
-import {ImageService} from '../../services/image.service';
 import * as Fuse from 'fuse.js';
 import {AdminService} from 'src/app/services/admin.service';
 import {MatDialog} from '@angular/material/dialog';
-import {EditHierarchyDialogComponent} from '../edit-hierarchy-dialog/edit-hierarchy-dialog.component';
 import { trigger, state, style, transition, animate, keyframes} from '@angular/animations';
 
 /**
@@ -66,7 +64,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   miniFabState = 'shrunk'
   itemSearchOptions = {
     shouldSort: true,
-    keys: ['name', 'tags'],
+    keys: ['name', 'tags', 'attributes.value'],
     distance: 50,
     threshold: .5
   };
@@ -80,7 +78,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private navService: NavService,
     private searchService: SearchService,
-    private imageService: ImageService,
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
@@ -129,7 +126,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   navigateUpHierarchy() {
     const urlID = this.route.snapshot.paramMap.get('id');
     const urlSS = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
-    console.log(urlID + ': ' + urlSS);
     this.loadLevel(this.root ? this.root.parent : 'root', this.selectedSearch);
   }
 

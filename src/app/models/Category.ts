@@ -1,7 +1,8 @@
 import {HierarchyItem} from './HierarchyItem';
+import { Attribute } from './Attribute';
 
 export interface Category extends HierarchyItem {
 
-    attributes?: string[];
+    attributes?: {[ID:string]: {[settingName:string]: any}};
 
 }

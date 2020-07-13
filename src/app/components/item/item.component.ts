@@ -21,6 +21,7 @@ import {NavService} from 'src/app/services/nav.service';
 import {Subscription} from 'rxjs';
 import {Location} from '@angular/common';
 import {MatSnackBar} from '@angular/material';
+import { Category } from 'src/app/models/Category';
 
 
 interface TreeNode {
@@ -28,6 +29,13 @@ interface TreeNode {
   imageUrl: string;
   children: TreeNode[];
   ID: string;
+}
+
+interface AttributeCard {
+  name: string;
+  ID: string;
+  value?: string;
+  category: string;
 }
 
 @Component({
@@ -76,10 +84,14 @@ export class ItemComponent implements OnInit, OnDestroy {
   expanded = false;  // is the more info panel expanded
 
   // category of the item
-  category: HierarchyItem;
+  category: Category;
+  categoryAncestors: Category[];
+  locationsAndAncestors: HierarchyItem[][];
+  attributesForCard: AttributeCard[];
 
   role: string; // user role for editing
   dirty: boolean; // is the item edited dirty
+  missingData: string; // string of data missing, null if nothing is missing
 
   textEditFields: {
     name: boolean;
@@ -90,13 +102,11 @@ export class ItemComponent implements OnInit, OnDestroy {
   deleteSub: Subscription; // delete subscription
 
   ngOnInit() {
-    console.log("EH!");
     // retrieve id
     this.id = this.route.snapshot.paramMap.get('id');
 
     // get the item from the id
     this.searchService.getItem(this.id).subscribe(item => {
-      console.log("OHYES: " + item);
       if (!item) {
         return;
       }
@@ -106,8 +116,31 @@ export class ItemComponent implements OnInit, OnDestroy {
 
       // Load image for item TODO: Not any more
 
+      // get the locations information
+      this.searchService.getAncestorsOf(item).subscribe(locations => {
+        this.locationsAndAncestors = locations;
+      });
+
       // get the category information
-      this.searchService.getCategory(item.category).subscribe(val => this.category = val);
+      this.searchService.getCategory(item.category).subscribe(category => {
+        this.category = category;
+        this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
+          if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
+            this.categoryAncestors = categoryAncestors[0];
+            this.attributesForCard = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
+          }
+          else {
+            this.attributesForCard = this.loadAttributesForCards([category], item)
+          }
+          // Display missing data
+          this.missingData = this.formatMissingDataString(item);
+        })
+      });
+
+      for(let attr in item.attributes){
+        console.log(item.attributes[attr].name);
+      }
+
     });
 
     // get user role
@@ -122,6 +155,36 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     //this.deleteSub.unsubscribe();
+  }
+
+  formatMissingDataString(item: Item): string {
+    let builtString = "";
+    if(item.category === "root"){
+      builtString += "No category";
+    }
+    if(item.locations.length == 0 || (item.locations.length == 1 && item.locations[0] === "root")){
+      if(builtString === ""){
+        builtString += "No locations"
+      } else {
+        builtString += " or locations"
+      }
+    }
+    if(this.attributesForCard){
+      for(let card in this.attributesForCard){
+        if(!this.attributesForCard[card].value){
+          if(builtString ===""){
+            builtString += "Missing attributes";
+          } else {
+            builtString += ", missing attributes"
+          }
+          break;
+        }
+      }
+    }
+    if(builtString === ""){
+      builtString = null;
+    }
+    return builtString;
   }
 
   toggleMoreInfo() {
@@ -244,9 +307,77 @@ export class ItemComponent implements OnInit, OnDestroy {
   updateItemCategory(result: string[], oldCategory: string) {
     if (result && result.length > 0) {
       this.item.category = result[0];
-      this.searchService.getCategory(result[0]).subscribe(c => this.category = c);
+      this.searchService.getCategory(result[0]).subscribe(category => {
+        this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0])
+      });
       this.adminService.updateItem(this.item, oldCategory, null);
     }
+  }
+
+  loadAttributesForCards(parents: Category[], item: Item): AttributeCard[] {
+    let cards: AttributeCard[] = [];
+
+    // Add category attributes
+    for(let parent in parents){
+      for(let attr in parents[parent].attributes){
+        cards.push({
+          name: parents[parent].attributes[attr]['name'],
+          ID: attr,
+          category: parents[parent].name
+        })
+      }
+    }
+
+    // Fill in data or add orphaned attribute
+    for(let itemAttr in item.attributes){
+      let hasAttribute = false;
+      for(let card in cards){
+        if(cards[card].ID === item.attributes[itemAttr].ID){
+          cards[card].value = item.attributes[itemAttr].value;
+          hasAttribute = true;
+        }
+      }
+
+      if(!hasAttribute){
+        cards.push({
+          name: item.attributes[itemAttr].name,
+          ID: item.attributes[itemAttr].ID,
+          value: item.attributes[itemAttr].value,
+          category: "None"
+        })
+      }
+    }
+    return cards;
+  }
+
+  onAttrValueSubmit(card: AttributeCard){
+    let hasAttribute = false;
+    for(let attr in this.item.attributes){
+      if(this.item.attributes[attr].ID === card.ID){
+        this.item.attributes[attr].value = card.value;
+        hasAttribute = true;
+      }
+    }
+    if(!hasAttribute){
+      this.item.attributes.push({
+        name: card.name,
+        ID: card.ID,
+        value: card.value
+      })
+    }
+    this.checkDirty();
+  }
+
+  deleteAttribute(card: AttributeCard){
+    let deleteCardIndex = this.attributesForCard.indexOf(card);
+    this.attributesForCard.splice(deleteCardIndex, 1);
+
+    for(let attributeIndex in this.item.attributes){
+      if(this.item.attributes[attributeIndex].ID === card.ID){
+        this.item.attributes.splice(Number.parseInt(attributeIndex), 1);
+      }
+    }
+    this.checkDirty();
   }
 
   /**

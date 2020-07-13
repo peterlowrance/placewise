@@ -14,6 +14,7 @@ import { combineLatest } from 'rxjs';
 import { User } from '../models/User';
 import * as firebase from 'firebase';
 import { promise } from 'protractor';
+import { Category } from '../models/Category';
 
 declare var require: any;
 
@@ -172,10 +173,12 @@ export class AdminService {
       }
     }
     )
-    
-
 
     return of(true);
+  }
+
+  removeAttribute(category: Category, id: string){
+    
   }
 
   updateHierarchyPosition(parentID: number, moveID: number) {

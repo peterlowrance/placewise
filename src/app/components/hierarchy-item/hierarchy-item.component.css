@@ -52,3 +52,21 @@
     flex-direction: column-reverse;
     align-items: center;
   }
+
+  .mat-card{
+    margin-top: 1px;
+  }
+
+  .attributes-card{
+    border: 1px solid #DDD
+  }
+
+  .plus-icon {
+    float: left;
+    margin-top: 5px;
+    margin-right: 2px;
+  }
+
+  .addButton {
+    margin-top: 8px;
+  }

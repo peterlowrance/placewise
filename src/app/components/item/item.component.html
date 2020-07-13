@@ -20,6 +20,12 @@
         <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
       </h2>
     </div>
+    <div class="missing-data-container" *ngIf="this.role === 'Admin' && missingData">
+        <mat-icon class="missing-data-icon">error_outline</mat-icon>
+        <span class="missing-data-text">
+            {{missingData}}
+        </span>
+    </div>
 </div>
 
 <mat-grid-list cols="3" rowHeight="2:1">
@@ -130,12 +136,45 @@
 </mat-accordion>
 <br>
 
+<mat-accordion>
+    <mat-expansion-panel>
+        <mat-expansion-panel-header class="attributes-text">
+            Attributes
+        </mat-expansion-panel-header>
+        <div *ngIf="attributesForCard">
+            <mat-card class="attribute-card" *ngFor="let attrCard of attributesForCard">
+                <!-- <mat-card-header class="attribute-titles">
+                    <mat-card-title>{{attrCard.name}}</mat-card-title>
+                    <mat-card-subtitle>{{attrCard.category}}</mat-card-subtitle>
+                </mat-card-header> -->
+                <mat-card-content>
+                    <mat-form-field class="attribute-input">
+                        <mat-label>{{attrCard.name + ":"}}</mat-label>
+                        <input matInput #value
+                        type="text"
+                        [(ngModel)]="attrCard.value"
+                        (focusout)="onAttrValueSubmit(attrCard)">
+                    </mat-form-field>
+                    <span *ngIf="!attrCard.value"><mat-icon class="missing-data-icon">error_outline</mat-icon></span>
+                    <span *ngIf="attrCard.category === 'None'"><button mat-icon-button class="delete-attribute-button" (click)="deleteAttribute(attrCard)"><mat-icon>delete</mat-icon></button></span>
+                    <div *ngIf="attrCard.category !== 'None'" class="attribute-category-text">{{attrCard.category}}</div>
+                    <div *ngIf="attrCard.category === 'None'" class="attribute-category-text missing-category">
+                        {{attrCard.category}}
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </mat-expansion-panel>
+</mat-accordion>
+<br>
+
 <!-- steps to find -->
 <!-- adapted from https://material.angular.io/components/tree/examples -->
 <h2>Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
 </h2>
-<app-ancestor-view [childToDisplay]="item"></app-ancestor-view>
-<button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete</button>
+<app-ancestor-view [parentsToDisplay]="locationsAndAncestors"></app-ancestor-view>
+<br>
+<button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete Item</button>
 </div>
 
 <!-- FAB for saving -->

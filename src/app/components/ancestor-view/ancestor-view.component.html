@@ -1,4 +1,4 @@
-<div *ngIf="childToDisplay">
+<div *ngIf="parentsToDisplay">
     <mat-tree [dataSource]="dataSource" multiTemplateDataRows [treeControl]="treeControl" class="example-tree">
         <!-- This is the tree node template for leaf nodes -->
         <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding matTreeNodePaddingIndent="5">

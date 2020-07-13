@@ -11,6 +11,8 @@ import {map, first} from 'rxjs/operators';
 import {AuthService} from './auth.service';
 import {ImageService} from './image.service';
 import { HierarchyObject } from '../models/HierarchyObject';
+import { Category } from '../models/Category';
+import { Location } from '../models/Location';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -25,7 +27,7 @@ const httpOptions = {
 export class SearchService implements SearchInterfaceService {
 
   locations: HierarchyItem[];
-  categories: HierarchyItem[];
+  categories: Category[];
 
   // /**
   //  * Finds all the ancestors of an item and returns them in a 2D array.
@@ -67,13 +69,13 @@ export class SearchService implements SearchInterfaceService {
         }
       }
     }
-    console.log("Length: " + result.length);
     return result;
   }
 
   /**
    * A general ancestor call for any type of thing in a hierarchy (item, category, location)
-   * The first dimension of the array are arrays of ancestors, the second dimension is each individual ancestor.
+   * The first dimension of the array are arrays of ancestors (multiple when getting mutliple locations from an item),
+   * The second dimension is each individual ancestor.
    * @param id item to find ancestors of
    */
   getAncestorsOf(item: HierarchyObject): Observable<HierarchyItem[][]> {
@@ -143,12 +145,12 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getLocation(id: string): Observable<HierarchyItem> {
+  getLocation(id: string): Observable<Location> {
     if (!id) {
       return of(null);
     }
-    return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {
-      const data = a.payload.data() as HierarchyItem;
+    return this.afs.doc<Location>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {
+      const data = a.payload.data() as Location;
       data.ID = a.payload.id;
       if (data.imageUrl == null) {
         data.imageUrl = '../../../assets/notFound.png';
@@ -158,12 +160,14 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getCategory(id: string): Observable<HierarchyItem> {
+  getCategory(id: string): Observable<Category> {
     if (!id) {
       return of(null);
     }
-    return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + id).snapshotChanges().pipe(map(a => {
-      const data = a.payload.data() as HierarchyItem;
+    console.time('firebase answered category in');
+    return this.afs.doc<Category>('/Workspaces/' + this.auth.workspace.id + '/Category/' + id).snapshotChanges().pipe(map(a => {
+      console.timeEnd('firebase answered category in');
+      const data = a.payload.data() as Category;
       data.ID = a.payload.id;
       if (data.imageUrl == null) {
         data.imageUrl = '../../../assets/notFound.png';
@@ -176,7 +180,7 @@ export class SearchService implements SearchInterfaceService {
   getAllItems(): Observable<Item[]> {
     return this.afs.collection<Item>('/Workspaces/' + this.auth.workspace.id + '/Items').snapshotChanges().pipe(map(a => {
       return a.map(g => {
-          const data = g.payload.doc.data() as Item;
+          const data = g.payload.doc.data();
           data.ID = g.payload.doc.id;
           data.type = "item";
           return data;
@@ -254,11 +258,11 @@ export class SearchService implements SearchInterfaceService {
     });
   }
 
-  getAllCategories(excludeRoot: boolean = false): Observable<HierarchyItem[]> {
+  getAllCategories(excludeRoot: boolean = false): Observable<Category[]> {
     return this.getAllHierarchy(excludeRoot, true);
   }
 
-  getAllLocations(excludeRoot: boolean = false): Observable<HierarchyItem[]> {
+  getAllLocations(excludeRoot: boolean = false): Observable<Location[]> {
     return this.getAllHierarchy(excludeRoot, false);
   }
 
@@ -269,10 +273,12 @@ export class SearchService implements SearchInterfaceService {
     if (appropriateCache) {
       return of(excludeRoot ? appropriateCache.filter(c => c.ID !== 'root') : appropriateCache);
     }
+    console.time('firebase answered get all in');
     return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + (isCategory ? '/Category' : '/Locations'))
       .snapshotChanges().pipe(map(a => {
+        if(a.length > 1 ) console.timeEnd('firebase answered get all in'); // cache likes to store one that is returned
         const returnedHierarchy = a.map(g => {
-          const data = g.payload.doc.data() as HierarchyItem;
+          const data = isCategory ? (g.payload.doc.data() as Category) : (g.payload.doc.data() as Location);
           data.ID = g.payload.doc.id;
           if (data.imageUrl == null) {
             data.imageUrl = '../../../assets/notFound.png';

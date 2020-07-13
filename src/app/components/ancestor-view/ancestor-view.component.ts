@@ -1,9 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, SimpleChange } from '@angular/core';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {MatTreeNestedDataSource} from '@angular/material/tree';
-import {SearchService} from 'src/app/services/search.service';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
-import {HierarchyObject} from 'src/app/models/HierarchyObject';
 
 interface TreeNode {
   name: string;
@@ -18,10 +16,9 @@ interface TreeNode {
   styleUrls: ['./ancestor-view.component.css']
 })
 export class AncestorViewComponent implements OnInit {
-  @Input() childToDisplay: HierarchyObject;
+  @Input() parentsToDisplay: HierarchyItem[][];
 
   constructor(
-    private searchService: SearchService
   ) { }
 
   // tree components from material source
@@ -35,15 +32,16 @@ export class AncestorViewComponent implements OnInit {
   toTree = (h: HierarchyItem) => ({name: h.name, imageUrl: h.imageUrl, children: [], ID: h.ID});
   hasChild = (_: number, node: TreeNode) => !!node.children && node.children.length > 0;
 
-  ngOnInit() {
-    console.log("HEYYEY: " + this.childToDisplay.name + " " + this.childToDisplay.type);
-    this.searchService.getAncestorsOf(this.childToDisplay).subscribe(hierarchy => {
-      console.log("Honk: " + hierarchy.length);
+  ngOnInit(){
+
+  }
+
+  ngOnChanges(changes: {[propKey: string]: SimpleChange}) {
+    if(this.parentsToDisplay){
       // need to loop over first elements, pop off, and combine any like
       // first pop off all top level locations, those are the root
-      for (const h of hierarchy) {
+      for (const h of this.parentsToDisplay) {
         const head = this.toTree(h.pop());
-        console.log("Returned: " + head.name);
         this.parent = this.parent.ID === null ? head : this.parent;
         // go over all list and keep building node list
         this.parent.children.push(this.convertList(h));
@@ -76,7 +74,7 @@ export class AncestorViewComponent implements OnInit {
 
       this.treeControl.dataNodes = this.dataSource.data;
       if (oneAncestor) this.treeControl.expandAll();
-    });
+    }
   }
 
   convertList(items: HierarchyItem[]): TreeNode {

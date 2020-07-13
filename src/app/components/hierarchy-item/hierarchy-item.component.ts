@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ElementRef, ViewChild, SystemJsNgModuleLoader } from '@angular/core';
 import {HierarchyItem} from '../../models/HierarchyItem';
 import {FormControl, Validators} from "@angular/forms";
 import {ActivatedRoute} from '@angular/router';
@@ -10,6 +10,9 @@ import {AdminService} from '../../services/admin.service';
 import {MatDialog} from '@angular/material/dialog';
 import {Router} from '@angular/router';
 import {ModifyHierarchyDialogComponent} from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
+import { Category } from 'src/app/models/Category';
+import { Attribute } from 'src/app/models/Attribute';
+import { Timestamp, timestamp } from 'rxjs/internal/operators/timestamp';
 
 @Component({
   selector: 'app-hierarchy-item',
@@ -25,6 +28,13 @@ export class HierarchyItemComponent implements OnInit {
   dirty: boolean;                                           // Is the item edited dirty
   previousItem: HierarchyItem;                              // Previous item, before edits are made
   imageToSave: File = null;                                 // The image to upload when saved
+  parentsToDisplay: HierarchyItem[][];                      // For the ancestor view component (and eventually loading attributes)
+  attributeNames: string[] = [];                            // Names of attributes in this category
+  inheritedAttributes: [{
+    name: string;
+    categoryName: string;
+  }];                   // Names of unmodifyable attributes from any parent
+  //renameBind: string[] = [];                                       // For attribute renaming inputs from the form field
 
   // edit fields for name and description
   @ViewChild('name', {static: false}) nameField: ElementRef;
@@ -48,7 +58,6 @@ export class HierarchyItemComponent implements OnInit {
     ) { }
 
   ngOnInit() {
-    console.log("EH?");
     let id = this.route.snapshot.paramMap.get('id');
     this.isCategory = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories';
     this.role = this.authService.role;
@@ -56,12 +65,42 @@ export class HierarchyItemComponent implements OnInit {
     if(this.isCategory){
       this.searchService.getCategory(id).subscribe(cat => {
         this.hierarchyItem = cat;
-        console.log("OHNO: " + cat);
+
+        this.attributeNames = [];
+        for(let att in cat.attributes){
+          this.attributeNames.push(cat.attributes[att]["name"]);
+        }
+
+        this.searchService.getAncestorsOf(cat).subscribe(parents => {
+          this.parentsToDisplay = parents;
+          this.inheritedAttributes = null;
+
+          for(let parent in parents[0]){
+            let attrCategory = (parents[0][parent] as Category);
+            if(attrCategory.attributes)
+            for(let attr in attrCategory.attributes){ // Print att (TEMP)
+              if(this.inheritedAttributes){
+                this.inheritedAttributes.push({name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name});
+              }
+              else {
+                this.inheritedAttributes = [
+                  {
+                    name: attrCategory.attributes[attr]["name"],
+                    categoryName: attrCategory.name
+                  }
+                ]
+              }
+            }
+          }
+
+        });
         this.previousItem = JSON.parse(JSON.stringify(this.hierarchyItem)); // deep copy
       })
+      
     } else {
       this.searchService.getLocation(id).subscribe(loc => {
         this.hierarchyItem = loc;
+        this.searchService.getAncestorsOf(loc).subscribe(parents => this.parentsToDisplay = parents);
         this.previousItem = JSON.parse(JSON.stringify(this.hierarchyItem)); // deep copy
       })
     }
@@ -179,6 +218,53 @@ export class HierarchyItemComponent implements OnInit {
 
     // check for dirtiness
     this.checkDirty();
+  }
+
+  /**
+   * Changes attribute names, only accessible if 
+   */
+  onAttrNameSubmit(name: string, newname) {
+    // check to see if name is valid
+    if (newname.value !== '') {
+
+      let catAttrs = (this.hierarchyItem as Category).attributes
+      for(let attr in catAttrs){
+        if(catAttrs[attr]["name"] === name){
+          catAttrs[attr]["name"] = newname.value;
+          break;
+        }
+      }
+
+      this.checkDirty();
+    }
+
+  }
+
+  addAttribute(){
+    let attrs = (this.hierarchyItem as Category).attributes;
+    if(attrs){
+      attrs[Date.now().toString()] = {"name": "New Attribute"};
+    }
+    else {
+      attrs = {[Date.now().toString()]: {"name" : "New Attribute"}};
+    }
+    (this.hierarchyItem as Category).attributes = attrs;
+    this.attributeNames.push("New Attribute");
+
+    this.dirty = true;
+  }
+
+  async deleteAttribute(name: string){
+    if (confirm('Are you sure you want to delete the attribute?\nThis cannot be undone.')) {
+      let attrs = (this.hierarchyItem as Category).attributes;
+      for(let attr in attrs){
+        if(attrs[attr]["name"] === name){
+          delete (this.hierarchyItem as Category).attributes[attr];
+          this.attributeNames = this.attributeNames.filter(elem => elem !== name);
+          this.dirty = true;
+        }
+      }
+    }
   }
 
   /**

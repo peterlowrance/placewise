@@ -26,9 +26,51 @@
       <!-- hidden item uploader -->
       <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
     </div>
+    <div *ngIf="hierarchyItem.type === 'category'">
+      <br>
+      <mat-card class="attributes-card" [class.mat-elevation-z0]="true">
+        <mat-card-content>
+          <h2>Attributes:</h2>
+          <br>
+          <mat-accordion>
+
+            <mat-expansion-panel disabled *ngFor="let inheritAttr of inheritedAttributes">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  {{inheritAttr.name}}
+                </mat-panel-title>
+                <mat-panel-description>
+                  {{inheritAttr.categoryName}}
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel *ngFor="let attr of attributeNames">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  {{attr}}
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <mat-form-field>
+                <mat-label>Rename:</mat-label>
+                <input matInput #rename
+                type="text"
+                (focusout)="onAttrNameSubmit(attr, rename)">
+              </mat-form-field>
+
+              <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="deleteAttribute(attr)">Delete</button>
+            </mat-expansion-panel>
+          </mat-accordion>
+
+          <button mat-raised-button color="accent" class="addButton" *ngIf="this.role === 'Admin'" (click)="addAttribute()"><mat-icon class="plus-icon">add</mat-icon>Add Attribute</button>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
     <br>
     <h2>Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editHierarchy()"><mat-icon>edit</mat-icon></button></h2>
-    <app-ancestor-view [childToDisplay]="hierarchyItem"></app-ancestor-view>
+    <app-ancestor-view [parentsToDisplay]="parentsToDisplay"></app-ancestor-view>
     <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete</button>
   
   <button class="fab" *ngIf="this.role === 'Admin' && this.dirty" mat-fab color="primary" (click)="saveItem()">
