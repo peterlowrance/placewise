@@ -355,11 +355,20 @@ export class ItemComponent implements OnInit, OnDestroy {
       }
     }
     if(!hasAttribute){
-      this.item.attributes.push({
-        name: card.name,
-        ID: card.ID,
-        value: card.value
-      })
+      if(!this.item.attributes){
+        this.item.attributes = [{
+          name: card.name,
+          ID: card.ID,
+          value: card.value
+        }];
+      }
+      else{
+        this.item.attributes.push({
+          name: card.name,
+          ID: card.ID,
+          value: card.value
+        })
+      }
     }
     this.checkDirty();
   }
