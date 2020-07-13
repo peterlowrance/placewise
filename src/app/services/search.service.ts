@@ -164,9 +164,9 @@ export class SearchService implements SearchInterfaceService {
     if (!id) {
       return of(null);
     }
-    console.time('firebase answered category in');
+    //console.time('firebase answered category in');
     return this.afs.doc<Category>('/Workspaces/' + this.auth.workspace.id + '/Category/' + id).snapshotChanges().pipe(map(a => {
-      console.timeEnd('firebase answered category in');
+      //console.timeEnd('firebase answered category in');
       const data = a.payload.data() as Category;
       data.ID = a.payload.id;
       if (data.imageUrl == null) {
@@ -273,10 +273,10 @@ export class SearchService implements SearchInterfaceService {
     if (appropriateCache) {
       return of(excludeRoot ? appropriateCache.filter(c => c.ID !== 'root') : appropriateCache);
     }
-    console.time('firebase answered get all in');
+    //console.time('firebase answered get all in');
     return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + (isCategory ? '/Category' : '/Locations'))
       .snapshotChanges().pipe(map(a => {
-        if(a.length > 1 ) console.timeEnd('firebase answered get all in'); // cache likes to store one that is returned
+        //if(a.length > 1 ) console.timeEnd('firebase answered get all in'); // cache likes to store one that is returned
         const returnedHierarchy = a.map(g => {
           const data = isCategory ? (g.payload.doc.data() as Category) : (g.payload.doc.data() as Location);
           data.ID = g.payload.doc.id;

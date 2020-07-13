@@ -137,10 +137,6 @@ export class ItemComponent implements OnInit, OnDestroy {
         })
       });
 
-      for(let attr in item.attributes){
-        console.log(item.attributes[attr].name);
-      }
-
     });
 
     // get user role
