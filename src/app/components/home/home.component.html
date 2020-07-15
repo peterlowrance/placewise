@@ -13,6 +13,7 @@
         </button>
         <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
+      <mat-progress-bar *ngIf="isLoading" class="search-progress-bar" mode="query"></mat-progress-bar>
     </form>
   </div>
 <!--Hierarchy Items-->

@@ -125,3 +125,7 @@ mat-card-content {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.search-progress-bar {
+  margin-top: -24px;
+}

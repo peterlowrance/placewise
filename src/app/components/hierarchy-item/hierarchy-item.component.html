@@ -10,6 +10,9 @@
               (focusout)="onNameSubmit()"
               required
               >
+              <!-- <button mat-button *ngIf="hierarchyItem.name" matSuffix mat-icon-button aria-label="Clear" (click)="hierarchyItem.name=''">
+                <mat-icon>close</mat-icon>
+              </button> -->
           </mat-form-field>
         </form>
       </div>
@@ -22,9 +25,11 @@
     </div>
     <div class="image-block">
       <img class="responsive-item-image container-img" src={{hierarchyItem.imageUrl}} layout-fit>
-      <button mat-icon-button *ngIf="this.role === 'Admin'" class="container-button"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button>
+      <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button"  (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
+      <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="file-button"  (click)="uploader.click()"><mat-icon>perm_media</mat-icon></button>
       <!-- hidden item uploader -->
       <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
+      <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
     </div>
     <div *ngIf="hierarchyItem.type === 'category'">
       <br>

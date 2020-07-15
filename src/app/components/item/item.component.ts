@@ -82,6 +82,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   }; // user report
   errorDesc: ItemReportModalData = {valid: false, desc: ''}; // user-reported error description
   expanded = false;  // is the more info panel expanded
+  isSaving = false;
 
   // category of the item
   category: Category;
@@ -234,7 +235,8 @@ export class ItemComponent implements OnInit, OnDestroy {
   editField(field: string) {
     // set edit field value to enable state change, then set focus
     switch (field) {
-      case 'name':
+      case 'name': 
+        if(this.item.name === "NEW ITEM") this.item.name = ''; // Clear default name immediately
         this.textEditFields.name = true;
         // focus
         setTimeout(() => this.nameField.nativeElement.focus(), 0);
@@ -504,6 +506,8 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Saves the item to the database, sets not dirty, and sets previousItem
    */
   async saveItem() {
+    this.isSaving = true;
+
     // first, upload the image if edited, upload when we get the new ID
     if (this.previousItem.imageUrl !== this.item.imageUrl) {
       // post to upload image
@@ -532,6 +536,7 @@ export class ItemComponent implements OnInit, OnDestroy {
       } else {
         this.snack.open('Item Save Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
       }
+      this.isSaving = false;
     });
   }
 

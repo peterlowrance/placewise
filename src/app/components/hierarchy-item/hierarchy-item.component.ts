@@ -183,6 +183,7 @@ export class HierarchyItemComponent implements OnInit {
     // set edit field value to enable state change, then set focus
     switch (field) {
       case 'name':
+        if(this.hierarchyItem.name === 'NEW LOCATION' || this.hierarchyItem.name === 'NEW CATEGORY') this.hierarchyItem.name = ''; // Clear default name immediately
         this.textEditFields.name = true;
         // focus
         setTimeout(() => this.nameField.nativeElement.focus(), 0);
@@ -306,6 +307,10 @@ export class HierarchyItemComponent implements OnInit {
       }
       
     }
+  }
+
+  clearName(){
+    this.hierarchyItem.name = '';
   }
 
   // /**

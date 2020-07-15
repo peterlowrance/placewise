@@ -6,11 +6,16 @@
     object-fit: contain;
   }
   
-  .container-button {
+  .camera-button {
     position: absolute;
-    top: 0%;
-    right: 0%;
-    filter: drop-shadow(0 0 0.2rem white);
+    top: 2%;
+    right: 2%;
+  }
+
+  .file-button {
+    position: absolute;
+    top: calc(2% + 52px);
+    right: 2%;
   }
   
   .image-block {

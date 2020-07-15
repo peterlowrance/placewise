@@ -45,6 +45,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   items: Item[];
   columns: number;
   previousSearch = '';
+  isLoading = false;
 
   typeSub: Subscription;
   parentSub: Subscription;
@@ -284,11 +285,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (event === '') {
       this.displayDescendants(this.root, this.selectedSearch === 'Categories');
     } else { // Otherwise, get all descendant hierarchy items and items and fuzzy match them
+      this.isLoading = true;
       this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
         this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
           // Search items
           const itemSearcher = new Fuse(items, this.itemSearchOptions);
           this.items = itemSearcher.search(event);
+          this.isLoading = false;
         });
         // Search hierarchy items
         const hierarchySearcher = new Fuse(hierarchyItems, this.hierarchySearchOptions);

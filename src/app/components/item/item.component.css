@@ -182,3 +182,10 @@ p {
   padding: 0;
   margin: 0 3px;
 }
+
+.save-spinner {
+  position: absolute;
+  top: -20px;
+  right: -22px;
+  color: white;
+}

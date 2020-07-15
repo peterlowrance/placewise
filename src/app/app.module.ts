@@ -17,6 +17,8 @@ import {MatTreeModule} from '@angular/material/tree';
 import {MatListModule} from '@angular/material/list';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {MatDividerModule} from '@angular/material/divider';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner'
 
 import {SmdFabSpeedDialModule} from 'node_modules/angular-speed-dial';
 // Imports for all Placewise modules
@@ -100,6 +102,8 @@ import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-it
     AngularFireStorageModule,
     MatSnackBarModule,
     MatDividerModule,
+    MatProgressBarModule,
+    MatProgressSpinnerModule,
     SmdFabSpeedDialModule,
     MatCheckboxModule,
     MatRadioModule,
