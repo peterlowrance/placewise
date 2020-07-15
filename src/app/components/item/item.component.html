@@ -35,7 +35,7 @@
             <!-- <button mat-mini-fab color="primary" *ngIf="this.role === 'Admin'" class="container-button"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button> -->
             <!-- hidden item uploader -->
             <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
-            <input hidden type="file" accept="image/*;capture=camera" #camera (change)='uploadImage($event)'/>
+            <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
     </mat-grid-tile>
     <!-- report button -->
     <mat-grid-tile class="reportButtonHolder">
