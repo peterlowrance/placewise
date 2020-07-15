@@ -92,6 +92,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   role: string; // user role for editing
   dirty: boolean; // is the item edited dirty
   missingData: string; // string of data missing, null if nothing is missing
+  recordingForPhoto = false;
 
   textEditFields: {
     name: boolean;

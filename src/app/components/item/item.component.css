@@ -41,7 +41,7 @@ h2 {
 
 .allContent {
   padding: 0.4rem 2vw 3rem 2vw;
-  max-width: 50rem;
+  max-width: 48rem;
   position: center;
   margin: auto;
 }
@@ -174,4 +174,11 @@ p {
   float: end;
   top: 42px;
   left: -28px;
+}
+
+.photo-button {
+  width: calc(2.5rem + 1.25vw - 4px);
+  min-width: 1.5rem;
+  padding: 0;
+  margin: 0 3px;
 }

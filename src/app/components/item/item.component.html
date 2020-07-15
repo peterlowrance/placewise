@@ -32,9 +32,10 @@
     <!-- first is image -->
     <mat-grid-tile [colspan]="2" [rowspan]="3">
             <img class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
-            <button mat-icon-button *ngIf="this.role === 'Admin'" class="container-button"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button>
+            <!-- <button mat-mini-fab color="primary" *ngIf="this.role === 'Admin'" class="container-button"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button> -->
             <!-- hidden item uploader -->
             <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
+            <input hidden type="file" accept="image/*;capture=camera" #camera (change)='uploadImage($event)'/>
     </mat-grid-tile>
     <!-- report button -->
     <mat-grid-tile class="reportButtonHolder">
@@ -43,8 +44,16 @@
         </button>
     </mat-grid-tile>
     <!-- warnings -->
-    <mat-grid-tile>
-
+    <mat-grid-tile class="reportButtonHolder">
+        <div class="report-button">
+            <button class="photo-button" mat-raised-button color="accent" (click)="camera.click()">
+                <mat-icon>photo_camera</mat-icon>
+            </button>
+            <span class="photo-spacer"></span>
+            <button class="photo-button" mat-raised-button color="accent" (click)="uploader.click()">
+                <mat-icon>perm_media</mat-icon>
+            </button>
+        </div>
     </mat-grid-tile>
     <!-- more info button -->
     <mat-grid-tile class="moreInfoButtonHolder">
