@@ -187,7 +187,7 @@
 </div>
 
 <!-- FAB for saving -->
-<button class="fab" *ngIf="this.role === 'Admin' && this.dirty" mat-fab color="primary" (click)="saveItem()">
+<button class="fab" *ngIf="this.role === 'Admin' && this.dirty" @open-save-fab mat-fab color="primary" (click)="saveItem()">
     <mat-icon>save</mat-icon>
     <mat-progress-spinner *ngIf="isSaving" class="save-spinner" mode="indeterminate"></mat-progress-spinner>
 </button>

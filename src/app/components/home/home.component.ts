@@ -176,7 +176,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   // This is called every time the carrently viewed root is updated
   displayItems(root: HierarchyItem) {
     this.items = [];
-    console.log("meep");
     if (root.items) {
       // For each itemID descending from root, get the item from the data and added to the global items array
       for (const itemID of root.items) {

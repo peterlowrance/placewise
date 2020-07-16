@@ -22,6 +22,7 @@ import {Subscription} from 'rxjs';
 import {Location} from '@angular/common';
 import {MatSnackBar} from '@angular/material';
 import { Category } from 'src/app/models/Category';
+import { trigger, style, transition, animate, keyframes} from '@angular/animations';
 
 
 interface TreeNode {
@@ -41,7 +42,19 @@ interface AttributeCard {
 @Component({
   selector: 'app-item',
   templateUrl: './item.component.html',
-  styleUrls: ['./item.component.css']
+  styleUrls: ['./item.component.css'],
+  animations:[
+    trigger('open-save-fab', [
+      transition(':enter', [
+        animate('800ms ease-out', keyframes([
+          style({backgroundColor: '#3e2723', opacity: 0.4}),
+          style({backgroundColor: '#f44336', opacity: 0.8}),
+          style({backgroundColor: '#3e2723', opacity: 1})
+        ]))
+        ]
+      )
+    ])
+  ]
 })
 export class ItemComponent implements OnInit, OnDestroy {
 

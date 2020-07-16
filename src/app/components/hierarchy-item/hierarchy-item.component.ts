@@ -13,11 +13,24 @@ import {ModifyHierarchyDialogComponent} from '../modify-hierarchy-dialog/modify-
 import { Category } from 'src/app/models/Category';
 import { Attribute } from 'src/app/models/Attribute';
 import { Timestamp, timestamp } from 'rxjs/internal/operators/timestamp';
+import { trigger, style, transition, animate, keyframes} from '@angular/animations';
 
 @Component({
   selector: 'app-hierarchy-item',
   templateUrl: './hierarchy-item.component.html',
-  styleUrls: ['./hierarchy-item.component.css']
+  styleUrls: ['./hierarchy-item.component.css'],
+  animations:[
+    trigger('open-save-fab', [
+      transition(':enter', [
+        animate('800ms ease-out', keyframes([
+          style({backgroundColor: '#3e2723', opacity: 0.4}),
+          style({backgroundColor: '#f44336', opacity: 0.8}),
+          style({backgroundColor: '#3e2723', opacity: 1})
+        ]))
+        ]
+      )
+    ])
+  ]
 })
 export class HierarchyItemComponent implements OnInit {
   
