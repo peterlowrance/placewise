@@ -35,6 +35,7 @@ export class HierarchyItemComponent implements OnInit {
     categoryName: string;
   }];                   // Names of unmodifyable attributes from any parent
   //renameBind: string[] = [];                                       // For attribute renaming inputs from the form field
+  isSaving = false;
 
   // edit fields for name and description
   @ViewChild('name', {static: false}) nameField: ElementRef;
@@ -147,6 +148,7 @@ export class HierarchyItemComponent implements OnInit {
    * Saves the item to the database, sets not dirty, and sets previousItem
    */
   async saveItem() {
+    this.isSaving = true;
     // first, upload the image if edited, upload when we get the new ID
     if (this.previousItem.imageUrl !== this.hierarchyItem.imageUrl) {
       // post to upload image
@@ -172,6 +174,7 @@ export class HierarchyItemComponent implements OnInit {
       } else {
         this.snack.open('Save Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
       }
+      this.isSaving = false;
     });
   }
 

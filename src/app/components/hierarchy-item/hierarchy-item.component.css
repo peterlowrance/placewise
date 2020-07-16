@@ -75,3 +75,10 @@
   .addButton {
     margin-top: 8px;
   }
+
+  .save-spinner {
+    position: absolute;
+    top: -20px;
+    right: -22px;
+    color: white;
+  }

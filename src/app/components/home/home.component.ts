@@ -173,13 +173,32 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
+  // This is called every time the carrently viewed root is updated
   displayItems(root: HierarchyItem) {
     this.items = [];
+    console.log("meep");
     if (root.items) {
       // For each itemID descending from root, get the item from the data and added to the global items array
       for (const itemID of root.items) {
         this.searchService.getItem(itemID).subscribe(returnedItem => {
-          if (returnedItem !== null && typeof returnedItem !== 'undefined') this.items.push(returnedItem);
+          if (returnedItem !== null && typeof returnedItem !== 'undefined') {
+            let itemFound = false;
+            
+            // Update the item if already displayed
+            for(let item in this.items){
+              if(this.items[item].ID === returnedItem.ID){
+                this.items[item] = returnedItem;
+                itemFound = true;
+                break;
+              }
+            }
+
+            // Add it if not found
+            if(!itemFound){
+              this.items.push(returnedItem);
+            }
+          }
+
         });
       }
     }
