@@ -82,3 +82,17 @@
     right: -22px;
     color: white;
   }
+
+  .mat-form-field {
+    font-size: 20px;
+    padding-bottom: 8px;
+    width: 85%;
+  }
+  
+  
+.fake-confirm-button {
+  float: inline-end;
+  position: relative;
+  top: 0px;
+  left: 4px;
+}

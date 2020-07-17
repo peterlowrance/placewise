@@ -2,8 +2,8 @@
 <!-- item name goes here, switch by edit val -->
 <div [ngSwitch]="this.textEditFields.name">
     <div *ngSwitchCase=true>
-        <form (ngSubmit)="onNameSubmit()">
-            <mat-form-field class="form-appear">
+        <span><form (ngSubmit)="onNameSubmit()">
+            <mat-form-field class="form-appear" >
                 <input matInput #name type="text"
                 placeholder="Name"
                 [(ngModel)]="item.name"
@@ -12,7 +12,8 @@
                 required
                 >
             </mat-form-field>
-        </form>
+            <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
+        </form></span>
     </div>
     <div class="titleHolder" *ngSwitchDefault>
       <h2>
@@ -50,7 +51,7 @@
                 <mat-icon>photo_camera</mat-icon>
             </button>
             <span class="photo-spacer"></span>
-            <button class="photo-button" mat-raised-button color="accent" (click)="uploader.click()">
+            <button class="photo-button right-button" mat-raised-button color="accent" (click)="uploader.click()">
                 <mat-icon>perm_media</mat-icon>
             </button>
         </div>
