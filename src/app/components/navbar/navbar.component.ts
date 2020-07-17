@@ -47,6 +47,10 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit() {
     this.authService.getRole().subscribe(val =>  this.role = val);
+    
+    this.router.events.subscribe(eh => { //Clear dirtyness anytime we leave a page
+      this.navService.setDirty(false);
+    })
   }
 
   /**
@@ -78,10 +82,52 @@ export class NavbarComponent implements OnInit {
   }
 
   /**
+   * Checks to see if the user has modified and not saved.
+   * If so, it prompts them to make sure they know what they are doing.
+   * Otherwise, just route.
+   * 
+   * @param route Where we want to go, based on the "route" function
+   */
+  routeWithCheck(route: string){
+    if(this.navService.getDirty()){
+      if (confirm('Are you sure you want to exit without saving?')){
+        this.route(route);
+      }
+    } else {
+      this.route(route);
+    }
+  }
+
+  private route(route: string) {
+    switch(route) {
+      case 'back':
+        this.goBack();
+        break;
+      case 'hierarchy':
+        this.returnInHierarchy();
+        break;
+      case 'home':
+        this.goHome();
+        break;
+      case 'modify':
+        this.goToModify();
+        break;
+      default:
+        this.router.navigateByUrl(route);
+    }
+  }
+
+  /**
    * Goes back in the router
    */
   goBack() {
-    this.routeLocation.back();
+    if(this.navService.getDirty()){
+      if (confirm('Are you sure you want to go back without saving?')){
+        this.routeLocation.back();
+      }
+    } else {
+      this.routeLocation.back();
+    }
   }
 
   /**

@@ -2,14 +2,14 @@
     <mat-toolbar-row>
         <div [ngSwitch]="checkLocation()">
             <span *ngSwitchCase='"item"'>
-                <button mat-icon-button (click)="goBack()">
+                <button mat-icon-button (click)="routeWithCheck('back')">
                     <mat-icon>
                         arrow_back
                     </mat-icon>
                 </button>
             </span>
             <span *ngSwitchCase='"settings"'>
-                <button mat-icon-button (click)="goBack()">
+                <button mat-icon-button (click)="routeWithCheck('back')">
                     <mat-icon>
                         arrow_back
                     </mat-icon>
@@ -31,7 +31,7 @@
                 </button>
             </span> -->
             <span *ngSwitchCase='"moderateUsers"'>
-                <button mat-icon-button (click)="goBack()">
+                <button mat-icon-button (click)="routeWithCheck('back')">
                     <mat-icon>
                         arrow_back
                     </mat-icon>
@@ -39,7 +39,7 @@
                 <span class="nav-text">Users</span>
             </span>
             <span *ngSwitchCase='"reports"'>
-                <button mat-icon-button (click)="goBack()">
+                <button mat-icon-button (click)="routeWithCheck('back')">
                     <mat-icon>
                         arrow_back
                     </mat-icon>
@@ -52,7 +52,7 @@
 
                 <!-- not home, display back button with functionality -->
                 <span *ngIf='parent !== null && parent.ID !== "root"'>
-                    <button mat-icon-button (click)="returnInHierarchy()">
+                    <button mat-icon-button (click)="routeWithCheck('hierarchy')">
                         <mat-icon>
                             arrow_back
                         </mat-icon> 
@@ -61,18 +61,18 @@
             </span>
         </div>
         <span class="spacer"></span>
-        <button mat-icon-button [disabled]="checkLocation() ==='/' && (parent === null || parent.ID === 'root')" (click)="goHome()"><mat-icon>home</mat-icon></button>
-        <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/reports'" [routerLink]="['/reports']" routerLinkActive="router-link-active">
+        <button mat-icon-button [disabled]="checkLocation() ==='/' && (parent === null || parent.ID === 'root')" (click)="routeWithCheck('home')"><mat-icon>home</mat-icon></button>
+        <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/reports'" (click)="routeWithCheck('reports')">
             <mat-icon>report_problem</mat-icon>
         </button>
-        <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/users'" [routerLink]="['/users']" routerLinkActive="router-link-active"><mat-icon>people</mat-icon></button>
-        <button mat-icon-button [disabled]="this.locationString==='/settings'"  [routerLink]="['/settings']" routerLinkActive="router-link-active">
+        <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/users'" (click)="routeWithCheck('users')"><mat-icon>people</mat-icon></button>
+        <button mat-icon-button [disabled]="this.locationString==='/settings'"  (click)="routeWithCheck('settings')">
             <mat-icon>settings</mat-icon>
         </button>
     </mat-toolbar-row>
     <mat-toolbar-row *ngIf="checkLocation() === '/' && parent && parent.ID !== 'root'">
         <!-- <button mat-flat-button color="accent" (click)="goToModify()">{{parent.name}}</button> -->
-        <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="goToModify()"><mat-icon>more_vert</mat-icon></button>
+        <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="routeWithCheck('modify')"><mat-icon>more_vert</mat-icon></button>
         <span class="nav-text">{{parent.name}}</span>
     </mat-toolbar-row>
 </mat-toolbar>

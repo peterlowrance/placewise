@@ -104,7 +104,6 @@ export class ItemComponent implements OnInit, OnDestroy {
   attributesForCard: AttributeCard[];
 
   role: string; // user role for editing
-  dirty: boolean; // is the item edited dirty
   missingData: string; // string of data missing, null if nothing is missing
   recordingForPhoto = false;
 
@@ -115,6 +114,10 @@ export class ItemComponent implements OnInit, OnDestroy {
   } = {name: false, desc: false, tags: false};
 
   deleteSub: Subscription; // delete subscription
+
+  getDirty(){ return this.navService.getDirty() }
+  setDirty(value: boolean){ this.navService.setDirty(value); }
+
 
   ngOnInit() {
     // retrieve id
@@ -507,10 +510,10 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   checkDirty() {
     if (JSON.stringify(this.item) === JSON.stringify(this.previousItem)) {
-      this.dirty = false;
+      this.setDirty(false);
       return false;
     } else {
-      this.dirty = true;
+      this.setDirty(true);
       return true;
     }
   }
@@ -544,7 +547,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     return this.adminService.updateItem(this.item, null, null).then(val => {
       if (val === true) {
         this.previousItem = JSON.parse(JSON.stringify(this.item));
-        this.dirty = false;
+        this.setDirty(false);
         this.snack.open('Item Save Successful', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
       } else {
         this.snack.open('Item Save Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});

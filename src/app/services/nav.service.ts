@@ -20,6 +20,8 @@ export class NavService {
   /**Type of search, used to hold reference between screens */
   private searchTypeRaw: string;
 
+  private isDirty: boolean = false;
+
   /**Parent behavior, used for interop between navbar and search */
   private parent: BehaviorSubject<HierarchyItem> = new BehaviorSubject(null);
 
@@ -90,5 +92,13 @@ export class NavService {
    */
   resetDelete(){
     this.deleteMessage.next(false);
+  }
+
+  setDirty(value: boolean){
+    this.isDirty = value;
+  }
+
+  getDirty(): boolean {
+    return this.isDirty;
   }
 }

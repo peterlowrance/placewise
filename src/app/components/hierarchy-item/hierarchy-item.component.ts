@@ -14,6 +14,7 @@ import { Category } from 'src/app/models/Category';
 import { Attribute } from 'src/app/models/Attribute';
 import { Timestamp, timestamp } from 'rxjs/internal/operators/timestamp';
 import { trigger, style, transition, animate, keyframes} from '@angular/animations';
+import { NavService } from 'src/app/services/nav.service';
 
 @Component({
   selector: 'app-hierarchy-item',
@@ -38,7 +39,6 @@ export class HierarchyItemComponent implements OnInit {
   hierarchyItem: HierarchyItem;                             // Main thing we'd view here
   control = new FormControl('', Validators.nullValidator);  // Makes sure the name is non-empty
   role: string;                                             // If the user is admin
-  dirty: boolean;                                           // Is the item edited dirty
   previousItem: HierarchyItem;                              // Previous item, before edits are made
   imageToSave: File = null;                                 // The image to upload when saved
   parentsToDisplay: HierarchyItem[][];                      // For the ancestor view component (and eventually loading attributes)
@@ -49,6 +49,7 @@ export class HierarchyItemComponent implements OnInit {
   }];                   // Names of unmodifyable attributes from any parent
   //renameBind: string[] = [];                                       // For attribute renaming inputs from the form field
   isSaving = false;
+  dirty = false; // Needed for HTML
 
   // edit fields for name and description
   @ViewChild('name', {static: false}) nameField: ElementRef;
@@ -69,7 +70,12 @@ export class HierarchyItemComponent implements OnInit {
     public adminService: AdminService,
     private router: Router,
     public dialog: MatDialog,
+    public navService: NavService
     ) { }
+
+    getDirty(){ return this.navService.getDirty() }
+    setDirty(value: boolean){ this.navService.setDirty(value); }
+
 
   ngOnInit() {
     let id = this.route.snapshot.paramMap.get('id');
@@ -149,10 +155,10 @@ export class HierarchyItemComponent implements OnInit {
 
   checkDirty() {
     if (JSON.stringify(this.hierarchyItem) === JSON.stringify(this.previousItem)) {
-      this.dirty = false;
+      this.setDirty(false);
       return false;
     } else {
-      this.dirty = true;
+      this.setDirty(true);
       return true;
     }
   }
@@ -182,7 +188,7 @@ export class HierarchyItemComponent implements OnInit {
     this.adminService.updateHierarchy(this.hierarchyItem, this.isCategory).then(confirmation => {
       if (confirmation === true) {
         this.previousItem = JSON.parse(JSON.stringify(this.hierarchyItem));
-        this.dirty = false;
+        this.setDirty(false);
         this.snack.open('Save Successful', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
       } else {
         this.snack.open('Save Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
@@ -268,7 +274,7 @@ export class HierarchyItemComponent implements OnInit {
     (this.hierarchyItem as Category).attributes = attrs;
     this.attributeNames.push("New Attribute");
 
-    this.dirty = true;
+    this.setDirty(true);
   }
 
   async deleteAttribute(name: string){
@@ -278,7 +284,7 @@ export class HierarchyItemComponent implements OnInit {
         if(attrs[attr]["name"] === name){
           delete (this.hierarchyItem as Category).attributes[attr];
           this.attributeNames = this.attributeNames.filter(elem => elem !== name);
-          this.dirty = true;
+          this.setDirty(true);
         }
       }
     }
