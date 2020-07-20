@@ -176,13 +176,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // This is called every time the carrently viewed root is updated
   displayItems(root: HierarchyItem) {
+    console.log("egg");
     this.items = [];
     if (root.items) {
       // For each itemID descending from root, get the item from the data and added to the global items array
+      console.log(JSON.stringify(root));
       for (const itemID of root.items) {
         this.searchService.getItem(itemID).subscribe(returnedItem => {
           if (returnedItem !== null && typeof returnedItem !== 'undefined') {
             let itemFound = false;
+            console.log(returnedItem.name);
             
             // Update the item if already displayed
             for(let item in this.items){
@@ -312,7 +315,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   clearSearch(event = ''){
+    console.log("HIKE: " + event);
     if(event === ''){
+      this.items = [];
       this.control.setValue('');
       this.displayDescendants(this.root, this.selectedSearch === 'Categories');
     }
@@ -328,6 +333,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           // Search items
           const itemSearcher = new Fuse(items, this.itemSearchOptions);
           this.items = itemSearcher.search(event);
+          console.log('no');
           this.isLoading = false;
         });
         // Search hierarchy items

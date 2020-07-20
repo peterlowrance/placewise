@@ -124,7 +124,6 @@ export class SearchService implements SearchInterfaceService {
       appropriateHierarchyItems.subscribe(hierarchyItems => {
         hierarchyItems.forEach(cat => {
           if (cat.parent === rootID && result.filter(x => x.ID === cat.ID).length === 0) {
-            console.log(cat.ID);
             result.push(cat);
           }
         });
@@ -213,7 +212,7 @@ export class SearchService implements SearchInterfaceService {
       return this.getAllItems();
     }
     // Make list of all children items
-    const childrenItems: string[] = root.items ? root.items : [];
+    const childrenItems: string[] = root.items ? JSON.parse(JSON.stringify(root.items)) : [];
     allParents.forEach(p => {
       if (p.items) {
         p.items.forEach(i => {
