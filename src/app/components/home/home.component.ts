@@ -45,6 +45,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   items: Item[];
   columns: number;
   previousSearch = '';
+  previousSearchRoot = '';
   isLoading = false;
 
   typeSub: Subscription;
@@ -142,6 +143,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     appropriateHierarchy.subscribe(root => {
       this.root = root;
       this.setNavParent(this.root);
+      console.log("Calling from load.");
       this.displayDescendants(root, this.selectedSearch === 'Categories');
     });
   }
@@ -176,9 +178,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   // This is called every time the carrently viewed root is updated
   displayItems(root: HierarchyItem) {
     this.items = [];
+    console.log("CATEGORY: " + root.name)
     if (root.items) {
       // For each itemID descending from root, get the item from the data and added to the global items array
       for (const itemID of root.items) {
+        console.log(itemID);
         this.searchService.getItem(itemID).subscribe(returnedItem => {
           if (returnedItem !== null && typeof returnedItem !== 'undefined') {
             let itemFound = false;
@@ -196,6 +200,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             if(!itemFound){
               this.items.push(returnedItem);
             }
+            
           }
 
         });
@@ -204,13 +209,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   onResize(event) {
+    console.log("Resizing...");
     this.determineCols();
   }
 
-  determineCols(fontSize: number = this.getFontSize(), width = window.innerWidth) {
+  determineCols(fontSize: number = this.getFontSize(), width = document.body.clientWidth) {
     const fontLine = fontSize * 7.5; // Sets max characters (but not directly) on a line
     const calcWidth = width > (fontSize*60) ? fontSize*60 : width;
     this.columns = Math.floor(calcWidth / fontLine * 0.96);
+    console.log("Columns: " + this.columns);
+    console.log("Width: " + width);
+    console.log("Fontsize: " + fontSize);
   }
 
   getFontSize() {
@@ -225,10 +234,11 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   goToHierarchy(item: HierarchyItem) {
     this.control.setValue('');
-    this.searchTextChange('');
+    //this.searchTextChange('');
     this.root = item;
     window.history.pushState(null, null, 'search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
     this.setNavParent(item);
+    console.log("Calling from goTo");
     this.displayDescendants();
   }
 
@@ -295,13 +305,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  searchTextChange(event) {
-    if (event === '' && this.previousSearch === '') {
-      return;
-    }
-    // If the search is empty, load descendants normally
-    if (event === '') {
+  clearSearch(event = ''){
+    if(event === ''){
+      this.control.setValue('');
       this.displayDescendants(this.root, this.selectedSearch === 'Categories');
+    }
+  }
+
+  searchTextChange(event) {
+    if (event === '') {
+      return;
     } else { // Otherwise, get all descendant hierarchy items and items and fuzzy match them
       this.isLoading = true;
       this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
@@ -317,5 +330,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
     }
     this.previousSearch = event;
+    this.previousSearchRoot = this.root.ID;
   }
 }

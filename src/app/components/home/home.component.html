@@ -7,8 +7,8 @@
     </mat-button-toggle-group>
     <form class="search" (submit)="null">
       <mat-form-field class="full-width">
-        <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : selectedSearch}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null"> <!--[matAutocomplete]="auto"-->
-        <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="control.setValue('')">
+        <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : selectedSearch}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null" (focusout)="clearSearch($event)"> <!--[matAutocomplete]="auto"-->
+        <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
           <mat-icon>close</mat-icon>
         </button>
         <mat-icon matSuffix>search</mat-icon>
