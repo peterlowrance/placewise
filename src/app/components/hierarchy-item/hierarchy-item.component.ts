@@ -15,6 +15,7 @@ import { Attribute } from 'src/app/models/Attribute';
 import { Timestamp, timestamp } from 'rxjs/internal/operators/timestamp';
 import { trigger, style, transition, animate, keyframes} from '@angular/animations';
 import { NavService } from 'src/app/services/nav.service';
+import { IfStmt } from '@angular/compiler';
 
 @Component({
   selector: 'app-hierarchy-item',
@@ -90,6 +91,17 @@ export class HierarchyItemComponent implements OnInit {
         for(let att in cat.attributes){
           this.attributeNames.push(cat.attributes[att]["name"]);
         }
+        this.attributeNames.sort(function(a, b) {
+          var nameA = a.toUpperCase(); // ignore upper and lowercase
+          var nameB = b.toUpperCase(); // ignore upper and lowercase
+          if (nameA < nameB) {
+            return -1;
+          }
+          if (nameA > nameB) {
+            return 1;
+          }
+          return 0;
+        });
 
         this.searchService.getAncestorsOf(cat).subscribe(parents => {
           this.parentsToDisplay = parents;
@@ -98,9 +110,22 @@ export class HierarchyItemComponent implements OnInit {
           for(let parent in parents[0]){
             let attrCategory = (parents[0][parent] as Category);
             if(attrCategory.attributes)
-            for(let attr in attrCategory.attributes){ // Print att (TEMP)
+            for(let attr in attrCategory.attributes){
               if(this.inheritedAttributes){
-                this.inheritedAttributes.push({name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name});
+
+                // Have the attributes sorted as they are added
+                let newItemNameCapped = attrCategory.attributes[attr]["name"].toUpperCase();
+                if (this.inheritedAttributes[this.inheritedAttributes.length-1].name.toUpperCase() < newItemNameCapped){
+                  this.inheritedAttributes.splice(this.inheritedAttributes.length, 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name});
+                }
+                else {
+                  for(let index in this.inheritedAttributes){
+                    if(newItemNameCapped < this.inheritedAttributes[index].name.toUpperCase()){
+                      this.inheritedAttributes.splice(parseInt(index), 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name});
+                      break;
+                    }
+                  }
+                }
               }
               else {
                 this.inheritedAttributes = [
@@ -273,6 +298,7 @@ export class HierarchyItemComponent implements OnInit {
     }
     (this.hierarchyItem as Category).attributes = attrs;
     this.attributeNames.push("New Attribute");
+
 
     this.setDirty(true);
   }

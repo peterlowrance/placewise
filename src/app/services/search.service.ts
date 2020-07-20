@@ -124,8 +124,22 @@ export class SearchService implements SearchInterfaceService {
       appropriateHierarchyItems.subscribe(hierarchyItems => {
         hierarchyItems.forEach(cat => {
           if (cat.parent === rootID && result.filter(x => x.ID === cat.ID).length === 0) {
+            console.log(cat.ID);
             result.push(cat);
           }
+        });
+        result.sort(function(a, b) {
+          var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+          var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+          if (nameA < nameB) {
+            return -1;
+          }
+          if (nameA > nameB) {
+            return 1;
+          }
+        
+          // names must be equal
+          return 0;
         });
         obs.next(result);
         obs.complete();

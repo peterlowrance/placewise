@@ -34,7 +34,30 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
   constructor(private authService: AuthService, private adminService: AdminService, private diag: MatDialog, private snack: MatSnackBar) { }
 
   ngOnInit() {
-    this.adminService.getWorkspaceUsers().subscribe( (users) => this.workspaceUsers = users );
+    this.adminService.getWorkspaceUsers().subscribe( (users) => this.workspaceUsers = users.sort(function(a, b) {
+      var nameA = a.user.firstName.toUpperCase(); // ignore upper and lowercase
+      var nameB = b.user.firstName.toUpperCase(); // ignore upper and lowercase
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+      
+      if(nameA === nameB) {
+        nameA = a.user.lastName.toUpperCase(); // ignore upper and lowercase
+        nameB = b.user.lastName.toUpperCase(); // ignore upper and lowercase
+
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+      }
+      // names must be equal
+      return 0;
+    }));
     this.userSub = this.authService.getUser().subscribe(val => this.signedInEmail = val.email);
   }
 

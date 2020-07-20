@@ -143,7 +143,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     appropriateHierarchy.subscribe(root => {
       this.root = root;
       this.setNavParent(this.root);
-      console.log("Calling from load.");
       this.displayDescendants(root, this.selectedSearch === 'Categories');
     });
   }
@@ -178,11 +177,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   // This is called every time the carrently viewed root is updated
   displayItems(root: HierarchyItem) {
     this.items = [];
-    console.log("CATEGORY: " + root.name)
     if (root.items) {
       // For each itemID descending from root, get the item from the data and added to the global items array
       for (const itemID of root.items) {
-        console.log(itemID);
         this.searchService.getItem(itemID).subscribe(returnedItem => {
           if (returnedItem !== null && typeof returnedItem !== 'undefined') {
             let itemFound = false;
@@ -196,9 +193,23 @@ export class HomeComponent implements OnInit, OnDestroy {
               }
             }
 
-            // Add it if not found
+            // Add it if not found, and keep it in sorted order
             if(!itemFound){
-              this.items.push(returnedItem);
+              let newItemNameCapped = returnedItem.name.toUpperCase();
+              if(this.items.length === 0){
+                this.items.push(returnedItem);
+              }
+              else if(this.items[this.items.length-1].name.toUpperCase() < newItemNameCapped){
+                this.items.splice(this.items.length, 0, returnedItem);
+              }
+              else {
+                for(let item in this.items){
+                  if(newItemNameCapped < this.items[item].name.toUpperCase()){
+                    this.items.splice(parseInt(item), 0, returnedItem);
+                    break;
+                  }
+                }
+              }
             }
             
           }
@@ -209,7 +220,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   onResize(event) {
-    console.log("Resizing...");
     this.determineCols();
   }
 
@@ -217,9 +227,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     const fontLine = fontSize * 7.5; // Sets max characters (but not directly) on a line
     const calcWidth = width > (fontSize*60) ? fontSize*60 : width;
     this.columns = Math.floor(calcWidth / fontLine * 0.96);
-    console.log("Columns: " + this.columns);
-    console.log("Width: " + width);
-    console.log("Fontsize: " + fontSize);
   }
 
   getFontSize() {
@@ -238,7 +245,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.root = item;
     window.history.pushState(null, null, 'search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
     this.setNavParent(item);
-    console.log("Calling from goTo");
     this.displayDescendants();
   }
 
