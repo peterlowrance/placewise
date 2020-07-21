@@ -1,13 +1,5 @@
-.search {
-  margin: 5px auto 0;
-}
-
-.full-width {
-  width: 100%;
-}
-
 mat-button-toggle-group {
-  width: 100%;
+  width: 500px;
 }
 
 mat-button-toggle {
@@ -48,21 +40,26 @@ p {
 }
 
 .header {
-  padding: 1rem 0.4rem;
+  padding: 1rem 8px;
   font-weight: bold;
 }
 
 .top-components {
-  padding: 0 0.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-content: flex-end;
+  align-items: flex-start;
+  margin: 0 8px;
 }
 
 .hierarchySelector {
-  margin: 8px 0% 4px 0%;
+  margin: 10px 0% 4px 0%;
 }
 
 @media screen and (max-width: 599px){
   .hierarchySelector {
-    margin: 0 0% 0.05rem 0%;
+    margin: 0 0% 0 0%;
   }
 }
 
@@ -78,7 +75,7 @@ p {
 }
 
 .allContent {
-  padding: 0 0.6rem;
+  padding: 0 8px;
   max-width: 60rem;
   position: center;
   margin: 0.5rem auto auto auto;
@@ -130,7 +127,38 @@ mat-card-content {
   margin-top: -24px;
 }
 
-/* mat-form-field {
-  max-width: 480px;
-  min-width: 240px;
-} */
+.filter-menu {
+  margin-left: 16px;
+  margin-bottom: 24px;
+}
+
+.search-bar {
+  margin: 5px 0 0 0;
+  width: 100%;
+  max-width: 375px;
+}
+
+.search-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-content: flex-end;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 501px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+
+@media screen and (max-width: 400px){
+  .header {
+    padding: 0 8px 1rem 8px;
+  }
+
+  .filter-menu { 
+    margin-bottom: 8px;  
+  }
+}

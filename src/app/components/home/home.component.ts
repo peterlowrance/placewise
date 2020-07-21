@@ -11,6 +11,7 @@ import * as Fuse from 'fuse.js';
 import {AdminService} from 'src/app/services/admin.service';
 import {MatDialog} from '@angular/material/dialog';
 import { trigger, state, style, transition, animate, keyframes} from '@angular/animations';
+import { Category } from 'src/app/models/Category';
 
 /**
  *
@@ -47,6 +48,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   previousSearch = '';
   previousSearchRoot = '';
   isLoading = false;
+  filterableAttributes: [{
+    name: string;
+    ID: string;
+  }];
 
   typeSub: Subscription;
   parentSub: Subscription;
@@ -144,6 +149,27 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.root = root;
       this.setNavParent(this.root);
       this.displayDescendants(root, this.selectedSearch === 'Categories');
+
+      if(selectedSearch === 'Categories'){
+        let category = root as Category;
+        this.filterableAttributes = null;
+        this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
+
+          if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
+            let allParents = [category].concat(categoryAncestors[0]);
+            for(let parent in allParents){
+              for(let attr in allParents[parent].attributes){
+                console.log(attr);
+                if(this.filterableAttributes){
+                  this.filterableAttributes.push({ID: attr, name: allParents[parent].attributes[attr]['name']});
+                } else {
+                  this.filterableAttributes = [{ID: attr, name: allParents[parent].attributes[attr]['name']}];
+                }
+              }
+            }
+          }
+        })
+      }
     });
   }
 
@@ -224,7 +250,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   determineCols(fontSize: number = this.getFontSize(), width = document.body.clientWidth) {
-    const fontLine = fontSize * 7.5; // Sets max characters (but not directly) on a line
+    const fontLine = fontSize * 7.25; // Sets max characters (but not directly) on a line
     const calcWidth = width > (fontSize*60) ? fontSize*60 : width;
     this.columns = Math.floor(calcWidth / fontLine * 0.96);
   }

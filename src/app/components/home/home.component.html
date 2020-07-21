@@ -5,16 +5,22 @@
       <mat-button-toggle value="Categories">Category</mat-button-toggle>
       <mat-button-toggle value="Locations">Location</mat-button-toggle>
     </mat-button-toggle-group>
-    <form class="search" (submit)="null">
-      <mat-form-field class="full-width">
-        <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : selectedSearch}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null" (focusout)="clearSearch($event)"> <!--[matAutocomplete]="auto"-->
-        <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
-          <mat-icon>close</mat-icon>
-        </button>
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
-      <mat-progress-bar *ngIf="isLoading" class="search-progress-bar" mode="query"></mat-progress-bar>
-    </form>
+    <div class="search-tools">
+      <form class="search-bar" (submit)="null">
+        <mat-form-field class="full-width">
+          <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : selectedSearch}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null" (focusout)="clearSearch($event)"> <!--[matAutocomplete]="auto"-->
+          <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
+            <mat-icon>close</mat-icon>
+          </button>
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        <mat-progress-bar *ngIf="isLoading" class="search-progress-bar" mode="query"></mat-progress-bar>
+      </form>
+      <span><button mat-stroked-button *ngIf="selectedSearch === 'Categories'" [matMenuTriggerFor]="beforeMenu" class="filter-menu">Filter by <mat-icon>arrow_drop_down</mat-icon></button></span>
+      <mat-menu #beforeMenu="matMenu" xPosition="before">
+        <button mat-menu-item *ngFor="let attribute of filterableAttributes">{{attribute.name}}</button>
+      </mat-menu>
+    </div>
   </div>
 <!--Hierarchy Items-->
   <div *ngIf="hierarchyItems && hierarchyItems.length > 0" (window:resize)="onResize($event)">
