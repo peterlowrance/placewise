@@ -149,28 +149,30 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.root = root;
       this.setNavParent(this.root);
       this.displayDescendants(root, this.selectedSearch === 'Categories');
+      this.loadAttributes()
+    });
+  }
 
-      if(selectedSearch === 'Categories'){
-        let category = root as Category;
-        this.filterableAttributes = null;
-        this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
+  loadAttributes() {
+    if(this.selectedSearch === 'Categories'){
+      let category = this.root as Category;
+      this.filterableAttributes = null;
+      this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
 
-          if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
-            let allParents = [category].concat(categoryAncestors[0]);
-            for(let parent in allParents){
-              for(let attr in allParents[parent].attributes){
-                console.log(attr);
-                if(this.filterableAttributes){
-                  this.filterableAttributes.push({ID: attr, name: allParents[parent].attributes[attr]['name']});
-                } else {
-                  this.filterableAttributes = [{ID: attr, name: allParents[parent].attributes[attr]['name']}];
-                }
+        if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
+          let allParents = [category].concat(categoryAncestors[0]);
+          for(let parent in allParents){
+            for(let attr in allParents[parent].attributes){
+              if(this.filterableAttributes){
+                this.filterableAttributes.push({ID: attr, name: allParents[parent].attributes[attr]['name']});
+              } else {
+                this.filterableAttributes = [{ID: attr, name: allParents[parent].attributes[attr]['name']}];
               }
             }
           }
-        })
-      }
-    });
+        }
+      })
+    }
   }
 
   /**
@@ -266,12 +268,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   goToHierarchy(item: HierarchyItem) {
-    this.control.setValue('');
+    //this.control.setValue('');
     //this.searchTextChange('');
     this.root = item;
     window.history.pushState(null, null, 'search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
     this.setNavParent(item);
     this.displayDescendants();
+    this.control.setValue('');
+    this.loadAttributes()
   }
 
   toggleHierarchy(event) {
@@ -337,17 +341,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  clearSearch(event = ''){
-    if(event === ''){
-      this.items = [];
-      this.control.setValue('');
-      this.displayDescendants(this.root, this.selectedSearch === 'Categories');
-    }
+  clearSearchBar(){
+    this.control.setValue('');
   }
 
   searchTextChange(event) {
     if (event === '') {
-      this.items = [];
+      // Reset the view to the normal things in the current root
       this.displayDescendants(this.root, this.selectedSearch === 'Categories');
       return;
     } else { // Otherwise, get all descendant hierarchy items and items and fuzzy match them

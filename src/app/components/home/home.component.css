@@ -127,27 +127,29 @@ mat-card-content {
 
 .search-progress-bar {
   margin-top: -24px;
+  margin-bottom: 20px;
 }
 
 .filter-menu {
-  margin-left: 16px;
   margin-bottom: 24px;
 }
 
 .search-bar {
   margin: 5px 0 0 0;
   width: 100%;
+  min-width: 270px;
   max-width: 375px;
 }
 
 .search-tools {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-content: flex-end;
   align-items: flex-end;
   width: 100%;
   max-width: 501px;
+  margin-top: 2px;
 }
 
 mat-form-field {
@@ -204,12 +206,31 @@ mat-form-field {
   align-items: flex-end;
 }
 
+.tool-spacer {
+  width: 48px;
+}
+
+@media screen and (min-width: 1099px){
+  .search-tools {
+    order: -2;
+  }
+
+  .tool-spacer {
+    order: -1
+  }
+  
+}
+
+@media screen and (max-width: 516px){
+  .search-bar {
+    max-width: 100%;
+  }
+  
+}
+
 @media screen and (max-width: 400px){
   .header {
     padding: 0.5rem 8px 0.5rem 8px;
   }
-
-  .filter-menu { 
-    margin-bottom: 8px;  
-  }
+  
 }
