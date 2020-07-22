@@ -5,4 +5,5 @@ export interface HierarchyItem extends HierarchyObject {
   children: string[];
   items: string[];
   imageUrl?: string;
+  desc?: string;
 }

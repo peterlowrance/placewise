@@ -54,13 +54,13 @@ export class HierarchyItemComponent implements OnInit {
 
   // edit fields for name and description
   @ViewChild('name', {static: false}) nameField: ElementRef;
-  // @ViewChild('desc', {static: false}) descField: ElementRef;
+  @ViewChild('desc', {static: false}) descField: ElementRef;
   // @ViewChild('tags', {static: false}) tagsField: ElementRef;
   textEditFields: {
     name: boolean;
-    // desc: boolean;
+    desc: boolean;
     // tags: boolean;
-  } = {name: false/*, desc: false, tags: false*/};
+  } = {name: false, desc: false,/* tags: false*/};
 
   constructor(
     private searchService: SearchService, 
@@ -235,11 +235,11 @@ export class HierarchyItemComponent implements OnInit {
         // focus
         setTimeout(() => this.nameField.nativeElement.focus(), 0);
         break;
-      // case 'desc':
-      //   this.textEditFields.desc = true;
-      //   // focus
-      //   setTimeout(() => this.descField.nativeElement.focus(), 0);
-      //   break;
+      case 'desc':
+        this.textEditFields.desc = true;
+        // focus
+        setTimeout(() => this.descField.nativeElement.focus(), 0);
+        break;
       // case 'tags':
       //   this.textEditFields.tags = true;
       //   // focus
@@ -261,6 +261,24 @@ export class HierarchyItemComponent implements OnInit {
       this.textEditFields.name = false;
     } else {
       this.hierarchyItem.name = this.previousItem.name;
+      // TODO: show snackbar
+    }
+
+    // check for dirtiness
+    this.checkDirty();
+  }
+
+  /**
+   * Handles logic for submitting the description
+   */
+  onDescSubmit() {
+    // check to see if name is valid
+    if (this.hierarchyItem.desc !== '') {
+      // this.item.name = this.nameForm.value;
+      // hide control
+      this.textEditFields.desc = false;
+    } else {
+      this.hierarchyItem.desc = this.previousItem.desc;
       // TODO: show snackbar
     }
 

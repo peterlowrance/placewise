@@ -73,13 +73,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     shouldSort: true,
     keys: ['name', 'tags', 'attributes.value'],
     distance: 50,
-    threshold: .5
+    threshold: .4
   };
   hierarchySearchOptions = {
     shouldSort: true,
     keys: ['name'],
     distance: 50,
-    threshold: .5
+    threshold: .4
   };
 
   constructor(
@@ -250,7 +250,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   determineCols(fontSize: number = this.getFontSize(), width = document.body.clientWidth) {
-    const fontLine = fontSize * 7.25; // Sets max characters (but not directly) on a line
+    const fontLine = fontSize * 15; // Sets max characters (but not directly) on a line
     const calcWidth = width > (fontSize*60) ? fontSize*60 : width;
     this.columns = Math.floor(calcWidth / fontLine * 0.96);
   }
@@ -347,6 +347,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   searchTextChange(event) {
     if (event === '') {
+      this.items = [];
+      this.displayDescendants(this.root, this.selectedSearch === 'Categories');
       return;
     } else { // Otherwise, get all descendant hierarchy items and items and fuzzy match them
       this.isLoading = true;
