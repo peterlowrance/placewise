@@ -48,10 +48,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   previousSearch = '';
   previousSearchRoot = '';
   isLoading = false;
+  isLoadingAttributes = false;
   filterableAttributes: [{
     name: string;
     ID: string;
   }];
+  attributeValues: string[];
 
   typeSub: Subscription;
   parentSub: Subscription;
@@ -173,6 +175,49 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       })
     }
+  }
+
+  gatherAttributesById(ID: string){
+    this.isLoadingAttributes = true;
+    this.attributeValues = [];
+    this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
+      this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
+        for(let item in items) {
+          if(items[item].attributes)
+          for(let attr in items[item].attributes){
+            if(items[item].attributes[attr].ID === ID){
+
+                let newAttrValueCapped = items[item].attributes[attr].value;
+                if(newAttrValueCapped){
+                  if(this.attributeValues.length === 0){
+                    this.attributeValues.push(items[item].attributes[attr].value);
+                  }
+                  else if(this.attributeValues[this.attributeValues.length-1].toUpperCase() < newAttrValueCapped){
+                    this.attributeValues.splice(this.attributeValues.length, 0, items[item].attributes[attr].value);
+                  }
+                  else if(this.attributeValues[this.attributeValues.length-1].toUpperCase() === newAttrValueCapped){
+                    // Do nothing. It already has a value like it
+                  }
+                  else {
+                    for(let value in this.attributeValues){
+                      if(newAttrValueCapped === this.attributeValues[value].toUpperCase()){
+                        // Do nothing. It already has a value like it
+                        break;
+                      }
+                      else if(newAttrValueCapped < this.attributeValues[value].toUpperCase()){
+                        this.attributeValues.splice(parseInt(value), 0, items[item].attributes[attr].value);
+                        break;
+                      }
+                    }
+                  }
+                }
+                this.isLoadingAttributes = false;
+            }
+          }
+        }
+        console.log(JSON.stringify(this.attributeValues));
+      });
+    });
   }
 
   /**

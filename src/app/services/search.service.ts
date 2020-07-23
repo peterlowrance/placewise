@@ -225,13 +225,15 @@ export class SearchService implements SearchInterfaceService {
     const result: Item[] = [];
     return new Observable(obs => {
       // Find all items whose ID's are in the list of children items
-      this.getAllItems().subscribe(items => {
+      let honk = this.getAllItems().subscribe(items => {
         items.forEach(i => {
           if (childrenItems.includes(i.ID)) {
             result.push(i);
           }
         });
         obs.next(result);
+      },
+      () => {
         obs.complete();
       });
     });

@@ -19,11 +19,24 @@
       </form>
       <div>
         <button mat-stroked-button *ngIf="selectedSearch === 'Categories'" [matMenuTriggerFor]="beforeMenu" class="filter-menu">Filter by <mat-icon>arrow_drop_down</mat-icon></button>
+        <mat-progress-bar *ngIf="isLoadingAttributes" class="search-progress-bar" mode="query"></mat-progress-bar>
         <mat-menu #beforeMenu="matMenu" xPosition="before">
-          <button mat-menu-item *ngFor="let attribute of filterableAttributes">{{attribute.name}}</button>
+          <button mat-menu-item *ngFor="let attribute of filterableAttributes" (click)="gatherAttributesById(attribute.ID)">{{attribute.name}}</button>
         </mat-menu>
       </div>
     </div>
+  </div>
+  <!--Attribute values, if we're searching for that-->
+  <div *ngIf="attributeValues && attributeValues.length > 0">
+    <div class="header">Attribute Values Found:</div>
+    <mat-grid-list class="row" [cols]="columns * 2" rowHeight="50px">
+      <mat-grid-tile class="holder" *ngFor="let attribute of attributeValues">
+        <mat-card class="itemCard" [class.mat-elevation-z3]="true">
+          <div class="material-bypass"><div class='attribute-text'>{{attribute}}</div></div>
+        </mat-card>
+      </mat-grid-tile>
+    </mat-grid-list>
+    <br>
   </div>
 <!--Hierarchy Items-->
   <div *ngIf="hierarchyItems && hierarchyItems.length > 0" (window:resize)="onResize($event)">
