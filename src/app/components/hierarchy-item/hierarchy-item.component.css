@@ -88,6 +88,11 @@
     padding-bottom: 8px;
     width: 85%;
   }
+
+  p {
+    margin: 4px 16px 14px 16px;
+    font-size: 18px;
+  }
   
   
 .fake-confirm-button {

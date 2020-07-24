@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, ComponentFactoryResolver} from '@angular/core';
 import {Item} from '../../models/Item';
 import {ActivatedRoute, Router} from '@angular/router';
 import {HierarchyItem} from '../../models/HierarchyItem';
@@ -9,7 +9,7 @@ import {Subscription} from 'rxjs';
 import {AuthService} from 'src/app/services/auth.service';
 import * as Fuse from 'fuse.js';
 import {AdminService} from 'src/app/services/admin.service';
-import {MatDialog} from '@angular/material/dialog';
+import {MatDialog, throwMatDialogContentAlreadyAttachedError} from '@angular/material/dialog';
 import { trigger, state, style, transition, animate, keyframes} from '@angular/animations';
 import { Category } from 'src/app/models/Category';
 
@@ -19,6 +19,12 @@ import { Category } from 'src/app/models/Category';
  * displayDescendents once and then loadLevel (which calls displayDescendents)
  *
  */
+
+ interface Attribute {
+   ID: string;
+   name: string;
+   value?: string;
+ }
 
 @Component({
   selector: 'app-home',
@@ -41,19 +47,24 @@ export class HomeComponent implements OnInit, OnDestroy {
   control = new FormControl();
 
   selectedSearch = 'Categories';
-  hierarchyItems: HierarchyItem[];
   root: HierarchyItem;
+
+  hierarchyItems: HierarchyItem[];
+  originalHierarchyItems: HierarchyItem[];
   items: Item[];
+  originalItems: Item[];
+
   columns: number;
   previousSearch = '';
   previousSearchRoot = '';
   isLoading = false;
   isLoadingAttributes = false;
-  filterableAttributes: [{
-    name: string;
-    ID: string;
-  }];
+  percentLoadedAttributes = 0;
+  filterableAttributes: Attribute[] // For selecting which ones to filter by
   attributeValues: string[];
+  originalAttributeValues: string[]; // For resetting after searching
+  currentAttribute: Attribute; // For the current attribute that that values are being searched for
+  filteredAttributes: Attribute[]; // Attributes that are being actively filtered.
 
   typeSub: Subscription;
   parentSub: Subscription;
@@ -74,6 +85,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   itemSearchOptions = {
     shouldSort: true,
     keys: ['name', 'tags', 'attributes.value'],
+    distance: 50,
+    threshold: .4
+  };
+  attributeSearchOptions = {
+    shouldSort: true,
     distance: 50,
     threshold: .4
   };
@@ -135,6 +151,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   navigateUpHierarchy() {
     const urlID = this.route.snapshot.paramMap.get('id');
     const urlSS = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
+    this.resetAttributeData();
     this.loadLevel(this.root ? this.root.parent : 'root', this.selectedSearch);
   }
 
@@ -155,8 +172,35 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  selectAttribute(value: string) {
+    this.currentAttribute.value = value;
+    if(this.filteredAttributes)
+    this.filteredAttributes.push(this.currentAttribute);
+    else this.filteredAttributes = [this.currentAttribute];
+    this.attributeValues = [];
+    this.originalAttributeValues = [];
+    this.filterResults();
+  }
+
+  removeAttributeFromFilter(ID: string) {
+    for(let attr in this.filteredAttributes) {
+      if(this.filteredAttributes[attr].ID === ID){
+        this.filteredAttributes.splice(parseInt(attr), 1);
+
+        if(this.filteredAttributes.length === 0){
+          this.filteredAttributes = null; // For the categories to turn back on
+          this.displayItems(this.root);
+        }
+        else {
+          this.filterResults(); //Refilter if there's attribute filters left
+        }
+        break;
+      }
+    }
+  }
+
   loadAttributes() {
-    if(this.selectedSearch === 'Categories'){
+    if(this.selectedSearch === 'Categories' && !this.filterableAttributes){
       let category = this.root as Category;
       this.filterableAttributes = null;
       this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
@@ -177,15 +221,23 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  gatherAttributesById(ID: string){
+  gatherAttributeValues(attribute: Attribute){
+
+    this.percentLoadedAttributes = 2;
     this.isLoadingAttributes = true;
+    this.currentAttribute = attribute;
     this.attributeValues = [];
+
     this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
+      this.percentLoadedAttributes = 6;
       this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
+
+        let slice = 94/items.length;
         for(let item in items) {
+          this.percentLoadedAttributes += slice;
           if(items[item].attributes)
           for(let attr in items[item].attributes){
-            if(items[item].attributes[attr].ID === ID){
+            if(items[item].attributes[attr].ID === attribute.ID){
 
                 let newAttrValueCapped = items[item].attributes[attr].value;
                 if(newAttrValueCapped){
@@ -215,7 +267,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             }
           }
         }
-        console.log(JSON.stringify(this.attributeValues));
+        this.originalAttributeValues = JSON.parse(JSON.stringify(this.attributeValues));
       });
     });
   }
@@ -320,7 +372,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.setNavParent(item);
     this.displayDescendants();
     this.control.setValue('');
-    this.loadAttributes()
+    this.resetAttributeData();
+    this.loadAttributes();
   }
 
   toggleHierarchy(event) {
@@ -329,6 +382,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + (this.root ? this.root.ID : 'root'));
     this.setNavType(event.value);
     this.loadLevel('root', event.value);
+    this.resetAttributeData();
+  }
+
+  resetAttributeData(){
+    this.attributeValues = null;
+    this.originalAttributeValues = null;
+    this.filterableAttributes = null;
   }
 
   /**Toggles the admin fab icon */
@@ -390,10 +450,41 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.control.setValue('');
   }
 
+  filterResults(){
+    this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
+      this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
+        let newItemResults: Item[] = [];
+        for(let item in items){
+          if(items[item].attributes){
+            let passAll = true;
+            for(let requiredAttr in this.filteredAttributes){
+              let pass = false;
+              for(let attr in items[item].attributes){
+                if(items[item].attributes[attr].ID === this.filteredAttributes[requiredAttr].ID && items[item].attributes[attr].value === this.filteredAttributes[requiredAttr].value){
+                  pass = true;
+                  break;            // TODO: ORDER WRONG
+                }
+              }
+              if(!pass) {
+                passAll = false;
+                break; // It did not ahve all the required filters
+              }
+            }
+            if(passAll){
+              newItemResults.push(items[item]);
+            }
+          }
+        }
+        this.items = newItemResults;
+      });
+    });
+  }
+
   searchTextChange(event) {
     if (event === '') {
       // Reset the view to the normal things in the current root
       this.displayDescendants(this.root, this.selectedSearch === 'Categories');
+      this.attributeValues = this.originalAttributeValues;
       return;
     } else { // Otherwise, get all descendant hierarchy items and items and fuzzy match them
       this.isLoading = true;
@@ -408,6 +499,11 @@ export class HomeComponent implements OnInit, OnDestroy {
         const hierarchySearcher = new Fuse(hierarchyItems, this.hierarchySearchOptions);
         this.hierarchyItems = hierarchySearcher.search(event);
       });
+      if(this.attributeValues){
+        this.attributeValues = JSON.parse(JSON.stringify(this.originalAttributeValues));
+        const attrValueSearcher = new Fuse(this.attributeValues, this.attributeSearchOptions);
+        this.attributeValues = attrValueSearcher.search(event).map(i => this.originalAttributeValues[i]);
+      }
     }
     this.previousSearch = event;
     this.previousSearchRoot = this.root.ID;
