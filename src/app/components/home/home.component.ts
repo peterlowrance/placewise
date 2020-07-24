@@ -32,12 +32,12 @@ import { Category } from 'src/app/models/Category';
   styleUrls: ['./home.component.css'],
   animations:[
     trigger('button-extention-item', [
-      state('shrunk', style({width: '40px', visibility: 'hidden', pointerEvents: 'none'})),
+      state('shrunk', style({width: '50px', visibility: 'hidden', pointerEvents: 'none'})),
       state('extended', style({width: '80px', visibility: 'visible', pointerEvents: 'auto'})),
       transition('shrunk <=> extended', animate('300ms'))
     ]),
     trigger('button-extention-hierarchy', [
-      state('shrunk', style({width: '40px', visibility: 'hidden', pointerEvents: 'none'})),
+      state('shrunk', style({width: '80px', visibility: 'hidden', pointerEvents: 'none'})),
       state('extended', style({width: '140px', visibility: 'visible', pointerEvents: 'auto'})),
       transition('shrunk <=> extended', animate('300ms'))
     ])
@@ -76,9 +76,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   /**Admin fab open direction */
   direction = 'left';
   /**Admin fab open animation type */
-  animation = 'fling';
+  animation = 'scale';
   /**Admin fab spin */
-  spin = true;
+  spin = false;
   /**Admin fab icon */
   ico = 'add';
   miniFabState = 'shrunk'
