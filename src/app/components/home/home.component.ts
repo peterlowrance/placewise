@@ -12,6 +12,8 @@ import {AdminService} from 'src/app/services/admin.service';
 import {MatDialog, throwMatDialogContentAlreadyAttachedError} from '@angular/material/dialog';
 import { trigger, state, style, transition, animate, keyframes} from '@angular/animations';
 import { Category } from 'src/app/models/Category';
+import { switchMap } from 'rxjs/operators';
+import { url } from 'inspector';
 
 /**
  *
@@ -34,12 +36,12 @@ import { Category } from 'src/app/models/Category';
     trigger('button-extention-item', [
       state('shrunk', style({width: '50px', visibility: 'hidden', pointerEvents: 'none'})),
       state('extended', style({width: '80px', visibility: 'visible', pointerEvents: 'auto'})),
-      transition('shrunk <=> extended', animate('300ms'))
+      transition('shrunk <=> extended', animate('250ms'))
     ]),
     trigger('button-extention-hierarchy', [
-      state('shrunk', style({width: '80px', visibility: 'hidden', pointerEvents: 'none'})),
+      state('shrunk', style({width: '90px', visibility: 'hidden', pointerEvents: 'none'})),
       state('extended', style({width: '140px', visibility: 'visible', pointerEvents: 'auto'})),
-      transition('shrunk <=> extended', animate('300ms'))
+      transition('shrunk <=> extended', animate('250ms'))
     ])
   ]
 })
@@ -124,6 +126,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     // change if parent is different
     this.parentSub = this.navService.getParent().subscribe(val => {
         this.root = val;
+        if(val){
+          this.displayDescendants(val, this.selectedSearch === 'Categories');
+          this.loadAttributes();
+        }
       }
     );
   }
@@ -135,11 +141,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Get the url and set the selectedSearch
+    // Naviagte to the location/category everytime the url is updated
     const urlID = this.route.snapshot.paramMap.get('id');
     this.selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
     // Load the current level
     this.loadLevel(urlID, this.selectedSearch);
+
+    // ROUTER IS UNTRUSTWORTHY - internal changes can make the router think it doesn't need to update anything
+    // this.route.paramMap.subscribe(params => {
+    //     const urlID = params.get('id');
+    //     this.selectedSearch = params.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
+    //     this.loadLevel(urlID, this.selectedSearch);
+    //   }
+    // );
 
     this.determineCols();
     // Get role
@@ -166,9 +180,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     const appropriateHierarchy = selectedSearch === 'Categories' ? this.searchService.getCategory(rootID) : this.searchService.getLocation(rootID);
     appropriateHierarchy.subscribe(root => {
       this.root = root;
-      this.setNavParent(this.root);
+      this.navService.setParent(this.root);
       this.displayDescendants(root, this.selectedSearch === 'Categories');
-      this.loadAttributes()
+      this.loadAttributes();
     });
   }
 
@@ -273,14 +287,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Sets the nav parent field of the nav controller
-   * @param parent parent hierarchy item
-   */
-  private setNavParent(parent: HierarchyItem) {
-    this.navService.setParent(parent);
-  }
-
-  /**
    * Sets the nav type field of the nav controller
    * @param type string search type
    */
@@ -369,7 +375,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     //this.searchTextChange('');
     this.root = item;
     window.history.pushState(null, null, 'search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
-    this.setNavParent(item);
+    this.navService.setParent(item);
     this.displayDescendants();
     this.control.setValue('');
     this.resetAttributeData();

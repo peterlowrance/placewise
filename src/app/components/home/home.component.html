@@ -2,7 +2,7 @@
 <div class="allContent">
   <div class="top-components">
     <mat-button-toggle-group class="hierarchySelector" *ngIf="(!root || root?.name === 'root')" [(value)]="selectedSearch" name="hierarchySelector" (change)="toggleHierarchy($event)">
-      <mat-button-toggle value="Categories">Category</mat-button-toggle>
+      <mat-button-toggle value="Categories" >Category</mat-button-toggle>
       <mat-button-toggle value="Locations">Location</mat-button-toggle>
     </mat-button-toggle-group>
     <div class ="tool-spacer"></div>

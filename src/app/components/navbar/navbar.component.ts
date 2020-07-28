@@ -5,6 +5,10 @@ import {Location} from '@angular/common';
 import {NavService} from '../../services/nav.service';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
 import {AuthService} from 'src/app/services/auth.service';
+import { Console } from 'console';
+import { SearchService } from 'src/app/services/search.service';
+import { HostListener } from '@angular/core';
+
 
 @Component({
   selector: 'app-navbar',
@@ -32,25 +36,50 @@ export class NavbarComponent implements OnInit {
   /**The user's role */
   role: string = '';
 
+  
+  @HostListener('window:popstate', ['$event'])
+  onPopState(event) {
+    let url: string  = event.target.location.pathname;
+    if(url.startsWith('/search/') && this.locationString.startsWith('/search/')){ // Catch back button in the searching, router does not pickup on the changes
+      let splitURL = url.split('/');
+      if(splitURL[2] === 'categories'){
+        this.searchService.getCategory(splitURL[3].replace('%20', ' ')).subscribe(cat => { // %20 replace for the conversion from the URL's spaces to string spaces
+          this.navService.setSearchType('Categories');
+          this.navService.setParent(cat)
+        });
+      }
+      else if (splitURL[2] === 'locations'){
+        this.searchService.getLocation(splitURL[3].replace('%20', ' ')).subscribe(loc => {
+          this.navService.setSearchType('Locations');
+          this.navService.setParent(loc)
+        });
+      }
+      else {
+        console.log("Malformed URL: " + splitURL[2]);
+      }
+    }
+  }
 
-  constructor(private routeLocation: Location, private router: Router, private navService: NavService, private authService: AuthService) {
+  constructor(private routeLocation: Location, private router: Router, private navService: NavService, private authService: AuthService, private searchService: SearchService) {
 
     router.events.subscribe(val => {
-      if (val instanceof NavigationEnd) {
+      this.navService.setDirty(false); //Clear dirtyness anytime we leave a page
+      if (val instanceof NavigationEnd) {    
         this.locationString = val.url;
       }
     });
 
-    navService.getSearchType().subscribe(val => this.searchType = val.toLowerCase());
-    navService.getParent().subscribe(val => this.parent = val);
+    navService.getSearchType().subscribe(val => {
+      this.searchType = val.toLowerCase()
+    });
+    navService.getParent().subscribe(val => {
+      this.parent = val;
+    });
+
   }
 
   ngOnInit() {
     this.authService.getRole().subscribe(val =>  this.role = val);
-    
-    this.router.events.subscribe(eh => { //Clear dirtyness anytime we leave a page
-      this.navService.setDirty(false);
-    })
   }
 
   /**
@@ -107,7 +136,7 @@ export class NavbarComponent implements OnInit {
         this.returnInHierarchy();
         break;
       case 'home':
-        this.goHome();
+        this.goToHierarchy('root');
         break;
       case 'modify':
         this.goToModify();
@@ -134,23 +163,32 @@ export class NavbarComponent implements OnInit {
    * Notifies the navservice that a hierarchy return was requested
    */
   returnInHierarchy() {
-    this.routeLocation.back();
-    this.navService.returnState();
+    if(this.parent.parent){
+      this.goToHierarchy(this.parent.parent);
+    }
+    else {
+      console.log("Unusual: There was no parent of parent.")
+    }
   }
 
-  /**
-   * Returns home, forgets parent state
-   */
-  async goHome() {
-    this.navService.forgetParent();
-    // If we are going home from the search screen, navigate to blank then navigate home
-    if (this.router.url.indexOf('search') > -1) {
-      await this.router.navigateByUrl('blank').then(() => this.router.navigateByUrl('search/' + (this.searchType ? this.searchType : 'categories') + '/root'));
+  goToHierarchy(id: string){
+    if(this.searchType === 'categories'){
+      this.searchService.getCategory(id).subscribe(cat => {
+        this.navService.setParent(cat);
+        this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/' + id]).then(confirm => {
+          if(!confirm){ // Sometimes since we're going to the same component, the router will not navigate. If so, push to make sure the url gets in the history
+            window.history.pushState(null, null, 'search/' + (this.searchType ? this.searchType : 'categories') + '/' + id);
+          }
+        });
+      });
     } else {
-      await this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/root']).then(result => {
-        if (result === null) {
-          this.router.navigateByUrl('').then(() => this.router.navigateByUrl('search/' + (this.searchType ? this.searchType : 'categories') + '/root'));
-        }
+      this.searchService.getLocation(id).subscribe(loc => {
+        this.navService.setParent(loc)
+        this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/' + id]).then(confirm => {
+          if(!confirm){ // Sometimes since we're going to the same component, the router will not navigate. If so, push to make sure the url gets in the history
+            window.history.pushState(null, null, 'search/' + (this.searchType ? this.searchType : 'categories') + '/' + id);
+          }
+        });
       });
     }
   }

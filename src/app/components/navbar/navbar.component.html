@@ -2,18 +2,20 @@
     <mat-toolbar-row>
         <div [ngSwitch]="checkLocation()">
             <span *ngSwitchCase='"item"'>
-                <button mat-icon-button (click)="routeWithCheck('back')">
+                <!-- <button mat-icon-button (click)="routeWithCheck('back')">
                     <mat-icon>
                         arrow_back
                     </mat-icon>
-                </button>
+                </button> 
+                Don't have anything here now, web pages have back button, undo button in future? -->
+                <span class="nav-text">Item</span>
             </span>
             <span *ngSwitchCase='"settings"'>
-                <button mat-icon-button (click)="routeWithCheck('back')">
+                <!-- <button mat-icon-button (click)="routeWithCheck('back')">
                     <mat-icon>
                         arrow_back
                     </mat-icon>
-                </button>
+                </button> -->
                 <span class="nav-text">Settings</span>
             </span>
             <!-- <span *ngSwitchCase='"modifyCategories"'>
@@ -31,19 +33,19 @@
                 </button>
             </span> -->
             <span *ngSwitchCase='"moderateUsers"'>
-                <button mat-icon-button (click)="routeWithCheck('back')">
+                <!-- <button mat-icon-button (click)="routeWithCheck('back')">
                     <mat-icon>
                         arrow_back
                     </mat-icon>
-                </button>
+                </button> -->
                 <span class="nav-text">Users</span>
             </span>
             <span *ngSwitchCase='"reports"'>
-                <button mat-icon-button (click)="routeWithCheck('back')">
+                <!-- <button mat-icon-button (click)="routeWithCheck('back')">
                     <mat-icon>
                         arrow_back
                     </mat-icon>
-                </button>
+                </button> -->
                 <span class="nav-text">Reports</span>
             </span>
             <!-- we are home, check for in search hierarchy -->
@@ -54,7 +56,7 @@
                 <span *ngIf='parent !== null && parent.ID !== "root"'>
                     <button mat-icon-button (click)="routeWithCheck('hierarchy')">
                         <mat-icon>
-                            arrow_back
+                            arrow_upward
                         </mat-icon> 
                     </button>
                 </span>
