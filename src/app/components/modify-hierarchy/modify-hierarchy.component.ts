@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef} from '@angular/core';
 import {HierarchyItem} from '../../models/HierarchyItem';
 import {NestedTreeControl} from '@angular/cdk/tree';
 import {SearchService} from '../../services/search.service';
@@ -9,6 +9,10 @@ import {EditHierarchyDialogComponent} from '../edit-hierarchy-dialog/edit-hierar
 import {BehaviorSubject} from 'rxjs';
 import {AdminService} from '../../services/admin.service';
 import {AuthService} from "../../services/auth.service";
+
+/*
+* TODO: There's likely a lot of left over code from how this use to function
+*/
 
 interface TreeHierarchyItem extends HierarchyItem {
   realChildren?: TreeHierarchyItem[];
@@ -33,6 +37,8 @@ export class ModifyHierarchyComponent implements OnInit {
   dataChange = new BehaviorSubject<TreeHierarchyItem[]>([]);
   workspace: string;
 
+  recentCatsOrLocs: HierarchyItem[];
+
   hasChild = (_: number, node: TreeHierarchyItem) => node && (!!node.realChildren && node.realChildren.length > 0);
   toHierarchyItem = (node: TreeHierarchyItem) => ({
     ID: node.ID,
@@ -43,13 +49,20 @@ export class ModifyHierarchyComponent implements OnInit {
     items: node.items
   });
 
-  constructor(private searchService: SearchService, private route: ActivatedRoute, public dialog: MatDialog, public adminService: AdminService, private authService: AuthService) {
+  constructor(private searchService: SearchService, private route: ActivatedRoute, public dialog: MatDialog, public adminService: AdminService, private authService: AuthService, private cdr: ChangeDetectorRef) {
   }
 
   ngOnInit() {
     this.authService.getWorkspace().subscribe(
       val => this.workspace = val.name
     );
+
+    if(this.isCategory){
+      this.recentCatsOrLocs = this.adminService.getRecentCategories();
+    }
+    else {
+      this.recentCatsOrLocs = this.adminService.getRecentLocations();
+    }
 
     this.dataChange.subscribe(changedData => {
       this.dataSource.data = null;
@@ -75,7 +88,6 @@ export class ModifyHierarchyComponent implements OnInit {
           this.buildTree(root, hierarchy);
           this.dataChange.next([root]);
           if (this.selectedParents) {
-            console.log("Foreached?!");
             this.selectedParents.forEach(p => {
               this.expandParents(this.findByID(p, [root]));
             });
@@ -121,7 +133,7 @@ export class ModifyHierarchyComponent implements OnInit {
     this.selectedParentsOutput.emit(this.selectedParents);
   }
 
-  setParent(node: TreeHierarchyItem) {
+  setParent(node: HierarchyItem) {
     this.selectedParents = [node.ID];
     this.selectedParentsOutput.emit(this.selectedParents);
   }

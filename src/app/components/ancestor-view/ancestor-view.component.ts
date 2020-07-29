@@ -37,6 +37,7 @@ export class AncestorViewComponent implements OnInit {
   }
 
   ngOnChanges(changes: {[propKey: string]: SimpleChange}) {
+    this.parent = {name: null, imageUrl: null, children: null, ID: null};
     if(this.parentsToDisplay){
       // need to loop over first elements, pop off, and combine any like
       // first pop off all top level locations, those are the root

@@ -292,13 +292,40 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   updateItemLocations(result: string[], oldLocations: string[]) {
     if (result) {
-      this.item.locations = result;
-      // Update the item locations then refresh
-      this.adminService.updateItem(this.item, null, oldLocations).then(val => {
-        if (val) {
-          location.reload();
+      // Go through and get the new locations for saving to recent
+      let newLocations: string[] = [];
+
+      for(let resultIndex in result){
+        let found = false;
+        for(let currentIndex in oldLocations){
+          if(oldLocations[currentIndex] === result[resultIndex]){
+            found = true;
+            break;
+          }
         }
-      });
+        if(!found){
+          newLocations.push(result[resultIndex]);
+        }
+      }
+
+      // Update the item locations
+      this.item.locations = result;
+      this.adminService.updateItem(this.item, null, oldLocations).then(val => {
+        this.searchService.getAncestorsOf(this.item).subscribe(locations => {
+          this.locationsAndAncestors = locations;
+        });
+        // Update recent locations
+        for(let index in newLocations){
+          this.searchService.getLocation(newLocations[index]).subscribe(loc => {
+            this.adminService.addToRecent(loc);
+          })
+        }
+      })
+      // .then(val => {
+      //   if (val) {
+      //     location.reload();
+      //   }
+      // });
     }
   }
 
@@ -323,6 +350,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     if (result && result.length > 0) {
       this.item.category = result[0];
       this.searchService.getCategory(result[0]).subscribe(category => {
+        this.adminService.addToRecent(category);
         this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0])
       });
       this.adminService.updateItem(this.item, oldCategory, null);

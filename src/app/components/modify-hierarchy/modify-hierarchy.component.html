@@ -1,5 +1,28 @@
 <h3 *ngIf="changeParentNode">Select what this is inside of:</h3>
 <div class="allContent">
+  <h5>{{isCategory ? 'Recent Categories:' : 'Recent Locations:'}}</h5>
+  <div class="recent-container" *ngIf="recentCatsOrLocs">
+    <mat-radio-group aria-label="Recent Categories" *ngIf="singleSelection">
+    <div class="recent-names" *ngFor="let hier of recentCatsOrLocs">
+      {{hier.name}}
+      <mat-radio-button [checked]="selectedParents.indexOf(hier.ID) > -1" (change)="setParent(hier)" [value]="hier.name"></mat-radio-button>
+    </div>
+    </mat-radio-group>
+    <div *ngIf="!singleSelection">
+      <div class="recent-names" *ngFor="let hier of recentCatsOrLocs">
+        {{hier.name}}
+        <mat-checkbox [checked]="selectedParents.indexOf(hier.ID) > -1" (change)="selectedParentsToggle(hier)" [value]="hier.name"></mat-checkbox>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="!recentCatsOrLocs">
+    <div class="recent-container">
+      <div class="recent-names no-name">No recent data</div>
+    </div>
+  </div>
+  <br>
+  <br>
+  <h5>{{isCategory ? 'All Categories:' : 'All Locations:'}}</h5>
   <div class="parentButtonHolder">
     <button class="parentButton" *ngIf="changeParentNode" mat-raised-button (click)="move(changeParentNode)">{{isCategory ? 'Unassigned' : workspace}}</button>
   </div>

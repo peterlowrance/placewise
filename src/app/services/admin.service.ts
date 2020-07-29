@@ -15,6 +15,7 @@ import { User } from '../models/User';
 import * as firebase from 'firebase';
 import { promise } from 'protractor';
 import { Category } from '../models/Category';
+import { Location } from '../models/Location';
 
 declare var require: any;
 
@@ -30,6 +31,49 @@ const adServe = 'https://placewise-d040e.appspot.com/';
   providedIn: 'root'
 })
 export class AdminService {
+
+  private recentCategories: Category[]; // This helps the user not have to click so many buttons setting categories up
+  private recentLocations: Location[]; // This helps the user not have to click so many buttons setting categories up
+  getRecentCategories(): Category[] {return this.recentCategories};
+  getRecentLocations(): Location[] {return this.recentLocations};
+
+  addToRecent(recent: HierarchyItem){
+    if(recent.ID === 'root') return; // Roots should not be saved
+
+    // Load which array we'll be saving to
+    let recentList: HierarchyItem[];
+    if(recent.type === 'category'){
+      if(!this.recentCategories) this.recentCategories = [];
+      recentList = this.recentCategories;
+    }
+    else if(recent.type === 'location') {
+      if(!this.recentLocations) this.recentLocations = [];
+      recentList = this.recentLocations;
+    }
+    else {
+      return; // Not a category or location
+    }
+
+    let found = false;
+
+    // Add to recent or reorder the list to being the most recent if it already exists
+    for(let listIndex in recentList){ 
+      if(recentList[listIndex].ID === recent.ID){
+        found = true;
+        let foundIndex = parseInt(listIndex);
+        if(foundIndex != 0){
+          recentList.splice(foundIndex, 1);
+          recentList.splice(0, 0, recent)
+        }
+        break;
+      }
+    }
+    if(!found) recentList.splice(0, 0, recent);
+    if(recentList.length > 5){ // Only have 5
+      recentList.pop();
+    }
+  }
+
 
   getReport(id: string) {
     return this.afs.doc<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).snapshotChanges().pipe(map(a => {
