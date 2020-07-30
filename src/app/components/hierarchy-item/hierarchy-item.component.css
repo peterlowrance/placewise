@@ -101,3 +101,30 @@
   top: 0px;
   left: 4px;
 }
+
+.extended-fab-button {
+  padding: 0 0.8rem;
+  border-radius: 10rem;
+  width: 132px;
+  position: fixed;
+  top: 8px;
+  left: 10px;
+  z-index: 10;
+}
+
+.extended-fab-button__text {
+  font-weight: 400;
+  letter-spacing: .1em;
+  font-size: 14px;
+  text-transform: uppercase;
+  text-overflow: clip;
+  padding-left: 10px;
+}
+
+@media screen and (min-width: 600px){
+  .extended-fab-button {
+    top: 12px;
+    left: 12px;
+  }
+  
+}

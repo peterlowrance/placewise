@@ -53,6 +53,7 @@ export class NavService {
   }
 
   returnState(){
+    console.log("egg");
     this.returnClick.next(true);
   }
 

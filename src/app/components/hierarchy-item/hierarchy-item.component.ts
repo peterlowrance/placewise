@@ -22,12 +22,11 @@ import { IfStmt } from '@angular/compiler';
   templateUrl: './hierarchy-item.component.html',
   styleUrls: ['./hierarchy-item.component.css'],
   animations:[
-    trigger('open-save-fab', [
+    trigger('open-undo-fab', [
       transition(':enter', [
-        animate('800ms ease-out', keyframes([
-          style({backgroundColor: '#3e2723', opacity: 0.4}),
-          style({backgroundColor: '#f44336', opacity: 0.8}),
-          style({backgroundColor: '#3e2723', opacity: 1})
+        animate('400ms', keyframes([
+          style({opacity: 0}),
+          style({opacity: 1})
         ]))
         ]
       )
@@ -139,6 +138,7 @@ export class HierarchyItemComponent implements OnInit {
           }
 
         });
+        if(!this.previousItem) // Don't overwrite if we already have something
         this.previousItem = JSON.parse(JSON.stringify(this.hierarchyItem)); // deep copy
       })
       
@@ -146,6 +146,8 @@ export class HierarchyItemComponent implements OnInit {
       this.searchService.getLocation(id).subscribe(loc => {
         this.hierarchyItem = loc;
         this.searchService.getAncestorsOf(loc).subscribe(parents => this.parentsToDisplay = parents);
+        
+        if(!this.previousItem) // Don't overwrite if we already have something
         this.previousItem = JSON.parse(JSON.stringify(this.hierarchyItem)); // deep copy
       })
     }
@@ -183,6 +185,7 @@ export class HierarchyItemComponent implements OnInit {
       this.setDirty(false);
       return false;
     } else {
+      this.saveItem();
       this.setDirty(true);
       return true;
     }
@@ -193,6 +196,7 @@ export class HierarchyItemComponent implements OnInit {
    */
   async saveItem() {
     this.isSaving = true;
+    this.adminService.addToRecent(this.hierarchyItem);
     // first, upload the image if edited, upload when we get the new ID
     if (this.previousItem.imageUrl !== this.hierarchyItem.imageUrl) {
       // post to upload image
@@ -211,11 +215,7 @@ export class HierarchyItemComponent implements OnInit {
 
   update() {
     this.adminService.updateHierarchy(this.hierarchyItem, this.isCategory).then(confirmation => {
-      if (confirmation === true) {
-        this.previousItem = JSON.parse(JSON.stringify(this.hierarchyItem));
-        this.setDirty(false);
-        this.snack.open('Save Successful', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
-      } else {
+      if (confirmation !== true) {
         this.snack.open('Save Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
       }
       this.isSaving = false;
@@ -321,6 +321,22 @@ export class HierarchyItemComponent implements OnInit {
     this.setDirty(true);
   }
 
+  undoChanges() {
+    let itemToRevert = this.hierarchyItem;
+    this.hierarchyItem = JSON.parse(JSON.stringify(this.previousItem)); // Copy so then the original stays original
+    
+    if(this.hierarchyItem.parent !== itemToRevert.parent){
+      if(this.isCategory){
+        this.adminService.updateCategoryPosition(this.hierarchyItem.parent, this.hierarchyItem.ID, itemToRevert.parent);
+      } else {
+        this.adminService.updateLocationPosition(this.hierarchyItem.parent, this.hierarchyItem.ID, itemToRevert.parent);
+      }
+    }
+
+    this.saveItem();
+    this.setDirty(false);
+  }
+
   async deleteAttribute(name: string){
     if (confirm('Are you sure you want to delete the attribute?\nThis cannot be undone.')) {
       let attrs = (this.hierarchyItem as Category).attributes;
@@ -344,13 +360,24 @@ export class HierarchyItemComponent implements OnInit {
       data: {hierarchy: this.isCategory ? 'categories' : 'locations', singleSelection: true, id: this.hierarchyItem.ID, parents: [this.hierarchyItem.parent]}
     });
     dialogRef.afterClosed().subscribe(result => {
-      if(result[0])
+      if(result && result[0] && this.hierarchyItem.parent !== result[0]){
         this.hierarchyItem.parent = result[0];
         if(this.isCategory){
           this.adminService.updateCategoryPosition(result[0], this.hierarchyItem.ID, oldLocation)
+          let sub = this.searchService.getCategory(this.hierarchyItem.parent).subscribe(cat => {
+            this.adminService.addToRecent(cat);
+            sub.unsubscribe();
+          });
         } else {
           this.adminService.updateLocationPosition(result[0], this.hierarchyItem.ID, oldLocation)
+          let sub = this.searchService.getLocation(this.hierarchyItem.parent).subscribe(loc => {
+            this.adminService.addToRecent(loc);
+            sub.unsubscribe();
+          });
         }
+        this.setDirty(true);
+        this.adminService.addToRecent(this.hierarchyItem);
+      }
     });
   }
 

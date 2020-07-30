@@ -114,6 +114,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.returnSub = this.navService.getReturnState().subscribe(
       val => {
         if (val && this.root) { // if we returned
+          console.log("no");
           this.navigateUpHierarchy();
         }
       }
@@ -141,6 +142,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    console.log("Init!")
     // Naviagte to the location/category everytime the url is updated
     const urlID = this.route.snapshot.paramMap.get('id');
     this.selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
@@ -214,23 +216,25 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   loadAttributes() {
-    if(this.selectedSearch === 'Categories' && !this.filterableAttributes){
+    if(this.selectedSearch === 'Categories'){
       let category = this.root as Category;
-      this.filterableAttributes = null;
+      let attributes: Attribute[];
       this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
 
         if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
           let allParents = [category].concat(categoryAncestors[0]);
           for(let parent in allParents){
             for(let attr in allParents[parent].attributes){
-              if(this.filterableAttributes){
-                this.filterableAttributes.push({ID: attr, name: allParents[parent].attributes[attr]['name']});
+              if(attributes){
+                attributes.push({ID: attr, name: allParents[parent].attributes[attr]['name']});
               } else {
-                this.filterableAttributes = [{ID: attr, name: allParents[parent].attributes[attr]['name']}];
+                attributes = [{ID: attr, name: allParents[parent].attributes[attr]['name']}];
               }
             }
           }
         }
+
+        this.filterableAttributes = attributes;
       })
     }
   }
@@ -253,7 +257,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           for(let attr in items[item].attributes){
             if(items[item].attributes[attr].ID === attribute.ID){
 
-                let newAttrValueCapped = items[item].attributes[attr].value;
+                let newAttrValueCapped = items[item].attributes[attr].value.toUpperCase();
                 if(newAttrValueCapped){
                   if(this.attributeValues.length === 0){
                     this.attributeValues.push(items[item].attributes[attr].value);
@@ -418,7 +422,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       location = this.root.ID;
     }
     this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
+      console.log("Navigating...");
       this.router.navigate(['/item/' + id]);
+      console.log("Done!");
     });
   }
 
@@ -466,7 +472,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             for(let requiredAttr in this.filteredAttributes){
               let pass = false;
               for(let attr in items[item].attributes){
-                if(items[item].attributes[attr].ID === this.filteredAttributes[requiredAttr].ID && items[item].attributes[attr].value === this.filteredAttributes[requiredAttr].value){
+                if(items[item].attributes[attr].ID === this.filteredAttributes[requiredAttr].ID && items[item].attributes[attr].value.toUpperCase() === this.filteredAttributes[requiredAttr].value.toUpperCase()){
                   pass = true;
                   break;            // TODO: ORDER WRONG
                 }

@@ -159,7 +159,6 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getLocation(id: string): Observable<Location> {
-    console.log("Location ID: " + id);
     if (!id) {
       return of(null);
     }

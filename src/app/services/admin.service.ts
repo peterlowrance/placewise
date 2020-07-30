@@ -38,6 +38,7 @@ export class AdminService {
   getRecentLocations(): Location[] {return this.recentLocations};
 
   addToRecent(recent: HierarchyItem){
+    console.log("Recent: " + recent.ID);
     if(recent.ID === 'root') return; // Roots should not be saved
 
     // Load which array we'll be saving to
@@ -209,7 +210,6 @@ export class AdminService {
     this.getReports().subscribe(x => {
       reports = x;     
       for (let i = 0; i < reports.length; i++) {
-        console.log(reports[i] + " " + item.ID)
         if(reports[i].item == item.ID)
         {
           this.deleteReport(reports[i].ID);

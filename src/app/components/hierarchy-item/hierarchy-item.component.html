@@ -106,8 +106,12 @@
     <app-ancestor-view [parentsToDisplay]="parentsToDisplay"></app-ancestor-view>
     <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete</button>
   
-  <button class="fab" *ngIf="this.role === 'Admin' && getDirty()" @open-save-fab mat-fab color="primary" (click)="saveItem()">
+  <!-- <button class="fab" *ngIf="this.role === 'Admin' && getDirty()" @open-save-fab mat-fab color="primary" (click)="saveItem()">
     <mat-icon>save</mat-icon>
     <mat-progress-spinner *ngIf="isSaving" class="save-spinner" mode="indeterminate"></mat-progress-spinner>
-  </button>
+  </button> -->
 </div>
+
+<button mat-mini-fab class="extended-fab-button" *ngIf="this.role === 'Admin' && this.getDirty()" @open-undo-fab matTooltip="Undo" color="accent" (click)="undoChanges()">
+  <mat-icon>edit</mat-icon><span class="extended-fab-button__text">Revert</span>
+</button>

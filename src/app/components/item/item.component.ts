@@ -44,12 +44,11 @@ interface AttributeCard {
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css'],
   animations:[
-    trigger('open-save-fab', [
+    trigger('open-undo-fab', [
       transition(':enter', [
-        animate('800ms ease-out', keyframes([
-          style({backgroundColor: '#3e2723', opacity: 0.4}),
-          style({backgroundColor: '#f44336', opacity: 0.8}),
-          style({backgroundColor: '#3e2723', opacity: 1})
+        animate('400ms', keyframes([
+          style({opacity: 0}),
+          style({opacity: 1})
         ]))
         ]
       )
@@ -130,7 +129,9 @@ export class ItemComponent implements OnInit, OnDestroy {
       }
       // get the item ref
       this.item = item;
-      this.previousItem = JSON.parse(JSON.stringify(item)); // deep copy
+      if(!this.previousItem) { // We don't want to overwrite if there's already old data
+        this.previousItem = JSON.parse(JSON.stringify(item)); // deep copy
+      } 
 
       // Load image for item TODO: Not any more
 
@@ -291,7 +292,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    * @param oldLocations old locations
    */
   updateItemLocations(result: string[], oldLocations: string[]) {
-    if (result) {
+    if (result && result !== this.item.locations) {
       // Go through and get the new locations for saving to recent
       let newLocations: string[] = [];
 
@@ -310,22 +311,18 @@ export class ItemComponent implements OnInit, OnDestroy {
 
       // Update the item locations
       this.item.locations = result;
-      this.adminService.updateItem(this.item, null, oldLocations).then(val => {
-        this.searchService.getAncestorsOf(this.item).subscribe(locations => {
-          this.locationsAndAncestors = locations;
-        });
-        // Update recent locations
-        for(let index in newLocations){
-          this.searchService.getLocation(newLocations[index]).subscribe(loc => {
-            this.adminService.addToRecent(loc);
-          })
-        }
-      })
-      // .then(val => {
-      //   if (val) {
-      //     location.reload();
-      //   }
-      // });
+      this.adminService.updateItem(this.item, null, oldLocations); // TODO: Not good placement, seperate from main saving mechanism
+      this.setDirty(true);
+      this.searchService.getAncestorsOf(this.item).subscribe(locations => {
+        this.locationsAndAncestors = locations;
+      });
+
+      // Update recent locations
+      for(let index in newLocations){
+        this.searchService.getLocation(newLocations[index]).subscribe(loc => {
+          this.adminService.addToRecent(loc);
+        })
+      }
     }
   }
 
@@ -347,13 +344,13 @@ export class ItemComponent implements OnInit, OnDestroy {
    * @param oldCategory old category
    */
   updateItemCategory(result: string[], oldCategory: string) {
-    if (result && result.length > 0) {
+    if (result && result.length > 0 && this.item.category !== result[0]) {
       this.item.category = result[0];
       this.searchService.getCategory(result[0]).subscribe(category => {
         this.adminService.addToRecent(category);
         this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0])
       });
-      this.adminService.updateItem(this.item, oldCategory, null);
+      this.adminService.updateItem(this.item, oldCategory, null); // TODO: Not good placement, seperate from normal saving routine
     }
   }
 
@@ -556,8 +553,24 @@ export class ItemComponent implements OnInit, OnDestroy {
       return false;
     } else {
       this.setDirty(true);
+      this.saveItem();
       return true;
     }
+  }
+
+  undoChanges() {
+    let itemToRevert = this.item;
+    this.item = JSON.parse(JSON.stringify(this.previousItem)); // Copy so then the original stays original
+    
+    if(this.item.category !== itemToRevert.category){
+      this.updateItemCategory([this.item.category], itemToRevert.category);
+    }
+    if(this.item.locations !== itemToRevert.locations){
+      this.updateItemLocations(this.item.locations, itemToRevert.locations);
+    }
+
+    this.saveItem();
+    this.setDirty(false);
   }
 
   /**
@@ -587,11 +600,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   async placeIntoDB() {
     return this.adminService.updateItem(this.item, null, null).then(val => {
-      if (val === true) {
-        this.previousItem = JSON.parse(JSON.stringify(this.item));
-        this.setDirty(false);
-        this.snack.open('Item Save Successful', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
-      } else {
+      if (val !== true) {
         this.snack.open('Item Save Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
       }
       this.isSaving = false;

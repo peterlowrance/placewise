@@ -2,50 +2,21 @@
     <mat-toolbar-row>
         <div [ngSwitch]="checkLocation()">
             <span *ngSwitchCase='"item"'>
-                <!-- <button mat-icon-button (click)="routeWithCheck('back')">
-                    <mat-icon>
-                        arrow_back
-                    </mat-icon>
-                </button> 
-                Don't have anything here now, web pages have back button, undo button in future? -->
                 <span class="nav-text">Item</span>
             </span>
+            <span *ngSwitchCase='"location"'>
+                <span class="nav-text">Location</span>
+            </span>
+            <span *ngSwitchCase='"category"'>
+                <span class="nav-text">Category</span>
+            </span>
             <span *ngSwitchCase='"settings"'>
-                <!-- <button mat-icon-button (click)="routeWithCheck('back')">
-                    <mat-icon>
-                        arrow_back
-                    </mat-icon>
-                </button> -->
                 <span class="nav-text">Settings</span>
             </span>
-            <!-- <span *ngSwitchCase='"modifyCategories"'>
-                <button mat-icon-button (click)="goBack()">
-                    <mat-icon>
-                        arrow_back
-                    </mat-icon> <a>Modify Categories</a>
-                </button>
-            </span>
-            <span *ngSwitchCase='"modifyLocations"'>
-                <button mat-icon-button (click)="goBack()">
-                    <mat-icon>
-                        arrow_back
-                    </mat-icon> <a>Modify Locations</a>
-                </button>
-            </span> -->
             <span *ngSwitchCase='"moderateUsers"'>
-                <!-- <button mat-icon-button (click)="routeWithCheck('back')">
-                    <mat-icon>
-                        arrow_back
-                    </mat-icon>
-                </button> -->
                 <span class="nav-text">Users</span>
             </span>
             <span *ngSwitchCase='"reports"'>
-                <!-- <button mat-icon-button (click)="routeWithCheck('back')">
-                    <mat-icon>
-                        arrow_back
-                    </mat-icon>
-                </button> -->
                 <span class="nav-text">Reports</span>
             </span>
             <!-- we are home, check for in search hierarchy -->
@@ -54,7 +25,7 @@
 
                 <!-- not home, display back button with functionality -->
                 <span *ngIf='parent !== null && parent.ID !== "root"'>
-                    <button mat-icon-button (click)="routeWithCheck('hierarchy')">
+                    <button mat-icon-button (click)="route('hierarchy')">
                         <mat-icon>
                             arrow_upward
                         </mat-icon> 
@@ -63,18 +34,18 @@
             </span>
         </div>
         <span class="spacer"></span>
-        <button mat-icon-button [disabled]="checkLocation() ==='/' && (parent === null || parent.ID === 'root')" (click)="routeWithCheck('home')"><mat-icon>home</mat-icon></button>
-        <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/reports'" (click)="routeWithCheck('reports')">
+        <button mat-icon-button [disabled]="checkLocation() ==='/' && (parent === null || parent.ID === 'root')" (click)="route('home')"><mat-icon>home</mat-icon></button>
+        <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/reports'" (click)="route('reports')">
             <mat-icon>report_problem</mat-icon>
         </button>
-        <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/users'" (click)="routeWithCheck('users')"><mat-icon>people</mat-icon></button>
-        <button mat-icon-button [disabled]="this.locationString==='/settings'"  (click)="routeWithCheck('settings')">
+        <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/users'" (click)="route('users')"><mat-icon>people</mat-icon></button>
+        <button mat-icon-button [disabled]="this.locationString==='/settings'"  (click)="route('settings')">
             <mat-icon>settings</mat-icon>
         </button>
     </mat-toolbar-row>
     <mat-toolbar-row *ngIf="checkLocation() === '/' && parent && parent.ID !== 'root'">
         <!-- <button mat-flat-button color="accent" (click)="goToModify()">{{parent.name}}</button> -->
-        <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="routeWithCheck('modify')"><mat-icon>more_vert</mat-icon></button>
+        <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="route('modify')"><mat-icon>more_vert</mat-icon></button>
         <span class="nav-text">{{parent.name}}</span>
     </mat-toolbar-row>
 </mat-toolbar>
