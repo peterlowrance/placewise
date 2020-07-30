@@ -408,11 +408,11 @@ export class ItemComponent implements OnInit, OnDestroy {
     let hasAttribute = false;
     for(let attr in this.item.attributes){
       if(this.item.attributes[attr].ID === card.ID){
-        this.item.attributes[attr].value = card.value;
+        this.item.attributes[attr].value = card.value ? card.value : '';
         hasAttribute = true;
       }
     }
-    if(!hasAttribute){
+    if(!hasAttribute && card.value){
       if(!this.item.attributes){
         this.item.attributes = [{
           name: card.name,

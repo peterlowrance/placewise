@@ -114,7 +114,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.returnSub = this.navService.getReturnState().subscribe(
       val => {
         if (val && this.root) { // if we returned
-          console.log("no");
           this.navigateUpHierarchy();
         }
       }
@@ -142,7 +141,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    console.log("Init!")
     // Naviagte to the location/category everytime the url is updated
     const urlID = this.route.snapshot.paramMap.get('id');
     this.selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
@@ -339,7 +337,7 @@ export class HomeComponent implements OnInit, OnDestroy {
               }
               else {
                 for(let item in this.items){
-                  if(newItemNameCapped < this.items[item].name.toUpperCase()){
+                  if(newItemNameCapped <= this.items[item].name.toUpperCase()){
                     this.items.splice(parseInt(item), 0, returnedItem);
                     break;
                   }
@@ -348,7 +346,6 @@ export class HomeComponent implements OnInit, OnDestroy {
             }
             
           }
-
         });
       }
     }
@@ -422,9 +419,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       location = this.root.ID;
     }
     this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
-      console.log("Navigating...");
       this.router.navigate(['/item/' + id]);
-      console.log("Done!");
     });
   }
 
