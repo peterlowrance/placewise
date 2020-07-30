@@ -172,8 +172,8 @@ export class HierarchyItemComponent implements OnInit {
           this.imageService.resizeImage(reader.result).then(url => {
             this.hierarchyItem.imageUrl = url;
             // set dirty and save for upload
-            this.checkDirty();
             this.imageToSave = file;
+            this.checkDirty();
           });
         }
       };
@@ -318,7 +318,7 @@ export class HierarchyItemComponent implements OnInit {
     this.attributeNames.push("New Attribute");
 
 
-    this.setDirty(true);
+    this.checkDirty();
   }
 
   undoChanges() {
@@ -344,7 +344,7 @@ export class HierarchyItemComponent implements OnInit {
         if(attrs[attr]["name"] === name){
           delete (this.hierarchyItem as Category).attributes[attr];
           this.attributeNames = this.attributeNames.filter(elem => elem !== name);
-          this.setDirty(true);
+          this.checkDirty();
         }
       }
     }

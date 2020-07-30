@@ -292,7 +292,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    * @param oldLocations old locations
    */
   updateItemLocations(result: string[], oldLocations: string[]) {
-    if (result && result !== this.item.locations) {
+    if (result) {
       // Go through and get the new locations for saving to recent
       let newLocations: string[] = [];
 
@@ -497,8 +497,8 @@ export class ItemComponent implements OnInit, OnDestroy {
           this.imageService.resizeImage(reader.result).then(url => {
             this.item.imageUrl = url;
             // set dirty and save for upload
-            this.checkDirty();
             this.imageToSave = file;
+            this.checkDirty();
           });
         }
       };
