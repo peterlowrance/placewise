@@ -38,7 +38,6 @@ export class AdminService {
   getRecentLocations(): Location[] {return this.recentLocations};
 
   addToRecent(recent: HierarchyItem){
-    console.log("Recent: " + recent.ID);
     if(recent.ID === 'root') return; // Roots should not be saved
 
     // Load which array we'll be saving to

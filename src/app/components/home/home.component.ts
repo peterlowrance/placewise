@@ -14,6 +14,7 @@ import { trigger, state, style, transition, animate, keyframes} from '@angular/a
 import { Category } from 'src/app/models/Category';
 import { switchMap } from 'rxjs/operators';
 import { url } from 'inspector';
+import { Identifiers } from '@angular/compiler';
 
 /**
  *
@@ -47,9 +48,8 @@ import { url } from 'inspector';
 })
 export class HomeComponent implements OnInit, OnDestroy {
   control = new FormControl();
-
-  selectedSearch = 'Categories';
   root: HierarchyItem;
+  rootSub: Subscription;
 
   hierarchyItems: HierarchyItem[];
   originalHierarchyItems: HierarchyItem[];
@@ -67,8 +67,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   originalAttributeValues: string[]; // For resetting after searching
   currentAttribute: Attribute; // For the current attribute that that values are being searched for
   filteredAttributes: Attribute[]; // Attributes that are being actively filtered.
+  typeForSelectionButtons: string;
 
-  typeSub: Subscription;
   parentSub: Subscription;
   returnSub: Subscription;
 
@@ -119,16 +119,15 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
     );
 
-    // subscribe to change keeping
-    this.typeSub = this.navService.getSearchType().subscribe(val => {
-      this.selectedSearch = val;
-    });
     // change if parent is different
     this.parentSub = this.navService.getParent().subscribe(val => {
-        this.root = val;
         if(val){
-          this.displayDescendants(val, this.selectedSearch === 'Categories');
-          this.loadAttributes();
+          // this.displayDescendants(val, this.selectedSearch === 'Categories');
+          // this.loadAttributes();
+          // console.log("Loaded from parentSub:" + val.name);
+          this.root = val;
+          this.typeForSelectionButtons = this.root.type;
+          this.loadLevel();
         }
       }
     );
@@ -136,16 +135,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.parentSub.unsubscribe();
-    this.typeSub.unsubscribe();
     this.returnSub.unsubscribe();
   }
 
   ngOnInit() {
     // Naviagte to the location/category everytime the url is updated
     const urlID = this.route.snapshot.paramMap.get('id');
-    this.selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
+    const selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'category' : 'location';
+    this.typeForSelectionButtons = selectedSearch;
     // Load the current level
-    this.loadLevel(urlID, this.selectedSearch);
+    this.updateSubscribedParent(urlID, selectedSearch);
 
     // ROUTER IS UNTRUSTWORTHY - internal changes can make the router think it doesn't need to update anything
     // this.route.paramMap.subscribe(params => {
@@ -162,11 +161,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
   }
 
-  navigateUpHierarchy() {
-    const urlID = this.route.snapshot.paramMap.get('id');
-    const urlSS = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
-    this.resetAttributeData();
-    this.loadLevel(this.root ? this.root.parent : 'root', this.selectedSearch);
+  navigateUpHierarchy() { // Yikes, repeated code from init
+    this.updateSubscribedParent(this.root.parent, this.root.type);
+  }
+
+  updateSubscribedParent(id: string, type: string){
+    if(type === 'category'){
+      this.navService.setSubscribedParent(this.searchService.getCategory(id));
+    } else {
+      this.navService.setSubscribedParent(this.searchService.getLocation(id));
+    }
   }
 
   /**
@@ -174,16 +178,10 @@ export class HomeComponent implements OnInit, OnDestroy {
    * @param rootID root to display children of
    * @param selectedSearch category or location
    */
-  loadLevel(rootID: string, selectedSearch: string) {
-    this.selectedSearch = selectedSearch;
-    this.navService.setSearchType(this.selectedSearch);
-    const appropriateHierarchy = selectedSearch === 'Categories' ? this.searchService.getCategory(rootID) : this.searchService.getLocation(rootID);
-    appropriateHierarchy.subscribe(root => {
-      this.root = root;
-      this.navService.setParent(this.root);
-      this.displayDescendants(root, this.selectedSearch === 'Categories');
-      this.loadAttributes();
-    });
+  loadLevel() {
+    this.resetAttributeData();
+    this.displayDescendants(this.root);
+    this.loadAttributes();
   }
 
   selectAttribute(value: string) {
@@ -214,7 +212,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   loadAttributes() {
-    if(this.selectedSearch === 'Categories'){
+    if(this.root.type === 'category'){
       let category = this.root as Category;
       let attributes: Attribute[];
       this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
@@ -244,7 +242,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.currentAttribute = attribute;
     this.attributeValues = [];
 
-    this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
+    this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
       this.percentLoadedAttributes = 6;
       this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
 
@@ -296,9 +294,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.navService.setSearchType(type);
   }
 
-  displayDescendants(root: HierarchyItem = this.root, isCategory = this.selectedSearch === 'Categories') {
+  displayDescendants(root: HierarchyItem = this.root) {
     this.hierarchyItems = [];
-    this.searchService.getDescendantsOfRoot(root ? root.ID : 'root', isCategory).subscribe(descendants => {
+    this.searchService.getDescendantsOfRoot(root ? root.ID : 'root', root.type === 'category').subscribe(descendants => {
       this.hierarchyItems = descendants;
     });
     // Load items that descend from root
@@ -371,25 +369,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.router.navigate(['/item/', item.ID]);
   }
 
-  goToHierarchy(item: HierarchyItem) {
-    //this.control.setValue('');
-    //this.searchTextChange('');
-    this.root = item;
-    window.history.pushState(null, null, 'search/' + this.selectedSearch.toLowerCase() + '/' + item.ID);
-    this.navService.setParent(item);
-    this.displayDescendants();
+  goToHierarchy(hierItem: HierarchyItem) {
     this.control.setValue('');
-    this.resetAttributeData();
-    this.loadAttributes();
+    window.history.pushState(null, null, 'search/' + (this.root.type === 'category' ? 'categories' : 'locations') + '/' + hierItem.ID);
+    this.updateSubscribedParent(hierItem.ID, hierItem.type);
   }
 
   toggleHierarchy(event) {
     this.control.setValue('');
     this.searchTextChange('');
     window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + (this.root ? this.root.ID : 'root'));
-    this.setNavType(event.value);
-    this.loadLevel('root', event.value);
-    this.resetAttributeData();
+    this.updateSubscribedParent('root', this.root.type === 'category' ? 'location' : 'category');
   }
 
   resetAttributeData(){
@@ -413,7 +403,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     let category = 'root';
     let location = 'root';
     // to category
-    if (this.selectedSearch === 'Categories') {
+    if (this.root.type === 'category') {
       category = this.root.ID;
     } else { // add to locations
       location = this.root.ID;
@@ -429,7 +419,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.toggleIco();
     }
 
-    if (this.selectedSearch === 'Categories') {
+    if (this.root.type === 'category') {
 
       this.adminService.addCategory({
         name: 'NEW CATEGORY',
@@ -458,7 +448,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   filterResults(){
-    this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
+    this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
       this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
         let newItemResults: Item[] = [];
         for(let item in items){
@@ -490,12 +480,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   searchTextChange(event) {
     if (event === '') {
       // Reset the view to the normal things in the current root
-      this.displayDescendants(this.root, this.selectedSearch === 'Categories');
+      this.displayDescendants(this.root);
       this.attributeValues = this.originalAttributeValues;
       return;
     } else { // Otherwise, get all descendant hierarchy items and items and fuzzy match them
       this.isLoading = true;
-      this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.selectedSearch === 'Categories').subscribe(hierarchyItems => {
+      this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
         this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
           // Search items
           const itemSearcher = new Fuse(items, this.itemSearchOptions);

@@ -1,15 +1,15 @@
 <!--Search Bar-->
 <div class="allContent">
   <div class="top-components">
-    <mat-button-toggle-group class="hierarchySelector" *ngIf="(!root || root?.name === 'root')" [(value)]="selectedSearch" name="hierarchySelector" (change)="toggleHierarchy($event)">
-      <mat-button-toggle value="Categories" >Category</mat-button-toggle>
-      <mat-button-toggle value="Locations">Location</mat-button-toggle>
+    <mat-button-toggle-group class="hierarchySelector" *ngIf="(!root || root?.name === 'root')" [(value)]="typeForSelectionButtons" name="hierarchySelector" (change)="toggleHierarchy($event)">
+      <mat-button-toggle value="category" >Category</mat-button-toggle>
+      <mat-button-toggle value="location">Location</mat-button-toggle>
     </mat-button-toggle-group>
     <div class ="tool-spacer"></div>
     <div class="search-tools">
       <form class="search-bar" (submit)="null">
         <mat-form-field class="full-width">
-          <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : selectedSearch}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null"> <!--[matAutocomplete]="auto"-->
+          <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : (typeForSelectionButtons === 'category' ? 'all Categories' : 'all Locations')}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null"> <!--[matAutocomplete]="auto"-->
           <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearchBar()">
             <mat-icon>close</mat-icon>
           </button>
@@ -18,7 +18,7 @@
         <mat-progress-bar *ngIf="isLoading" class="search-progress-bar" mode="query"></mat-progress-bar>
       </form>
       <div>
-        <button mat-stroked-button *ngIf="selectedSearch === 'Categories'" [matMenuTriggerFor]="beforeMenu" class="filter-menu">Filter by <mat-icon>arrow_drop_down</mat-icon></button>
+        <button mat-stroked-button *ngIf="typeForSelectionButtons === 'category'" [matMenuTriggerFor]="beforeMenu" class="filter-menu">Filter by <mat-icon>arrow_drop_down</mat-icon></button>
         <mat-progress-bar *ngIf="isLoadingAttributes" class="search-progress-bar" mode="determinate" value="percentLoadedAttributes"></mat-progress-bar>
         <mat-menu #beforeMenu="matMenu" xPosition="before">
           <button mat-menu-item *ngFor="let attribute of filterableAttributes" (click)="gatherAttributeValues(attribute)">{{attribute.name}}</button>
@@ -49,7 +49,7 @@
 <!--Hierarchy Items-->
   <div *ngIf="hierarchyItems && hierarchyItems.length > 0 && !filteredAttributes" (window:resize)="onResize($event)">
     <!--Show header if there are both items and hierarchies or if there is no toggle-->
-    <div class="header">{{selectedSearch}}</div>
+    <div class="header">{{typeForSelectionButtons === 'category' ? 'Categories' : 'Locations'}}</div>
     <mat-grid-list class="row" [cols]="columns" rowHeight="4:1.2">
       <mat-grid-tile class="holder" *ngFor="let hierarchyItem of hierarchyItems">
         <mat-card class="hierarchyCard" (click)="goToHierarchy(hierarchyItem)" [class.mat-elevation-z2]="true">
@@ -93,7 +93,7 @@
         <span class="extended-fab-button__text">Item</span>
       </button>
       <button mat-mini-fab class="extended-fab-button" [@button-extention-hierarchy]="miniFabState" matTooltip="Add item" color="accent" (click)="addHierarchy()">
-        <span class="extended-fab-button__text">{{selectedSearch === 'Categories' ? 'Category' : 'Location'}}</span>
+        <span class="extended-fab-button__text">{{typeForSelectionButtons === 'category' ? 'Category' : 'Location'}}</span>
       </button>
       <!-- <button mat-mini-fab matTooltip="Add hierarchy level" color="primary" (click)="addHierarchy()"><mat-icon>account_tree</mat-icon></button> -->
     </smd-fab-actions>

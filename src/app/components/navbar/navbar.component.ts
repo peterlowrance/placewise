@@ -20,7 +20,6 @@ export class NavbarComponent implements OnInit {
   locationString = '/login';
 
   /**Reference to type of searching */
-  searchType: string = '';
 
   /**Reference to parent */
   parent: HierarchyItem = {
@@ -70,9 +69,6 @@ export class NavbarComponent implements OnInit {
       }
     });
 
-    navService.getSearchType().subscribe(val => {
-      this.searchType = val.toLowerCase()
-    });
     navService.getParent().subscribe(val => {
       this.parent = val;
     });
@@ -173,31 +169,25 @@ export class NavbarComponent implements OnInit {
   }
 
   goToHierarchy(id: string){
-    if(this.searchType === 'categories'){
-      let sub = this.searchService.getCategory(id).subscribe(cat => {
-        this.navService.setParent(cat);
-        this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/' + id]).then(confirm => {
-          if(!confirm){ // Sometimes since we're going to the same component, the router will not navigate. If so, push to make sure the url gets in the history
-            window.history.pushState(null, null, 'search/' + (this.searchType ? this.searchType : 'categories') + '/' + id);
-          }
-          sub.unsubscribe(); // Since we routed, disconnect the subscribe so it doesn't mess with us later
-        });
+    if(this.parent.type === 'category'){
+      this.router.navigate(['search/categories/' + id]).then(confirm => {
+        if(!confirm){ // Sometimes since we're going to the same component, the router will not navigate. If so, push to make sure the url gets in the history
+          window.history.pushState(null, null, 'search/categories/' + id);
+        }
       });
+      this.navService.setSubscribedParent(this.searchService.getCategory(id));
     } else {
-      let sub = this.searchService.getLocation(id).subscribe(loc => {
-        this.navService.setParent(loc)
-        this.router.navigate(['search/' + (this.searchType ? this.searchType : 'categories') + '/' + id]).then(confirm => {
-          if(!confirm){ // Sometimes since we're going to the same component, the router will not navigate. If so, push to make sure the url gets in the history
-            window.history.pushState(null, null, 'search/' + (this.searchType ? this.searchType : 'categories') + '/' + id);
-          }
-          sub.unsubscribe();
-        });
+      this.router.navigate(['search/locations/' + id]).then(confirm => {
+        if(!confirm){ // Sometimes since we're going to the same component, the router will not navigate. If so, push to make sure the url gets in the history
+          window.history.pushState(null, null, 'search/locations/' + id);
+        }
       });
+      this.navService.setSubscribedParent(this.searchService.getLocation(id));
     }
   }
 
   goToModify() {
-    this.router.navigate(['hierarchyItem/' + (this.searchType === 'categories' ? 'categories' : 'locations') + '/' + this.parent.ID]);
+    this.router.navigate(['hierarchyItem/' + (this.parent.type === 'category' ? 'categories' : 'locations') + '/' + this.parent.ID]);
   }
 
 }

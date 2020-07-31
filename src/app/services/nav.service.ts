@@ -2,7 +2,7 @@
 //  and from: https://www.reddit.com/r/Angular2/comments/4qhumr/communication_between_navbar_and_pages/?sort=confidence
 
 import { Injectable } from '@angular/core';
-import {Subject, BehaviorSubject} from 'rxjs';
+import {Subject, BehaviorSubject, Observable, Subscribable, Subscription} from 'rxjs';
 import { HierarchyItem } from '../models/HierarchyItem';
 
 @Injectable({
@@ -14,9 +14,6 @@ export class NavService {
 
   private returnClick: BehaviorSubject<boolean> = new BehaviorSubject(false); //emitter for return clicked
 
-  /**The current parent reference, used to hold reference between screens*/
-  private parentRaw: HierarchyItem;
-
   /**Type of search, used to hold reference between screens */
   private searchTypeRaw: string;
 
@@ -24,6 +21,7 @@ export class NavService {
 
   /**Parent behavior, used for interop between navbar and search */
   private parent: BehaviorSubject<HierarchyItem> = new BehaviorSubject(null);
+  private subscribedParent: Subscription;
 
   /**Search type behavior, used for interop between navbar and search */
   private searchType: BehaviorSubject<string> = new BehaviorSubject('');
@@ -37,14 +35,20 @@ export class NavService {
 
   /**An event to send to the nav service, telling it to forget its state */
   forgetParent(){
-    this.parentRaw = null;
     this.parent.next(null);
   }
 
-  /**Setter for parent state */
   setParent(newParent: HierarchyItem){
-    this.parentRaw = newParent;
+    if(this.subscribedParent) this.subscribedParent.unsubscribe();
     this.parent.next(newParent);
+  }
+
+  /** If we want a screen to stay updated, we can use this */
+  setSubscribedParent(newParent: Observable<HierarchyItem>){
+    if(this.subscribedParent) this.subscribedParent.unsubscribe();
+    this.subscribedParent = newParent.subscribe(updatedParent => {
+      this.parent.next(updatedParent);
+    })
   }
 
   /**Gets return state observable */
@@ -53,7 +57,6 @@ export class NavService {
   }
 
   returnState(){
-    console.log("egg");
     this.returnClick.next(true);
   }
 

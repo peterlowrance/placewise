@@ -232,9 +232,10 @@ export class SearchService implements SearchInterfaceService {
           }
         });
         obs.next(result);
+        obs.complete(); // Dangerous if we don't close this - that's so much data to be subbed to
       },
       () => {
-        obs.complete();
+        obs.complete(); // Pretty sure this is never called
       });
     });
   }
