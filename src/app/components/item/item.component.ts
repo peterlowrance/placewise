@@ -408,7 +408,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     let hasAttribute = false;
     for(let attr in this.item.attributes){
       if(this.item.attributes[attr].ID === card.ID){
-        this.item.attributes[attr].value = card.value ? card.value : '';
+        this.item.attributes[attr].value = card.value ? card.value.trim() : '';
         hasAttribute = true;
       }
     }
@@ -417,14 +417,14 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.item.attributes = [{
           name: card.name,
           ID: card.ID,
-          value: card.value
+          value: card.value.trim()
         }];
       }
       else{
         this.item.attributes.push({
           name: card.name,
           ID: card.ID,
-          value: card.value
+          value: card.value.trim()
         })
       }
     }

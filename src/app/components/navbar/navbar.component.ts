@@ -169,7 +169,7 @@ export class NavbarComponent implements OnInit {
   }
 
   goToHierarchy(id: string){
-    if(this.parent.type === 'category'){
+    if(this.parent && this.parent.type === 'category'){
       this.router.navigate(['search/categories/' + id]).then(confirm => {
         if(!confirm){ // Sometimes since we're going to the same component, the router will not navigate. If so, push to make sure the url gets in the history
           window.history.pushState(null, null, 'search/categories/' + id);

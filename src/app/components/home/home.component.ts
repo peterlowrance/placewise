@@ -286,14 +286,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Sets the nav type field of the nav controller
-   * @param type string search type
-   */
-  private setNavType(type: string) {
-    this.navService.setSearchType(type);
-  }
-
   displayDescendants(root: HierarchyItem = this.root) {
     this.hierarchyItems = [];
     this.searchService.getDescendantsOfRoot(root ? root.ID : 'root', root.type === 'category').subscribe(descendants => {
