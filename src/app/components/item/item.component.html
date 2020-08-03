@@ -27,9 +27,10 @@
             {{missingData}}
         </span>
     </div>
+    <div class="small-spacer"></div>
 </div>
 
-<mat-grid-list cols="3" rowHeight="2:1">
+<mat-grid-list class="item-and-actions" cols="3" rowHeight="2:1">
     <!-- first is image -->
     <mat-grid-tile [colspan]="2" [rowspan]="3">
             <img class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
@@ -46,7 +47,7 @@
     </mat-grid-tile>
     <!-- warnings -->
     <mat-grid-tile class="reportButtonHolder">
-        <div class="report-button">
+        <div class="report-button" *ngIf="this.role === 'Admin'">
             <button class="photo-button" mat-raised-button color="accent" (click)="camera.click()">
                 <mat-icon>photo_camera</mat-icon>
             </button>

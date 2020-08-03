@@ -84,7 +84,7 @@
   <br>
 
   <!-- add homescreen fab for admins here -->
-  <smd-fab-speed-dial class="fab" [direction]="direction" [animationMode]="animation">
+  <smd-fab-speed-dial *ngIf="this.role === 'Admin'" class="fab" [direction]="direction" [animationMode]="animation">
     <smd-fab-trigger [spin]="spin">
       <button mat-fab matTooltip="Add to this hierarchy level" color="accent" (click)="toggleIco()"><mat-icon>{{ico}}</mat-icon></button>
     </smd-fab-trigger>

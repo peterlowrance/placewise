@@ -37,6 +37,7 @@ export class ModifyHierarchyComponent implements OnInit {
   dataChange = new BehaviorSubject<TreeHierarchyItem[]>([]);
   workspace: string;
 
+  currentlyInForUI: HierarchyItem[] = [];
   recentCatsOrLocs: HierarchyItem[];
 
   hasChild = (_: number, node: TreeHierarchyItem) => node && (!!node.realChildren && node.realChildren.length > 0);
@@ -81,6 +82,7 @@ export class ModifyHierarchyComponent implements OnInit {
               this.expandParents(this.findByID(p, descOfRoot));
             });
           }
+          this.updateCurrentlyIn();
         });
       } else { // If you are selecting new locations or categories, include the root
         const appropriateRoot = this.isCategory ? this.searchService.getCategory('root') : this.searchService.getLocation('root');
@@ -92,6 +94,7 @@ export class ModifyHierarchyComponent implements OnInit {
               this.expandParents(this.findByID(p, [root]));
             });
           }
+          this.updateCurrentlyIn();
         });
       }
     });
@@ -123,6 +126,22 @@ export class ModifyHierarchyComponent implements OnInit {
     }
   }
 
+  updateCurrentlyIn(){
+    for(let index in this.selectedParents){
+      let hier = this.toHierarchyItem(this.findByID(this.selectedParents[index], this.dataSource.data));
+      let found = false;
+      for(let currentIndex in this.currentlyInForUI){
+        if(this.currentlyInForUI[currentIndex].ID === hier.ID){
+          found = true;
+          break;
+        }
+      }
+      if(!found){
+        this.currentlyInForUI.push(hier);
+      }
+    }
+  }
+
   selectedParentsToggle(node: TreeHierarchyItem) {
     // If the parent is selected, remove it
     if (this.selectedParents.indexOf(node.ID) > -1) {
@@ -130,6 +149,7 @@ export class ModifyHierarchyComponent implements OnInit {
     } else { // Otherwise add it
       this.selectedParents.push(node.ID);
     }
+    this.updateCurrentlyIn();
     this.selectedParentsOutput.emit(this.selectedParents);
   }
 

@@ -8,7 +8,7 @@
 
 h2 {
     margin: 0 0.2rem;
-    padding-top: 1rem;
+    padding-top: 24px;
 }
 
 
@@ -46,14 +46,18 @@ h2 {
   margin: auto;
 }
 
+.small-spacer {
+  height: 14px;
+}
+
 .reportButtonHolder {
   margin-left: 0.15rem;
 }
 
 .reportButton {
-  width: calc(4.8rem + 2.5vw);
-  max-width: 28vw;
-  padding: 0 1vw;
+  width: calc(4.5rem + 4vw);
+  max-width: 120px;
+  padding: 0 0 0 3px;
 }
 
 .moreInfoButtonHolder {
@@ -62,9 +66,9 @@ h2 {
 }
 
 .moreInfoButton {
-  width: calc(4.5rem + 2.5vw);
-  max-width: 28vw;
-  padding: 0 1vw;
+  width: calc(4.5rem + 4vw);
+  max-width: 120px;
+  padding: 0 0 0 6px;
 }
 
 .categoryImg {
@@ -74,7 +78,7 @@ h2 {
 }
 
 .moreInfo {
-  margin-top: 0.8rem;
+  margin-top: 12px !important;
 }
 
 .moreInfoOpen {
@@ -122,7 +126,7 @@ p {
 }
 
 .missing-data-container {
-  margin-bottom: 1rem;
+  margin-bottom: 4px;
   margin-left: 0.2rem;
   margin-top: -0.4rem;
 }
@@ -144,7 +148,8 @@ p {
 }
 
 .attribute-card {
-  margin-top: 4px;
+  margin: 4px auto 0 auto;
+  max-width: 420px;
 }
 
 .mat-card-content {
@@ -164,7 +169,8 @@ p {
 }
 
 .attribute-input {
-  max-width: 80%;
+  width: 92%;
+  max-width: 360px;
 }
 
 .missing-category {
@@ -178,8 +184,9 @@ p {
 }
 
 .photo-button {
-  width: calc(2.4rem + 1.25vw - 6px);
+  width: calc(2.4rem + 2vw - 6px);
   min-width: 0.5rem;
+  max-width: 57px;
   padding: 0;
   margin: 0 3px 0 0;
 }

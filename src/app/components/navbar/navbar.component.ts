@@ -7,6 +7,8 @@ import {HierarchyItem} from 'src/app/models/HierarchyItem';
 import {AuthService} from 'src/app/services/auth.service';
 import { SearchService } from 'src/app/services/search.service';
 import { HostListener } from '@angular/core';
+import { AdminService } from 'src/app/services/admin.service';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -34,6 +36,10 @@ export class NavbarComponent implements OnInit {
   /**The user's role */
   role: string = '';
 
+  hasReadReportsColor = 'accent';
+  noReports = true;
+  numberOfReports = 0;
+
   
   @HostListener('window:popstate', ['$event'])
   onPopState(event) {
@@ -60,7 +66,7 @@ export class NavbarComponent implements OnInit {
     }
   }
 
-  constructor(private routeLocation: Location, private router: Router, private navService: NavService, private authService: AuthService, private searchService: SearchService) {
+  constructor(private routeLocation: Location, private router: Router, private navService: NavService, private authService: AuthService, private searchService: SearchService, private adminService: AdminService) {
 
     router.events.subscribe(val => {
       this.navService.setDirty(false); //Clear dirtyness anytime we leave a page
@@ -77,6 +83,25 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit() {
     this.authService.getRole().subscribe(val =>  this.role = val);
+
+    let reportsSub: Subscription;
+    this.authService.getWorkspace().subscribe(workspaceInfo => {
+      if(workspaceInfo && workspaceInfo.id !== ''){ // Make sure we have a workspace before subscribing to reports
+        if(reportsSub) reportsSub.unsubscribe(); // For good measure, don't pile on subscriptions to reports
+        reportsSub = this.adminService.getReports().subscribe(reports => {
+          if(this.locationString !== '/reports'){
+            this.hasReadReportsColor = 'warn';
+          }
+          if(reports.length === 0){
+            this.noReports = true;
+          }
+          else {
+            this.noReports = false;
+            this.numberOfReports = reports.length;
+          }
+        });
+      }
+    })
   }
 
   /**
@@ -138,6 +163,8 @@ export class NavbarComponent implements OnInit {
       case 'modify':
         this.goToModify();
         break;
+      case 'reports':
+        this.hasReadReportsColor = 'accent'; // Note: also goes to default
       default:
         this.router.navigateByUrl(route);
     }

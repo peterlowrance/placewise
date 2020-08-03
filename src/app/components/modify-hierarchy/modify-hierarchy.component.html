@@ -1,5 +1,18 @@
 <h3 *ngIf="changeParentNode">Select what this is inside of:</h3>
 <div class="allContent">
+  <div *ngIf="!singleSelection">
+    <h5>Currently or Was in:</h5>
+      <div class="recent-container">
+        <div *ngFor="let currentlyIn of currentlyInForUI">
+          <div class="recent-names">
+            {{currentlyIn.name === 'root' ? workspace : currentlyIn.name}}
+            <mat-checkbox [checked]="selectedParents.indexOf(currentlyIn.ID) > -1" (change)="selectedParentsToggle(currentlyIn)" [value]="currentlyIn.name"></mat-checkbox>
+          </div>
+        </div>
+      </div>
+    <br>
+    <br>
+  </div>
   <h5>{{isCategory ? 'Recent Categories:' : 'Recent Locations:'}}</h5>
   <div class="recent-container" *ngIf="recentCatsOrLocs">
     <mat-radio-group aria-label="Recent Categories" *ngIf="singleSelection">

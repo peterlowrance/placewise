@@ -20,6 +20,7 @@ import {MatDividerModule} from '@angular/material/divider';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatBadgeModule} from '@angular/material/badge';
 
 import {SmdFabSpeedDialModule} from 'node_modules/angular-speed-dial';
 // Imports for all Placewise modules
@@ -95,6 +96,7 @@ import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-it
     MatDialogModule,
     MatTreeModule,
     MatListModule,
+    MatBadgeModule,
     MatTableModule,
     MatAutocompleteModule,
     AngularFireModule.initializeApp(environment.firebase, 'clientpanel'),
