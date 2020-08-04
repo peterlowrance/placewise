@@ -160,23 +160,25 @@ export class AdminService {
     if (!category) {
       category = 'root';
     }
-    if (!location) {
-      location = 'root';
-    }
+
     return new Observable(obs => {
-      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({name, desc, tags, locations: [location], category, imageUrl
+      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({name, desc, tags, locations: location ? [location] : [], category, imageUrl
       }).then(
         val => {
           obs.next(val.id);
-          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
-            map(doc => doc.data())
-          ).toPromise().then(
-            doc => {
-              const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
-              ary.push(val.id);
-              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
-            }
-          );
+
+          if(location){
+            this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
+              map(doc => doc.data())
+            ).toPromise().then(
+              doc => {
+                const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+                ary.push(val.id);
+                this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
+              }
+            );
+          }
+
           this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + category).get().pipe(
             map(doc => doc.data())
           ).toPromise().then(
@@ -186,6 +188,7 @@ export class AdminService {
               this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + category).update({items: ary});
             }
           );
+
           obs.complete();
         }
       );

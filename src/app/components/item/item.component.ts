@@ -78,8 +78,8 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   id: string; // item id
   item: Item; // item returned by id
-  previousItem: Item; // previous item, before edits are made
-  imageToSave: File = null; // the image to upload when saved
+  previousItem: Item; // records short term edits for saving
+  originalItem: Item; // how the item was when we started, before edits were made
 
   loading = true;  // whether the page is actively loading
   report: Report = {
@@ -129,8 +129,9 @@ export class ItemComponent implements OnInit, OnDestroy {
       }
       // get the item ref
       this.item = item;
-      if(!this.previousItem) { // We don't want to overwrite if there's already old data
-        this.previousItem = JSON.parse(JSON.stringify(item)); // deep copy
+      if(!this.originalItem) { // We don't want to overwrite if there's already old data
+        this.originalItem = JSON.parse(JSON.stringify(item)); // deep copy
+        this.previousItem = JSON.parse(JSON.stringify(item)); // another for recording short term changes
       } 
 
       // Load image for item TODO: Not any more
@@ -497,7 +498,6 @@ export class ItemComponent implements OnInit, OnDestroy {
           this.imageService.resizeImage(reader.result).then(url => {
             this.item.imageUrl = url;
             // set dirty and save for upload
-            this.imageToSave = file;
             this.checkDirty();
           });
         }
@@ -552,15 +552,16 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.setDirty(false);
       return false;
     } else {
+      this.snack.open('DETECTED DIRTY', "", {duration: 1000, panelClass: ['mat-warn']});
       this.setDirty(true);
       this.saveItem();
       return true;
     }
   }
 
-  undoChanges() {
+  undoChanges(original: Item = this.originalItem) {
     let itemToRevert = this.item;
-    this.item = JSON.parse(JSON.stringify(this.previousItem)); // Copy so then the original stays original
+    this.item = JSON.parse(JSON.stringify(this.originalItem)); // Copy so then the original stays original
     
     if(this.item.category !== itemToRevert.category){
       this.updateItemCategory([this.item.category], itemToRevert.category);
@@ -581,14 +582,13 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     // first, upload the image if edited, upload when we get the new ID
     if (this.previousItem.imageUrl !== this.item.imageUrl) {
-      // post to upload image
-      if (this.imageToSave) {
-        return this.imageService.putImage(this.item.imageUrl, this.item.ID).then(link => {
-          this.item.imageUrl = link;
-          this.placeIntoDB();
-        });
-      }
+      this.snack.open('SAVING IMAGE', "", {duration: 1000, panelClass: ['mat-warn']});
+      return this.imageService.putImage(this.item.imageUrl, this.item.ID).then(link => {
+        this.item.imageUrl = link;
+        this.placeIntoDB();
+      });
     } else {
+      this.snack.open('NO IMAGE TO SAVE', "", {duration: 1000, panelClass: ['mat-warn']});
       //else just place
       return this.placeIntoDB();
     }
@@ -599,11 +599,15 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Places the item into the database
    */
   async placeIntoDB() {
+    this.snack.open('SAVING...', "", {duration: 1000, panelClass: ['mat-warn']});
     return this.adminService.updateItem(this.item, null, null).then(val => {
-      if (val !== true) {
-        this.snack.open('Item Save Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
-      }
+      this.snack.open('Saved!', "", {duration: 1000, panelClass: ['mat-warn']});
       this.isSaving = false;
+      this.previousItem = JSON.parse(JSON.stringify(this.item)); // Update short term changes
+    },
+    reject => {
+      this.snack.open('Item Save Failed: ' + reject, "OK", {duration: 3000, panelClass: ['mat-warn']});
+      this.undoChanges(this.previousItem); // Revert to last saved data
     });
   }
 
