@@ -31,6 +31,12 @@ h2 {
     width: 100%;
 }
 
+.attribute-suffix {
+  margin-top: -20px;
+  padding-bottom: 20px;
+  color: #999;
+}
+
 /*FAB display field*/
 .fab{
     bottom: 2%;

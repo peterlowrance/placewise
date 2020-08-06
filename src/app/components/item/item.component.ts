@@ -320,8 +320,9 @@ export class ItemComponent implements OnInit, OnDestroy {
 
       // Update recent locations
       for(let index in newLocations){
-        this.searchService.getLocation(newLocations[index]).subscribe(loc => {
+        let localSub = this.searchService.getLocation(newLocations[index]).subscribe(loc => {
           this.adminService.addToRecent(loc);
+          localSub.unsubscribe(); // Don't want this screwing with us later
         })
       }
     }
@@ -347,11 +348,23 @@ export class ItemComponent implements OnInit, OnDestroy {
   updateItemCategory(result: string[], oldCategory: string) {
     if (result && result.length > 0 && this.item.category !== result[0]) {
       this.item.category = result[0];
-      this.searchService.getCategory(result[0]).subscribe(category => {
-        this.adminService.addToRecent(category);
-        this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0])
+      let localSub = this.searchService.getCategory(result[0]).subscribe(newCategory => {
+        if(newCategory){
+          this.adminService.addToRecent(newCategory);
+
+          if(newCategory.prefix && !this.item.name.startsWith(newCategory.prefix)){ // Add the prefix if it's not there, make sure to remove old
+            if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
+              this.item.name = newCategory.prefix + " " + this.item.name.substring(this.category.prefix.length-1, this.item.name.length-1).trim();
+            } else {
+              this.item.name = newCategory.prefix + " " + this.item.name;
+            }
+          }
+  
+          this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0])
+          localSub.unsubscribe(); // Don't want this screwing with us later
+          this.adminService.updateItem(this.item, oldCategory, null); // TODO: Not good placement, seperate from normal saving routine
+        }
       });
-      this.adminService.updateItem(this.item, oldCategory, null); // TODO: Not good placement, seperate from normal saving routine
     }
   }
 
@@ -574,11 +587,44 @@ export class ItemComponent implements OnInit, OnDestroy {
     this.setDirty(false);
   }
 
+  buildAttributeString(category: Category = this.category): string {
+    let buildingString = '';
+    for(let suffixIndex in category.suffixStructure){
+      let id = category.suffixStructure[suffixIndex].attributeID;
+
+      if(id === 'parent'){
+        for(let index in this.categoryAncestors){
+          if(this.categoryAncestors[index].ID === category.parent){
+            buildingString += category.suffixStructure[suffixIndex].beforeText + 
+            this.buildAttributeString(this.categoryAncestors[index]) +
+            category.suffixStructure[suffixIndex].afterText;
+          }
+        }
+      }
+
+      else {
+        for(let attr in this.item.attributes){
+          if(this.item.attributes[attr].ID === id){
+            if(this.item.attributes[attr].value){ // Don't insert anything if there's no value
+              buildingString += category.suffixStructure[suffixIndex].beforeText + 
+              this.item.attributes[attr].value +
+              category.suffixStructure[suffixIndex].afterText;
+            }
+          }
+        }
+      }
+    }
+    return buildingString;
+  }
+
   /**
    * Saves the item to the database, sets not dirty, and sets previousItem
    */
   async saveItem() {
     this.isSaving = true;
+    if(this.item.attributes !== this.previousItem.attributes){
+      this.item.attributeSuffix = this.buildAttributeString();
+    }
 
     // first, upload the image if edited, upload when we get the new ID
     if (this.previousItem.imageUrl !== this.item.imageUrl) {

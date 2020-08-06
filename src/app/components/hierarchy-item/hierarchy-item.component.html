@@ -99,6 +99,87 @@
           <button mat-raised-button color="accent" class="addButton" *ngIf="this.role === 'Admin'" (click)="addAttribute()"><mat-icon class="plus-icon">add</mat-icon>Add Attribute</button>
         </mat-card-content>
       </mat-card>
+      <br>
+      <mat-card class="attributes-card" *ngIf="this.role === 'Admin'" [class.mat-elevation-z3]="true">
+        <mat-card-content>
+          <h2>Automatic Item Suffix:</h2>
+          <br>
+          <mat-card class="suffix-card" [class.mat-elevation-z3]="true" *ngFor="let suffix of attributeSuffixesForDisplay">
+            <mat-card-content>
+              <h3 class="suffix-attribute-title">Attribute:</h3>
+              <mat-form-field appearance="fill" class="attribute-select-form">
+                <mat-label class="attribute-select-label">Choose an attribute</mat-label>
+                <mat-select class="attribute-select" [(value)]="suffix.name">
+                  <mat-option *ngFor="let inheritAttr of inheritedAttributes" [value]="inheritAttr.name" (click)="setAttributeSuffix(inheritAttr.ID, suffix.positionID)">{{inheritAttr.name}}</mat-option>
+                  <mat-option *ngFor="let attr of attributeNames" [value]="attr" (click)="setAttributeSuffix(attr, suffix.positionID, true)">{{attr}}</mat-option>
+                  <mat-option value="Parent Category's Suffix" (click)="setAttributeSuffix('parent', suffix.positionID)">Parent Category's Suffix</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <h4>Text before attribute:</h4>
+              <div *ngIf="suffix.editingBefore">
+                <mat-form-field class="character-input">
+                  <mat-label>Text (including spaces):</mat-label>
+                  <div class="quoted-text">
+                      <input class="quoted-text-input" matInput #before
+                      type="text"
+                      [(ngModel)]="suffix.beforeText"
+                      (focusout)="setSuffixField(suffix.positionID, 'before', before.value)">
+                  </div>
+                </mat-form-field>
+              </div>
+              <div *ngIf="!suffix.editingBefore">
+                <h3>
+                  {{"\"" + suffix.beforeText + "\""}}
+                  <button mat-icon-button class="editButton" (click)="editSuffixField(suffix.positionID, 'before')"><mat-icon>edit</mat-icon></button>
+                </h3>
+                <br>
+              </div>
+
+              <h4>Text after attribute:</h4>
+              <div *ngIf="suffix.editingAfter">
+                <mat-form-field class="character-input">
+                  <mat-label>Text (including spaces):</mat-label>
+                  <input matInput #after
+                  type="text"
+                  [(ngModel)]="suffix.afterText"
+                  (focusout)="setSuffixField(suffix.positionID, 'after', after.value)">
+                </mat-form-field>
+              </div>
+              <div *ngIf="!suffix.editingAfter">
+                <h3>
+                  {{"\"" + suffix.afterText + "\""}}
+                  <button mat-icon-button class="editButton" (click)="editSuffixField(suffix.positionID, 'after')"><mat-icon>edit</mat-icon></button>
+                </h3>
+                <br>
+              </div>
+              <br>
+              <div class="suffix-control-buttons">
+                <div>
+                  <button mat-raised-button color="accent" (click)="bumpSuffixUp(suffix.positionID)"><mat-icon>keyboard_arrow_up</mat-icon></button>
+                  <button mat-raised-button color="accent" class="down-button" (click)="bumpSuffixDown(suffix.positionID)"><mat-icon>keyboard_arrow_down</mat-icon></button>
+                </div>
+                <button mat-icon-button (click)="deleteAttributeSuffix(suffix.positionID)"><mat-icon>delete</mat-icon></button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+          <button mat-raised-button color="accent" class="addButton" (click)="addAttributeSuffix()"><mat-icon class="plus-icon">add</mat-icon>Add Attribute Suffix</button>
+        </mat-card-content>
+      </mat-card>
+      <br>
+      <mat-card class="attributes-card" *ngIf="this.role === 'Admin'" [class.mat-elevation-z3]="true">
+        <mat-card-content>
+          <h2>Automatic Item Prefix:</h2>
+          <br>
+          <mat-form-field>
+            <mat-label>Prefix:</mat-label>
+            <input matInput #prefix
+            type="text"
+            [(ngModel)]="hierarchyItem.prefix"
+            (focusout)="onPrefixSubmit(prefix)">
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
     </div>
 
     <br>

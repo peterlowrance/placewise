@@ -46,7 +46,17 @@ export class HierarchyItemComponent implements OnInit {
   inheritedAttributes: [{
     name: string;
     categoryName: string;
+    ID: string;
   }];                   // Names of unmodifyable attributes from any parent
+  attributeSuffixesForDisplay: [{
+    positionID: string;
+    beforeText: string;
+    attributeID: string;
+    name: string;
+    afterText: string;
+    editingBefore: boolean;
+    editingAfter: boolean;
+  }]
   //renameBind: string[] = [];                                       // For attribute renaming inputs from the form field
   isSaving = false;
   dirty = false; // Needed for HTML
@@ -104,37 +114,117 @@ export class HierarchyItemComponent implements OnInit {
 
         this.searchService.getAncestorsOf(cat).subscribe(parents => {
           this.parentsToDisplay = parents;
-          this.inheritedAttributes = null;
+          let buildingAttributes: [{
+            name: string;
+            categoryName: string;
+            ID: string;
+          }];
 
           for(let parent in parents[0]){
             let attrCategory = (parents[0][parent] as Category);
             if(attrCategory.attributes)
             for(let attr in attrCategory.attributes){
-              if(this.inheritedAttributes){
+              if(buildingAttributes){
 
                 // Have the attributes sorted as they are added
                 let newItemNameCapped = attrCategory.attributes[attr]["name"].toUpperCase();
-                if (this.inheritedAttributes[this.inheritedAttributes.length-1].name.toUpperCase() < newItemNameCapped){
-                  this.inheritedAttributes.splice(this.inheritedAttributes.length, 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name});
+                if (buildingAttributes[buildingAttributes.length-1].name.toUpperCase() < newItemNameCapped){
+                  buildingAttributes.splice(buildingAttributes.length, 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
                 }
                 else {
-                  for(let index in this.inheritedAttributes){
-                    if(newItemNameCapped < this.inheritedAttributes[index].name.toUpperCase()){
-                      this.inheritedAttributes.splice(parseInt(index), 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name});
+                  for(let index in buildingAttributes){
+                    if(newItemNameCapped < buildingAttributes[index].name.toUpperCase()){
+                      buildingAttributes.splice(parseInt(index), 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
                       break;
                     }
                   }
                 }
               }
               else {
-                this.inheritedAttributes = [
+                buildingAttributes = [
                   {
                     name: attrCategory.attributes[attr]["name"],
-                    categoryName: attrCategory.name
+                    categoryName: attrCategory.name,
+                    ID: attr
                   }
                 ]
               }
             }
+          }
+          this.inheritedAttributes = buildingAttributes;
+
+          // TODO: MESSY. Might need to fully import local attributes in some way.
+          // Setup attributes for being displayed in suffixes
+          let buildingSuffixes: [{
+            positionID: string;
+            beforeText: string;
+            attributeID: string;
+            name: string;
+            afterText: string;
+            editingBefore: boolean;
+            editingAfter: boolean;
+          }];
+          for(let suffix in cat.suffixStructure){
+
+            if(cat.suffixStructure[suffix].attributeID === 'parent'){ // If it's the parent's suffix
+                let before = cat.suffixStructure[suffix].beforeText;
+                let after = cat.suffixStructure[suffix].afterText;
+                let attrId = cat.suffixStructure[suffix].attributeID;
+
+                if(buildingSuffixes){
+                  buildingSuffixes.push({
+                    beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
+                    name: "Parent Category's Suffix"
+                  })
+                }
+                else {
+                  buildingSuffixes = [{
+                    beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
+                    name: "Parent Category's Suffix"
+                  }]
+                }
+            }
+            else {
+              if(cat.attributes && cat.attributes[cat.suffixStructure[suffix].attributeID]){ // If the attribute is in the local category
+                let before = cat.suffixStructure[suffix].beforeText;
+                let after = cat.suffixStructure[suffix].afterText;
+                let attrId = cat.suffixStructure[suffix].attributeID;
+  
+                if(buildingSuffixes){
+                  buildingSuffixes.push({
+                    beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
+                    name: cat.attributes[cat.suffixStructure[suffix].attributeID]['name']
+                  })
+                }
+                else {
+                  buildingSuffixes = [{
+                    beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
+                    name: cat.attributes[cat.suffixStructure[suffix].attributeID]['name']
+                  }]
+                }
+              }
+              else for(let attr in this.inheritedAttributes){
+                if(this.inheritedAttributes[attr].ID === cat.suffixStructure[suffix].attributeID){ // If the attribute come from one of the parents
+                  let before = cat.suffixStructure[suffix].beforeText;
+                  let after = cat.suffixStructure[suffix].afterText;
+                  let attrId = cat.suffixStructure[suffix].attributeID;
+  
+                  if(buildingSuffixes){
+                    buildingSuffixes.push({
+                      beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
+                      name: this.inheritedAttributes[attr].name
+                    })
+                  }
+                  else {
+                    buildingSuffixes = [{
+                      beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
+                      name: this.inheritedAttributes[attr].name
+                    }]
+                  }
+                }
+              }
+            }
+            this.attributeSuffixesForDisplay = buildingSuffixes;
           }
 
         });
@@ -250,6 +340,64 @@ export class HierarchyItemComponent implements OnInit {
     }
   }
 
+  bumpSuffixUp(positionID: string){
+    let num = parseInt(positionID);
+    if(num > 0){
+      let suffixToBump = this.attributeSuffixesForDisplay[num];
+      let cat = (this.hierarchyItem as Category);
+      for(let index in cat.suffixStructure){
+        if(cat.suffixStructure[index].attributeID === suffixToBump.attributeID && 
+          cat.suffixStructure[index].beforeText === suffixToBump.beforeText &&
+          cat.suffixStructure[index].afterText === suffixToBump.afterText){
+          let temp = cat.suffixStructure.splice(parseInt(index), 1)[0];
+          cat.suffixStructure.splice(parseInt(index)-1, 0, temp);
+          break;
+        }
+      }
+      this.checkDirty();
+    }
+  }
+
+  bumpSuffixDown(positionID: string){
+    let num = parseInt(positionID);
+    let cat = (this.hierarchyItem as Category);
+    if(num < cat.suffixStructure.length-1){
+      let suffixToBump = this.attributeSuffixesForDisplay[num];
+      for(let index in cat.suffixStructure){
+        if(cat.suffixStructure[index].attributeID === suffixToBump.attributeID && 
+          cat.suffixStructure[index].beforeText === suffixToBump.beforeText &&
+          cat.suffixStructure[index].afterText === suffixToBump.afterText){
+          let temp = cat.suffixStructure.splice(parseInt(index), 1)[0];
+          cat.suffixStructure.splice(parseInt(index)+1, 0, temp);
+          break;
+        }
+      }
+      this.checkDirty();
+    }
+  }
+
+  editSuffixField(positionID: string, field: string){
+    if(field === 'after'){
+      this.attributeSuffixesForDisplay[parseInt(positionID)].editingAfter = true;
+    }
+    else {
+      this.attributeSuffixesForDisplay[parseInt(positionID)].editingBefore = true;
+    }
+  }
+
+  setSuffixField(positionID: string, field: string, value: string){
+    let suffixes = (this.hierarchyItem as Category).suffixStructure;
+    if(field === 'after'){
+      this.attributeSuffixesForDisplay[parseInt(positionID)].editingAfter = false;
+      suffixes[parseInt(positionID)].afterText = value;
+    }
+    else {
+      this.attributeSuffixesForDisplay[parseInt(positionID)].editingBefore = false;
+      suffixes[parseInt(positionID)].beforeText = value;
+    }
+    this.checkDirty();
+  }
+
   /**
    * Handles logic for submitting the name
    */
@@ -306,6 +454,11 @@ export class HierarchyItemComponent implements OnInit {
 
   }
 
+  onPrefixSubmit(prefix){
+    (this.hierarchyItem as Category).prefix = prefix.value;
+    this.checkDirty();
+  }
+
   addAttribute(){
     let attrs = (this.hierarchyItem as Category).attributes;
     if(attrs){
@@ -317,6 +470,37 @@ export class HierarchyItemComponent implements OnInit {
     (this.hierarchyItem as Category).attributes = attrs;
     this.attributeNames.push("New Attribute");
 
+
+    this.checkDirty();
+  }
+
+  setAttributeSuffix(idOrName: string, suffixID: string, isLocal: false){
+    if(isLocal){ // Locally we only have the name
+      let attrs = (this.hierarchyItem as Category).attributes;
+      for(let attr in attrs){
+        if(attrs[attr]['name'] === idOrName){
+          (this.hierarchyItem as Category).suffixStructure[parseInt(suffixID)].attributeID = attr;
+        }
+      }
+    }
+    else { // Otherwise set the id directly
+      (this.hierarchyItem as Category).suffixStructure[parseInt(suffixID)].attributeID = idOrName;
+    }
+    this.checkDirty();
+  }
+
+  addAttributeSuffix(){
+    if((this.hierarchyItem as Category).suffixStructure){
+      (this.hierarchyItem as Category).suffixStructure.push({beforeText: ' ', attributeID: 'parent', afterText: ''})
+    }
+    else {
+      (this.hierarchyItem as Category).suffixStructure = [{beforeText: ' ', attributeID: 'parent', afterText: ''}];
+    }
+    this.checkDirty();
+  }
+
+  deleteAttributeSuffix(position: string){
+    (this.hierarchyItem as Category).suffixStructure.splice(parseInt(position), 1);
 
     this.checkDirty();
   }

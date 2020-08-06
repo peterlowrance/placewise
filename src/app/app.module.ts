@@ -21,6 +21,8 @@ import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatBadgeModule} from '@angular/material/badge';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {MatSelectModule} from '@angular/material/select';
 
 import {SmdFabSpeedDialModule} from 'node_modules/angular-speed-dial';
 // Imports for all Placewise modules
@@ -97,6 +99,8 @@ import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-it
     MatTreeModule,
     MatListModule,
     MatBadgeModule,
+    MatSlideToggleModule,
+    MatSelectModule,
     MatTableModule,
     MatAutocompleteModule,
     AngularFireModule.initializeApp(environment.firebase, 'clientpanel'),

@@ -16,6 +16,7 @@ import * as firebase from 'firebase';
 import { promise } from 'protractor';
 import { Category } from '../models/Category';
 import { Location } from '../models/Location';
+import { type } from 'os';
 
 declare var require: any;
 
@@ -69,7 +70,7 @@ export class AdminService {
       }
     }
     if(!found) recentList.splice(0, 0, recent);
-    if(recentList.length > 5){ // Only have 5
+    if(recentList.length > 8){ // Only have 5
       recentList.pop();
     }
   }
@@ -126,6 +127,7 @@ export class AdminService {
 
 
   async updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Promise<boolean> {
+    if(item.type) delete item.type;
     await this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).set(item);
     if (oldCategoryID) {
       // Remove from old category
@@ -395,6 +397,7 @@ export class AdminService {
   }
 
   async updateHierarchy(node: HierarchyItem, isCategory: boolean): Promise<boolean> {
+    if(node.type) delete node.type;
     const appropriateHierarchy = isCategory ? '/Category/' : '/Locations/';
     await this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + appropriateHierarchy + node.ID).update(node);
     return true;

@@ -161,6 +161,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
   }
 
+  getFullItemName(item:Item): string {
+    return item.attributeSuffix ? item.name + item.attributeSuffix : item.name;
+  }
+
   navigateUpHierarchy() { // Yikes, repeated code from init
     this.updateSubscribedParent(this.root.parent, this.root.type);
   }
@@ -318,16 +322,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
             // Add it if not found, and keep it in sorted order
             if(!itemFound){
-              let newItemNameCapped = returnedItem.name.toUpperCase();
+              let newItemNameCapped = this.getFullItemName(returnedItem).toUpperCase();
               if(this.items.length === 0){
                 this.items.push(returnedItem);
               }
-              else if(this.items[this.items.length-1].name.toUpperCase() < newItemNameCapped){
+              else if(this.getFullItemName(this.items[this.items.length-1]).toUpperCase() < newItemNameCapped){
                 this.items.splice(this.items.length, 0, returnedItem);
               }
               else {
                 for(let item in this.items){
-                  if(newItemNameCapped <= this.items[item].name.toUpperCase()){
+                  if(newItemNameCapped <= this.getFullItemName(this.items[item]).toUpperCase()){
                     this.items.splice(parseInt(item), 0, returnedItem);
                     break;
                   }
@@ -394,13 +398,18 @@ export class HomeComponent implements OnInit, OnDestroy {
     // add the item
     let category = 'root';
     let location = null;
+    let name = 'NEW ITEM';
     // to category
     if (this.root.type === 'category') {
       category = this.root.ID;
+      let cat = this.root as Category;
+      if(cat.prefix){
+        name = cat.prefix;
+      }
     } else { // add to locations
       location = this.root.ID;
     }
-    this.adminService.createItemAtLocation('NEW ITEM', '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
+    this.adminService.createItemAtLocation(name, '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
       this.router.navigate(['/item/' + id]);
     });
   }
@@ -413,12 +422,25 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     if (this.root.type === 'category') {
 
-      this.adminService.addCategory({
+      let categoryData: Category = (this.root as Category).prefix ? 
+      {
         name: 'NEW CATEGORY',
         parent: this.root.ID,
         children: [],
+        items: [],
+        suffixStructure: [{afterText: '', attributeID: 'parent', beforeText: ''}],
+        prefix: (this.root as Category).prefix // Continue the prefix be default
+      }
+      :
+      {
+        name: 'NEW CATEGORY',
+        parent: this.root.ID,
+        children: [],
+        suffixStructure: [{afterText: '', attributeID: 'parent', beforeText: ''}],
         items: []
-      } as HierarchyItem, this.root.ID).subscribe(id => {
+      }
+
+      this.adminService.addCategory(categoryData, this.root.ID).subscribe(id => {
         this.router.navigate(['/hierarchyItem/categories/' + id]);
       });
     }

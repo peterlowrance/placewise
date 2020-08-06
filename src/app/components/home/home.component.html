@@ -73,7 +73,7 @@
         <mat-card class="itemCard" (click)="goToItem(item)" [class.mat-elevation-z3]="true">
           <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
           <mat-card-content>
-            <div class='item-text'><p>{{item.name}}</p></div>
+            <div class='item-text'><p>{{item.attributeSuffix ? item.name + item.attributeSuffix : item.name}}</p></div>
           </mat-card-content>
         </mat-card>
       </mat-grid-tile>

@@ -121,6 +121,43 @@
   padding-left: 10px;
 }
 
+.character-input {
+  max-width: 100%;
+  width: 240px;
+  margin-top: -10px;
+}
+
+.attribute-select {
+  font-size: 16px;
+}
+
+.attribute-select-form {
+  max-width: 100%;
+  width: 240px;
+  padding-bottom: 0;
+}
+
+.attribute-select-label {
+  font-size: 16px;
+}
+
+.down-button {
+  margin-left: 6px;
+}
+
+.suffix-control-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.suffix-card {
+  margin-bottom: 6px;
+}
+
+.suffix-attribute-title {
+  padding-top: 6px;
+}
+
 @media screen and (min-width: 600px){
   .extended-fab-button {
     top: 12px;
