@@ -147,7 +147,33 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
           if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
             this.categoryAncestors = categoryAncestors[0];
-            this.attributesForCard = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
+            let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
+            if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
+              console.log("ree");
+              this.attributesForCard = rebuiltCards;
+            }
+            else {
+              for(let newCard in rebuiltCards){ // This is to attempt to only save over the ones modified. Otherwise, users are often kicked out of edit fields
+                let found = false;
+                for(let originalCard in this.attributesForCard){
+                  if(this.attributesForCard[originalCard].ID === rebuiltCards[newCard].ID){
+                    found = true;
+                    if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
+                      this.attributesForCard[originalCard] = rebuiltCards[newCard]
+                    }
+                    else {
+                      console.log("Same: " + this.attributesForCard[originalCard].name);
+                    }
+                    break;
+                  }
+                }
+                if(!found){
+                  this.attributesForCard = rebuiltCards; // Attributes didn't align, so jsut reset
+                  break;
+                }
+              }
+              console.log("Same!");
+            }
           }
           else {
             this.attributesForCard = this.loadAttributesForCards([category], item)
@@ -254,7 +280,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     // set edit field value to enable state change, then set focus
     switch (field) {
       case 'name': 
-        if(this.item.name === "NEW ITEM") this.item.name = ''; // Clear default name immediately
+        if(this.item.name === "(New - Item\'s category does not have a prefix)") this.item.name = ''; // Clear default name immediately
         this.textEditFields.name = true;
         // focus
         setTimeout(() => this.nameField.nativeElement.focus(), 0);
@@ -352,11 +378,16 @@ export class ItemComponent implements OnInit, OnDestroy {
         if(newCategory){
           this.adminService.addToRecent(newCategory);
 
-          if(newCategory.prefix && !this.item.name.startsWith(newCategory.prefix)){ // Add the prefix if it's not there, make sure to remove old
-            if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
-              this.item.name = newCategory.prefix + " " + this.item.name.substring(this.category.prefix.length-1, this.item.name.length-1).trim();
-            } else {
-              this.item.name = newCategory.prefix + " " + this.item.name;
+          if(newCategory.prefix){ // Add the prefix if it's not there, make sure to remove old
+            if(this.item.name === "(New - Item\'s category does not have a prefix)"){
+              this.item.name = newCategory.prefix;
+            }
+            else if(!this.item.name.startsWith(newCategory.prefix)){
+              if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
+                this.item.name = newCategory.prefix + " " + this.item.name.substring(this.category.prefix.length-1, this.item.name.length-1).trim();
+              } else {
+                this.item.name = newCategory.prefix + " " + this.item.name;
+              }
             }
           }
   
@@ -565,7 +596,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.setDirty(false);
       return false;
     } else {
-      this.snack.open('DETECTED DIRTY', "", {duration: 1000, panelClass: ['mat-warn']});
       this.setDirty(true);
       this.saveItem();
       return true;
@@ -628,13 +658,11 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     // first, upload the image if edited, upload when we get the new ID
     if (this.previousItem.imageUrl !== this.item.imageUrl) {
-      this.snack.open('SAVING IMAGE', "", {duration: 1000, panelClass: ['mat-warn']});
       return this.imageService.putImage(this.item.imageUrl, this.item.ID).then(link => {
         this.item.imageUrl = link;
         this.placeIntoDB();
       });
     } else {
-      this.snack.open('NO IMAGE TO SAVE', "", {duration: 1000, panelClass: ['mat-warn']});
       //else just place
       return this.placeIntoDB();
     }
@@ -645,9 +673,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Places the item into the database
    */
   async placeIntoDB() {
-    this.snack.open('SAVING...', "", {duration: 1000, panelClass: ['mat-warn']});
     return this.adminService.updateItem(this.item, null, null).then(val => {
-      this.snack.open('Saved!', "", {duration: 1000, panelClass: ['mat-warn']});
       this.isSaving = false;
       this.previousItem = JSON.parse(JSON.stringify(this.item)); // Update short term changes
     },

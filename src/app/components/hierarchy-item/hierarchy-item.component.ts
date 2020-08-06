@@ -37,6 +37,7 @@ export class HierarchyItemComponent implements OnInit {
   
   isCategory = true;                                        // Category or location
   hierarchyItem: HierarchyItem;                             // Main thing we'd view here
+  hierAsCategory: Category;
   control = new FormControl('', Validators.nullValidator);  // Makes sure the name is non-empty
   role: string;                                             // If the user is admin
   previousItem: HierarchyItem;                              // Previous item, before edits are made
@@ -95,6 +96,7 @@ export class HierarchyItemComponent implements OnInit {
     if(this.isCategory){
       this.searchService.getCategory(id).subscribe(cat => {
         this.hierarchyItem = cat;
+        this.hierAsCategory = cat;
 
         this.attributeNames = [];
         for(let att in cat.attributes){
@@ -344,7 +346,7 @@ export class HierarchyItemComponent implements OnInit {
     let num = parseInt(positionID);
     if(num > 0){
       let suffixToBump = this.attributeSuffixesForDisplay[num];
-      let cat = (this.hierarchyItem as Category);
+      let cat = this.hierAsCategory;
       for(let index in cat.suffixStructure){
         if(cat.suffixStructure[index].attributeID === suffixToBump.attributeID && 
           cat.suffixStructure[index].beforeText === suffixToBump.beforeText &&
@@ -360,7 +362,7 @@ export class HierarchyItemComponent implements OnInit {
 
   bumpSuffixDown(positionID: string){
     let num = parseInt(positionID);
-    let cat = (this.hierarchyItem as Category);
+    let cat = this.hierAsCategory;
     if(num < cat.suffixStructure.length-1){
       let suffixToBump = this.attributeSuffixesForDisplay[num];
       for(let index in cat.suffixStructure){
@@ -386,7 +388,7 @@ export class HierarchyItemComponent implements OnInit {
   }
 
   setSuffixField(positionID: string, field: string, value: string){
-    let suffixes = (this.hierarchyItem as Category).suffixStructure;
+    let suffixes = this.hierAsCategory.suffixStructure;
     if(field === 'after'){
       this.attributeSuffixesForDisplay[parseInt(positionID)].editingAfter = false;
       suffixes[parseInt(positionID)].afterText = value;
@@ -441,7 +443,7 @@ export class HierarchyItemComponent implements OnInit {
     // check to see if name is valid
     if (newname.value !== '') {
 
-      let catAttrs = (this.hierarchyItem as Category).attributes
+      let catAttrs = this.hierAsCategory.attributes
       for(let attr in catAttrs){
         if(catAttrs[attr]["name"] === name){
           catAttrs[attr]["name"] = newname.value;
@@ -455,52 +457,52 @@ export class HierarchyItemComponent implements OnInit {
   }
 
   onPrefixSubmit(prefix){
-    (this.hierarchyItem as Category).prefix = prefix.value;
+    this.hierAsCategory.prefix = prefix.value;
     this.checkDirty();
   }
 
   addAttribute(){
-    let attrs = (this.hierarchyItem as Category).attributes;
+    let attrs = this.hierAsCategory.attributes;
     if(attrs){
       attrs[Date.now().toString()] = {"name": "New Attribute"};
     }
     else {
       attrs = {[Date.now().toString()]: {"name" : "New Attribute"}};
     }
-    (this.hierarchyItem as Category).attributes = attrs;
+    this.hierAsCategory.attributes = attrs;
     this.attributeNames.push("New Attribute");
 
 
     this.checkDirty();
   }
 
-  setAttributeSuffix(idOrName: string, suffixID: string, isLocal: false){
+  setAttributeSuffix(idOrName: string, suffixID: string, isLocal: boolean = false){
     if(isLocal){ // Locally we only have the name
-      let attrs = (this.hierarchyItem as Category).attributes;
+      let attrs = this.hierAsCategory.attributes;
       for(let attr in attrs){
         if(attrs[attr]['name'] === idOrName){
-          (this.hierarchyItem as Category).suffixStructure[parseInt(suffixID)].attributeID = attr;
+          this.hierAsCategory.suffixStructure[parseInt(suffixID)].attributeID = attr;
         }
       }
     }
     else { // Otherwise set the id directly
-      (this.hierarchyItem as Category).suffixStructure[parseInt(suffixID)].attributeID = idOrName;
+      this.hierAsCategory.suffixStructure[parseInt(suffixID)].attributeID = idOrName;
     }
     this.checkDirty();
   }
 
   addAttributeSuffix(){
-    if((this.hierarchyItem as Category).suffixStructure){
-      (this.hierarchyItem as Category).suffixStructure.push({beforeText: ' ', attributeID: 'parent', afterText: ''})
+    if(this.hierAsCategory.suffixStructure){
+      this.hierAsCategory.suffixStructure.push({beforeText: ' ', attributeID: 'parent', afterText: ''})
     }
     else {
-      (this.hierarchyItem as Category).suffixStructure = [{beforeText: ' ', attributeID: 'parent', afterText: ''}];
+      this.hierAsCategory.suffixStructure = [{beforeText: ' ', attributeID: 'parent', afterText: ''}];
     }
     this.checkDirty();
   }
 
   deleteAttributeSuffix(position: string){
-    (this.hierarchyItem as Category).suffixStructure.splice(parseInt(position), 1);
+    this.hierAsCategory.suffixStructure.splice(parseInt(position), 1);
 
     this.checkDirty();
   }
@@ -523,10 +525,10 @@ export class HierarchyItemComponent implements OnInit {
 
   async deleteAttribute(name: string){
     if (confirm('Are you sure you want to delete the attribute?\nThis cannot be undone.')) {
-      let attrs = (this.hierarchyItem as Category).attributes;
+      let attrs = this.hierAsCategory.attributes;
       for(let attr in attrs){
         if(attrs[attr]["name"] === name){
-          delete (this.hierarchyItem as Category).attributes[attr];
+          delete this.hierAsCategory.attributes[attr];
           this.attributeNames = this.attributeNames.filter(elem => elem !== name);
           this.checkDirty();
         }
