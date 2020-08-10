@@ -14,11 +14,11 @@
             </mat-form-field>
             <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
         </form></span>
-        <div class="attribute-suffix">{{item.attributeSuffix ? item.attributeSuffix + " (Attribute suffix)" : "(No attribute suffix)"}}</div>
+        <div class="attribute-suffix">{{attributeSuffix ? attributeSuffix + " (Attribute suffix)" : "(No attribute suffix)"}}</div>
     </div>
     <div class="titleHolder" *ngSwitchDefault>
       <h2>
-        {{item.attributeSuffix ? item.name + item.attributeSuffix : item.name}}
+        {{item.fullTitle}}
         <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
       </h2>
     </div>
@@ -37,6 +37,7 @@
             <img class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
             <!-- <button mat-mini-fab color="primary" *ngIf="this.role === 'Admin'" class="container-button"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button> -->
             <!-- hidden item uploader -->
+            <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
             <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
             <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
     </mat-grid-tile>
@@ -48,7 +49,7 @@
     </mat-grid-tile>
     <!-- warnings -->
     <mat-grid-tile class="reportButtonHolder">
-        <div class="report-button" *ngIf="this.role === 'Admin'">
+        <!-- <div class="report-button" *ngIf="this.role === 'Admin'">
             <button class="photo-button" mat-raised-button color="accent" (click)="camera.click()">
                 <mat-icon>photo_camera</mat-icon>
             </button>
@@ -56,13 +57,17 @@
             <button class="photo-button right-button" mat-raised-button color="accent" (click)="uploader.click()">
                 <mat-icon>perm_media</mat-icon>
             </button>
-        </div>
-    </mat-grid-tile>
-    <!-- more info button -->
-    <mat-grid-tile class="moreInfoButtonHolder">
+        </div> -->
         <button class="moreInfoButton" mat-raised-button (click)="toggleMoreInfo()"> More Info
             <mat-icon *ngIf="!expanded">keyboard_arrow_down</mat-icon>
             <mat-icon *ngIf="expanded">keyboard_arrow_up</mat-icon>
+        </button>
+    </mat-grid-tile>
+    <!-- more info button -->
+    <mat-grid-tile class="moreInfoButtonHolder">
+        <button class="moreInfoButton" mat-raised-button (click)="toggleAttributeInfo()"> Attributes
+            <mat-icon *ngIf="!attributesExpanded">keyboard_arrow_down</mat-icon>
+            <mat-icon *ngIf="attributesExpanded">keyboard_arrow_up</mat-icon>
         </button>
     </mat-grid-tile>
 </mat-grid-list>
@@ -149,10 +154,7 @@
 <br>
 
 <mat-accordion>
-    <mat-expansion-panel>
-        <mat-expansion-panel-header class="attributes-text">
-            Attributes
-        </mat-expansion-panel-header>
+    <mat-expansion-panel class="moreInfo" [expanded]="attributesExpanded" [ngClass]="{moreInfoOpen: attributesExpanded}"> 
         <div *ngIf="attributesForCard">
             <mat-card class="attribute-card" *ngFor="let attrCard of attributesForCard">
                 <!-- <mat-card-header class="attribute-titles">
@@ -178,6 +180,56 @@
         </div>
     </mat-expansion-panel>
 </mat-accordion>
+
+<mat-card class="tracking-card" [class.mat-elevation-z2]="true">
+    <h4>Tracking:</h4>
+    <div *ngFor="let card of trackingCards">
+        <mat-card class="tracking-location-card">
+            <mat-card-content>
+                <h3>{{card.name}}</h3>
+                <h4 *ngIf="this.role === 'Admin'" class="tracking-switch">Use exact numbers:<mat-slide-toggle class="tracking-numbers-toggle" [(ngModel)]="card.isNumber" (click)="toggleNumberTrackingForLocation(card.locationID)"></mat-slide-toggle></h4>
+                <div *ngIf="card.isNumber" class="tracking-input-number">
+                    <div *ngIf="!card.isBeingEdited">
+                        <button mat-raised-button color="accent" class="box-button minus-button" (click)="modifyTrackingNumber(card.locationID, 'subtract one', card.type, card.amount)"><mat-icon>remove</mat-icon></button>
+                        <button mat-stroked-button class="number-display">{{card.amount}}</button>
+                        <button mat-raised-button color="accent" class="box-button plus-button" (click)="modifyTrackingNumber(card.locationID, 'add one', card.type, card.amount)"><mat-icon>add</mat-icon></button>
+                        <button mat-raised-button color="primary" class="box-button edit-number-button" (click)="card.isBeingEdited = true"><mat-icon>edit</mat-icon></button>
+                    </div>
+                    <div *ngIf="card.isBeingEdited">
+                        <mat-form-field class="cap-form" id="editTrackingNumber">
+                            <mat-label class="cap-label">Enter amount in stock:</mat-label>
+                            <input matInput #amount
+                            type="number"
+                            [(ngModel)]="card.amount"
+                            (focusout)="closeEditingTrackingNumber(card)"
+                            autofocus
+                            >
+                        </mat-form-field>
+                        <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
+                    </div>
+                    <div *ngIf="this.role === 'Admin'">
+                        <mat-form-field class="cap-form">
+                            <mat-label class="cap-label">Auto report when at or below:</mat-label>
+                            <input matInput #cap
+                            type="number"
+                            [(ngModel)]="card.cap"
+                            (focusout)="updateTrackingCap(card)"
+                            (focus)="card.capFocus = true"
+                            >
+                        </mat-form-field>
+                        <button mat-icon-button class="fake-confirm-button" *ngIf="card.capFocus"><mat-icon>done</mat-icon></button>
+                    </div>
+                </div>
+                <div *ngIf="!card.isNumber" class="tracking-input-approx">
+                    <h4>Last reported as: <span class="amount-reported">{{card.amount}}</span></h4>
+                    <button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button>
+                    <button mat-raised-button class="approx-button approx-low" (click)="setTrackingAmount(card.locationID, 'Low')">Low</button>
+                    <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(card.locationID, 'Empty')">Empty</button>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</mat-card>
 <br>
 
 <!-- steps to find -->

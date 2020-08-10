@@ -164,7 +164,7 @@ export class AdminService {
     }
 
     return new Observable(obs => {
-      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({name, desc, tags, locations: location ? [location] : [], category, imageUrl
+      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({name, fullTitle: name, desc, tags, locations: location ? [location] : [], category, imageUrl
       }).then(
         val => {
           obs.next(val.id);
@@ -529,6 +529,24 @@ export class AdminService {
         }
       );
     });
+  }
+
+  async updateTracking(locationID: string, itemID: string, type: string, value: any): Promise<string> {
+    return new Promise((resolve, reject) => {
+      this.auth.getAuth().subscribe(
+        auth => {
+          // if auth is null, reject
+          if (auth === null) { reject('Auth token could not be retrieved. Perhaps you are logged out?'); }
+          // logged in, get goin'
+          auth.getIdTokenResult().then(
+            token => {
+              this.http.post(`${adServe}/updateTracking`, {idToken: token, locationID, itemID, type, valueToSet: value}).toPromise().then(
+                () => resolve("Update confirmed!"),
+                (err) => reject(err)
+              );
+            })
+          })
+    })
   }
 
   constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService, private http: HttpClient) {

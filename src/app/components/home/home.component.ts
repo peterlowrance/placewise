@@ -86,7 +86,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   miniFabState = 'shrunk'
   itemSearchOptions = {
     shouldSort: true,
-    keys: ['name', 'tags', 'attributes.value'],
+    keys: ['fullTitle', 'tags', 'attributes.value'],
     distance: 50,
     threshold: .4
   };
@@ -159,10 +159,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.authService.getRole().subscribe(
       val => this.role = val
     );
-  }
-
-  getFullItemName(item:Item): string {
-    return item.attributeSuffix ? item.name + item.attributeSuffix : item.name;
   }
 
   navigateUpHierarchy() { // Yikes, repeated code from init
@@ -322,16 +318,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
             // Add it if not found, and keep it in sorted order
             if(!itemFound){
-              let newItemNameCapped = this.getFullItemName(returnedItem).toUpperCase();
+              let newItemNameCapped = returnedItem.fullTitle.toUpperCase();
               if(this.items.length === 0){
                 this.items.push(returnedItem);
               }
-              else if(this.getFullItemName(this.items[this.items.length-1]).toUpperCase() < newItemNameCapped){
+              else if(this.items[this.items.length-1].fullTitle.toUpperCase() < newItemNameCapped){
                 this.items.splice(this.items.length, 0, returnedItem);
               }
               else {
                 for(let item in this.items){
-                  if(newItemNameCapped <= this.getFullItemName(this.items[item]).toUpperCase()){
+                  if(newItemNameCapped <= this.items[item].fullTitle.toUpperCase()){
                     this.items.splice(parseInt(item), 0, returnedItem);
                     break;
                   }

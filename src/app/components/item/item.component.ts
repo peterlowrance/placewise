@@ -39,6 +39,15 @@ interface AttributeCard {
   category: string;
 }
 
+interface TrackingCard {
+  name: string;
+  locationID: string;
+  isNumber: boolean;
+  amount: any;
+  cap?: number;
+  isBeingEdited?: boolean;
+}
+
 @Component({
   selector: 'app-item',
   templateUrl: './item.component.html',
@@ -80,6 +89,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   item: Item; // item returned by id
   previousItem: Item; // records short term edits for saving
   originalItem: Item; // how the item was when we started, before edits were made
+  attributeSuffix: string;
 
   loading = true;  // whether the page is actively loading
   report: Report = {
@@ -94,6 +104,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   }; // user report
   errorDesc: ItemReportModalData = {valid: false, desc: ''}; // user-reported error description
   expanded = false;  // is the more info panel expanded
+  attributesExpanded = false;  // is the more info panel expanded
   isSaving = false;
 
   // category of the item
@@ -101,6 +112,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   categoryAncestors: Category[];
   locationsAndAncestors: HierarchyItem[][];
   attributesForCard: AttributeCard[];
+  trackingCards: TrackingCard[] = [];
 
   role: string; // user role for editing
   missingData: string; // string of data missing, null if nothing is missing
@@ -134,12 +146,63 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.previousItem = JSON.parse(JSON.stringify(item)); // another for recording short term changes
       } 
 
+      if(item.fullTitle){
+        this.attributeSuffix = item.fullTitle.substring(item.name.length);
+      }
+
       // Load image for item TODO: Not any more
 
       // get the locations information
       this.searchService.getAncestorsOf(item).subscribe(locations => {
         this.locationsAndAncestors = locations;
       });
+
+      for(let location in item.locations){
+        let found = false;
+        for(let tracked in item.tracking){
+          if(item.tracking[tracked].locationID === item.locations[location]){
+            found = true;
+            let localSub = this.searchService.getLocation(item.locations[location]).subscribe(loc => {
+              if(loc){
+                let cardFound = false;
+                let isNumber = item.tracking[tracked].type.startsWith('number');
+                let cap = isNumber ? parseInt(item.tracking[tracked].type.substring(7)) : 0; // If there's a cap, it will be formatted like "number,[number]" so start at 7 to read it
+
+                for(let card in this.trackingCards){
+                  if(this.trackingCards[card].locationID === item.locations[location]){
+                    cardFound = true;
+                    this.trackingCards[card] = {name: loc.name, locationID: item.locations[location], isNumber, amount: item.tracking[tracked].amount, cap};
+                    break;
+                  }
+                }
+
+                if(!cardFound){
+                  this.trackingCards.push({ name: loc.name, locationID: item.locations[location], isNumber, amount: item.tracking[tracked].amount, cap});
+                }
+                localSub.unsubscribe();
+              }
+            })
+            break;
+          }
+        }
+        if(!found){
+          let foundEmptyCard = false;
+          for(let card in this.trackingCards){ // This is so then we aren't re-adding cards that have the tracking turned off
+            if(this.trackingCards[card].locationID === item.locations[location]){
+              foundEmptyCard = true;
+              break;
+            }
+          }
+          if(!foundEmptyCard){
+            let localSub = this.searchService.getLocation(item.locations[location]).subscribe(loc => {
+              if(loc){
+                this.trackingCards.push({ name: loc.name, locationID: item.locations[location], isNumber: false, amount: 'Good'});
+                localSub.unsubscribe();
+              }
+            })
+          }
+        }
+      }
 
       // get the category information
       this.searchService.getCategory(item.category).subscribe(category => {
@@ -149,7 +212,6 @@ export class ItemComponent implements OnInit, OnDestroy {
             this.categoryAncestors = categoryAncestors[0];
             let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
             if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
-              console.log("ree");
               this.attributesForCard = rebuiltCards;
             }
             else {
@@ -161,9 +223,6 @@ export class ItemComponent implements OnInit, OnDestroy {
                     if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
                       this.attributesForCard[originalCard] = rebuiltCards[newCard]
                     }
-                    else {
-                      console.log("Same: " + this.attributesForCard[originalCard].name);
-                    }
                     break;
                   }
                 }
@@ -172,7 +231,6 @@ export class ItemComponent implements OnInit, OnDestroy {
                   break;
                 }
               }
-              console.log("Same!");
             }
           }
           else {
@@ -231,6 +289,118 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   toggleMoreInfo() {
     this.expanded = !this.expanded;
+  }
+
+  toggleAttributeInfo() {
+    this.attributesExpanded = !this.attributesExpanded;
+  }
+
+  toggleNumberTrackingForLocation(locationID: string) {
+    for(let card in this.trackingCards){
+      if(this.trackingCards[card].locationID === locationID){
+        if(this.trackingCards[card].isNumber){ // New value hasn't been set yet so this is reversed
+          this.trackingCards[card].amount = 'Good';
+
+          for(let dataCard in this.item.tracking){
+            if(this.item.tracking[dataCard].locationID === locationID){
+              this.item.tracking[dataCard].type = 'approx';
+              this.item.tracking[dataCard].amount = 'Good';
+              break;
+            }
+          }
+        }
+        else {
+          this.trackingCards[card].amount = 0;
+
+          for(let dataCard in this.item.tracking){
+            if(this.item.tracking[dataCard].locationID === locationID){
+              this.item.tracking[dataCard].type = 'number,0';
+              this.item.tracking[dataCard].amount = 0;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    this.checkDirty();
+  }
+
+  closeEditingTrackingNumber(card: TrackingCard){
+    card.isBeingEdited = false;
+    for(let dataCard in this.item.tracking){
+      if(this.item.tracking[dataCard].locationID === card.locationID){
+        this.item.tracking[dataCard].amount = card.amount;
+      }
+    }
+
+    this.checkDirty();
+  }
+
+  // Auto report number
+  updateTrackingCap(card: TrackingCard){
+    // @ts-ignore capFocus is not apart of code, just for UI
+    card.capFocus = false;
+
+    for(let dataCard in this.item.tracking){
+      if(this.item.tracking[dataCard].locationID === card.locationID){
+        this.item.tracking[dataCard].type = 'number,' + card.cap;
+      }
+    }
+    this.checkDirty();
+  }
+
+  modifyTrackingNumber(locationID: string, modification: string, type: string, amount = 0){
+    if(modification === 'Replace'){
+      this.setTrackingAmount(locationID, amount, type);
+    }
+    else if (modification === 'subtract one'){
+      this.setTrackingAmount(locationID, amount-1, type);
+    }
+    else if (modification === 'add one'){
+      this.setTrackingAmount(locationID, amount+1, type);
+    }
+  }
+
+  setTrackingAmount(locationID: string, value: any, type: string = "approx"){
+    // For Database
+    if(this.role !== 'Admin'){
+      this.adminService.updateTracking(locationID, this.item.ID, 'approx', value).then(
+        (fulfilled) => this.setLocalTrackingCard(locationID, value),
+      (reject) => {
+        console.log("Tracking Update Rejected: " + JSON.stringify(reject));
+      })
+    }
+    else {
+      let found = false;
+      for(let dataCard in this.item.tracking){
+        if(this.item.tracking[dataCard].locationID === locationID){
+          this.item.tracking[dataCard].amount = value;
+          found = true;
+          break;
+        }
+      }
+      if(!found){
+        if(this.item.tracking){
+          this.item.tracking.push({locationID: locationID, type, amount: value});
+        }
+        else {
+          this.item.tracking = [{locationID: locationID, type, amount: value}];
+        }
+      }
+
+      this.setLocalTrackingCard(locationID, value)
+      this.checkDirty();
+    }
+  }
+
+  setLocalTrackingCard(locationID: string, value: string){
+    for(let card in this.trackingCards){ // For UI
+      if(this.trackingCards[card].locationID === locationID){
+        this.trackingCards[card].amount = value;
+        break;
+      }
+    }
   }
 
   createReport() {
@@ -381,6 +551,7 @@ export class ItemComponent implements OnInit, OnDestroy {
           if(newCategory.prefix){ // Add the prefix if it's not there, make sure to remove old
             if(this.item.name === "(New - Item\'s category does not have a prefix)"){
               this.item.name = newCategory.prefix;
+              this.item.fullTitle = this.item.name + this.buildAttributeString();
             }
             else if(!this.item.name.startsWith(newCategory.prefix)){
               if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
@@ -652,8 +823,8 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   async saveItem() {
     this.isSaving = true;
-    if(this.item.attributes !== this.previousItem.attributes){
-      this.item.attributeSuffix = this.buildAttributeString();
+    if(this.item.attributes !== this.previousItem.attributes || this.item.name !== this.previousItem.name){
+      this.item.fullTitle = this.item.name + this.buildAttributeString();
     }
 
     // first, upload the image if edited, upload when we get the new ID
