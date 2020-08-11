@@ -42,6 +42,7 @@ interface AttributeCard {
 interface TrackingCard {
   name: string;
   locationID: string;
+  type: string;
   isNumber: boolean;
   amount: any;
   cap?: number;
@@ -171,13 +172,13 @@ export class ItemComponent implements OnInit, OnDestroy {
                 for(let card in this.trackingCards){
                   if(this.trackingCards[card].locationID === item.locations[location]){
                     cardFound = true;
-                    this.trackingCards[card] = {name: loc.name, locationID: item.locations[location], isNumber, amount: item.tracking[tracked].amount, cap};
+                    this.trackingCards[card] = {name: loc.name, locationID: item.locations[location], type: item.tracking[tracked].type, isNumber, amount: item.tracking[tracked].amount, cap};
                     break;
                   }
                 }
 
                 if(!cardFound){
-                  this.trackingCards.push({ name: loc.name, locationID: item.locations[location], isNumber, amount: item.tracking[tracked].amount, cap});
+                  this.trackingCards.push({ name: loc.name, locationID: item.locations[location], type: item.tracking[tracked].type, isNumber, amount: item.tracking[tracked].amount, cap});
                 }
                 localSub.unsubscribe();
               }
@@ -196,7 +197,7 @@ export class ItemComponent implements OnInit, OnDestroy {
           if(!foundEmptyCard){
             let localSub = this.searchService.getLocation(item.locations[location]).subscribe(loc => {
               if(loc){
-                this.trackingCards.push({ name: loc.name, locationID: item.locations[location], isNumber: false, amount: 'Good'});
+                this.trackingCards.push({ name: loc.name, locationID: item.locations[location], type: 'approx', isNumber: false, amount: 'Good'});
                 localSub.unsubscribe();
               }
             })
@@ -352,17 +353,18 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   modifyTrackingNumber(locationID: string, modification: string, type: string, amount = 0){
     if(modification === 'Replace'){
-      this.setTrackingAmount(locationID, amount, type);
+      this.setTrackingAmount(locationID, amount, type, false);
     }
     else if (modification === 'subtract one'){
+      if(amount <= 0) return;
       this.setTrackingAmount(locationID, amount-1, type);
     }
     else if (modification === 'add one'){
-      this.setTrackingAmount(locationID, amount+1, type);
+      this.setTrackingAmount(locationID, amount+1, type, false);
     }
   }
 
-  setTrackingAmount(locationID: string, value: any, type: string = "approx"){
+  setTrackingAmount(locationID: string, value: any, type: string = "approx", sendReport = true){
     // For Database
     if(this.role !== 'Admin'){
       this.adminService.updateTracking(locationID, this.item.ID, 'approx', value).then(
@@ -391,6 +393,20 @@ export class ItemComponent implements OnInit, OnDestroy {
 
       this.setLocalTrackingCard(locationID, value)
       this.checkDirty();
+    }
+
+    // For reporting
+    if(sendReport){
+      if(type === 'approx'){
+        if(value !== "Good"){
+          this.sendAutoReport(value);
+        }
+      }
+      else if(type.startsWith('number')){
+        if(value <= parseInt(type.substring(7))){
+          this.sendAutoReport(value);
+        }
+      }
     }
   }
 
@@ -427,7 +443,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     // if it's valid, build and isue report, else leave
     if (this.errorDesc.valid) {
       this.report.description = this.errorDesc.desc;
-      this.report.item.name = this.item.name;
+      this.report.item.name = this.item.fullTitle;
       this.report.item.ID = this.item.ID;
       this.report.item.imageUrl = this.item.imageUrl;
       // TODO: input reporter name from auth service
@@ -442,6 +458,32 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
   }
 
+  sendAutoReport(amount: any) {
+    let desc = "Low";
+    if(amount === "Low"){
+      desc = "Auto Report: Item is low on supply.";
+    } 
+    else if (amount === "Empty") {
+      desc = "Auto Report: There's no items left!";
+    }
+    else if (amount === 0) {
+      desc = "Auto Report: There's no items left!";
+    } 
+    else {
+      desc = "Auto Report: There's only " + amount + " left in stock.";
+    }
+    this.report.description = desc;
+    this.report.item.name = this.item.fullTitle;
+    this.report.item.ID = this.item.ID;
+    this.report.item.imageUrl = this.item.imageUrl;
+    this.report.reportDate = new Date().toDateString();
+
+    return this.adminService.placeReport(this.report.item.ID, this.report.description).toPromise().then(
+      () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
+      (err) => this.snack.open("Report Failed, Please Try Later", "OK", {duration: 3000, panelClass: ['mat-toolbar']})
+    );
+  }
+
   /**
    * A field edit handler
    * @param field the string name of the item field to edit
@@ -450,7 +492,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     // set edit field value to enable state change, then set focus
     switch (field) {
       case 'name': 
-        if(this.item.name === "(New - Item\'s category does not have a prefix)") this.item.name = ''; // Clear default name immediately
+        if(this.item.name === "(New - Enter the Item Info first.)") this.item.name = ''; // Clear default name immediately
         this.textEditFields.name = true;
         // focus
         setTimeout(() => this.nameField.nativeElement.focus(), 0);
@@ -549,7 +591,7 @@ export class ItemComponent implements OnInit, OnDestroy {
           this.adminService.addToRecent(newCategory);
 
           if(newCategory.prefix){ // Add the prefix if it's not there, make sure to remove old
-            if(this.item.name === "(New - Item\'s category does not have a prefix)"){
+            if(this.item.name === "(New - Enter the Item Info first.)"){
               this.item.name = newCategory.prefix;
               this.item.fullTitle = this.item.name + this.buildAttributeString();
             }

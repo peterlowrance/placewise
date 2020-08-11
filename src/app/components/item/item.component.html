@@ -43,7 +43,7 @@
     </mat-grid-tile>
     <!-- report button -->
     <mat-grid-tile class="reportButtonHolder">
-        <button class="reportButton" mat-raised-button color="primary" (click)="createReport()">Report
+        <button class="reportButton" mat-raised-button color="primary" (click)="createReport()" [class.mat-elevation-z3]="true">Report
             <mat-icon>report_problem</mat-icon>
         </button>
     </mat-grid-tile>
@@ -58,19 +58,61 @@
                 <mat-icon>perm_media</mat-icon>
             </button>
         </div> -->
-        <button class="moreInfoButton" mat-raised-button (click)="toggleMoreInfo()"> More Info
-            <mat-icon *ngIf="!expanded">keyboard_arrow_down</mat-icon>
-            <mat-icon *ngIf="expanded">keyboard_arrow_up</mat-icon>
-        </button>
-    </mat-grid-tile>
-    <!-- more info button -->
-    <mat-grid-tile class="moreInfoButtonHolder">
-        <button class="moreInfoButton" mat-raised-button (click)="toggleAttributeInfo()"> Attributes
+        <button class="moreInfoButton item-info" mat-raised-button (click)="toggleAttributeInfo()" [class.mat-elevation-z3]="true"> Item Info
             <mat-icon *ngIf="!attributesExpanded">keyboard_arrow_down</mat-icon>
             <mat-icon *ngIf="attributesExpanded">keyboard_arrow_up</mat-icon>
         </button>
     </mat-grid-tile>
+    <!-- more info button -->
+    <mat-grid-tile class="moreInfoButtonHolder">
+        <button class="moreInfoButton extras" mat-stroked-button (click)="toggleMoreInfo()"> Extras
+            <mat-icon *ngIf="!expanded">keyboard_arrow_down</mat-icon>
+            <mat-icon *ngIf="expanded">keyboard_arrow_up</mat-icon>
+        </button>
+    </mat-grid-tile>
 </mat-grid-list>
+
+<mat-accordion>
+    <mat-expansion-panel class="moreInfo" [expanded]="attributesExpanded" [ngClass]="{moreInfoOpen: attributesExpanded}"> 
+
+        <!-- category -->
+        <div class="category-info">
+            <h2 class="bottom-space">Category  <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h2>
+            <div class="category-container">
+                <div class="category-picture"> <img class="categoryImg" src={{category?.imageUrl}}></div>
+                <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
+            </div>
+        </div>
+
+        <h2 class="bottom-space">Attributes:</h2>
+        <div *ngIf="attributesForCard">
+            <mat-card class="attribute-card" *ngFor="let attrCard of attributesForCard">
+                <!-- <mat-card-header class="attribute-titles">
+                    <mat-card-title>{{attrCard.name}}</mat-card-title>
+                    <mat-card-subtitle>{{attrCard.category}}</mat-card-subtitle>
+                </mat-card-header> -->
+                <mat-card-content>
+                    <mat-form-field class="attribute-input">
+                        <mat-label>{{attrCard.name + ":"}}</mat-label>
+                        <input matInput #value
+                        type="text"
+                        [(ngModel)]="attrCard.value"
+                        (focusout)="onAttrValueSubmit(attrCard)">
+                    </mat-form-field>
+                    <span *ngIf="!attrCard.value"><mat-icon class="missing-data-icon">error_outline</mat-icon></span>
+                    <span *ngIf="attrCard.category === 'None'"><button mat-icon-button class="delete-attribute-button" (click)="deleteAttribute(attrCard)"><mat-icon>delete</mat-icon></button></span>
+                    <div *ngIf="attrCard.category !== 'None'" class="attribute-category-text">{{attrCard.category}}</div>
+                    <div *ngIf="attrCard.category === 'None'" class="attribute-category-text missing-category">
+                        {{attrCard.category}}
+                    </div>
+                </mat-card-content>
+            </mat-card>
+            <div *ngIf="attributesForCard.length === 0" class="no-attributes-text">
+                The current category has no attributes.
+            </div>
+        </div>
+    </mat-expansion-panel>
+</mat-accordion>
 
 <!-- more info expansion panel -->
 <mat-accordion>
@@ -111,15 +153,6 @@
             </mat-card-actions>
         </mat-card>
 
-        <!-- category -->
-        <mat-card class="categoryCard">
-            <mat-card-header>
-                <mat-card-title>Category <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></mat-card-title>
-                <mat-card-subtitle>{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</mat-card-subtitle>
-                <div mat-card-avatar> <img class="categoryImg" src={{category?.imageUrl}}> </div>
-            </mat-card-header>
-        </mat-card>
-
         <!-- tags -->
         <h3>Tags <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('tags')"><mat-icon>add</mat-icon></button></h3>
         <div [ngSwitch]="this.textEditFields.tags">
@@ -151,42 +184,13 @@
         </div>
     </mat-expansion-panel>
 </mat-accordion>
-<br>
-
-<mat-accordion>
-    <mat-expansion-panel class="moreInfo" [expanded]="attributesExpanded" [ngClass]="{moreInfoOpen: attributesExpanded}"> 
-        <div *ngIf="attributesForCard">
-            <mat-card class="attribute-card" *ngFor="let attrCard of attributesForCard">
-                <!-- <mat-card-header class="attribute-titles">
-                    <mat-card-title>{{attrCard.name}}</mat-card-title>
-                    <mat-card-subtitle>{{attrCard.category}}</mat-card-subtitle>
-                </mat-card-header> -->
-                <mat-card-content>
-                    <mat-form-field class="attribute-input">
-                        <mat-label>{{attrCard.name + ":"}}</mat-label>
-                        <input matInput #value
-                        type="text"
-                        [(ngModel)]="attrCard.value"
-                        (focusout)="onAttrValueSubmit(attrCard)">
-                    </mat-form-field>
-                    <span *ngIf="!attrCard.value"><mat-icon class="missing-data-icon">error_outline</mat-icon></span>
-                    <span *ngIf="attrCard.category === 'None'"><button mat-icon-button class="delete-attribute-button" (click)="deleteAttribute(attrCard)"><mat-icon>delete</mat-icon></button></span>
-                    <div *ngIf="attrCard.category !== 'None'" class="attribute-category-text">{{attrCard.category}}</div>
-                    <div *ngIf="attrCard.category === 'None'" class="attribute-category-text missing-category">
-                        {{attrCard.category}}
-                    </div>
-                </mat-card-content>
-            </mat-card>
-        </div>
-    </mat-expansion-panel>
-</mat-accordion>
 
 <mat-card class="tracking-card" [class.mat-elevation-z2]="true">
-    <h4>Tracking:</h4>
+    <h3>Tracking:</h3>
     <div *ngFor="let card of trackingCards">
         <mat-card class="tracking-location-card">
             <mat-card-content>
-                <h3>{{card.name}}</h3>
+                <h3>{{card.name === "root" ? "Overall Amount" : card.name}}</h3>
                 <h4 *ngIf="this.role === 'Admin'" class="tracking-switch">Use exact numbers:<mat-slide-toggle class="tracking-numbers-toggle" [(ngModel)]="card.isNumber" (click)="toggleNumberTrackingForLocation(card.locationID)"></mat-slide-toggle></h4>
                 <div *ngIf="card.isNumber" class="tracking-input-number">
                     <div *ngIf="!card.isBeingEdited">
@@ -228,6 +232,9 @@
                 </div>
             </mat-card-content>
         </mat-card>
+    </div>
+    <div *ngIf="trackingCards && trackingCards.length === 0">
+        There are no locations to track.
     </div>
 </mat-card>
 <br>

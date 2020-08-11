@@ -7,7 +7,7 @@
 }
 
 h2 {
-    margin: 0 0.2rem;
+    margin: 0 0;
     padding-top: 24px;
 }
 
@@ -46,7 +46,7 @@ h2 {
 }
 
 .allContent {
-  padding: 0.4rem 2vw 3rem 2vw;
+  padding: 8px 3vw 32px 3vw;
   max-width: 48rem;
   position: center;
   margin: auto;
@@ -61,7 +61,7 @@ h2 {
 }
 
 .reportButton {
-  width: calc(4.5rem + 4vw);
+  width: calc(3.5rem + 8vw);
   max-width: 120px;
   padding: 0 0 0 3px;
 }
@@ -72,7 +72,7 @@ h2 {
 }
 
 .moreInfoButton {
-  width: calc(4.5rem + 4vw);
+  width: calc(3.5rem + 8vw);
   max-width: 120px;
   padding: 0 0 0 6px;
 }
@@ -85,10 +85,15 @@ h2 {
 
 .moreInfo {
   margin-top: 12px !important;
+  margin-bottom: 12px !important;
 }
 
 .moreInfoOpen {
-  padding-top: 0.8rem;
+  padding-top: 16px;
+}
+
+.no-attributes-text {
+  padding: 4px 0 16px 0;
 }
 
 .mat-expansion-panel-header-title {
@@ -312,6 +317,46 @@ p {
   margin-block-start: 0;
   margin-top: -6px;
 }
+
+.category-picture {
+  min-width: 60px;
+  min-height: 60px;
+  max-width: 60px;
+  max-height: 60px;
+  border-radius: 100%;
+}
+
+.category-info {
+  padding-bottom: 32px;
+  margin-top: -4px;
+}
+
+.category-name {
+  font-weight: 500;
+  font-size: 18px;
+  padding-left: 12px;
+}
+
+.category-container {
+  display: flex;
+  align-items: center;
+  margin-top: -6px;
+  padding-bottom: 4px;
+  height: 60px;
+}
+
+.item-info {
+  color: rgb(0, 0, 0)
+}
+
+.extras {
+  color: rgb(0, 0, 0, 0.8)
+}
+
+.bottom-space {
+  margin-bottom: 8px;
+}
+
 
 @media screen and (min-width: 600px){
   .extended-fab-button {

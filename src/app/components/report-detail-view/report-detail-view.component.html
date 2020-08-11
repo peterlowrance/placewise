@@ -1,9 +1,10 @@
 <h1 mat-dialog-title>Report Details</h1>
 <mat-dialog-content class="reportText">
+    <div class="item-name">{{data.itemName}}</div>
     {{data.reportDesc}}
 </mat-dialog-content>
 <div mat-dialog-actions>
-    <button mat-raised-button (click)="onCancelClick()">Cancel</button>
+    <button mat-raised-button (click)="onCancelClick()">Back</button>
     <span class="btn-spacer"></span>
     <button mat-raised-button (click)="goToItem()">Go to Item</button>
     <span class="btn-spacer"></span>
