@@ -128,25 +128,34 @@ export class AdminService {
 
   async updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Promise<boolean> {
     if(item.type) delete item.type;
+
+    if (oldLocationsID) {
+      // Remove from old locations - do this first so that the removed tracking data is saved when we update the item
+      for(let i in oldLocationsID){
+        // If this location is no longer present
+        if (item.locations.indexOf(oldLocationsID[i]) === -1) {
+          await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + oldLocationsID[i]).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+          
+          for(let index in item.tracking){ // Remove tracking data
+            if(item.tracking[index].locationID === oldLocationsID[i]){
+              item.tracking.splice(parseInt(index), 1);
+            }
+          }
+        }
+      };
+      // Add to new locations
+      item.locations.forEach(async location => {
+        await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
+      });
+    }
+
     await this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).set(item);
+
     if (oldCategoryID) {
       // Remove from old category
       await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
       // Add to new category
       await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
-    }
-    if (oldLocationsID) {
-      // Remove from old locations
-      oldLocationsID.forEach(async location => {
-        // If this location is no longer present
-        if (item.locations.indexOf(location) === -1) {
-          await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
-        }
-      });
-      // Add to new locations
-      item.locations.forEach(async location => {
-        await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
-      });
     }
     return true;
   }

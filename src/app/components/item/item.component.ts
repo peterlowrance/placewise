@@ -560,6 +560,18 @@ export class ItemComponent implements OnInit, OnDestroy {
 
       // Update the item locations
       this.item.locations = result;
+      
+      // NOTE: Inside the updateItem, the tracked data for old locations in the data structure get removed. But the card is removed here:
+      for(let oldLocIndex in oldLocations){
+        if(newLocations.indexOf(oldLocations[oldLocIndex]) === -1){
+          for(let cardIndex in this.trackingCards){
+            if(this.trackingCards[cardIndex].locationID === oldLocations[oldLocIndex]){
+              this.trackingCards.splice(parseInt(cardIndex), 1);
+            }
+          }
+        }
+      }
+
       this.adminService.updateItem(this.item, null, oldLocations); // TODO: Not good placement, seperate from main saving mechanism
       this.setDirty(true);
       this.searchService.getAncestorsOf(this.item).subscribe(locations => {
