@@ -135,7 +135,7 @@ export class AdminService {
       // Add to new category
       await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
     }
-    if (oldLocationsID && oldLocationsID.length > 0) {
+    if (oldLocationsID) {
       // Remove from old locations
       oldLocationsID.forEach(async location => {
         // If this location is no longer present
