@@ -125,6 +125,22 @@ export class AdminService {
     return [];
   }
 
+  getListenedReportLocations(uid: string): Observable<string[]> {
+    return new Observable(obs => {
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + uid).get().pipe(
+          map(doc => doc.data())
+        ).toPromise().then(
+          doc => {
+            obs.next(doc.listenedReportLocations);
+          }
+        );
+    }); 
+  }
+
+  async setListenedReportLocations(locationIDs: string[], uid: string){
+    await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + uid).update({listenedReportLocations: locationIDs});
+  }
+
 
   async updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Promise<boolean> {
     if(item.type) delete item.type;

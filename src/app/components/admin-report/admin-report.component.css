@@ -47,3 +47,13 @@ img {
   padding-left: 0.4rem;
   padding-right: 0.4rem;
 }
+
+.editButton {
+    float: end;
+    top: -4px;
+    left: -0.3rem;
+  }
+
+h4 {
+    padding-left: 24px;
+}

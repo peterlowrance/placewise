@@ -39,6 +39,7 @@ export class NavbarComponent implements OnInit {
   hasReadReportsColor = 'accent';
   noReports = true;
   numberOfReports = 0;
+  listeningToLocations: string[];
 
   
   @HostListener('window:popstate', ['$event'])
@@ -84,20 +85,32 @@ export class NavbarComponent implements OnInit {
   ngOnInit() {
     this.authService.getRole().subscribe(val =>  this.role = val);
 
+     // For good measure, don't pile on identical subscriptions. These are used to stop previous ones.
     let reportsSub: Subscription;
+    let authSub: Subscription;
+    let reportLocationsSub: Subscription;
+
     this.authService.getWorkspace().subscribe(workspaceInfo => {
       if(workspaceInfo && workspaceInfo.id !== ''){ // Make sure we have a workspace before subscribing to reports
-        if(reportsSub) reportsSub.unsubscribe(); // For good measure, don't pile on subscriptions to reports
-        reportsSub = this.adminService.getReports().subscribe(reports => {
-          if(this.locationString !== '/reports'){
-            this.hasReadReportsColor = 'warn';
-          }
-          if(reports.length === 0){
-            this.noReports = true;
-          }
-          else {
-            this.noReports = false;
-            this.numberOfReports = reports.length;
+
+        if(authSub) authSub.unsubscribe();
+        authSub = this.authService.getAuth().subscribe(info => {
+          if(info){
+
+            if(reportLocationsSub) reportLocationsSub.unsubscribe();
+            this.adminService.getListenedReportLocations(info.uid).subscribe(locations => {
+              if(locations){
+                
+                if(reportsSub) reportsSub.unsubscribe();
+                reportsSub = this.adminService.getReports().subscribe(reports => {
+                  if(reports){
+
+                    //DO IT
+
+                  }
+                });
+              }
+            });
           }
         });
       }

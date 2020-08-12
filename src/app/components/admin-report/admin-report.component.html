@@ -1,5 +1,7 @@
 <div class="allContent">
 
+    <h4>Only listen to reports from: <button mat-icon-button class="editButton"><mat-icon>edit</mat-icon></button></h4>
+
   <table *ngIf="reports && reports.length > 0" mat-table [dataSource]="reports" class="report-table">
     <ng-container matColumnDef="Image">
         <th mat-header-cell *matHeaderCellDef> Image </th>

@@ -18,6 +18,7 @@ import { ConfirmComponent } from '../confirm/confirm.component';
 export class AdminReportComponent implements OnInit {
   reports: SentReport[];
   headers: string[] = ['Image','Item','User'];
+  listeningToLocations: string[];
 
   constructor(
     private searchService: SearchService,
@@ -32,12 +33,19 @@ export class AdminReportComponent implements OnInit {
     this.adminService.getReports().subscribe(x => {this.reports = x;
       for(let i = 0; i < this.reports.length; i++)
       {
-        this.searchService.getItem(this.reports[i].item).subscribe(z =>{
+        this.searchService.getItem(this.reports[i].item).subscribe(z => {
           this.reports[i].trueItem = z;
         })
         this.authService.getUserInfo(this.reports[i].user).subscribe(z => this.reports[i].userName = z.firstName + " " + z.lastName);
       }
     });
+
+
+    this.authService.getAuth().subscribe(info => {
+      this.adminService.getListenedReportLocations(info.uid).subscribe(locations => {
+        this.listeningToLocations = locations;
+      });
+    })
   }
 
 
