@@ -313,11 +313,21 @@ export class ItemComponent implements OnInit, OnDestroy {
         else {
           this.trackingCards[card].amount = 0;
 
+          let found = false;
           for(let dataCard in this.item.tracking){
             if(this.item.tracking[dataCard].locationID === locationID){
+              found = true;
               this.item.tracking[dataCard].type = 'number,0';
               this.item.tracking[dataCard].amount = 0;
               break;
+            }
+          }
+          if(!found){
+            if(this.item.tracking){
+              this.item.tracking.push({locationID: locationID, type: 'number,0', amount: 0});
+            }
+            else {
+              this.item.tracking = [{locationID: locationID, type: 'number,0', amount: 0}];
             }
           }
         }
