@@ -125,20 +125,26 @@ export class AdminService {
     return [];
   }
 
-  getListenedReportLocations(uid: string): Observable<string[]> {
+  getListenedReportLocations(): Observable<string[]> {
     return new Observable(obs => {
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + uid).get().pipe(
-          map(doc => doc.data())
-        ).toPromise().then(
-          doc => {
-            obs.next(doc.listenedReportLocations);
-          }
-        );
+      this.auth.getAuth().subscribe(authInfo => {
+        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + authInfo.uid).snapshotChanges().pipe(
+          map(doc => {
+            let data = doc.payload.data() as {role: string, listenedReportLocations: string[]}
+            if(data.listenedReportLocations)
+            obs.next(data.listenedReportLocations);
+            else
+            obs.next([]);
+          })
+        ).toPromise(); // This made it work, idk why
+      })
     }); 
   }
 
-  async setListenedReportLocations(locationIDs: string[], uid: string){
-    await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + uid).update({listenedReportLocations: locationIDs});
+  async setListenedReportLocations(locationIDs: string[]){
+    this.auth.getAuth().subscribe(authInfo => {
+      this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + authInfo.uid).update({listenedReportLocations: locationIDs});
+    });
   }
 
 

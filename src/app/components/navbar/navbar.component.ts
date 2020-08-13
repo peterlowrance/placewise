@@ -37,9 +37,7 @@ export class NavbarComponent implements OnInit {
   role: string = '';
 
   hasReadReportsColor = 'accent';
-  noReports = true;
   numberOfReports = 0;
-  listeningToLocations: string[];
 
   
   @HostListener('window:popstate', ['$event'])
@@ -93,22 +91,43 @@ export class NavbarComponent implements OnInit {
     this.authService.getWorkspace().subscribe(workspaceInfo => {
       if(workspaceInfo && workspaceInfo.id !== ''){ // Make sure we have a workspace before subscribing to reports
 
-        if(authSub) authSub.unsubscribe();
-        authSub = this.authService.getAuth().subscribe(info => {
-          if(info){
+        if(reportLocationsSub) reportLocationsSub.unsubscribe();
+        this.adminService.getListenedReportLocations().subscribe(locations => {
+          if(locations){
+            
+            if(reportsSub) reportsSub.unsubscribe();
+            reportsSub = this.adminService.getReports().subscribe(reports => {
+              if(reports){
+                this.numberOfReports = 0;
 
-            if(reportLocationsSub) reportLocationsSub.unsubscribe();
-            this.adminService.getListenedReportLocations(info.uid).subscribe(locations => {
-              if(locations){
-                
-                if(reportsSub) reportsSub.unsubscribe();
-                reportsSub = this.adminService.getReports().subscribe(reports => {
-                  if(reports){
-
-                    //DO IT
-
+                if(this.locationString !== '/reports'){
+                  this.hasReadReportsColor = 'warn';
+                }
+                if(locations.length > 0){
+                  for(let reportIndex in reports){
+                    this.searchService.getItem(reports[reportIndex].item).subscribe(item => {
+                        this.searchService.getAncestorsOf(item).subscribe(itemLocations => {
+                          
+                          for(let listenedIndex in locations){
+                            for(let outerIndex in itemLocations){
+                              for(let innerIndex in itemLocations[outerIndex]){
+                                console.log(itemLocations[outerIndex][innerIndex].name)
+                                if(itemLocations[outerIndex][innerIndex].ID === locations[listenedIndex]){
+                                  this.numberOfReports++;
+                                  return; // Cut some CPU cycles and don't repeat current item
+                                }
+                              }
+                            }
+                          }
+                        })
+                    })
                   }
-                });
+                }
+                else {
+                  console.log("ALL!");
+                  this.numberOfReports = reports.length;
+                }
+
               }
             });
           }

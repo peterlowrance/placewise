@@ -1,6 +1,9 @@
 <div class="allContent">
 
-    <h4>Only listen to reports from: <button mat-icon-button class="editButton"><mat-icon>edit</mat-icon></button></h4>
+    <h4>Only listen to reports from: <button mat-icon-button class="editButton" (click)="editListenedLocations()"><mat-icon>edit</mat-icon></button></h4>
+    <mat-list>
+        <mat-list-item *ngFor="let loc of listeningToLocationNames"> {{loc}} </mat-list-item>
+    </mat-list>
 
   <table *ngIf="reports && reports.length > 0" mat-table [dataSource]="reports" class="report-table">
     <ng-container matColumnDef="Image">

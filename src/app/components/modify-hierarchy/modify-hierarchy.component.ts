@@ -67,7 +67,7 @@ export class ModifyHierarchyComponent implements OnInit {
 
     this.dataChange.subscribe(changedData => {
       this.dataSource.data = null;
-      this.dataSource.data = changedData;
+      this.dataSource.data = changedData; // NOTE: This line causes minor freezes
     });
     const appropriateHierarchy = this.isCategory ? this.searchService.getAllCategories() : this.searchService.getAllLocations();
     appropriateHierarchy.subscribe(hierarchy => {
@@ -114,6 +114,7 @@ export class ModifyHierarchyComponent implements OnInit {
       root.realChildren = [];
     }
     for (const child of root.children) {
+      console.log("YEET");
       const realChild = allHierarchy.find(e => e.ID === child);
       if (realChild) {
         realChild.realParent = root;

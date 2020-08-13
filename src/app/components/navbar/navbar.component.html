@@ -36,7 +36,7 @@
         <span class="spacer"></span>
         <button mat-icon-button [disabled]="checkLocation() ==='/' && (parent === null || parent.ID === 'root')" (click)="route('home')"><mat-icon>home</mat-icon></button>
         <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/reports'" (click)="route('reports')">
-            <mat-icon [matBadge]="numberOfReports" [matBadgeColor]="hasReadReportsColor" [matBadgeHidden]="noReports">report_problem</mat-icon>
+            <mat-icon [matBadge]="numberOfReports" [matBadgeColor]="hasReadReportsColor" [matBadgeHidden]="numberOfReports === 0">report_problem</mat-icon>
         </button>
         <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/users'" (click)="route('users')"><mat-icon>people</mat-icon></button>
         <button mat-icon-button [disabled]="this.locationString==='/settings'"  (click)="route('settings')">

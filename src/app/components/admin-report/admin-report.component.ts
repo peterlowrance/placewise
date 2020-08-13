@@ -9,6 +9,7 @@ import { MatDialog } from '@angular/material';
 import { ReportDetailViewComponent } from '../report-detail-view/report-detail-view.component';
 import { AuthService } from 'src/app/services/auth.service';
 import { ConfirmComponent } from '../confirm/confirm.component';
+import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 
 @Component({
   selector: 'app-admin-report',
@@ -19,6 +20,7 @@ export class AdminReportComponent implements OnInit {
   reports: SentReport[];
   headers: string[] = ['Image','Item','User'];
   listeningToLocations: string[];
+  listeningToLocationNames: string[];
 
   constructor(
     private searchService: SearchService,
@@ -41,11 +43,17 @@ export class AdminReportComponent implements OnInit {
     });
 
 
-    this.authService.getAuth().subscribe(info => {
-      this.adminService.getListenedReportLocations(info.uid).subscribe(locations => {
-        this.listeningToLocations = locations;
-      });
-    })
+    this.adminService.getListenedReportLocations().subscribe(locations => {
+      this.listeningToLocations = locations;
+
+      let localSetOfLocationNames: string[] = [];
+      for(let locIndex in locations){
+        this.searchService.getLocation(locations[locIndex]).subscribe(loc => {
+          localSetOfLocationNames.push(loc.name);
+          this.listeningToLocationNames = localSetOfLocationNames;
+        })
+      }
+    });
   }
 
 
@@ -94,6 +102,17 @@ export class AdminReportComponent implements OnInit {
 
   clearReports() {
     this.reports = this.adminService.clearReports(this.reports);
+  }
+
+  editListenedLocations() {
+    const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
+      width: '45rem',
+      data: {hierarchy: 'locations', singleSelection: false, parents: this.listeningToLocations}
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if(result)
+      this.adminService.setListenedReportLocations(result)
+    });
   }
 
 }
