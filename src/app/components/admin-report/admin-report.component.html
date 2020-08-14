@@ -1,11 +1,15 @@
 <div class="allContent">
 
-    <h4>Only listen to reports from: <button mat-icon-button class="editButton" (click)="editListenedLocations()"><mat-icon>edit</mat-icon></button></h4>
-    <mat-list>
-        <mat-list-item *ngFor="let loc of listeningToLocationNames"> {{loc}} </mat-list-item>
+    <h4>Only be notified by reports from: <button mat-icon-button class="editButton" (click)="editListenedLocations()"><mat-icon>edit</mat-icon></button></h4>
+    <mat-list class="listened-locations">
+        <mat-list-item *ngFor="let loc of listeningToLocationNames">
+            <mat-icon mat-list-icon class="location-icon">place</mat-icon>
+            <div mat-line>{{loc}}</div>
+        </mat-list-item>
     </mat-list>
 
-  <table *ngIf="reports && reports.length > 0" mat-table [dataSource]="reports" class="report-table">
+    <h4>Relevant Reports:</h4>
+  <table *ngIf="relevantReports && externalReports && ((relevantReports.length + externalReports.length) === numberOfAllReports)" mat-table [dataSource]="relevantReports" class="report-table">
     <ng-container matColumnDef="Image">
         <th mat-header-cell *matHeaderCellDef> Image </th>
         <td mat-cell *matCellDef="let r">
@@ -33,10 +37,50 @@
     <tr mat-header-row *matHeaderRowDef="headers"></tr>
     <tr class = "row" mat-row (click)="openModal(row)" *matRowDef="let row; columns: headers" ></tr>
   </table>
+  <div  class = 'button-container' *ngIf="relevantReports">
+        <!--  Clearing all reports is probably going to do more damage than help, removing for now. -->
+          <!-- <button *ngIf = "reports.length > 0" mat-raised-button class = "clear-button" (click)="confirmClear()">Clear All Reports</button> -->
+          <div *ngIf = "relevantReports.length == 0">
+              No reports to show.
+          </div>
+  </div>
 
-  <div  class = 'button-container' *ngIf="reports">
-          <button *ngIf = "reports.length > 0" mat-raised-button class = "clear-button" (click)="confirmClear()">Clear All Reports</button>
-          <div *ngIf = "reports.length == 0">
+  <br>
+  <br>
+
+  <h4>External Reports:</h4>
+  <table *ngIf="externalReports && externalReports && ((relevantReports.length + externalReports.length) === numberOfAllReports)" mat-table [dataSource]="externalReports" class="report-table">
+    <ng-container matColumnDef="Image">
+        <th mat-header-cell *matHeaderCellDef> Image </th>
+        <td mat-cell *matCellDef="let r">
+            <div>
+                <img *ngIf="r.trueItem" src= {{r.trueItem.imageUrl}} alt= " {{r.trueItem.name}} Image">
+            </div>
+        </td>
+    </ng-container>
+    <ng-container matColumnDef="Item">
+        <th mat-header-cell class="item" *matHeaderCellDef> Name </th>
+        <td mat-cell class="item" *matCellDef="let r">
+            <div>
+                <div *ngIf="r.trueItem">{{r.trueItem.fullTitle}}</div>
+            </div>
+        </td>
+    </ng-container>
+    <ng-container matColumnDef="User">
+        <th mat-header-cell *matHeaderCellDef> User </th>
+        <td mat-cell *matCellDef="let r">
+            <div>
+                <div>{{r.userName}}</div>
+            </div>
+        </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="headers"></tr>
+    <tr class = "row" mat-row (click)="openModal(row)" *matRowDef="let row; columns: headers" ></tr>
+  </table>
+  <div  class = 'button-container' *ngIf="externalReports">
+        <!--  Clearing all reports is probably going to do more damage than help, removing for now. -->
+          <!-- <button *ngIf = "reports.length > 0" mat-raised-button class = "clear-button" (click)="confirmClear()">Clear All Reports</button> -->
+          <div *ngIf = "externalReports.length == 0">
               No reports to show.
           </div>
   </div>

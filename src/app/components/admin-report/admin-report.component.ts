@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { SearchService } from 'src/app/services/search.service';
 import { AdminService } from 'src/app/services/admin.service';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -17,10 +17,12 @@ import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modif
   styleUrls: ['./admin-report.component.css']
 })
 export class AdminReportComponent implements OnInit {
-  reports: SentReport[];
+  relevantReports: SentReport[];
+  externalReports: SentReport[];
   headers: string[] = ['Image','Item','User'];
   listeningToLocations: string[];
   listeningToLocationNames: string[];
+  numberOfAllReports = 0; // Little bit of a hack, this teels the tables when we're ready to build
 
   constructor(
     private searchService: SearchService,
@@ -29,31 +31,66 @@ export class AdminReportComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private imageService: ImageService,
+    private changeDetectorRefs: ChangeDetectorRef,
     public dialog: MatDialog) { }
 
   ngOnInit() {
-    this.adminService.getReports().subscribe(x => {this.reports = x;
-      for(let i = 0; i < this.reports.length; i++)
-      {
-        this.searchService.getItem(this.reports[i].item).subscribe(z => {
-          this.reports[i].trueItem = z;
-        })
-        this.authService.getUserInfo(this.reports[i].user).subscribe(z => this.reports[i].userName = z.firstName + " " + z.lastName);
-      }
-    });
-
-
     this.adminService.getListenedReportLocations().subscribe(locations => {
       this.listeningToLocations = locations;
 
-      let localSetOfLocationNames: string[] = [];
-      for(let locIndex in locations){
-        this.searchService.getLocation(locations[locIndex]).subscribe(loc => {
-          localSetOfLocationNames.push(loc.name);
-          this.listeningToLocationNames = localSetOfLocationNames;
-        })
-      }
+      
+      this.adminService.getReports().subscribe(reports => {
+        this.numberOfAllReports = reports.length;
+        this.relevantReports = [];
+        this.externalReports = [];
+
+        for(let i = 0; i < reports.length; i++)
+        {
+          this.searchService.getItem(reports[i].item).subscribe(z => {
+            reports[i].trueItem = z;
+
+            this.searchService.getAncestorsOf(z).subscribe(itemLocations => {
+              let found = false;
+              for(let location = 0; location < locations.length && !found; location++){
+                for(let outerIndex = 0; outerIndex < itemLocations.length && !found; outerIndex++){
+                  for(let innerIndex = 0; innerIndex < itemLocations[outerIndex].length && !found; innerIndex++){
+                    if(locations[location] === itemLocations[outerIndex][innerIndex].ID){
+                      found = true;
+                      this.relevantReports.push(reports[i]);
+                    }
+                  }
+                }
+              }
+              if(!found){
+                this.externalReports.push(reports[i]);
+              }
+
+              // JANKY, but we cannot load this before getting ancestors, this messes with cache and that we don't have getAncestorsOf
+              // Setup to account for getting different input in the future. If we want to fix this, we'll need to rewrite getAncestorsOf
+              // a little and fix up where it's used to allow for not assuming it's going to give back only one answer.
+              // It's still conflicting if we do that as usually getAncestorsOf itself and what needs it is complex, so less updates is better.
+
+              if(i === 0){ // Only do this once
+                let localSetOfLocationNames: string[] = [];
+                for(let locIndex in locations){
+                  this.searchService.getLocation(locations[locIndex]).subscribe(loc => {
+                    localSetOfLocationNames.push(loc.name);
+                    this.listeningToLocationNames = localSetOfLocationNames;
+                  })
+                }
+              }
+            })
+
+          })
+
+          this.authService.getUserInfo(reports[i].user).subscribe(z => reports[i].userName = z.firstName + " " + z.lastName);
+        }
+      });
     });
+  }
+
+  ngAfterViewInit() {
+    
   }
 
 
@@ -85,24 +122,24 @@ export class AdminReportComponent implements OnInit {
         });
   }
 
-  confirmClear() {
-    // reset report data, ensure clicking out defaults to fail and no double send
-    let data = {confirm: false, desc: 'You sure you want to clear reports?'};
+  // confirmClear() {
+  //   // reset report data, ensure clicking out defaults to fail and no double send
+  //   let data = {confirm: false, desc: 'You sure you want to clear reports?'};
 
-    const dialogRef = this.dialog.open(ConfirmComponent, {
-      width: '14rem',
-      data: {
-        confirm: data.confirm,
-        desc: data.desc
-      }
-    });
-    dialogRef.afterClosed().subscribe(result => {if(result && result.confirm) {this.clearReports()}});
-  }
+  //   const dialogRef = this.dialog.open(ConfirmComponent, {
+  //     width: '14rem',
+  //     data: {
+  //       confirm: data.confirm,
+  //       desc: data.desc
+  //     }
+  //   });
+  //   dialogRef.afterClosed().subscribe(result => {if(result && result.confirm) {this.clearReports()}});
+  // }
 
 
-  clearReports() {
-    this.reports = this.adminService.clearReports(this.reports);
-  }
+  // clearReports() {
+  //   this.reports = this.adminService.clearReports(this.reports);
+  // }
 
   editListenedLocations() {
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {

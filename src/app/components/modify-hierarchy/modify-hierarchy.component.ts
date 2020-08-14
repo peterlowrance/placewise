@@ -114,7 +114,6 @@ export class ModifyHierarchyComponent implements OnInit {
       root.realChildren = [];
     }
     for (const child of root.children) {
-      console.log("YEET");
       const realChild = allHierarchy.find(e => e.ID === child);
       if (realChild) {
         realChild.realParent = root;

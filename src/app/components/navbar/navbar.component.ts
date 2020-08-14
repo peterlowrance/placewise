@@ -111,7 +111,6 @@ export class NavbarComponent implements OnInit {
                           for(let listenedIndex in locations){
                             for(let outerIndex in itemLocations){
                               for(let innerIndex in itemLocations[outerIndex]){
-                                console.log(itemLocations[outerIndex][innerIndex].name)
                                 if(itemLocations[outerIndex][innerIndex].ID === locations[listenedIndex]){
                                   this.numberOfReports++;
                                   return; // Cut some CPU cycles and don't repeat current item
@@ -124,7 +123,6 @@ export class NavbarComponent implements OnInit {
                   }
                 }
                 else {
-                  console.log("ALL!");
                   this.numberOfReports = reports.length;
                 }
 
