@@ -8,7 +8,7 @@
         </mat-list-item>
     </mat-list>
 
-    <h4>Relevant Reports:</h4>
+    <h4>Notified Reports:</h4>
   <table *ngIf="relevantReports && externalReports && ((relevantReports.length + externalReports.length) === numberOfAllReports)" mat-table [dataSource]="relevantReports" class="report-table">
     <ng-container matColumnDef="Image">
         <th mat-header-cell *matHeaderCellDef> Image </th>
@@ -40,11 +40,12 @@
   <div  class = 'button-container' *ngIf="relevantReports">
         <!--  Clearing all reports is probably going to do more damage than help, removing for now. -->
           <!-- <button *ngIf = "reports.length > 0" mat-raised-button class = "clear-button" (click)="confirmClear()">Clear All Reports</button> -->
-          <div *ngIf = "relevantReports.length == 0">
+          <div class="no-reports" *ngIf = "relevantReports.length == 0">
               No reports to show.
           </div>
   </div>
 
+  <br>
   <br>
   <br>
 
