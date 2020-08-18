@@ -105,7 +105,7 @@ export class NavbarComponent implements OnInit {
                 }
                 if(locations.length > 0){
                   for(let reportIndex in reports){
-                    this.searchService.getItem(reports[reportIndex].item).subscribe(item => {
+                    let itemSub = this.searchService.getItem(reports[reportIndex].item).subscribe(item => {
                         this.searchService.getAncestorsOf(item).subscribe(itemLocations => {
                           
                           for(let listenedIndex in locations){
@@ -113,11 +113,13 @@ export class NavbarComponent implements OnInit {
                               for(let innerIndex in itemLocations[outerIndex]){
                                 if(itemLocations[outerIndex][innerIndex].ID === locations[listenedIndex]){
                                   this.numberOfReports++;
+                                  itemSub.unsubscribe();
                                   return; // Cut some CPU cycles and don't repeat current item
                                 }
                               }
                             }
                           }
+                          itemSub.unsubscribe(); // Don't want this messing with numbers later
                         })
                     })
                   }
