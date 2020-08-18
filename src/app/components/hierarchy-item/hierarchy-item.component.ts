@@ -64,6 +64,7 @@ export class HierarchyItemComponent implements OnInit {
   //renameBind: string[] = [];                                       // For attribute renaming inputs from the form field
   isSaving = false;
   dirty = false; // Needed for HTML
+  previousName: string; // Needed for automatically making the prefix the name with checking what it was previously: to make sure it's not custom
 
   // edit fields for name and description
   @ViewChild('name', {static: false}) nameField: ElementRef;
@@ -386,9 +387,13 @@ export class HierarchyItemComponent implements OnInit {
   onNameSubmit() {
     // check to see if name is valid
     if (this.hierarchyItem.name !== '') {
-      // this.item.name = this.nameForm.value;
+      // If the prefix was the name, set it to the new name
+      if(this.hierAsCategory && this.previousName === this.hierAsCategory.prefix){
+        this.hierAsCategory.prefix = this.hierarchyItem.name;
+      }
       // hide control
       this.textEditFields.name = false;
+
     } else {
       this.hierarchyItem.name = this.previousItem.name;
       // TODO: show snackbar

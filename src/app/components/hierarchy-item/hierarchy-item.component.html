@@ -7,6 +7,7 @@
               placeholder="Name"
               [(ngModel)]="hierarchyItem.name"
               name="name"
+              (focus)="previousName = hierarchyItem.name"
               (focusout)="onNameSubmit()"
               required
               >

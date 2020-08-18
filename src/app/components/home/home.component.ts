@@ -418,22 +418,14 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     if (this.root.type === 'category') {
 
-      let categoryData: Category = (this.root as Category).prefix ? 
+      let categoryData: Category =
       {
         name: 'NEW CATEGORY',
         parent: this.root.ID,
         children: [],
         items: [],
         suffixStructure: [{afterText: '', attributeID: 'parent', beforeText: ''}],
-        prefix: (this.root as Category).prefix // Continue the prefix be default
-      }
-      :
-      {
-        name: 'NEW CATEGORY',
-        parent: this.root.ID,
-        children: [],
-        suffixStructure: [{afterText: '', attributeID: 'parent', beforeText: ''}],
-        items: []
+        prefix: 'NEW CATEGORY'
       }
 
       this.adminService.addCategory(categoryData, this.root.ID).subscribe(id => {
