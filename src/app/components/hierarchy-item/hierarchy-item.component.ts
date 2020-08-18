@@ -105,7 +105,7 @@ export class HierarchyItemComponent implements OnInit {
 
         this.localAttributes = [];
         for(let att in cat.attributes){
-          this.localAttributes.push({name: cat.attributes[att]["name"], opened: false});
+          this.localAttributes.push({name: cat.attributes[att]["name"], opened: cat.attributes[att]["name"] === 'New Attribute'});
         }
         this.localAttributes.sort(function(a, b) {
           var nameA = a.name.toUpperCase(); // ignore upper and lowercase
