@@ -124,25 +124,36 @@ export class HierarchyItemComponent implements OnInit {
             name: string;
             categoryName: string;
             ID: string;
-          }[] = [];
+          }[];
 
           for(let parent in parents[0]){
             let attrCategory = (parents[0][parent] as Category);
             if(attrCategory.attributes)
             for(let attr in attrCategory.attributes){
+              if(buildingAttributes){
 
-              // Have the attributes sorted as they are added
-              let newItemNameCapped = attrCategory.attributes[attr]["name"].toUpperCase();
-              if (buildingAttributes.length > 0 && buildingAttributes[buildingAttributes.length-1].name.toUpperCase() < newItemNameCapped){
-                buildingAttributes.splice(buildingAttributes.length, 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
-              }
-              else {
-                for(let index in buildingAttributes){
-                  if(newItemNameCapped < buildingAttributes[index].name.toUpperCase()){
-                    buildingAttributes.splice(parseInt(index), 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
-                    break;
+                // Have the attributes sorted as they are added
+                let newItemNameCapped = attrCategory.attributes[attr]["name"].toUpperCase();
+                if (buildingAttributes[buildingAttributes.length-1].name.toUpperCase() < newItemNameCapped){
+                  buildingAttributes.splice(buildingAttributes.length, 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
+                }
+                else {
+                  for(let index in buildingAttributes){
+                    if(newItemNameCapped < buildingAttributes[index].name.toUpperCase()){
+                      buildingAttributes.splice(parseInt(index), 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
+                      break;
+                    }
                   }
                 }
+              }
+              else {
+                buildingAttributes = [
+                  {
+                    name: attrCategory.attributes[attr]["name"],
+                    categoryName: attrCategory.name,
+                    ID: attr
+                  }
+                ]
               }
             }
           }

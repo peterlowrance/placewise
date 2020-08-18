@@ -111,7 +111,7 @@
                 <mat-label class="attribute-select-label">Choose an attribute</mat-label>
                 <mat-select class="attribute-select" [(value)]="suffix.name">
                   <mat-option *ngFor="let inheritAttr of inheritedAttributes" [value]="inheritAttr.name" (click)="setAttributeSuffix(inheritAttr.ID, suffix.positionID)">{{inheritAttr.name}}</mat-option>
-                  <mat-option *ngFor="let attr of localAttributes" [value]="attr.name" (click)="setAttributeSuffix(attr.name, suffix.positionID, true)">{{attr}}</mat-option>
+                  <mat-option *ngFor="let attr of localAttributes" [value]="attr.name" (click)="setAttributeSuffix(attr.name, suffix.positionID, true)">{{attr.name}}</mat-option>
                   <mat-option value="Parent Category's Suffix" (click)="setAttributeSuffix('parent', suffix.positionID)">Parent Category's Suffix</mat-option>
                 </mat-select>
               </mat-form-field>
