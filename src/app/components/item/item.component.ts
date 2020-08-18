@@ -37,6 +37,7 @@ interface AttributeCard {
   ID: string;
   value?: string;
   category: string;
+  focused: boolean;
 }
 
 interface TrackingCard {
@@ -643,7 +644,8 @@ export class ItemComponent implements OnInit, OnDestroy {
         cards.push({
           name: parents[parent].attributes[attr]['name'],
           ID: attr,
-          category: parents[parent].name
+          category: parents[parent].name,
+          focused: false
         })
       }
     }
@@ -663,7 +665,8 @@ export class ItemComponent implements OnInit, OnDestroy {
           name: item.attributes[itemAttr].name,
           ID: item.attributes[itemAttr].ID,
           value: item.attributes[itemAttr].value,
-          category: "None"
+          category: "None",
+          focused: false
         })
       }
     }
@@ -686,6 +689,7 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   onAttrValueSubmit(card: AttributeCard){
     let hasAttribute = false;
+    card.focused = false;
     for(let attr in this.item.attributes){
       if(this.item.attributes[attr].ID === card.ID){
         this.item.attributes[attr].value = card.value ? card.value.trim() : '';

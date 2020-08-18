@@ -43,13 +43,16 @@ export class HierarchyItemComponent implements OnInit {
   previousItem: HierarchyItem;                              // Previous item, before edits are made
   imageToSave: File = null;                                 // The image to upload when saved
   parentsToDisplay: HierarchyItem[][];                      // For the ancestor view component (and eventually loading attributes)
-  attributeNames: string[] = [];                            // Names of attributes in this category
-  inheritedAttributes: [{
+  localAttributes: {                                       // Names of attributes in this category
+    name: string,
+    opened: boolean
+  }[]
+  inheritedAttributes: {
     name: string;
     categoryName: string;
     ID: string;
-  }];                   // Names of unmodifyable attributes from any parent
-  attributeSuffixesForDisplay: [{
+  }[];                   // Names of unmodifyable attributes from any parent
+  attributeSuffixesForDisplay: {
     positionID: string;
     beforeText: string;
     attributeID: string;
@@ -57,7 +60,7 @@ export class HierarchyItemComponent implements OnInit {
     afterText: string;
     editingBefore: boolean;
     editingAfter: boolean;
-  }]
+  }[]
   //renameBind: string[] = [];                                       // For attribute renaming inputs from the form field
   isSaving = false;
   dirty = false; // Needed for HTML
@@ -69,8 +72,9 @@ export class HierarchyItemComponent implements OnInit {
   textEditFields: {
     name: boolean;
     desc: boolean;
+    prefix: boolean;
     // tags: boolean;
-  } = {name: false, desc: false,/* tags: false*/};
+  } = {name: false, desc: false,/* tags: false,*/ prefix: false};
 
   constructor(
     private searchService: SearchService, 
@@ -98,13 +102,13 @@ export class HierarchyItemComponent implements OnInit {
         this.hierarchyItem = cat;
         this.hierAsCategory = cat;
 
-        this.attributeNames = [];
+        this.localAttributes = [];
         for(let att in cat.attributes){
-          this.attributeNames.push(cat.attributes[att]["name"]);
+          this.localAttributes.push({name: cat.attributes[att]["name"], opened: false});
         }
-        this.attributeNames.sort(function(a, b) {
-          var nameA = a.toUpperCase(); // ignore upper and lowercase
-          var nameB = b.toUpperCase(); // ignore upper and lowercase
+        this.localAttributes.sort(function(a, b) {
+          var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+          var nameB = b.name.toUpperCase(); // ignore upper and lowercase
           if (nameA < nameB) {
             return -1;
           }
@@ -116,40 +120,29 @@ export class HierarchyItemComponent implements OnInit {
 
         this.searchService.getAncestorsOf(cat).subscribe(parents => {
           this.parentsToDisplay = parents;
-          let buildingAttributes: [{
+          let buildingAttributes: {
             name: string;
             categoryName: string;
             ID: string;
-          }];
+          }[] = [];
 
           for(let parent in parents[0]){
             let attrCategory = (parents[0][parent] as Category);
             if(attrCategory.attributes)
             for(let attr in attrCategory.attributes){
-              if(buildingAttributes){
 
-                // Have the attributes sorted as they are added
-                let newItemNameCapped = attrCategory.attributes[attr]["name"].toUpperCase();
-                if (buildingAttributes[buildingAttributes.length-1].name.toUpperCase() < newItemNameCapped){
-                  buildingAttributes.splice(buildingAttributes.length, 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
-                }
-                else {
-                  for(let index in buildingAttributes){
-                    if(newItemNameCapped < buildingAttributes[index].name.toUpperCase()){
-                      buildingAttributes.splice(parseInt(index), 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
-                      break;
-                    }
-                  }
-                }
+              // Have the attributes sorted as they are added
+              let newItemNameCapped = attrCategory.attributes[attr]["name"].toUpperCase();
+              if (buildingAttributes[buildingAttributes.length-1].name.toUpperCase() < newItemNameCapped){
+                buildingAttributes.splice(buildingAttributes.length, 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
               }
               else {
-                buildingAttributes = [
-                  {
-                    name: attrCategory.attributes[attr]["name"],
-                    categoryName: attrCategory.name,
-                    ID: attr
+                for(let index in buildingAttributes){
+                  if(newItemNameCapped < buildingAttributes[index].name.toUpperCase()){
+                    buildingAttributes.splice(parseInt(index), 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
+                    break;
                   }
-                ]
+                }
               }
             }
           }
@@ -157,7 +150,7 @@ export class HierarchyItemComponent implements OnInit {
 
           // TODO: MESSY. Might need to fully import local attributes in some way.
           // Setup attributes for being displayed in suffixes
-          let buildingSuffixes: [{
+          let buildingSuffixes: {
             positionID: string;
             beforeText: string;
             attributeID: string;
@@ -165,7 +158,7 @@ export class HierarchyItemComponent implements OnInit {
             afterText: string;
             editingBefore: boolean;
             editingAfter: boolean;
-          }];
+          }[] = [];
           for(let suffix in cat.suffixStructure){
 
             if(cat.suffixStructure[suffix].attributeID === 'parent'){ // If it's the parent's suffix
@@ -173,56 +166,32 @@ export class HierarchyItemComponent implements OnInit {
                 let after = cat.suffixStructure[suffix].afterText;
                 let attrId = cat.suffixStructure[suffix].attributeID;
 
-                if(buildingSuffixes){
-                  buildingSuffixes.push({
-                    beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
-                    name: "Parent Category's Suffix"
-                  })
-                }
-                else {
-                  buildingSuffixes = [{
-                    beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
-                    name: "Parent Category's Suffix"
-                  }]
-                }
+                buildingSuffixes.push({
+                  beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
+                  name: "Parent Category's Suffix"
+                })
             }
             else {
               if(cat.attributes && cat.attributes[cat.suffixStructure[suffix].attributeID]){ // If the attribute is in the local category
                 let before = cat.suffixStructure[suffix].beforeText;
                 let after = cat.suffixStructure[suffix].afterText;
                 let attrId = cat.suffixStructure[suffix].attributeID;
-  
-                if(buildingSuffixes){
-                  buildingSuffixes.push({
-                    beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
-                    name: cat.attributes[cat.suffixStructure[suffix].attributeID]['name']
-                  })
-                }
-                else {
-                  buildingSuffixes = [{
-                    beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
-                    name: cat.attributes[cat.suffixStructure[suffix].attributeID]['name']
-                  }]
-                }
+
+                buildingSuffixes.push({
+                  beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
+                  name: cat.attributes[cat.suffixStructure[suffix].attributeID]['name']
+                })
               }
               else for(let attr in this.inheritedAttributes){
                 if(this.inheritedAttributes[attr].ID === cat.suffixStructure[suffix].attributeID){ // If the attribute come from one of the parents
                   let before = cat.suffixStructure[suffix].beforeText;
                   let after = cat.suffixStructure[suffix].afterText;
                   let attrId = cat.suffixStructure[suffix].attributeID;
-  
-                  if(buildingSuffixes){
-                    buildingSuffixes.push({
-                      beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
-                      name: this.inheritedAttributes[attr].name
-                    })
-                  }
-                  else {
-                    buildingSuffixes = [{
-                      beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
-                      name: this.inheritedAttributes[attr].name
-                    }]
-                  }
+                    
+                  buildingSuffixes.push({
+                    beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
+                    name: this.inheritedAttributes[attr].name
+                  })
                 }
               }
             }
@@ -458,6 +427,7 @@ export class HierarchyItemComponent implements OnInit {
 
   onPrefixSubmit(prefix){
     this.hierAsCategory.prefix = prefix.value;
+    this.textEditFields.prefix = false;
     this.checkDirty();
   }
 
@@ -470,7 +440,7 @@ export class HierarchyItemComponent implements OnInit {
       attrs = {[Date.now().toString()]: {"name" : "New Attribute"}};
     }
     this.hierAsCategory.attributes = attrs;
-    this.attributeNames.push("New Attribute");
+    this.localAttributes.push({name: "New Attribute", opened: true});
 
 
     this.checkDirty();
@@ -529,7 +499,7 @@ export class HierarchyItemComponent implements OnInit {
       for(let attr in attrs){
         if(attrs[attr]["name"] === name){
           delete this.hierAsCategory.attributes[attr];
-          this.attributeNames = this.attributeNames.filter(elem => elem !== name);
+          this.localAttributes = this.localAttributes.filter(elem => elem.name !== name);
           this.checkDirty();
         }
       }

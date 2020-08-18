@@ -78,10 +78,10 @@
               </mat-expansion-panel-header>
             </mat-expansion-panel>
 
-            <mat-expansion-panel *ngFor="let attr of attributeNames">
+            <mat-expansion-panel *ngFor="let attr of localAttributes" [expanded]="attr.opened">
               <mat-expansion-panel-header>
                 <mat-panel-title>
-                  {{attr}}
+                  {{attr.name}}
                 </mat-panel-title>
               </mat-expansion-panel-header>
 
@@ -89,10 +89,10 @@
                 <mat-label>New name:</mat-label>
                 <input matInput #rename
                 type="text"
-                (focusout)="onAttrNameSubmit(attr, rename)">
+                (focusout)="onAttrNameSubmit(attr.name, rename)">
               </mat-form-field>
-
-              <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="deleteAttribute(attr)">Delete</button>
+              <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
+              <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="deleteAttribute(attr.name)">Delete</button>
             </mat-expansion-panel>
           </mat-accordion>
 
@@ -127,6 +127,7 @@
                       (focusout)="setSuffixField(suffix.positionID, 'before', before.value)">
                   </div>
                 </mat-form-field>
+                <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
               </div>
               <div *ngIf="!suffix.editingBefore">
                 <h3>
@@ -145,6 +146,7 @@
                   [(ngModel)]="suffix.afterText"
                   (focusout)="setSuffixField(suffix.positionID, 'after', after.value)">
                 </mat-form-field>
+                <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
               </div>
               <div *ngIf="!suffix.editingAfter">
                 <h3>
@@ -176,8 +178,10 @@
             <input matInput #prefix
             type="text"
             [(ngModel)]="hierAsCategory.prefix"
+            (focus)="textEditFields.prefix = true"
             (focusout)="onPrefixSubmit(prefix)">
           </mat-form-field>
+          <button mat-icon-button class="fake-confirm-button" *ngIf="textEditFields.prefix"><mat-icon>done</mat-icon></button>
         </mat-card-content>
       </mat-card>
     </div>

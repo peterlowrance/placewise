@@ -180,7 +180,7 @@ p {
 }
 
 .attribute-input {
-  width: 92%;
+  width: 75%;
   max-width: min(100% - 1.1rem, 330px);
 }
 

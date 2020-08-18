@@ -97,8 +97,10 @@
                         <input matInput #value
                         type="text"
                         [(ngModel)]="attrCard.value"
+                        (focus)="attrCard.focused = true"
                         (focusout)="onAttrValueSubmit(attrCard)">
                     </mat-form-field>
+                    <button mat-icon-button class="fake-confirm-button" *ngIf="attrCard.focused"><mat-icon>done</mat-icon></button>
                     <span *ngIf="!attrCard.value"><mat-icon class="missing-data-icon">error_outline</mat-icon></span>
                     <span *ngIf="attrCard.category === 'None'"><button mat-icon-button class="delete-attribute-button" (click)="deleteAttribute(attrCard)"><mat-icon>delete</mat-icon></button></span>
                     <div *ngIf="attrCard.category !== 'None'" class="attribute-category-text">{{attrCard.category}}</div>
@@ -128,7 +130,8 @@
         <!-- description -->
         <mat-card>
             <mat-card-header>
-                <mat-card-title>Description <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button></mat-card-title>
+                <mat-card-title>Description <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button>
+                    <button mat-icon-button class="fake-confirm-button" *ngIf="textEditFields.desc"><mat-icon>done</mat-icon></button></mat-card-title>
             </mat-card-header>
             <mat-card-content class="form-appear">
                 <div [ngSwitch]="this.textEditFields.desc">
