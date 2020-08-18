@@ -133,7 +133,7 @@ export class HierarchyItemComponent implements OnInit {
 
               // Have the attributes sorted as they are added
               let newItemNameCapped = attrCategory.attributes[attr]["name"].toUpperCase();
-              if (buildingAttributes[buildingAttributes.length-1].name.toUpperCase() < newItemNameCapped){
+              if (buildingAttributes.length > 0 && buildingAttributes[buildingAttributes.length-1].name.toUpperCase() < newItemNameCapped){
                 buildingAttributes.splice(buildingAttributes.length, 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
               }
               else {
