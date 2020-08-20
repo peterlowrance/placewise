@@ -449,15 +449,16 @@ export class HierarchyItemComponent implements OnInit {
 
   addAttribute(){
     let attrs = this.hierAsCategory.attributes;
+    let newID = Date.now().toString();
     if(attrs){
-      attrs[Date.now().toString()] = {"name": "New Attribute"};
+      attrs[newID] = {"name": "New Attribute"};
     }
     else {
-      attrs = {[Date.now().toString()]: {"name" : "New Attribute"}};
+      attrs = {[newID]: {"name" : "New Attribute"}};
     }
     this.hierAsCategory.attributes = attrs;
     this.localAttributes.push({name: "New Attribute", opened: true});
-
+    this.addAttributeSuffix(newID);
 
     this.checkDirty();
   }
@@ -477,12 +478,12 @@ export class HierarchyItemComponent implements OnInit {
     this.checkDirty();
   }
 
-  addAttributeSuffix(){
+  addAttributeSuffix(newID: string = 'parent'){
     if(this.hierAsCategory.suffixStructure){
-      this.hierAsCategory.suffixStructure.push({beforeText: ' ', attributeID: 'parent', afterText: ''})
+      this.hierAsCategory.suffixStructure.push({beforeText: ' ', attributeID: newID, afterText: ''})
     }
     else {
-      this.hierAsCategory.suffixStructure = [{beforeText: ' ', attributeID: 'parent', afterText: ''}];
+      this.hierAsCategory.suffixStructure = [{beforeText: ' ', attributeID: newID, afterText: ''}];
     }
     this.checkDirty();
   }
