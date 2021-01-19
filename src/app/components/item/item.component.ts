@@ -626,6 +626,10 @@ export class ItemComponent implements OnInit, OnDestroy {
               }
             }
           }
+          else if(newCategory.ID !== 'root'){ // If it has no prefix but it's not the root, make the name blank
+            this.item.name = '';
+            this.item.fullTitle = this.item.name + this.buildAttributeString();
+          }
   
           this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0])
           localSub.unsubscribe(); // Don't want this screwing with us later

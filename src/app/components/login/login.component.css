@@ -21,8 +21,12 @@
 .logo {
   padding: 20px;
   margin: auto;
-  width: 12rem;
-  max-width: 40vw;
+  width: 16rem;
+  max-width: 60vw;
+}
+
+.logoSVG {
+  max-width: 100%;
 }
 
 
