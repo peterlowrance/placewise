@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 
 @Component({
@@ -8,13 +8,38 @@ import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 })
 export class UserSelectComponent implements OnInit {
   @Input() selectedUsers: WorkspaceUser[];
-  @Input() unselectedUsers: WorkspaceUser[];
+  @Input() allUsers: WorkspaceUser[];
 
-  constructor() {
+  unselectedUsers: WorkspaceUser[] = [];
 
-   }
+  constructor(private changeDetection: ChangeDetectorRef) {
+  }
 
   ngOnInit() {
+    this.filterOutSelectedUsers();
+  }
+
+  onSelectNewUser(event, oldUser: WorkspaceUser){
+    console.log(JSON.stringify(this.selectedUsers));
+    let newUser: WorkspaceUser;
+    for(let i = 0; i < this.unselectedUsers.length; i++){
+      if(this.unselectedUsers[i].id === event.value){
+        newUser = this.unselectedUsers[i];
+      }
+    }
+    this.selectedUsers[this.selectedUsers.indexOf(oldUser)] = newUser;
+    console.log(JSON.stringify(this.selectedUsers));
+    
+  }
+
+  onClickUser(){
+    console.log("honk");
+    this.filterOutSelectedUsers();
+    this.changeDetection.detectChanges();
+  }
+
+  filterOutSelectedUsers(){
+    this.unselectedUsers = this.allUsers.filter(user => {return this.selectedUsers.indexOf(user) === -1})
   }
 
 }

@@ -452,7 +452,7 @@ export class ItemComponent implements OnInit, OnDestroy {
               valid: this.errorDesc.valid,
               desc: this.errorDesc.desc,
               selectedUsers: defaults,
-              unselectedUsers: admins
+              allUsers: admins
             }
           });
       

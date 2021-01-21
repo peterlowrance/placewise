@@ -1,6 +1,9 @@
 <mat-form-field *ngFor="let selected of selectedUsers" appearance="fill" class="admin-select-form">
-    <mat-label class="user-select-label">Select someone...</mat-label>
-    <mat-select class="user-select" [(value)]="selected.firstName">
-        <mat-option *ngFor="let unselected of unselectedUsers" [value]="unselected.firstName">{{unselected.firstName}}</mat-option>
+    <mat-label class="user-select-label">Select someone:</mat-label>
+    <mat-select class="user-select" (selectionChange)="onSelectNewUser($event, selected)" [(value)]="selected.id">
+        <mat-option *ngFor="let user of unselectedUsers" [value]="user.id" (click)="onClickUser()">{{user.firstName + ' ' + user.lastName}}</mat-option>
+        <mat-option [value]="selected.id">{{selected.firstName + ' ' + selected.lastName}}</mat-option>
     </mat-select>
 </mat-form-field>
+<br>
+<button *ngIf="unselectedUsers.length > 0" mat-raised-button color="accent" class="add-button"><mat-icon>add</mat-icon>Add Another</button>
