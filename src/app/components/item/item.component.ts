@@ -437,24 +437,27 @@ export class ItemComponent implements OnInit, OnDestroy {
     let reportedTo = this.adminService.getWorkspaceUsers().subscribe(users => {
       if(users){
 
-        //reportedTo.unsubscribe(); // Immediately unsubscribe, don't want this dialog to pop up again
-        console.log("egg");
-        //console.log(users);
+        let admins: WorkspaceUser[] = users.filter(element => { return element.role === "Admin" });
+        let defaults: WorkspaceUser[] = users.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
 
-        //let admins: WorkspaceUser[] = users.filter(element => { return element.role === "Admin" });
-        //let defaults: WorkspaceUser[] = users.filter(element => { console.log(element.id); return this.authService.workspace.defaultUsersForReports.indexOf(element.id) });
+        console.log(JSON.stringify(admins));
+        console.log(JSON.stringify(defaults));
 
-        const dialogRef = this.dialog.open(ReportDialogComponent, {
-          width: '30rem',
-          data: {
-            valid: this.errorDesc.valid,
-            desc: this.errorDesc.desc
-          }
-        });
-    
-        dialogRef.afterClosed().subscribe(result => {
-          if (result) this.issueReport(result);
-        });
+        if(defaults.length === this.authService.workspace.defaultUsersForReports.length) { // Once we know we've loaded the correct default users, open the modal
+          reportedTo.unsubscribe(); // Immediately unsubscribe, don't want this dialog to pop up again
+          
+          const dialogRef = this.dialog.open(ReportDialogComponent, {
+            width: '30rem',
+            data: {
+              valid: this.errorDesc.valid,
+              desc: this.errorDesc.desc
+            }
+          });
+      
+          dialogRef.afterClosed().subscribe(result => {
+            if (result) this.issueReport(result);
+          });
+        }
       }
     });
   }

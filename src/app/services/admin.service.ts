@@ -462,7 +462,7 @@ export class AdminService {
               if(rawUsers[i].payload.doc.id === workspaceUserDoc.id){
                 let userData = rawUsers[i].payload.doc.data() as User;
                 workspaceUsers.push({
-                  id: userData.id,
+                  id: workspaceUserDoc.id,
                   firstName: userData.firstName,
                   lastName: userData.lastName,
                   email: userData.email,
