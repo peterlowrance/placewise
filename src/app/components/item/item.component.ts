@@ -23,6 +23,7 @@ import {Location} from '@angular/common';
 import {MatSnackBar} from '@angular/material';
 import { Category } from 'src/app/models/Category';
 import { trigger, style, transition, animate, keyframes} from '@angular/animations';
+import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 
 
 interface TreeNode {
@@ -433,16 +434,29 @@ export class ItemComponent implements OnInit, OnDestroy {
   createReport() {
     // reset report data, ensure clicking out defaults to fail and no double send
     this.errorDesc = {valid: false, desc: ''};
+    let reportedTo = this.adminService.getWorkspaceUsers().subscribe(users => {
+      if(users){
 
-    const dialogRef = this.dialog.open(ReportDialogComponent, {
-      width: '30rem',
-      data: {
-        valid: this.errorDesc.valid,
-        desc: this.errorDesc.desc
+        //reportedTo.unsubscribe(); // Immediately unsubscribe, don't want this dialog to pop up again
+        console.log("egg");
+        //console.log(users);
+
+        //let admins: WorkspaceUser[] = users.filter(element => { return element.role === "Admin" });
+        //let defaults: WorkspaceUser[] = users.filter(element => { console.log(element.id); return this.authService.workspace.defaultUsersForReports.indexOf(element.id) });
+
+        const dialogRef = this.dialog.open(ReportDialogComponent, {
+          width: '30rem',
+          data: {
+            valid: this.errorDesc.valid,
+            desc: this.errorDesc.desc
+          }
+        });
+    
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) this.issueReport(result);
+        });
       }
     });
-
-    dialogRef.afterClosed().subscribe(result => {if (result) this.issueReport(result)});
   }
 
   /**

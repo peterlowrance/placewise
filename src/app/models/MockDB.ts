@@ -128,7 +128,8 @@ export const REPORTS: SentReport[] = [
         user: "111",
         ID: '000',
         trueItem: null,
-        userName: ""
+        userName: "",
+        sentTo:[]
     },
     {
         item: '998',
@@ -136,7 +137,8 @@ export const REPORTS: SentReport[] = [
         user: "112",
         ID: '001',
         trueItem: null,
-        userName: ""
+        userName: "",
+        sentTo: []
     },
     {
         item: '998',
@@ -144,6 +146,7 @@ export const REPORTS: SentReport[] = [
         user: "113",
         ID: '002',
         trueItem: null,
-        userName: ""
+        userName: "",
+        sentTo: []
     }
     ]

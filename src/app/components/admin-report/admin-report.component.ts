@@ -83,7 +83,7 @@ export class AdminReportComponent implements OnInit {
 
           })
 
-          this.authService.getUserInfo(reports[i].user).subscribe(z => reports[i].userName = z.firstName + " " + z.lastName);
+          this.authService.getUserInfo(reports[i].user).subscribe(z => {reports[i].userName = z.firstName + " " + z.lastName});
         }
       });
     });

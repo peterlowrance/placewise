@@ -119,7 +119,7 @@ export class SearchService implements SearchInterfaceService {
    */
   getDescendantsOfRoot(rootID: string, isCategory: boolean): Observable<HierarchyItem[]> {
     const result: HierarchyItem[] = [];
-    const appropriateHierarchyItems = isCategory ? this.getAllCategories() : this.getAllLocations();
+    const appropriateHierarchyItems: Observable<HierarchyItem[]> = isCategory ? this.getAllCategories() : this.getAllLocations();
     return new Observable(obs => {
       appropriateHierarchyItems.subscribe(hierarchyItems => {
         hierarchyItems.forEach(cat => {
@@ -248,7 +248,7 @@ export class SearchService implements SearchInterfaceService {
   getAllDescendantHierarchyItems(rootID: string, isCategory: boolean): Observable<HierarchyItem[]> {
     const result: HierarchyItem[] = [];
     const parents: string[] = [rootID];
-    const appropriateHierarchyItems = isCategory ? this.getAllCategories(true) : this.getAllLocations(true);
+    const appropriateHierarchyItems: Observable<HierarchyItem[]> = isCategory ? this.getAllCategories(true) : this.getAllLocations(true);
     if (rootID === 'root') {
       return appropriateHierarchyItems;
     }

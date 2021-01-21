@@ -1,0 +1,7 @@
+<h3>Report to:</h3>
+<mat-form-field *ngFor="let user of selectedUsers" appearance="fill" class="admin-select-form">
+    <mat-label class="user-select-label">Select an Admin</mat-label>
+    <mat-select class="user-select" [(value)]="user">
+        <mat-option *ngFor="let unselected of unselectedUsers" [value]="unselected.name">{{unselected.name}}</mat-option>
+    </mat-select>
+</mat-form-field>

@@ -6,7 +6,7 @@ import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {ActivatedRoute} from '@angular/router';
 import {MatDialog} from '@angular/material/dialog';
 import {EditHierarchyDialogComponent} from '../edit-hierarchy-dialog/edit-hierarchy-dialog.component';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {AdminService} from '../../services/admin.service';
 import {AuthService} from "../../services/auth.service";
 
@@ -69,7 +69,7 @@ export class ModifyHierarchyComponent implements OnInit {
       this.dataSource.data = null;
       this.dataSource.data = changedData; // NOTE: This line causes minor freezes
     });
-    const appropriateHierarchy = this.isCategory ? this.searchService.getAllCategories() : this.searchService.getAllLocations();
+    const appropriateHierarchy: Observable<HierarchyItem[]> = this.isCategory ? this.searchService.getAllCategories() : this.searchService.getAllLocations();
     appropriateHierarchy.subscribe(hierarchy => {
       if (!this.selectMode) {
         this.searchService.getDescendantsOfRoot('root', this.isCategory).subscribe(descOfRoot => {
@@ -85,7 +85,7 @@ export class ModifyHierarchyComponent implements OnInit {
           this.updateCurrentlyIn();
         });
       } else { // If you are selecting new locations or categories, include the root
-        const appropriateRoot = this.isCategory ? this.searchService.getCategory('root') : this.searchService.getLocation('root');
+        const appropriateRoot: Observable<HierarchyItem> = this.isCategory ? this.searchService.getCategory('root') : this.searchService.getLocation('root');
         appropriateRoot.subscribe(root => {
           this.buildTree(root, hierarchy);
           this.dataChange.next([root]);

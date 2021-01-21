@@ -19,6 +19,7 @@ interface Workspace{
   Reports: any;
   WorkspaceUsers: any;
   name: string;
+  defaultUsersForReports: string[];
 };
 
 @Injectable({
@@ -28,14 +29,16 @@ export class AuthService {
   /** User workspace information */
   workspace: WorkspaceInfo = {
     name: '',
-    id: ''
+    id: '',
+    defaultUsersForReports: []
   };
   /** User information */
   userInfo: User = {
     firstName: '',
     lastName: '',
     email: '',
-    workspace:''
+    workspace:'',
+    id: ''
   }
   /**User role, Admin or User */
   role: string;
@@ -73,7 +76,11 @@ export class AuthService {
         const workDoc = this.getWorkspaceInfo(this.workspace.id);
         //subscribe to changes in workspace name, re-ping current workspace
         workDoc.subscribe(
-          val => {this.workspace.name = val.name; this.currentWorkspace.next(this.workspace);}
+          val => {
+            this.workspace.name = val.name; 
+            this.workspace.defaultUsersForReports = val.defaultUsersForReports
+            this.currentWorkspace.next(this.workspace);
+          }
         );
       });
       const userDoc = this.getUserInfo(user.uid);
@@ -117,6 +124,8 @@ export class AuthService {
 
   /**
    * Gets user information from firebase
+   * !!! WARNING !!!: This currently does not include the id in the User object
+   * 
    * @param uid unique firebase user id
    */
   getUserInfo(uid: string){

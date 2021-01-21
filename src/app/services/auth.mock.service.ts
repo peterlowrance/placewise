@@ -20,12 +20,14 @@ export const MOCK_USER: User = {
   firstName: 'USER',
   lastName: 'McUSER',
   email: 'correct@correct.com',
-  workspace: 'aaaaaaa'
+  workspace: 'aaaaaaa',
+  id: '22222'
 }
 
 export const MOCK_WORKSPACE: WorkspaceInfo = {
   name: 'WORKSPACE',
-  id: '000111000'
+  id: '000111000',
+  defaultUsersForReports: ['bob']
 };
 
 export let MOCK_ROLE = 'Admin';

@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { User } from '../../models/User';
 import { AuthService } from '../../services/auth.service';
 import { AdminService } from '../../services/admin.service';
 import { MatCheckboxChange } from '@angular/material/checkbox';
@@ -7,11 +6,8 @@ import {MatDialog} from '@angular/material/dialog';
 import {AddUserDialogComponent} from '../add-user-dialog/add-user-dialog.component';
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material';
+import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 
-interface UserData{
-  user: User;
-  role: string;
-}
 
 @Component({
   selector: 'app-moderate-users',
@@ -20,7 +16,7 @@ interface UserData{
 })
 export class ModerateUsersComponent implements OnInit, OnDestroy {
   /** Array of workspace user data */
-  workspaceUsers: UserData[];
+  workspaceUsers: WorkspaceUser[];
 
   /** Table headers */
   headers: string[] = ['User', 'Admin','Delete'];
@@ -35,8 +31,8 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.adminService.getWorkspaceUsers().subscribe( (users) => this.workspaceUsers = users.sort(function(a, b) {
-      var nameA = a.user.firstName.toUpperCase(); // ignore upper and lowercase
-      var nameB = b.user.firstName.toUpperCase(); // ignore upper and lowercase
+      var nameA = a.firstName.toUpperCase(); // ignore upper and lowercase
+      var nameB = b.firstName.toUpperCase(); // ignore upper and lowercase
       if (nameA < nameB) {
         return -1;
       }
@@ -45,8 +41,8 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
       }
       
       if(nameA === nameB) {
-        nameA = a.user.lastName.toUpperCase(); // ignore upper and lowercase
-        nameB = b.user.lastName.toUpperCase(); // ignore upper and lowercase
+        nameA = a.lastName.toUpperCase(); // ignore upper and lowercase
+        nameB = b.lastName.toUpperCase(); // ignore upper and lowercase
 
         if (nameA < nameB) {
           return -1;
@@ -69,13 +65,13 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
    * Toggles the given user's admin/user status
    * @param change Matbox change value
    */
-  async toggleAdmin(change: MatCheckboxChange, user: UserData){
+  async toggleAdmin(change: MatCheckboxChange, user: WorkspaceUser){
     //checked is Admin, unchecked is User
     let newRole = change.checked ? 'Admin' : 'User';
     //if we confirm, set the new user role
-    if(confirm(`Are you sure you want to change ${user.user.firstName} ${user.user.lastName} to role ${newRole}?\nNew permissions will take effect on next token refresh.`)){
-      return this.adminService.setUserRole(user.user.email, newRole).then(
-        () => this.snack.open(`${user.user.firstName} is now a/an ${newRole}`, "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
+    if(confirm(`Are you sure you want to change ${user.firstName} ${user.lastName} to role ${newRole}?\nNew permissions will take effect on next token refresh.`)){
+      return this.adminService.setUserRole(user.email, newRole).then(
+        () => this.snack.open(`${user.firstName} is now a/an ${newRole}`, "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
         (err) => this.snack.open(`TOGGLE FAILED:\n${err}`, "OK", {duration: 3000, panelClass: ['mat-warn']})
       );
     }
@@ -88,13 +84,13 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
    * Deletes a given user from the application
    * @param user The user to be deleted
    */
-  async deleteUser(user: UserData){
-    if (confirm(`Are you sure you want to delete ${user.user.firstName} ${user.user.lastName}?\n` +
+  async deleteUser(user: WorkspaceUser){
+    if (confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?\n` +
     'Their account will be deleted and all permissions revoked.')) {
-      return this.adminService.deleteUserByEmail(user.user.email).then(
-        () => this.snack.open(`${user.user.firstName} successfully deleted`, "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
+      return this.adminService.deleteUserByEmail(user.email).then(
+        () => this.snack.open(`${user.firstName} successfully deleted`, "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
       ).catch(
-        () => this.snack.open(`DELETION FAILED\n${user.user.firstName} could not be deleted`, "OK", {duration: 3000, panelClass: ['mat-warn']})
+        () => this.snack.open(`DELETION FAILED\n${user.firstName} could not be deleted`, "OK", {duration: 3000, panelClass: ['mat-warn']})
       );
     }
   }
@@ -139,7 +135,7 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
    * @param user The user for this row
    * @returns true if the user in the row is this signed-in user, else false
    */
-  isCurrentUser(user: UserData): boolean{
-    return this.signedInEmail === user.user.email;
+  isCurrentUser(user: WorkspaceUser): boolean{
+    return this.signedInEmail === user.email;
   }
 }

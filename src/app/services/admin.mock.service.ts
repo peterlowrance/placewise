@@ -18,9 +18,9 @@ interface UserData{
  */
 
 const TESTDATA: UserData[] = [
-  {user: {firstName:"Anna",lastName:"Bray",email:"abray@gamil.com", workspace:"aP87kgghQ8mqvvwcZGQV"}, role:"User"}, 
-  {user: {firstName:"Lord",lastName:"Saladin",email:"headbutt@yahoo.com", workspace: "aP87kgghQ8mqvvwcZGQV"}, role:"User"}, 
-  {user: {firstName:"Cayde",lastName:"Six",email:"fastmouth@gamil.com", workspace: "aP87kgghQ8mqvvwcZGQV"}, role:"Admin"}
+  {user: {firstName:"Anna",lastName:"Bray",email:"abray@gamil.com", workspace:"aP87kgghQ8mqvvwcZGQV", id:"11111"}, role:"User"}, 
+  {user: {firstName:"Lord",lastName:"Saladin",email:"headbutt@yahoo.com", workspace: "aP87kgghQ8mqvvwcZGQV", id:"11112"}, role:"User"}, 
+  {user: {firstName:"Cayde",lastName:"Six",email:"fastmouth@gamil.com", workspace: "aP87kgghQ8mqvvwcZGQV", id:"11113"}, role:"Admin"}
 ]
 
 @Injectable({
@@ -33,7 +33,7 @@ export class AdminMockService {
 
   getReports(): Observable<SentReport[]> {
     const trueItem: Item = {name: 'test', fullTitle: 'test', ID: '1', locations: [], category: 'cat'};
-    const report: SentReport = {item: 'I1', desc: 'an item', user: 'aP87kgghQ8mqvvwcZGQV', ID: '1', trueItem, userName: 'Bobbo'};
+    const report: SentReport = {item: 'I1', desc: 'an item', user: 'aP87kgghQ8mqvvwcZGQV', sentTo: ['no'], ID: '1', trueItem, userName: 'Bobbo'};
     return of([report]);
   }
 

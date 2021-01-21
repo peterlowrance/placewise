@@ -56,6 +56,7 @@ import {AddUserDialogComponent} from './components/add-user-dialog/add-user-dial
 import { ConfirmComponent } from './components/confirm/confirm.component';
 import { AncestorViewComponent } from './components/ancestor-view/ancestor-view.component';
 import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-item.component';
+import { ReportToComponent } from './components/report-to/report-to.component';
 
 @NgModule({
   declarations: [
@@ -78,7 +79,8 @@ import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-it
     AddUserDialogComponent,
     ConfirmComponent,
     AncestorViewComponent,
-    HierarchyItemComponent
+    HierarchyItemComponent,
+    ReportToComponent
   ],
   imports: [
     BrowserModule,

@@ -2,12 +2,12 @@
 
 import {Injectable} from '@angular/core';
 import {HttpHeaders, HttpClient, HttpResponse, HttpRequest} from '@angular/common/http';
-import {Observable, of} from 'rxjs';
+import {Observable, of, Subscription} from 'rxjs';
 import {Item} from '../models/Item';
-import {AngularFirestore, DocumentReference} from '@angular/fire/firestore';
+import {AngularFirestore, DocumentReference, DocumentChangeAction} from '@angular/fire/firestore';
 import {AuthService} from './auth.service';
 import {SentReport} from '../models/SentReport';
-import {map} from 'rxjs/operators';
+import {map, first, finalize} from 'rxjs/operators';
 import {HierarchyItem} from '../models/HierarchyItem';
 import {SearchService} from './search.service';
 import { combineLatest } from 'rxjs';
@@ -17,6 +17,7 @@ import { promise } from 'protractor';
 import { Category } from '../models/Category';
 import { Location } from '../models/Location';
 import { type } from 'os';
+import { WorkspaceUser } from '../models/WorkspaceUser';
 
 declare var require: any;
 
@@ -86,8 +87,8 @@ export class AdminService {
       return data;
     }));
   }
+
   placeReport(itemID: string, text: string) {
-    let userID: string;
     let rID: string;
     this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid).then(x => rID = x.id));
     return of(true);
@@ -437,35 +438,97 @@ export class AdminService {
   /**
    * Gets all users from the current signed-in user's workspace
    */
-  getWorkspaceUsers(): Observable<any[]> {
+  getWorkspaceUsers(): Observable<WorkspaceUser[]> {
+    
+    return new Observable(obs => {
+
+      var workspaceUsersSub: Subscription;
+      var usersSub: Subscription;
+
+      // First get the users within the User collection
+      usersSub = this.afs.collection('/Users', ref => ref.where('workspace', '==', this.auth.workspace.id)).snapshotChanges().subscribe(rawUsers => {
+        if(workspaceUsersSub){ // If there's already a subscription, reset it so that we don't make another
+          workspaceUsersSub.unsubscribe();
+        }
+
+        // Then get the added WorkspaceUsers data
+        workspaceUsersSub = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().subscribe(rawWorkspaceUsers => {
+          let workspaceUsers: WorkspaceUser[] = []; // To emit
+
+          // Build the WorkspaceUsers using both sets of data
+          rawWorkspaceUsers.forEach(wUser => {
+            let workspaceUserDoc = wUser.payload.doc;
+            for(let i = 0; i < rawUsers.length; i++){
+              if(rawUsers[i].payload.doc.id === workspaceUserDoc.id){
+                let userData = rawUsers[i].payload.doc.data() as User;
+                workspaceUsers.push({
+                  id: userData.id,
+                  firstName: userData.firstName,
+                  lastName: userData.lastName,
+                  email: userData.email,
+                  workspace: userData.workspace,
+                  role: (workspaceUserDoc.data() as {role: string}).role
+                })
+              }
+            }
+          })
+
+          // Emit completed data
+          obs.next(workspaceUsers);
+        })
+      })
+
+      return {
+        unsubscribe() {
+          // Remove these from memory when unsubscribing
+          workspaceUsersSub.unsubscribe();
+          usersSub.unsubscribe();
+        }
+      }
+    });
+
+    // TODO: Make sure these subs close properly
+    
+
+
+    /*
     try {
       // get all user metadata
       const users = this.afs.collection('/Users', ref => ref.where('workspace', '==', this.auth.workspace.id)).snapshotChanges().pipe(map(a => {
         return a.map(g => {
         const data = g.payload.doc.data();
+        console.log(console.log("BOOP: " + JSON.stringify(data)))
         const id = g.payload.doc.id;
         return {data, id};
         });
       }));
       // get all static user roles from db
-      const wusers = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().pipe(map(a => {
+      const wUsers = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().pipe(map(a => {
         return a.map(g => {
         const data = g.payload.doc.data();
+        console.log(console.log("BEEP: " + JSON.stringify(data)))
         const id = g.payload.doc.id;
         return {data, id};
         });
       }));
       // filter and combine by user ID
-      return combineLatest<any[]>(users, wusers, (user, wuser) => {
-        const list = [];
+      return combineLatest<WorkspaceUser[]>(users, wUsers, (user, wUser) => {
+        const list: WorkspaceUser[] = [];
         user.forEach((element, index) => {
-          if (element && element.data) {  list.push({user: element.data, role: wuser.find((elem) => elem.id === element.id && elem.data).data.role}); }
+          if (element && element.data) {  list.push({
+            firstName: element.data.firstName, 
+            lastName: element.data.lastName, 
+            email: element.data.email,
+            workspace: element.data.workspace,
+            id: element.id,
+            role: wUser.find((elem) => elem.id === element.id && elem.data).data.role}); }
         });
         return list;
       });
     } catch (err) {
       console.log(err);
     }
+    */
   }
 
   /**
@@ -536,7 +599,7 @@ export class AdminService {
    * @param firstName the first name of the user to add
    * @param lastName the last name of the user to add
    */
-  async addUserToWorkspace(email: string, firstName: string, lastName: string): Promise<{user: User, role: string}> {
+  async addUserToWorkspace(email: string, firstName: string, lastName: string): Promise<any> {
     return new Promise((resolve, reject) => {
       // get ID token from auth state
       this.auth.getAuth().subscribe(
@@ -549,7 +612,7 @@ export class AdminService {
               // with token add user by pinging server with token and email
               this.http.post(`${adServe}/createNewUser`, {idToken: token, email, firstName, lastName
               }).toPromise().then(
-                () => resolve({user: {firstName, lastName, email, workspace: this.auth.workspace.id}, role: 'User'}),
+                () => resolve(),
                 // error posting
                 (err) => reject(err.error)
               );

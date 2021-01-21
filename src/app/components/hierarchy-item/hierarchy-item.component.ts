@@ -43,7 +43,7 @@ export class HierarchyItemComponent implements OnInit {
   previousItem: HierarchyItem;                              // Previous item, before edits are made
   imageToSave: File = null;                                 // The image to upload when saved
   parentsToDisplay: HierarchyItem[][];                      // For the ancestor view component (and eventually loading attributes)
-  localAttributes: {                                       // Names of attributes in this category
+  localAttributes: {                                        // Names of attributes in this category
     name: string,
     opened: boolean
   }[]

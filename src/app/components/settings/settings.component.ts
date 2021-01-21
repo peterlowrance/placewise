@@ -17,11 +17,13 @@ export class SettingsComponent implements OnInit {
     firstName: '',
     lastName: '',
     email: '',
-    workspace: ''
+    workspace: '',
+    id: ''
   };
   workspace: WorkspaceInfo = {
     name: '',
-    id: ''
+    id: '',
+    defaultUsersForReports: []
   };
   role: string; //the user's role, user or admin
 
