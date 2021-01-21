@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ReportToComponent } from './report-to.component';
+import { UserSelectComponent } from './user-select.component';
 
-describe('ReportToComponent', () => {
-  let component: ReportToComponent;
-  let fixture: ComponentFixture<ReportToComponent>;
+describe('UserSelectComponent', () => {
+  let component: UserSelectComponent;
+  let fixture: ComponentFixture<UserSelectComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ReportToComponent ]
+      declarations: [ UserSelectComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ReportToComponent);
+    fixture = TestBed.createComponent(UserSelectComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

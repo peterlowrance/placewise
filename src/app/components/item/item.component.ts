@@ -105,7 +105,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     reportDate: '',
     reporter: ''
   }; // user report
-  errorDesc: ItemReportModalData = {valid: false, desc: ''}; // user-reported error description
+  errorDesc: ItemReportModalData = {valid: false, desc: '', users: [], selected: []}; // user-reported error description
   expanded = false;  // is the more info panel expanded
   attributesExpanded = false;  // is the more info panel expanded
   isSaving = false;
@@ -433,24 +433,26 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   createReport() {
     // reset report data, ensure clicking out defaults to fail and no double send
-    this.errorDesc = {valid: false, desc: ''};
+    this.errorDesc = {valid: false, desc: '', users: [], selected: []};
     let reportedTo = this.adminService.getWorkspaceUsers().subscribe(users => {
       if(users){
 
+        // Load admins for selection
         let admins: WorkspaceUser[] = users.filter(element => { return element.role === "Admin" });
-        let defaults: WorkspaceUser[] = users.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
-
-        console.log(JSON.stringify(admins));
-        console.log(JSON.stringify(defaults));
+        // Load selected people to report to
+        let defaults: WorkspaceUser[] = admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
 
         if(defaults.length === this.authService.workspace.defaultUsersForReports.length) { // Once we know we've loaded the correct default users, open the modal
           reportedTo.unsubscribe(); // Immediately unsubscribe, don't want this dialog to pop up again
-          
+          // NOTE: This will not work well when you are the only person being reported to
+
           const dialogRef = this.dialog.open(ReportDialogComponent, {
             width: '30rem',
             data: {
               valid: this.errorDesc.valid,
-              desc: this.errorDesc.desc
+              desc: this.errorDesc.desc,
+              selectedUsers: defaults,
+              unselectedUsers: admins
             }
           });
       

@@ -20,6 +20,7 @@ export class ReportDialogComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    console.log(JSON.stringify(this.data));
   }
 
   onSendClick(){
