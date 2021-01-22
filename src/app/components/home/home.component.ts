@@ -406,7 +406,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       location = this.root.ID;
     }
     this.adminService.createItemAtLocation(name, '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
-      this.router.navigate(['/item/' + id]);
+      this.router.navigate(['/itemBuilder/' + id]);
     });
   }
 

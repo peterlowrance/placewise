@@ -1,0 +1,21 @@
+<div class="all-content">
+
+    <div *ngIf="this.step === 0" class="step-0">
+        <h2> Item Builder </h2>
+        <h3 class="bottom-space">Category  <button *ngIf="category" mat-icon-button class="editButton" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
+        <div *ngIf="category" class="category-container">
+            <div class="category-picture"> <img class="categoryImg" src={{category?.imageUrl}}></div>
+            <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
+        </div>
+        <p *ngIf="!category"> Loading category... </p>
+        <br>
+        <br>
+
+        <div mat-dialog-actions>
+            <button mat-raised-button>Skip</button>
+            <span class="btn-spacer"></span>
+            <button mat-raised-button [disabled]="!category || category.name == 'root'" color="primary">Next</button>
+        </div>
+    </div>
+
+</div>

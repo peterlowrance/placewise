@@ -9,5 +9,5 @@ import { AdminService } from './services/admin.service';
   styleUrls: ['./app.component.css'],
   providers: [{provide: SearchInterfaceService, useClass: SearchService}]})
 export class AppComponent {
-  title = 'Simplace';
+  title = 'Placebin';
 }
