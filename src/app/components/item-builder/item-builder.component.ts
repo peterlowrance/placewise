@@ -6,6 +6,19 @@ import { SearchService } from 'src/app/services/search.service';
 import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 import {MatDialog} from '@angular/material/dialog';
 import { AdminService } from 'src/app/services/admin.service';
+import { HierarchyItem } from 'src/app/models/HierarchyItem';
+import {MatSnackBar} from '@angular/material';
+import { ImageService } from 'src/app/services/image.service';
+
+
+
+interface AttributeCard {
+  name: string;
+  ID: string;
+  value?: string;
+  category: string;
+  focused: boolean;
+}
 
 @Component({
   selector: 'app-item-builder',
@@ -18,14 +31,19 @@ export class ItemBuilderComponent implements OnInit {
     private searchService: SearchService,
     public dialog: MatDialog,
     private adminService: AdminService,
-    private route: ActivatedRoute
+    private imageService: ImageService,
+    private route: ActivatedRoute,
+    private snack: MatSnackBar
     ) { }
 
-    id: string;                    // item id
-    step = 0;                      // What step are we at in filling in data
-    item: Item;                    // Item being setup
-    category: Category;            // Category of the item
-    categoryAncestors: Category[]; // All of the Category's parents
+    id: string;                               // item id
+    step = 0;                                 // What step are we at in filling in data
+    item: Item;                               // Item being setup
+    category: Category;                       // Category of the item
+    categoryAncestors: Category[];            // All of the Category's parents
+    locationsAndAncestors: HierarchyItem[][]; // The locations and their ancestors
+    attributesForCard: AttributeCard[];       // Attributes of the item, for the UI
+    additionalText: string;                   // Helps with setting up the title
 
   ngOnInit() {
     // retrieve id
@@ -39,6 +57,48 @@ export class ItemBuilderComponent implements OnInit {
 
       this.searchService.getCategory(item.category).subscribe(category => {
         this.category = category;
+
+        // Setup additional text if there's extra. 
+        // This also means if the title is significantly different, it will not show. I believe this is best as this is setting sometihng up like it is new.
+        if(category.prefix === item.name.substring(0, category.prefix.length) && category.prefix.length < item.name.length){
+          this.additionalText = item.name.substring(category.prefix.length);
+        }
+        
+
+        this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
+          if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
+            this.categoryAncestors = categoryAncestors[0];
+            let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
+            if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
+              this.attributesForCard = rebuiltCards;
+            }
+            else {
+              for(let newCard in rebuiltCards){ // This is to attempt to only save over the ones modified. Otherwise, users are often kicked out of edit fields
+                let found = false;
+                for(let originalCard in this.attributesForCard){
+                  if(this.attributesForCard[originalCard].ID === rebuiltCards[newCard].ID){
+                    found = true;
+                    if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
+                      this.attributesForCard[originalCard] = rebuiltCards[newCard]
+                    }
+                    break;
+                  }
+                }
+                if(!found){
+                  this.attributesForCard = rebuiltCards; // Attributes didn't align, so jsut reset
+                  break;
+                }
+              }
+            }
+          }
+          else {
+            this.attributesForCard = this.loadAttributesForCards([category], item)
+          }
+        })
+      });
+
+      this.searchService.getAncestorsOf(item).subscribe(locations => {
+        this.locationsAndAncestors = locations;
       });
     })
   }
@@ -93,6 +153,74 @@ export class ItemBuilderComponent implements OnInit {
     }
   }
 
+  /**
+   * Changes the item's locations to new locations
+   */
+  editLocation() {
+    // Deep copy locations
+    const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
+    const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
+      width: '45rem',
+      data: {hierarchy: 'locations', singleSelection: false, parents: this.item.locations}
+    });
+    dialogRef.afterClosed().subscribe(result => this.updateItemLocations(result, oldLocations));
+  }
+
+  /**
+   * Updates the item's locations
+   * @param result locations chosen
+   * @param oldLocations old locations
+   */
+  updateItemLocations(result: string[], oldLocations: string[]) {
+    if (result) {
+      // Go through and get the new locations for saving to recent
+      let newLocations: string[] = [];
+
+      for(let resultIndex in result){
+        let found = false;
+        for(let currentIndex in oldLocations){
+          if(oldLocations[currentIndex] === result[resultIndex]){
+            found = true;
+            break;
+          }
+        }
+        if(!found){
+          newLocations.push(result[resultIndex]);
+        }
+      }
+
+      // Update the item locations
+      this.item.locations = result;
+      
+      // NOTE: Inside the updateItem, the tracked data for old locations in the data structure get removed. But the card is removed here:
+      /*
+      for(let oldLocIndex in oldLocations){
+        if(newLocations.indexOf(oldLocations[oldLocIndex]) === -1){
+          for(let cardIndex in this.trackingCards){
+            if(this.trackingCards[cardIndex].locationID === oldLocations[oldLocIndex]){
+              this.trackingCards.splice(parseInt(cardIndex), 1);
+            }
+          }
+        }
+      }
+      */
+
+      this.adminService.updateItem(this.item, null, oldLocations); // TODO: Not good placement, seperate from main saving mechanism
+      // this.setDirty(true);
+      this.searchService.getAncestorsOf(this.item).subscribe(locations => {
+        this.locationsAndAncestors = locations;
+      });
+
+      // Update recent locations
+      for(let index in newLocations){
+        let localSub = this.searchService.getLocation(newLocations[index]).subscribe(loc => {
+          this.adminService.addToRecent(loc);
+          localSub.unsubscribe(); // Don't want this screwing with us later
+        })
+      }
+    }
+  }
+
   // YIKES REPEATED CODE
   buildAttributeString(category: Category = this.category): string {
     let buildingString = '';
@@ -122,6 +250,183 @@ export class ItemBuilderComponent implements OnInit {
       }
     }
     return buildingString;
+  }
+
+  loadAttributesForCards(parents: Category[], item: Item): AttributeCard[] {
+    let cards: AttributeCard[] = [];
+
+    // Add category attributes
+    for(let parent in parents){
+      for(let attr in parents[parent].attributes){
+        cards.push({
+          name: parents[parent].attributes[attr]['name'],
+          ID: attr,
+          category: parents[parent].name,
+          focused: false
+        })
+      }
+    }
+
+    // Fill in data or add orphaned attribute
+    for(let itemAttr in item.attributes){
+      let hasAttribute = false;
+      for(let card in cards){
+        if(cards[card].ID === item.attributes[itemAttr].ID){
+          cards[card].value = item.attributes[itemAttr].value;
+          hasAttribute = true;
+        }
+      }
+
+      if(!hasAttribute){
+        cards.push({
+          name: item.attributes[itemAttr].name,
+          ID: item.attributes[itemAttr].ID,
+          value: item.attributes[itemAttr].value,
+          category: "None",
+          focused: false
+        })
+      }
+    }
+
+    cards.sort(function(a, b) {
+      var nameA = a.name.toUpperCase(); // ignore upper and lowercase
+      var nameB = b.name.toUpperCase(); // ignore upper and lowercase
+      if (nameA < nameB) {
+        return -1;
+      }
+      if (nameA > nameB) {
+        return 1;
+      }
+    
+      // names must be equal
+      return 0;
+    })
+    return cards;
+  }
+
+  onAttrValueSubmit(card: AttributeCard){
+    let hasAttribute = false;
+    card.focused = false;
+    for(let attr in this.item.attributes){
+      if(this.item.attributes[attr].ID === card.ID){
+        this.item.attributes[attr].value = card.value ? card.value.trim() : '';
+        hasAttribute = true;
+      }
+    }
+    if(!hasAttribute && card.value){
+      if(!this.item.attributes){
+        this.item.attributes = [{
+          name: card.name,
+          ID: card.ID,
+          value: card.value.trim()
+        }];
+      }
+      else{
+        this.item.attributes.push({
+          name: card.name,
+          ID: card.ID,
+          value: card.value.trim()
+        })
+      }
+    }
+    this.item.fullTitle = this.item.name + this.buildAttributeString();
+  }
+
+  //
+  // MODIFIED FROM ITEM DISPLAY
+  //
+
+  /**
+   * Saves the item's image and updates the database
+   */
+  async saveItemImage() {
+    return this.imageService.putImage(this.item.imageUrl, this.item.ID).then(link => {
+      this.item.imageUrl = link;
+      this.placeIntoDB();
+    });
+  }
+
+  /**
+   * Places the item into the database
+   */
+  async placeIntoDB() {
+    return this.adminService.updateItem(this.item, null, null).then(val => {
+    },
+    reject => {
+      this.snack.open('Item Save Failed: ' + reject, "OK", {duration: 3000, panelClass: ['mat-warn']});
+    });
+  }
+
+  //
+  // ACTUAL DIFFERENCES FROM ITEM DISPLAY
+  //
+
+  updateTitleFromUI(){
+    if(this.category.prefix){
+      this.item.name = this.category.prefix + this.additionalText;
+    }
+    else {
+      this.item.name = this.additionalText;
+    }
+    this.item.fullTitle = this.item.name + this.buildAttributeString();
+  }
+
+  isReadyForNextStep(): Boolean {
+
+    // Setup Category and Locaiton
+    if(this.step == 0){
+      // If we're still loading category
+      if(!this.category){
+        return false;
+      }
+      // If category is not assigned
+      else if(this.category.name == 'root'){
+        return false;
+      }
+      // If we're still loading locations
+      if(!this.locationsAndAncestors){
+        return false;
+      }
+      // If there is no location
+      else if(this.locationsAndAncestors.length == 0){
+        return false;
+      }
+      // No problems, we're set to go
+      return true;
+    }
+
+    // Setup attributes
+    else if(this.step == 1){
+      // If we're still loading attributes
+      if(!this.attributesForCard){
+        return false;
+      }
+      else {
+        // Go through each attribute and make sure it has a value
+        for(let attr of this.attributesForCard){
+          if(!attr.value){
+            return false;
+          }
+        }
+        return true;
+      }
+    }
+
+    // Setup title
+    else if(this.step == 2){
+      // Currently just asks you to make sure it's good
+      return true;
+    }
+
+    // Default to false
+    return false;
+  }
+
+  nextStep(){
+    if(this.step == 1 || this.step == 2){
+      this.placeIntoDB();
+    }
+    this.step += 1;
   }
 
 }

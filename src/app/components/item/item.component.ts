@@ -160,6 +160,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.locationsAndAncestors = locations;
       });
 
+      // Build tracking information
       for(let location in item.locations){
         let found = false;
         for(let tracked in item.tracking){
@@ -864,6 +865,10 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
   }
 
+  /*
+  * ITEM DISPLAY ONLY (Don't bring this over in the future for item builder)
+  * Undoes all modifications while the user was on this page
+  */
   undoChanges(original: Item = this.originalItem) {
     let itemToRevert = this.item;
     this.item = JSON.parse(JSON.stringify(this.originalItem)); // Copy so then the original stays original
