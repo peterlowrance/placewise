@@ -2,6 +2,10 @@
     margin: 16px;
 }
 
+.title {
+  color: #888;
+}
+
 .category-container {
   display: flex;
   align-items: center;
