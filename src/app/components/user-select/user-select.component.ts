@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 
 @Component({
@@ -10,36 +10,48 @@ export class UserSelectComponent implements OnInit {
   @Input() selectedUsers: WorkspaceUser[];
   @Input() allUsers: WorkspaceUser[];
 
-  unselectedUsers: WorkspaceUser[] = [];
+  usersForUI: WorkspaceUser[][]; // First element of the inner array is the selected user, the rest are options that haven't been selected yet
+                                 // I tried using two simpler arrays for selected vs unselected, but the UI refused to update properly with two seperate arrays
 
-  constructor(private changeDetection: ChangeDetectorRef) {
+  constructor() {
   }
 
   ngOnInit() {
-    this.filterOutSelectedUsers();
+    this.buildUsersForUI();
   }
 
-  onSelectNewUser(event, oldUser: WorkspaceUser){
-    console.log(JSON.stringify(this.selectedUsers));
-    let newUser: WorkspaceUser;
-    for(let i = 0; i < this.unselectedUsers.length; i++){
-      if(this.unselectedUsers[i].id === event.value){
-        newUser = this.unselectedUsers[i];
+  buildUsersForUI(){
+    var usersForUI: WorkspaceUser[][] = [];
+
+    // First create a collection of users that are not selected
+    let unselectedUsers: WorkspaceUser[] = [];
+    this.allUsers.forEach(user => {
+      if(this.selectedUsers.indexOf(user) === -1){
+        unselectedUsers.push(user);
       }
+    })
+
+    // Then make individual arrays with the selected users at the front and add it to the 2D array
+    for(let selected of this.selectedUsers){
+      let usersForSelection: WorkspaceUser[] = [selected];
+      unselectedUsers.forEach(user => {
+        usersForSelection.push(user);
+      })
+      usersForUI.push(usersForSelection);
+    }
+
+    // Update array
+    this.usersForUI = usersForUI;
+    //console.log("D: " + JSON.stringify(usersForUI));
+  }
+
+  onClickUser(newUser: WorkspaceUser, oldUser: WorkspaceUser){
+    // If we didn't change anything, just return
+    if(newUser === oldUser){
+      return;
     }
     this.selectedUsers[this.selectedUsers.indexOf(oldUser)] = newUser;
-    console.log(JSON.stringify(this.selectedUsers));
-    
-  }
-
-  onClickUser(){
-    console.log("honk");
-    this.filterOutSelectedUsers();
-    this.changeDetection.detectChanges();
-  }
-
-  filterOutSelectedUsers(){
-    this.unselectedUsers = this.allUsers.filter(user => {return this.selectedUsers.indexOf(user) === -1})
+    this.buildUsersForUI();
   }
 
 }
