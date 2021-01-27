@@ -4,7 +4,8 @@ export interface Report {
         name: string;
         imageUrl: string;
     };
-    reportDate: string;
+    timestamp: number;
     reporter: string;
+    reportedTo: string[];
     description: string;
 }

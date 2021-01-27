@@ -102,10 +102,11 @@ export class ItemComponent implements OnInit, OnDestroy {
       name: '',
       imageUrl: ''
     },
-    reportDate: '',
-    reporter: ''
+    timestamp: 0,
+    reporter: '',
+    reportedTo: []
   }; // user report
-  errorDesc: ItemReportModalData = {valid: false, desc: '', users: [], selected: []}; // user-reported error description
+  errorDesc: ItemReportModalData = {valid: false, desc: '', selectedUsers: [], allUsers: []}; // user-reported error description
   expanded = false;  // is the more info panel expanded
   attributesExpanded = false;  // is the more info panel expanded
   isSaving = false;
@@ -433,7 +434,7 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   createReport() {
     // reset report data, ensure clicking out defaults to fail and no double send
-    this.errorDesc = {valid: false, desc: '', users: [], selected: []};
+    this.errorDesc = {valid: false, desc: '', selectedUsers: [], allUsers: []};
     let reportedTo = this.adminService.getWorkspaceUsers().subscribe(users => {
       if(users){
 
@@ -476,12 +477,10 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.report.item.name = this.item.fullTitle;
       this.report.item.ID = this.item.ID;
       this.report.item.imageUrl = this.item.imageUrl;
-      // TODO: input reporter name from auth service
-      // this.report.reporter
-      this.report.reportDate = new Date().toDateString();
+      this.report.timestamp = new Date().getUTCSeconds();
 
       // TODO: issue report
-      return this.adminService.placeReport(this.report.item.ID, this.report.description).toPromise().then(
+      return this.adminService.placeReport(this.report.item.ID, this.report.description, result.selectedUsers.map(user => user.id)).toPromise().then(
         () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
         (err) => this.snack.open("Report Failed, Please Try Later", "OK", {duration: 3000, panelClass: ['mat-toolbar']})
       );
@@ -506,9 +505,9 @@ export class ItemComponent implements OnInit, OnDestroy {
     this.report.item.name = this.item.fullTitle;
     this.report.item.ID = this.item.ID;
     this.report.item.imageUrl = this.item.imageUrl;
-    this.report.reportDate = new Date().toDateString();
+    this.report.timestamp = new Date().getUTCSeconds();
 
-    return this.adminService.placeReport(this.report.item.ID, this.report.description).toPromise().then(
+    return this.adminService.placeReport(this.report.item.ID, this.report.description, this.authService.workspace.defaultUsersForReports).toPromise().then(
       () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
       (err) => this.snack.open("Report Failed, Please Try Later", "OK", {duration: 3000, panelClass: ['mat-toolbar']})
     );

@@ -5,6 +5,7 @@ export interface SentReport {
     desc: string;
     user: string;
     sentTo: string[];
+    timestamp: number;
     ID: string;
     trueItem: Item;
     userName: string;

@@ -79,6 +79,20 @@ export class AdminReportComponent implements OnInit {
                   })
                 }
               }
+
+              if(i === reports.length - 1){ // Only do this once after all is loaded
+                this.externalReports.sort(function(a, b) {
+                  if(a.timestamp > b.timestamp){
+                    return -1;
+                  }
+                  else if(a.timestamp < b.timestamp){
+                    return 1;
+                  }
+                  else {
+                    return 0;
+                  }
+                });
+              }
             })
 
           })

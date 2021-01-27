@@ -88,18 +88,19 @@ export class AdminService {
     }));
   }
 
-  placeReport(itemID: string, text: string) {
+  placeReport(itemID: string, text: string, reportedTo: string[]) {
     let rID: string;
-    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid).then(x => rID = x.id));
+    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid, reportedTo).then(x => rID = x.id));
     return of(true);
   }
 
-  placeReportHelper(itemID: string, text: string, userID: string): Promise<DocumentReference> {
+  placeReportHelper(itemID: string, text: string, userID: string, reportedTo: string[]): Promise<DocumentReference> {
     return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
       desc: text,
       item: itemID,
       user: userID,
-      date: new Date()
+      timestamp: Date.now(),
+      reportedTo: reportedTo
     });
   }
 
@@ -600,7 +601,7 @@ export class AdminService {
    * @param lastName the last name of the user to add
    */
   async addUserToWorkspace(email: string, firstName: string, lastName: string): Promise<any> {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       // get ID token from auth state
       this.auth.getAuth().subscribe(
         auth => {
@@ -612,7 +613,7 @@ export class AdminService {
               // with token add user by pinging server with token and email
               this.http.post(`${adServe}/createNewUser`, {idToken: token, email, firstName, lastName
               }).toPromise().then(
-                () => resolve(),
+                () => resolve(), // Currently returns void
                 // error posting
                 (err) => reject(err.error)
               );
