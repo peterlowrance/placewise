@@ -73,3 +73,8 @@ h4 {
 .no-reports {
     color: rgba(0, 0, 0, 0.54);
 }
+
+.user-select {
+    padding-left: 24px;
+    margin-top: 18px;;
+}

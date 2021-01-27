@@ -86,7 +86,7 @@ export class AuthService {
       const userDoc = this.getUserInfo(user.uid);
       //subscribe to changes in user info
       userDoc.subscribe(
-        val => this.userInfo = val
+        val => {console.log("got user: " + val.id); this.userInfo = val}
       );
     }
     else{ //user not defined, set behavior subjects to null

@@ -10,6 +10,8 @@ import { ReportDetailViewComponent } from '../report-detail-view/report-detail-v
 import { AuthService } from 'src/app/services/auth.service';
 import { ConfirmComponent } from '../confirm/confirm.component';
 import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
+import { Subscription } from 'rxjs';
+import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 
 @Component({
   selector: 'app-admin-report',
@@ -17,12 +19,16 @@ import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modif
   styleUrls: ['./admin-report.component.css']
 })
 export class AdminReportComponent implements OnInit {
-  relevantReports: SentReport[];
+  notifiedReports: SentReport[];
   externalReports: SentReport[];
   headers: string[] = ['Image','Item','User'];
   listeningToLocations: string[];
   listeningToLocationNames: string[];
   numberOfAllReports = 0; // Little bit of a hack, this teels the tables when we're ready to build
+  userSub: Subscription;
+  admins: WorkspaceUser[]; // For picking who reports go to by default
+  defaults: WorkspaceUser[]; // For picking who reports go to by default
+  loadedDefaults: Boolean = false; // To help with not loading the defaults prematurely
 
   constructor(
     private searchService: SearchService,
@@ -41,65 +47,110 @@ export class AdminReportComponent implements OnInit {
       
       this.adminService.getReports().subscribe(reports => {
         this.numberOfAllReports = reports.length;
-        this.relevantReports = [];
+        this.notifiedReports = [];
         this.externalReports = [];
 
-        for(let i = 0; i < reports.length; i++)
-        {
-          this.searchService.getItem(reports[i].item).subscribe(z => {
-            reports[i].trueItem = z;
+        // First get the user
+        this.authService.getAuth().subscribe(auth => {
 
-            this.searchService.getAncestorsOf(z).subscribe(itemLocations => {
-              let found = false;
-              for(let location = 0; location < locations.length && !found; location++){
-                for(let outerIndex = 0; outerIndex < itemLocations.length && !found; outerIndex++){
-                  for(let innerIndex = 0; innerIndex < itemLocations[outerIndex].length && !found; innerIndex++){
-                    if(locations[location] === itemLocations[outerIndex][innerIndex].ID){
-                      found = true;
-                      this.relevantReports.push(reports[i]);
+          // Setup the item and if it is notified for each report
+          for(let i = 0; i < reports.length; i++)
+          {
+            this.searchService.getItem(reports[i].item).subscribe(z => {
+              reports[i].trueItem = z;
+
+              /*
+              OLD NOTIFICATION SYSTEM
+
+              this.searchService.getAncestorsOf(z).subscribe(itemLocations => {
+                let found = false;
+                for(let location = 0; location < locations.length && !found; location++){
+                  for(let outerIndex = 0; outerIndex < itemLocations.length && !found; outerIndex++){
+                    for(let innerIndex = 0; innerIndex < itemLocations[outerIndex].length && !found; innerIndex++){
+                      if(locations[location] === itemLocations[outerIndex][innerIndex].ID){
+                        found = true;
+                        this.relevantReports.push(reports[i]);
+                      }
                     }
                   }
                 }
-              }
-              if(!found){
-                this.externalReports.push(reports[i]);
-              }
-
-              // JANKY, but we cannot load this before getting ancestors, this messes with cache and that we don't have getAncestorsOf
-              // Setup to account for getting different input in the future. If we want to fix this, we'll need to rewrite getAncestorsOf
-              // a little and fix up where it's used to allow for not assuming it's going to give back only one answer.
-              // It's still conflicting if we do that as usually getAncestorsOf itself and what needs it is complex, so less updates is better.
-
-              if(i === 0){ // Only do this once
-                let localSetOfLocationNames: string[] = [];
-                for(let locIndex in locations){
-                  this.searchService.getLocation(locations[locIndex]).subscribe(loc => {
-                    localSetOfLocationNames.push(loc.name);
-                    this.listeningToLocationNames = localSetOfLocationNames;
-                  })
+                if(!found){
+                  this.externalReports.push(reports[i]);
                 }
-              }
 
-              if(i === reports.length - 1){ // Only do this once after all is loaded
-                this.externalReports.sort(function(a, b) {
-                  if(a.timestamp > b.timestamp){
-                    return -1;
+                // JANKY, but we cannot load this before getting ancestors, this messes with cache and that we don't have getAncestorsOf
+                // Setup to account for getting different input in the future. If we want to fix this, we'll need to rewrite getAncestorsOf
+                // a little and fix up where it's used to allow for not assuming it's going to give back only one answer.
+                // It's still conflicting if we do that as usually getAncestorsOf itself and what needs it is complex, so less updates is better.
+
+                if(i === 0){ // Only do this once
+                  let localSetOfLocationNames: string[] = [];
+                  for(let locIndex in locations){
+                    this.searchService.getLocation(locations[locIndex]).subscribe(loc => {
+                      localSetOfLocationNames.push(loc.name);
+                        this.listeningToLocationNames = localSetOfLocationNames;
+                    })
                   }
-                  else if(a.timestamp < b.timestamp){
-                    return 1;
-                  }
-                  else {
-                    return 0;
-                  }
-                });
-              }
+                }
+
+              })
+                */
             })
+            
+            // Add to the notified section if it was for the person reading it
+            if(reports[i].reportedTo.indexOf(auth.uid) > -1){
+              this.notifiedReports.push(reports[i]);
+            }
+            else {
+              this.externalReports.push(reports[i]);
+            }
 
-          })
+            // Only sort the reports once after all is loaded
+            if(i === reports.length - 1){
+              this.notifiedReports.sort(function(a, b) {
+                if(a.timestamp > b.timestamp){
+                  return -1;
+                }
+                else if(a.timestamp < b.timestamp){
+                  return 1;
+                }
+                else {
+                  return 0;
+                }
+              });
+              this.externalReports.sort(function(a, b) {
+                if(a.timestamp > b.timestamp){
+                  return -1;
+                }
+                else if(a.timestamp < b.timestamp){
+                  return 1;
+                }
+                else {
+                  return 0;
+                }
+              });
+            }
 
-          this.authService.getUserInfo(reports[i].user).subscribe(z => {reports[i].userName = z.firstName + " " + z.lastName});
-        }
+            // Get the name of the person that reported it
+            this.authService.getUserInfo(reports[i].user).subscribe(z => {reports[i].userName = z.firstName + " " + z.lastName});
+          }
+        })
       });
+    });
+
+    this.adminService.getWorkspaceUsers().subscribe(users => {
+      console.log("honk");
+      if(users){
+        console.log(users.length);
+        // Load admins for selection
+        this.admins = users.filter(element => { return element.role === "Admin" });
+        // Load selected people to report to
+        this.defaults = this.admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
+
+        if(this.defaults.length === this.authService.workspace.defaultUsersForReports.length){
+          this.loadedDefaults = true;
+        }
+      }
     });
   }
 
@@ -164,6 +215,11 @@ export class AdminReportComponent implements OnInit {
       if(result)
       this.adminService.setListenedReportLocations(result)
     });
+  }
+
+  updateDefaultReportedUsers(event) {
+    console.log(event.map(user => user.id));
+    this.adminService.updateDefaultReportUsers(event.map(user => user.id));
   }
 
 }

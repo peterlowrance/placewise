@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 
 @Component({
@@ -9,6 +9,7 @@ import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 export class UserSelectComponent implements OnInit {
   @Input() selectedUsers: WorkspaceUser[];
   @Input() allUsers: WorkspaceUser[];
+  @Output() userUpdate = new EventEmitter<WorkspaceUser[]>();
 
   usersForUI: WorkspaceUser[][]; // First element of the inner array is the selected user, the rest are options that haven't been selected yet
                                  // I tried using two simpler arrays for selected vs unselected, but the UI refused to update properly with two seperate arrays
@@ -51,7 +52,7 @@ export class UserSelectComponent implements OnInit {
       return;
     }
     this.selectedUsers[this.selectedUsers.indexOf(oldUser)] = newUser;
-    this.buildUsersForUI();
+    this.updateUIandDB();
   }
 
   addUser(){
@@ -62,13 +63,17 @@ export class UserSelectComponent implements OnInit {
         break;
       }
     }
-    // Update selector forms
-    this.buildUsersForUI();
+    this.updateUIandDB();
   }
 
   removeUser(){
     this.selectedUsers.pop();
+    this.updateUIandDB();
+  }
+
+  updateUIandDB(){
     this.buildUsersForUI();
+    this.userUpdate.emit(this.selectedUsers);
   }
 
 }

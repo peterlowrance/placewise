@@ -644,6 +644,10 @@ export class AdminService {
     })
   }
 
+  updateDefaultReportUsers(userIDs: string[]){
+    this.afs.doc('/Workspaces/' + this.auth.workspace.id).update({defaultUsersForReports: userIDs})
+  }
+
   constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService, private http: HttpClient) {
   }
 }
