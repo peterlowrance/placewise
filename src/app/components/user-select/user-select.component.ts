@@ -54,4 +54,16 @@ export class UserSelectComponent implements OnInit {
     this.buildUsersForUI();
   }
 
+  addUser(){
+    // Add first user we see that is not in the selected users
+    for(let user of this.allUsers){
+      if(this.selectedUsers.indexOf(user) === -1){
+        this.selectedUsers.push(user);
+        break;
+      }
+    }
+    // Update selector forms
+    this.buildUsersForUI();
+  }
+
 }

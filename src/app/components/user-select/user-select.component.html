@@ -5,4 +5,4 @@
     </mat-select>
 </mat-form-field>
 <br>
-<button *ngIf="usersForUI && usersForUI[0].length > 1" mat-raised-button color="accent" class="add-button"><mat-icon>add</mat-icon>Add Another</button>
+<button *ngIf="usersForUI && usersForUI[0].length > 1" mat-raised-button color="accent" class="add-button" (click)="addUser()"><mat-icon>add</mat-icon>Add Another</button>
