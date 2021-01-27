@@ -66,4 +66,9 @@ export class UserSelectComponent implements OnInit {
     this.buildUsersForUI();
   }
 
+  removeUser(){
+    this.selectedUsers.pop();
+    this.buildUsersForUI();
+  }
+
 }

@@ -1,8 +1,10 @@
-<mat-form-field *ngFor="let userSet of usersForUI" appearance="fill" class="admin-select-form">
-    <mat-label class="user-select-label">Select someone:</mat-label>
-    <mat-select class="user-select" [(value)]="userSet[0].id">
-        <mat-option *ngFor="let user of userSet" [value]="user.id" (click)="onClickUser(user, userSet[0])">{{user.firstName + ' ' + user.lastName}}</mat-option>
-    </mat-select>
-</mat-form-field>
-<br>
-<button *ngIf="usersForUI && usersForUI[0].length > 1" mat-raised-button color="accent" class="add-button" (click)="addUser()"><mat-icon>add</mat-icon>Add Another</button>
+<div *ngFor="let userSet of usersForUI">
+    <mat-form-field appearance="fill" class="admin-select-form">
+        <mat-label class="user-select-label">Select someone:</mat-label>
+        <mat-select class="user-select" [(value)]="userSet[0].id">
+            <mat-option *ngFor="let user of userSet" [value]="user.id" (click)="onClickUser(user, userSet[0])">{{user.firstName + ' ' + user.lastName}}</mat-option>
+        </mat-select>
+    </mat-form-field>
+</div>
+<button *ngIf="usersForUI && usersForUI[0].length > 1" mat-raised-button color="accent" class="user-button" (click)="addUser()"><mat-icon>add</mat-icon>Add Another</button>
+<button *ngIf="usersForUI && usersForUI.length > 1" mat-raised-button class="user-button" (click)="removeUser()"><mat-icon>remove</mat-icon>Remove One</button>
