@@ -6,6 +6,7 @@ import {User} from '../../models/User';
 import {WorkspaceInfo} from '../../models/WorkspaceInfo';
 import {MatDialog} from '@angular/material/dialog';
 import {ChangePassDialogComponent} from '../change-pass-dialog/change-pass-dialog.component';
+import { AdminService } from 'src/app/services/admin.service';
 
 @Component({
   selector: 'app-settings',
@@ -30,7 +31,8 @@ export class SettingsComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private diag: MatDialog,
-    private router: Router
+    private router: Router,
+    private adminService: AdminService
     ) { }
 
   ngOnInit() {
@@ -88,5 +90,9 @@ export class SettingsComponent implements OnInit {
 
   goToModify(isCategory: boolean) {
     this.router.navigate(['modify/' + (isCategory ? 'categories' : 'locations')]);
+  }
+
+  setEmailReports(event){
+    this.adminService.setEmailReportsForUser(this.user.id, event.checked);
   }
 }

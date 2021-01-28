@@ -1,7 +1,9 @@
 <div mat-dialog-content>
     <h1 mat-dialog-title>Enter Report Details</h1>
     <h4>Report to:</h4>
-    <app-user-select [selectedUsers]="data.selectedUsers" [unselectedUsers]="data.unselectedUsers"></app-user-select>
+    <app-user-select class="user-select" [selectedUsers]="data.selectedUsers" [allUsers]="data.allUsers"></app-user-select>
+    <br>
+    <br>
 
     <mat-form-field class="report-text-full-width">
         <textarea matInput placeholder="Report Description" [(ngModel)]="data.desc"></textarea>

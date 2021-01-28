@@ -32,6 +32,13 @@
       <tr mat-row *matRowDef="let row; columns: headers"></tr>
   </table>
 
+  <div class="user-select">
+    <br>
+    <h4>Reports By Default Go To: </h4>
+    <app-user-select *ngIf="defaults && admins" [selectedUsers]="defaults" [allUsers]="admins" (userUpdate)="updateDefaultReportedUsers($event)"></app-user-select>
+  </div>
+  <br>
+
   <!-- Add FAB -->
   <button class="fab" mat-fab color="accent" (click)="addUsers()">
       <mat-icon>add</mat-icon>

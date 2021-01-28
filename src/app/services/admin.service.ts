@@ -88,18 +88,28 @@ export class AdminService {
     }));
   }
 
-  placeReport(itemID: string, text: string) {
+  placeReport(itemID: string, text: string, reportedTo: string[]) {
     let rID: string;
-    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid).then(x => rID = x.id));
+    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid, reportedTo).then(x => rID = x.id));
     return of(true);
   }
 
-  placeReportHelper(itemID: string, text: string, userID: string): Promise<DocumentReference> {
+  placeReportHelper(itemID: string, text: string, userID: string, reportedTo: string[]): Promise<DocumentReference> {
+    for(let userID of reportedTo){
+      this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + userID).get().toPromise().then(function(user) {
+        if(user){
+          if(user.data().emailReports){
+            console.log("Emailing not complete!")
+          }
+        }
+      })
+    }
     return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
       desc: text,
       item: itemID,
       user: userID,
-      date: new Date()
+      timestamp: Date.now(),
+      reportedTo: reportedTo
     });
   }
 
@@ -113,6 +123,10 @@ export class AdminService {
           }
         );
       }));
+  }
+
+  setEmailReportsForUser(userID: string, value: boolean){
+    this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + userID).set({emailReports: value}, {merge: true});
   }
 
   deleteReport(id: string) {
@@ -461,13 +475,15 @@ export class AdminService {
             for(let i = 0; i < rawUsers.length; i++){
               if(rawUsers[i].payload.doc.id === workspaceUserDoc.id){
                 let userData = rawUsers[i].payload.doc.data() as User;
+                let workspaceData = workspaceUserDoc.data() as {role: string, emailReports?: boolean}
                 workspaceUsers.push({
                   id: workspaceUserDoc.id,
                   firstName: userData.firstName,
                   lastName: userData.lastName,
                   email: userData.email,
                   workspace: userData.workspace,
-                  role: (workspaceUserDoc.data() as {role: string}).role
+                  role: workspaceData.role,
+                  emailReports: workspaceData.emailReports ? workspaceData.emailReports : false
                 })
               }
             }
@@ -600,7 +616,7 @@ export class AdminService {
    * @param lastName the last name of the user to add
    */
   async addUserToWorkspace(email: string, firstName: string, lastName: string): Promise<any> {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       // get ID token from auth state
       this.auth.getAuth().subscribe(
         auth => {
@@ -612,7 +628,7 @@ export class AdminService {
               // with token add user by pinging server with token and email
               this.http.post(`${adServe}/createNewUser`, {idToken: token, email, firstName, lastName
               }).toPromise().then(
-                () => resolve(),
+                () => resolve(), // Currently returns void
                 // error posting
                 (err) => reject(err.error)
               );
@@ -641,6 +657,10 @@ export class AdminService {
             })
           })
     })
+  }
+
+  updateDefaultReportUsers(userIDs: string[]){
+    this.afs.doc('/Workspaces/' + this.auth.workspace.id).update({defaultUsersForReports: userIDs})
   }
 
   constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService, private http: HttpClient) {

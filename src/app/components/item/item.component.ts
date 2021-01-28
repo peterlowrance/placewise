@@ -102,10 +102,11 @@ export class ItemComponent implements OnInit, OnDestroy {
       name: '',
       imageUrl: ''
     },
-    reportDate: '',
-    reporter: ''
+    timestamp: 0,
+    reporter: '',
+    reportedTo: []
   }; // user report
-  errorDesc: ItemReportModalData = {valid: false, desc: '', users: [], selected: []}; // user-reported error description
+  errorDesc: ItemReportModalData = {valid: false, desc: '', selectedUsers: [], allUsers: []}; // user-reported error description
   expanded = false;  // is the more info panel expanded
   attributesExpanded = false;  // is the more info panel expanded
   isSaving = false;
@@ -433,33 +434,31 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   createReport() {
     // reset report data, ensure clicking out defaults to fail and no double send
-    this.errorDesc = {valid: false, desc: '', users: [], selected: []};
+    this.errorDesc = {valid: false, desc: '', selectedUsers: [], allUsers: []};
     let reportedTo = this.adminService.getWorkspaceUsers().subscribe(users => {
-      if(users){
+      if(users && users.length === this.authService.usersInWorkspace){
 
         // Load admins for selection
         let admins: WorkspaceUser[] = users.filter(element => { return element.role === "Admin" });
         // Load selected people to report to
         let defaults: WorkspaceUser[] = admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
 
-        if(defaults.length === this.authService.workspace.defaultUsersForReports.length) { // Once we know we've loaded the correct default users, open the modal
-          reportedTo.unsubscribe(); // Immediately unsubscribe, don't want this dialog to pop up again
-          // NOTE: This will not work well when you are the only person being reported to
+        reportedTo.unsubscribe(); // Immediately unsubscribe, don't want this dialog to pop up again
+        // NOTE: This will not work well when you are the only person being reported to
 
-          const dialogRef = this.dialog.open(ReportDialogComponent, {
-            width: '30rem',
-            data: {
-              valid: this.errorDesc.valid,
-              desc: this.errorDesc.desc,
-              selectedUsers: defaults,
-              unselectedUsers: admins
-            }
-          });
-      
-          dialogRef.afterClosed().subscribe(result => {
-            if (result) this.issueReport(result);
-          });
-        }
+        const dialogRef = this.dialog.open(ReportDialogComponent, {
+          width: '30rem',
+          data: {
+            valid: this.errorDesc.valid,
+            desc: this.errorDesc.desc,
+            selectedUsers: defaults,
+            allUsers: admins
+          }
+        });
+    
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) this.issueReport(result);
+        });
       }
     });
   }
@@ -476,12 +475,10 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.report.item.name = this.item.fullTitle;
       this.report.item.ID = this.item.ID;
       this.report.item.imageUrl = this.item.imageUrl;
-      // TODO: input reporter name from auth service
-      // this.report.reporter
-      this.report.reportDate = new Date().toDateString();
+      this.report.timestamp = new Date().getUTCSeconds();
 
       // TODO: issue report
-      return this.adminService.placeReport(this.report.item.ID, this.report.description).toPromise().then(
+      return this.adminService.placeReport(this.report.item.ID, this.report.description, result.selectedUsers.map(user => user.id)).toPromise().then(
         () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
         (err) => this.snack.open("Report Failed, Please Try Later", "OK", {duration: 3000, panelClass: ['mat-toolbar']})
       );
@@ -506,9 +503,9 @@ export class ItemComponent implements OnInit, OnDestroy {
     this.report.item.name = this.item.fullTitle;
     this.report.item.ID = this.item.ID;
     this.report.item.imageUrl = this.item.imageUrl;
-    this.report.reportDate = new Date().toDateString();
+    this.report.timestamp = new Date().getUTCSeconds();
 
-    return this.adminService.placeReport(this.report.item.ID, this.report.description).toPromise().then(
+    return this.adminService.placeReport(this.report.item.ID, this.report.description, this.authService.workspace.defaultUsersForReports).toPromise().then(
       () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
       (err) => this.snack.open("Report Failed, Please Try Later", "OK", {duration: 3000, panelClass: ['mat-toolbar']})
     );

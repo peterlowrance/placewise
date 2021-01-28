@@ -27,6 +27,9 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
   /** User subscription */
   userSub: Subscription;
 
+  admins: WorkspaceUser[]; // For picking who reports go to by default
+  defaults: WorkspaceUser[]; // For picking who reports go to by default
+
   constructor(private authService: AuthService, private adminService: AdminService, private diag: MatDialog, private snack: MatSnackBar) { }
 
   ngOnInit() {
@@ -55,6 +58,15 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
       return 0;
     }));
     this.userSub = this.authService.getUser().subscribe(val => this.signedInEmail = val.email);
+
+    this.adminService.getWorkspaceUsers().subscribe(users => {
+      if(users && users.length === this.authService.usersInWorkspace){
+        // Load admins for selection
+        this.admins = users.filter(element => { return element.role === "Admin" });
+        // Load selected people to report to
+        this.defaults = this.admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
+      }
+    });
   }
 
   ngOnDestroy(){
