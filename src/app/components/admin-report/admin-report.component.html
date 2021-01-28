@@ -12,12 +12,6 @@
     </mat-list>
     -->
 
-    <h4>Reports By Default Go To: </h4>
-    <div class="user-select">
-        <app-user-select *ngIf="defaults && admins" [selectedUsers]="defaults" [allUsers]="admins" (userUpdate)="updateDefaultReportedUsers($event)"></app-user-select>
-    </div>
-    <br>
-
     <h4>Notified Reports:</h4>
     <table *ngIf="notifiedReports && externalReports && ((notifiedReports.length + externalReports.length) === numberOfAllReports)" mat-table [dataSource]="notifiedReports" class="report-table">
         <ng-container matColumnDef="Image">

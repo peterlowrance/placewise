@@ -45,3 +45,7 @@
 .adminHeader {
   padding-right: 0.3rem;
 }
+
+.user-select{
+  margin-left: 24px;
+}

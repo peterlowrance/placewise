@@ -26,8 +26,6 @@ export class AdminReportComponent implements OnInit {
   listeningToLocationNames: string[];
   numberOfAllReports = 0; // Little bit of a hack, this teels the tables when we're ready to build
   userSub: Subscription;
-  admins: WorkspaceUser[]; // For picking who reports go to by default
-  defaults: WorkspaceUser[]; // For picking who reports go to by default
 
   constructor(
     private searchService: SearchService,
@@ -97,7 +95,7 @@ export class AdminReportComponent implements OnInit {
             })
             
             // Add to the notified section if it was for the person reading it
-            if(reports[i].reportedTo.indexOf(user.id) > -1){
+            if(reports[i].reportedTo && reports[i].reportedTo.indexOf(user.id) > -1){
               this.notifiedReports.push(reports[i]);
             }
             else {
@@ -135,17 +133,6 @@ export class AdminReportComponent implements OnInit {
           }
         })
       });
-    });
-
-    this.adminService.getWorkspaceUsers().subscribe(users => {
-      console.log("honk");
-      if(users && users.length === this.authService.usersInWorkspace){
-        console.log(users.length);
-        // Load admins for selection
-        this.admins = users.filter(element => { return element.role === "Admin" });
-        // Load selected people to report to
-        this.defaults = this.admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
-      }
     });
   }
 

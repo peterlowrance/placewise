@@ -95,6 +95,13 @@ export class AdminService {
   }
 
   placeReportHelper(itemID: string, text: string, userID: string, reportedTo: string[]): Promise<DocumentReference> {
+    for(let userID of reportedTo){
+      this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + userID).get().toPromise().then(function(user) {
+        if(user){
+          console.log(user.data().emailReports);
+        }
+      })
+    }
     return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
       desc: text,
       item: itemID,
@@ -114,6 +121,10 @@ export class AdminService {
           }
         );
       }));
+  }
+
+  setEmailReportsForUser(userID: string, value: boolean){
+    this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + userID).set({emailReports: value}, {merge: true});
   }
 
   deleteReport(id: string) {
@@ -462,13 +473,15 @@ export class AdminService {
             for(let i = 0; i < rawUsers.length; i++){
               if(rawUsers[i].payload.doc.id === workspaceUserDoc.id){
                 let userData = rawUsers[i].payload.doc.data() as User;
+                let workspaceData = workspaceUserDoc.data() as {role: string, emailReports?: boolean}
                 workspaceUsers.push({
                   id: workspaceUserDoc.id,
                   firstName: userData.firstName,
                   lastName: userData.lastName,
                   email: userData.email,
                   workspace: userData.workspace,
-                  role: (workspaceUserDoc.data() as {role: string}).role
+                  role: workspaceData.role,
+                  emailReports: workspaceData.emailReports ? workspaceData.emailReports : false
                 })
               }
             }
