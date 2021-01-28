@@ -150,4 +150,9 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
   isCurrentUser(user: WorkspaceUser): boolean{
     return this.signedInEmail === user.email;
   }
+
+  updateDefaultReportedUsers(event) {
+    console.log(event.map(user => user.id));
+    this.adminService.updateDefaultReportUsers(event.map(user => user.id));
+  }
 }

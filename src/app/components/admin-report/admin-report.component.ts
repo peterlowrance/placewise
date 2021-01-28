@@ -199,9 +199,4 @@ export class AdminReportComponent implements OnInit {
     });
   }
 
-  updateDefaultReportedUsers(event) {
-    console.log(event.map(user => user.id));
-    this.adminService.updateDefaultReportUsers(event.map(user => user.id));
-  }
-
 }
