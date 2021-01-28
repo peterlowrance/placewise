@@ -28,7 +28,6 @@ export class AdminReportComponent implements OnInit {
   userSub: Subscription;
   admins: WorkspaceUser[]; // For picking who reports go to by default
   defaults: WorkspaceUser[]; // For picking who reports go to by default
-  loadedDefaults: Boolean = false; // To help with not loading the defaults prematurely
 
   constructor(
     private searchService: SearchService,
@@ -51,7 +50,7 @@ export class AdminReportComponent implements OnInit {
         this.externalReports = [];
 
         // First get the user
-        this.authService.getAuth().subscribe(auth => {
+        this.authService.getUser().subscribe(user => {
 
           // Setup the item and if it is notified for each report
           for(let i = 0; i < reports.length; i++)
@@ -98,7 +97,7 @@ export class AdminReportComponent implements OnInit {
             })
             
             // Add to the notified section if it was for the person reading it
-            if(reports[i].reportedTo.indexOf(auth.uid) > -1){
+            if(reports[i].reportedTo.indexOf(user.id) > -1){
               this.notifiedReports.push(reports[i]);
             }
             else {
@@ -140,16 +139,12 @@ export class AdminReportComponent implements OnInit {
 
     this.adminService.getWorkspaceUsers().subscribe(users => {
       console.log("honk");
-      if(users){
+      if(users && users.length === this.authService.usersInWorkspace){
         console.log(users.length);
         // Load admins for selection
         this.admins = users.filter(element => { return element.role === "Admin" });
         // Load selected people to report to
         this.defaults = this.admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
-
-        if(this.defaults.length === this.authService.workspace.defaultUsersForReports.length){
-          this.loadedDefaults = true;
-        }
       }
     });
   }

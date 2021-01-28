@@ -49,6 +49,9 @@ export class AuthService {
   /**Workspace behaviour subject */
   currentWorkspace: BehaviorSubject<WorkspaceInfo> = new BehaviorSubject<WorkspaceInfo>(this.workspace);
 
+  // TEMPORARY - Will be changed after some major refactoring for how information is looaded in memory
+  usersInWorkspace = 0;
+
   constructor(private afAuth: AngularFireAuth,
               private afs: AngularFirestore,
               private router: Router) {
@@ -82,11 +85,16 @@ export class AuthService {
             this.currentWorkspace.next(this.workspace);
           }
         );
+
+        // TEMPORARY - Will be changed or removed when refactoring
+        this.afs.collection(`Workspaces/${this.workspace.id }/WorkspaceUsers`).get().subscribe(col => {
+          this.usersInWorkspace = col.size;
+        })
       });
       const userDoc = this.getUserInfo(user.uid);
       //subscribe to changes in user info
       userDoc.subscribe(
-        val => {console.log("got user: " + val.id); this.userInfo = val}
+        val => {this.userInfo = val; this.userInfo.id = user.uid}
       );
     }
     else{ //user not defined, set behavior subjects to null

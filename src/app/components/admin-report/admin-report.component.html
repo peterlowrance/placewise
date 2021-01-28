@@ -14,7 +14,7 @@
 
     <h4>Reports By Default Go To: </h4>
     <div class="user-select">
-        <app-user-select *ngIf="loadedDefaults" [selectedUsers]="defaults" [allUsers]="admins" (userUpdate)="updateDefaultReportedUsers($event)"></app-user-select>
+        <app-user-select *ngIf="defaults && admins" [selectedUsers]="defaults" [allUsers]="admins" (userUpdate)="updateDefaultReportedUsers($event)"></app-user-select>
     </div>
     <br>
 
