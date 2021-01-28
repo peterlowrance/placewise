@@ -98,7 +98,9 @@ export class AdminService {
     for(let userID of reportedTo){
       this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + userID).get().toPromise().then(function(user) {
         if(user){
-          console.log(user.data().emailReports);
+          if(user.data().emailReports){
+            console.log("Emailing not complete!")
+          }
         }
       })
     }

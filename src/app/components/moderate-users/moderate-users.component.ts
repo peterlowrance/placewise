@@ -60,9 +60,7 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
     this.userSub = this.authService.getUser().subscribe(val => this.signedInEmail = val.email);
 
     this.adminService.getWorkspaceUsers().subscribe(users => {
-      console.log("honk");
       if(users && users.length === this.authService.usersInWorkspace){
-        console.log(users.length);
         // Load admins for selection
         this.admins = users.filter(element => { return element.role === "Admin" });
         // Load selected people to report to
