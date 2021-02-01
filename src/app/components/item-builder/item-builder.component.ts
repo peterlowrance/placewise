@@ -7,8 +7,9 @@ import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modif
 import {MatDialog} from '@angular/material/dialog';
 import { AdminService } from 'src/app/services/admin.service';
 import { HierarchyItem } from 'src/app/models/HierarchyItem';
-import {MatSnackBar} from '@angular/material';
+import {MatChipInputEvent, MatSnackBar} from '@angular/material';
 import { ImageService } from 'src/app/services/image.service';
+import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
 
 
 
@@ -37,6 +38,10 @@ export class ItemBuilderComponent implements OnInit {
     private snack: MatSnackBar
     ) { }
 
+    readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
+    readonly MAX_STEP = 4;
+    readonly MIN_STEP = 0;
+
     id: string;                               // item id
     step = -1;                                 // What step are we at in filling in data
     item: Item;                               // Item being setup
@@ -52,6 +57,9 @@ export class ItemBuilderComponent implements OnInit {
     // Actively retrieve if the step changes
     this.route.queryParamMap.subscribe(params => {
       this.step = Number(params.get('step'));
+      if(this.step > this.MAX_STEP || this.step < this.MIN_STEP){
+        this.router.navigate(['/item/' + this.id]);
+      }
     })
 
     this.searchService.getItem(this.id).subscribe(item => {
@@ -64,9 +72,11 @@ export class ItemBuilderComponent implements OnInit {
         this.category = category;
 
         // Setup additional text if there's extra. 
-        // This also means if the title is significantly different, it will not show. I believe this is best as this is setting sometihng up like it is new.
-        if(category.prefix === item.name.substring(0, category.prefix.length) && category.prefix.length < item.name.length){
-          this.additionalText = item.name.substring(category.prefix.length);
+        // This also means if the title is significantly different, it will not show. I believe this is best as this is setting something up like it is new.
+        if(category.prefix){
+          if(category.prefix === item.name.substring(0, category.prefix.length) && category.prefix.length < item.name.length){
+            this.additionalText = item.name.substring(category.prefix.length);
+          }
         }
         
 
@@ -342,6 +352,32 @@ export class ItemBuilderComponent implements OnInit {
   //
 
   /**
+   * Handles uploading an image file to firestorage
+   * @param event
+   */
+  uploadImage(fileEvent: Event) {
+    // cast
+    const element = (fileEvent.target as HTMLInputElement);
+    // only change if there was a file upload
+    if (element.files && element.files[0]) {
+      // set image url file
+      const file = element.files[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (ev) => {
+        if (typeof reader.result === 'string') {
+          this.imageService.resizeImage(reader.result).then(url => {
+            this.item.imageUrl = url;
+            // set dirty and save for upload
+            this.saveItemImage();
+            this.nextStep();
+          });
+        }
+      };
+    }
+  }
+
+  /**
    * Saves the item's image and updates the database
    */
   async saveItemImage() {
@@ -349,6 +385,24 @@ export class ItemBuilderComponent implements OnInit {
       this.item.imageUrl = link;
       this.placeIntoDB();
     });
+  }
+
+  addTag(event: MatChipInputEvent | any): void {
+    const input = event.input;
+    const value = event.value;
+    if (this.item.tags == null) this.item.tags = [];
+    // Add our fruit
+    if ((value || '').trim()) {
+      this.item.tags.push(value.trim());
+    }
+
+    // Reset the input value
+    if (input) {
+      input.value = '';
+    }
+
+    // check dirty
+    this.placeIntoDB();
   }
 
   /**

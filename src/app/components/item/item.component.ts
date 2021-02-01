@@ -818,7 +818,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Adds a tag to the list
    * @param event tag input event
    */
-  add(event: MatChipInputEvent | any): void {
+  addTag(event: MatChipInputEvent | any): void {
     const input = event.input;
     const value = event.value;
     if (this.item.tags == null) this.item.tags = [];

@@ -2,82 +2,140 @@
     <h3 class="light-text"> Item Builder </h3>
     <br>
 
-    <div *ngIf="this.step === 0" class="step-0">
-        <h3> Category <button *ngIf="category" mat-icon-button class="editButton" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
-        <div *ngIf="category" class="category-container">
-            <div class="category-picture"> <img class="categoryImg" src={{category?.imageUrl}}></div>
-            <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
-        </div>
-        <p *ngIf="!category"> Loading category... </p>
-        <br>
-        <h3> Locations <button *ngIf="locationsAndAncestors" mat-icon-button class="editButton" (click)="editLocation()"><mat-icon>edit</mat-icon></button></h3>
-        <div *ngFor="let location of locationsAndAncestors" class="locations-container">
-            <div class="location-picture"> <img class="locationImg" src={{location[0].imageUrl}}></div>
-            <div class="location-name">{{location[0].name !== 'root' ? location[0].name : 'Unassigned'}}</div>
-        </div>
-    </div>
+    <div *ngIf="!item"> Loading item... </div>
+    
+    <div *ngIf="item">
 
-    <div *ngIf="this.step == 1" class="step-1">
-        <h3> Attributes </h3>
-        <div *ngIf="attributesForCard">
-            <mat-card class="attribute-card" *ngFor="let attrCard of attributesForCard">
-                <!-- <mat-card-header class="attribute-titles">
-                    <mat-card-title>{{attrCard.name}}</mat-card-title>
-                    <mat-card-subtitle>{{attrCard.category}}</mat-card-subtitle>
-                </mat-card-header> -->
-                <mat-card-content>
-                    <mat-form-field class="attribute-input">
-                        <mat-label>{{attrCard.name + ":"}}</mat-label>
-                        <input matInput #value
-                        type="text"
-                        [(ngModel)]="attrCard.value"
-                        (focus)="attrCard.focused = true"
-                        (focusout)="onAttrValueSubmit(attrCard)">
-                    </mat-form-field>
-                    <button mat-icon-button class="fake-confirm-button" *ngIf="attrCard.focused"><mat-icon>done</mat-icon></button>
-                    <span *ngIf="!attrCard.value"><mat-icon class="missing-data-icon">error_outline</mat-icon></span>
-                    <span *ngIf="attrCard.category === 'None'"><button mat-icon-button class="delete-attribute-button" (click)="deleteAttribute(attrCard)"><mat-icon>delete</mat-icon></button></span>
-                    <div *ngIf="attrCard.category !== 'None'" class="attribute-category-text">{{attrCard.category}}</div>
-                    <div *ngIf="attrCard.category === 'None'" class="attribute-category-text missing-category">
-                        {{attrCard.category}}
-                    </div>
-                </mat-card-content>
-            </mat-card>
-            <div *ngIf="attributesForCard.length === 0" class="no-attributes-text">
-                The current category has no attributes.
+        <div *ngIf="this.step === 0" class="step-0">
+            <h3> Category <button *ngIf="category" mat-icon-button class="editButton" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
+            <div *ngIf="category" class="category-container">
+                <div class="category-picture"> <img class="categoryImg" src={{category?.imageUrl}}></div>
+                <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
             </div>
+            <p *ngIf="!category"> Loading category... </p>
+            <br>
+            <h3> Locations <button *ngIf="locationsAndAncestors" mat-icon-button class="editButton" (click)="editLocation()"><mat-icon>edit</mat-icon></button></h3>
+            <div *ngFor="let location of locationsAndAncestors" class="locations-container">
+                <div class="location-picture"> <img class="locationImg" src={{location[0].imageUrl}}></div>
+                <div class="location-name">{{location[0].name !== 'root' ? location[0].name : 'Unassigned'}}</div>
+            </div>
+            <br>
+            <br>
+            <button mat-raised-button (click)="nextStep()">Skip</button>
+            <span class="btn-spacer"></span>
+            <button mat-raised-button (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Next</button>
         </div>
-    </div>
 
-    <div *ngIf="this.step == 2" class="step-2">
-        <h3> Finalize Title </h3>
-        <div> Current title: </div>
-        <div><b> {{ item.fullTitle }} </b></div>
-        <br>
-        <button mat-raised-button (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
-        <br>
-        <br>
-        <br>
-        <h4> Title Components: </h4>
-        <div *ngIf="!category || !category.prefix"> Auto Prefix: <span class="light-text">(None)</span> </div>
-        <div *ngIf="category && category.prefix"> Auto Prefix: {{ category.prefix }} </div>
-        <mat-form-field>
-            <mat-label>Additional Text:</mat-label>
-            <input matInput #value
-            type="text"
-            [(ngModel)]="additionalText"
-            (focusout)="updateTitleFromUI()" >
-        </mat-form-field>
-        <div> Attribute text: {{ buildAttributeString() }} <span class="light-text">(Unmodifiable)</span></div>
-        <br>
-        <button mat-raised-button (click)="nextStep()">Skip</button>
-    </div>
+        <div *ngIf="this.step == 1" class="step-1">
+            <h3> Attributes </h3>
+            <div *ngIf="attributesForCard">
+                <mat-card class="attribute-card" *ngFor="let attrCard of attributesForCard">
+                    <!-- <mat-card-header class="attribute-titles">
+                        <mat-card-title>{{attrCard.name}}</mat-card-title>
+                        <mat-card-subtitle>{{attrCard.category}}</mat-card-subtitle>
+                    </mat-card-header> -->
+                    <mat-card-content>
+                        <mat-form-field class="attribute-input">
+                            <mat-label>{{attrCard.name + ":"}}</mat-label>
+                            <input matInput #value
+                            type="text"
+                            [(ngModel)]="attrCard.value"
+                            (focus)="attrCard.focused = true"
+                            (focusout)="onAttrValueSubmit(attrCard)">
+                        </mat-form-field>
+                        <button mat-icon-button class="fake-confirm-button" *ngIf="attrCard.focused"><mat-icon>done</mat-icon></button>
+                        <span *ngIf="!attrCard.value"><mat-icon class="missing-data-icon">error_outline</mat-icon></span>
+                        <span *ngIf="attrCard.category === 'None'"><button mat-icon-button class="delete-attribute-button" (click)="deleteAttribute(attrCard)"><mat-icon>delete</mat-icon></button></span>
+                        <div *ngIf="attrCard.category !== 'None'" class="attribute-category-text">{{attrCard.category}}</div>
+                        <div *ngIf="attrCard.category === 'None'" class="attribute-category-text missing-category">
+                            {{attrCard.category}}
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+            <div *ngIf="!attributesForCard || attributesForCard.length == 0" class="no-attributes-text">
+                The item's category has no attributes.
+            </div>
+            <br>
+            <br>
+            <button mat-raised-button (click)="nextStep()">Skip</button>
+            <span class="btn-spacer"></span>
+            <button mat-raised-button (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Next</button>
+        </div>
 
-    <div mat-dialog-actions *ngIf="step != 2">
-        <br>
-        <br>
-        <button mat-raised-button (click)="nextStep()">Skip</button>
-        <span class="btn-spacer"></span>
-        <button mat-raised-button (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Next</button>
+        <div *ngIf="this.step == 2" class="step-2">
+            <h3> Finalize Title </h3>
+            <div> Current title: </div>
+            <div><b> {{ item.fullTitle }} </b></div>
+            <br>
+            <button mat-raised-button (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
+            <br>
+            <br>
+            <br>
+            <h4> Title Components: </h4>
+            <div *ngIf="!category || !category.prefix"> Auto Prefix: <span class="light-text">(None)</span> </div>
+            <div *ngIf="category && category.prefix"> Auto Prefix: {{ category.prefix }} </div>
+            <mat-form-field>
+                <mat-label>Additional Text:</mat-label>
+                <input matInput #value
+                type="text"
+                [(ngModel)]="additionalText"
+                (focusout)="updateTitleFromUI()" >
+            </mat-form-field>
+            <div> Attribute text: {{ buildAttributeString() }} <span class="light-text">(Unmodifiable)</span></div>
+            <br>
+            <button mat-raised-button (click)="nextStep()">Skip</button>
+        </div>
+
+        <div *ngIf="this.step == 3" class="step-3">
+            <h3> Would you like to take a picture of the item? </h3>
+            <br>
+            <button mat-raised-button (click)="nextStep()">Skip</button>
+            <button mat-raised-button (click)="camera.click()" color="primary"><mat-icon>photo_camera</mat-icon> Yes</button>
+            <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
+        </div>
+
+        <div *ngIf="this.step == 4" class="step-4">
+            <h3> Add extra information as needed: </h3>
+            <h4> Description </h4>
+            <div class="light-text">
+                This adds extra information to the item that does not affect anything. This includes not being picked up by the search engine.
+            </div>
+            <form (ngSubmit)="onDescSubmit()" class="form-appear">
+                <mat-form-field class="form-appear">
+                    <textarea matInput #desc type="text"
+                    placeholder="Add description..."
+                    [(ngModel)]="item.desc"
+                    name="desc"
+                    (focusout)="placeIntoDB()"
+                    ></textarea>
+                </mat-form-field>
+            </form>
+            <h4> Add Tags </h4>
+            <div class="light-text">
+                These are phrases that are picked up by the search engine. Use this when there are certain phrases or words connected to this item that are not in the title or attributes. 
+            </div>
+            <form>
+                <mat-form-field class="form-appear">
+                    <mat-chip-list #tagList>
+                    <mat-chip *ngFor="let tag of item.tags" [selectable]=true
+                            [removable]=true (removed)="removeTag(tag)">
+                        {{tag}}
+                        <mat-icon matChipRemove>cancel</mat-icon>
+                    </mat-chip>
+                    <input #tags placeholder="New tag"
+                            [matChipInputFor]="tagList"
+                            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                            [matChipInputAddOnBlur]="true"
+                            (matChipInputTokenEnd)="addTag($event)"
+                            name="tags"
+                        >
+                    </mat-chip-list>
+                </mat-form-field>
+            </form>
+            <br>
+            <button mat-raised-button (click)="nextStep()" color="primary">Finish</button>
+        </div>
+
     </div>
 </div>
