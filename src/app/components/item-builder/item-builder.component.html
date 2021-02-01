@@ -1,5 +1,5 @@
 <div class="all-content">
-    <h3 class="title"> Item Builder </h3>
+    <h3 class="light-text"> Item Builder </h3>
     <br>
 
     <div *ngIf="this.step === 0" class="step-0">
@@ -57,8 +57,10 @@
         <button mat-raised-button (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
         <br>
         <br>
+        <br>
         <h4> Title Components: </h4>
-        <div> Prefix: {{ category.prefix }} </div>
+        <div *ngIf="!category || !category.prefix"> Auto Prefix: <span class="light-text">(None)</span> </div>
+        <div *ngIf="category && category.prefix"> Auto Prefix: {{ category.prefix }} </div>
         <mat-form-field>
             <mat-label>Additional Text:</mat-label>
             <input matInput #value
@@ -66,7 +68,7 @@
             [(ngModel)]="additionalText"
             (focusout)="updateTitleFromUI()" >
         </mat-form-field>
-        <div> Attribute text: {{ buildAttributeString() }} (Unmodifiable)</div>
+        <div> Attribute text: {{ buildAttributeString() }} <span class="light-text">(Unmodifiable)</span></div>
         <br>
         <button mat-raised-button (click)="nextStep()">Skip</button>
     </div>

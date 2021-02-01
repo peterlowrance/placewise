@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Category } from 'src/app/models/Category';
 import { Item } from 'src/app/models/Item';
 import { SearchService } from 'src/app/services/search.service';
@@ -33,11 +33,12 @@ export class ItemBuilderComponent implements OnInit {
     private adminService: AdminService,
     private imageService: ImageService,
     private route: ActivatedRoute,
+    private router: Router,
     private snack: MatSnackBar
     ) { }
 
     id: string;                               // item id
-    step = 0;                                 // What step are we at in filling in data
+    step = -1;                                 // What step are we at in filling in data
     item: Item;                               // Item being setup
     category: Category;                       // Category of the item
     categoryAncestors: Category[];            // All of the Category's parents
@@ -48,6 +49,10 @@ export class ItemBuilderComponent implements OnInit {
   ngOnInit() {
     // retrieve id
     this.id = this.route.snapshot.paramMap.get('id');
+    // Actively retrieve if the step changes
+    this.route.queryParamMap.subscribe(params => {
+      this.step = Number(params.get('step'));
+    })
 
     this.searchService.getItem(this.id).subscribe(item => {
       if (!item) {
@@ -426,7 +431,8 @@ export class ItemBuilderComponent implements OnInit {
     if(this.step == 1 || this.step == 2){
       this.placeIntoDB();
     }
-    this.step += 1;
+    //this.step += 1;
+    this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: this.step + 1 } });
   }
 
 }
