@@ -58,7 +58,7 @@ export class ItemBuilderComponent implements OnInit {
     this.route.queryParamMap.subscribe(params => {
       this.step = Number(params.get('step'));
       if(this.step > this.MAX_STEP || this.step < this.MIN_STEP){
-        this.router.navigate(['/item/' + this.id]);
+        this.router.navigate(['/item/' + this.id], {replaceUrl:true});
       }
     })
 
@@ -238,6 +238,10 @@ export class ItemBuilderComponent implements OnInit {
 
   // YIKES REPEATED CODE
   buildAttributeString(category: Category = this.category): string {
+    if(!this.category){
+      return '';
+    }
+
     let buildingString = '';
     for(let suffixIndex in category.suffixStructure){
       let id = category.suffixStructure[suffixIndex].attributeID;
