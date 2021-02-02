@@ -394,7 +394,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // add the item
     let category = 'root';
     let location = null;
-    let name = '(New - Enter the Item Info first.)';
+    let name = '';
     // to category
     if (this.root.type === 'category') {
       category = this.root.ID;

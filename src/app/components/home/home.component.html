@@ -73,7 +73,10 @@
         <mat-card class="itemCard" (click)="goToItem(item)" [class.mat-elevation-z3]="true">
           <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
           <mat-card-content>
-            <div class='item-text'><p>{{item.fullTitle}}</p></div>
+            <div class='item-text'>
+              <p *ngIf="item.fullTitle"> {{ item.fullTitle }} </p>
+              <h4 *ngIf="!item.fullTitle" class="light-text"> ( No title ) </h4>
+            </div>
           </mat-card-content>
         </mat-card>
       </mat-grid-tile>

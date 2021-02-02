@@ -1,6 +1,5 @@
 <div class="all-content">
-    <h3 class="light-text"> Item Builder </h3>
-    <br>
+    <h3 class="background-title light-text"> Item Builder </h3>
 
     <div *ngIf="!item"> Loading item... </div>
     
@@ -10,20 +9,24 @@
             <h3> Category <button *ngIf="category" mat-icon-button class="editButton" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
             <div *ngIf="category" class="category-container">
                 <div class="category-picture"> <img class="categoryImg" src={{category?.imageUrl}}></div>
-                <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
+                <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}
+                    <mat-icon *ngIf="category?.name == 'root'" class="missing-data-icon">error_outline</mat-icon>
+                </div>
             </div>
             <p *ngIf="!category"> Loading category... </p>
             <br>
             <h3> Locations <button *ngIf="locationsAndAncestors" mat-icon-button class="editButton" (click)="editLocation()"><mat-icon>edit</mat-icon></button></h3>
             <div *ngFor="let location of locationsAndAncestors" class="locations-container">
                 <div class="location-picture"> <img class="locationImg" src={{location[0].imageUrl}}></div>
-                <div class="location-name">{{location[0].name !== 'root' ? location[0].name : 'Unassigned'}}</div>
+                <div class="location-name">{{location[0].name !== 'root' ? location[0].name : 'Unassigned'}}
+                    <mat-icon *ngIf="location[0].name == 'root'" class="missing-data-icon">error_outline</mat-icon>
+                </div>
             </div>
             <br>
             <br>
-            <button mat-raised-button (click)="nextStep()">Skip</button>
+            <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
             <span class="btn-spacer"></span>
-            <button mat-raised-button (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Next</button>
+            <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Next</button>
         </div>
 
         <div *ngIf="this.step == 1" class="step-1">
@@ -58,17 +61,18 @@
             </div>
             <br>
             <br>
-            <button mat-raised-button (click)="nextStep()">Skip</button>
+            <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
             <span class="btn-spacer"></span>
-            <button mat-raised-button (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Next</button>
+            <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Next</button>
         </div>
 
         <div *ngIf="this.step == 2" class="step-2">
             <h3> Finalize Title </h3>
             <div> Current title: </div>
             <div><b> {{ item.fullTitle }} </b></div>
+            <div *ngIf="!item.fullTitle" color="warn"> (No title!) </div>
             <br>
-            <button mat-raised-button (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
+            <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
             <br>
             <br>
             <br>
@@ -84,14 +88,15 @@
             </mat-form-field>
             <div> Attribute text: {{ buildAttributeString() }} <span class="light-text">(Unmodifiable)</span></div>
             <br>
-            <button mat-raised-button (click)="nextStep()">Skip</button>
+            <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
         </div>
 
         <div *ngIf="this.step == 3" class="step-3">
             <h3> Would you like to take a picture of the item? </h3>
             <br>
-            <button mat-raised-button (click)="nextStep()">Skip</button>
-            <button mat-raised-button (click)="camera.click()" color="primary"><mat-icon>photo_camera</mat-icon> Yes</button>
+            <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
+            <span class="btn-spacer"></span>
+            <button mat-raised-button class="rect-action-button" (click)="camera.click()" color="primary"><mat-icon>photo_camera</mat-icon> Yes</button>
             <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
         </div>
 
@@ -111,7 +116,7 @@
                     ></textarea>
                 </mat-form-field>
             </form>
-            <h4> Add Tags </h4>
+            <h4> Tags </h4>
             <div class="light-text">
                 These are phrases that are picked up by the search engine. Use this when there are certain phrases or words connected to this item that are not in the title or attributes. 
             </div>
@@ -123,7 +128,7 @@
                         {{tag}}
                         <mat-icon matChipRemove>cancel</mat-icon>
                     </mat-chip>
-                    <input #tags placeholder="New tag"
+                    <input #tags placeholder="Add tags..."
                             [matChipInputFor]="tagList"
                             [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                             [matChipInputAddOnBlur]="true"
@@ -134,7 +139,7 @@
                 </mat-form-field>
             </form>
             <br>
-            <button mat-raised-button (click)="nextStep()" color="primary">Finish</button>
+            <button mat-raised-button class="rect-action-button" (click)="nextStep()" color="primary">Finish</button>
         </div>
 
     </div>

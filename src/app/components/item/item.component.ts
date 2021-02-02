@@ -523,7 +523,6 @@ export class ItemComponent implements OnInit, OnDestroy {
     // set edit field value to enable state change, then set focus
     switch (field) {
       case 'name': 
-        if(this.item.name === "(New - Enter the Item Info first.)") this.item.name = ''; // Clear default name immediately
         this.textEditFields.name = true;
         // focus
         setTimeout(() => this.nameField.nativeElement.focus(), 0);
@@ -633,12 +632,12 @@ export class ItemComponent implements OnInit, OnDestroy {
         if(newCategory){
           this.adminService.addToRecent(newCategory);
 
-          if(newCategory.prefix){ // Add the prefix if it's not there, make sure to remove old
-            if(this.item.name === "(New - Enter the Item Info first.)"){
+          if(newCategory.prefix){
+            if(!this.item.name){ // If the item doesn't have a name yet, jsut set it to be the prefix
               this.item.name = newCategory.prefix;
               this.item.fullTitle = this.item.name + this.buildAttributeString();
             }
-            else if(!this.item.name.startsWith(newCategory.prefix)){
+            else if(!this.item.name.startsWith(newCategory.prefix)){ // Replace old prefix if it's there
               if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
                 this.item.name = newCategory.prefix + " " + this.item.name.substring(this.category.prefix.length-1, this.item.name.length-1).trim();
               } else {

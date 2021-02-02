@@ -18,7 +18,8 @@
     </div>
     <div class="titleHolder" *ngSwitchDefault>
       <h2>
-        {{item.fullTitle}}
+        <span *ngIf="item.fullTitle"> {{item.fullTitle}} </span>
+        <span *ngIf="!item.fullTitle" class="light-text"> ( No Title ) </span>
         <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
       </h2>
     </div>

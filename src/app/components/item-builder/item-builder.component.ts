@@ -142,12 +142,12 @@ export class ItemBuilderComponent implements OnInit {
         if(newCategory){
           this.adminService.addToRecent(newCategory);
 
-          if(newCategory.prefix){ // Add the prefix if it's not there, make sure to remove old
-            if(this.item.name === "(New - Enter the Item Info first.)"){
+          if(newCategory.prefix){
+            if(!this.item.name){ // If the item doesn't have a name yet, jsut set it to be the prefix
               this.item.name = newCategory.prefix;
               this.item.fullTitle = this.item.name + this.buildAttributeString();
             }
-            else if(!this.item.name.startsWith(newCategory.prefix)){
+            else if(!this.item.name.startsWith(newCategory.prefix)){ // Replace old prefix if it's there
               if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
                 this.item.name = newCategory.prefix + " " + this.item.name.substring(this.category.prefix.length-1, this.item.name.length-1).trim();
               } else {
@@ -454,6 +454,10 @@ export class ItemBuilderComponent implements OnInit {
       else if(this.locationsAndAncestors.length == 0){
         return false;
       }
+      // If it is the unassigned location
+      else if(this.locationsAndAncestors[0][0].name === 'root'){
+        return false;
+      }
       // No problems, we're set to go
       return true;
     }
@@ -477,6 +481,11 @@ export class ItemBuilderComponent implements OnInit {
 
     // Setup title
     else if(this.step == 2){
+      // Only disable if the title is blank
+      if(!this.item.fullTitle){
+        return false;
+      }
+
       // Currently just asks you to make sure it's good
       return true;
     }
