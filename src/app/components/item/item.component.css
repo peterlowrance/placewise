@@ -275,16 +275,17 @@ p {
   margin-right: 8px;
   color: white;
   margin-bottom: 8px;
+  min-width: 80px;
 }
 
 .approx-good {
   background-color: rgb(19, 143, 71);
 }
 .approx-low {
-  background-color: #f44336;
+  background-color: rgb(63, 63, 63);
 }
 .approx-empty {
-  background-color: rgb(63, 63, 63);
+  background-color: #f44336;
 }
 
 .amount-reported {

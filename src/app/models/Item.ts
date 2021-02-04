@@ -19,5 +19,6 @@ export interface Item extends HierarchyObject {
     locationID: string;
     type: string;
     amount: any;
+    timestamp: number;
   }]
 }

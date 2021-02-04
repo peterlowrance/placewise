@@ -229,7 +229,7 @@
                 </div>
                 <div *ngIf="!card.isNumber" class="tracking-input-approx">
                     <h4>Last reported as: <span class="amount-reported">{{card.amount}}</span></h4>
-                    <button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button>
+                    <!--button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button-->
                     <button mat-raised-button class="approx-button approx-low" (click)="setTrackingAmount(card.locationID, 'Low')">Low</button>
                     <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(card.locationID, 'Empty')">Empty</button>
                 </div>

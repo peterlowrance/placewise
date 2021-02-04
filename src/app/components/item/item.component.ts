@@ -327,10 +327,10 @@ export class ItemComponent implements OnInit, OnDestroy {
           }
           if(!found){
             if(this.item.tracking){
-              this.item.tracking.push({locationID: locationID, type: 'number,0', amount: 0});
+              this.item.tracking.push({locationID: locationID, type: 'number,0', amount: 0, timestamp: new Date().getUTCSeconds()});
             }
             else {
-              this.item.tracking = [{locationID: locationID, type: 'number,0', amount: 0}];
+              this.item.tracking = [{locationID: locationID, type: 'number,0', amount: 0, timestamp: new Date().getUTCSeconds()}];
             }
           }
         }
@@ -397,10 +397,10 @@ export class ItemComponent implements OnInit, OnDestroy {
       }
       if(!found){
         if(this.item.tracking){
-          this.item.tracking.push({locationID: locationID, type, amount: value});
+          this.item.tracking.push({locationID: locationID, type, amount: value, timestamp: new Date().getUTCSeconds()});
         }
         else {
-          this.item.tracking = [{locationID: locationID, type, amount: value}];
+          this.item.tracking = [{locationID: locationID, type, amount: value, timestamp: new Date().getUTCSeconds()}];
         }
       }
 
