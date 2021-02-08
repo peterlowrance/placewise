@@ -1,10 +1,11 @@
 <div class="all-content">
-    <h3 class="background-title light-text"> Item Builder </h3>
 
     <div *ngIf="!item"> Loading item... </div>
     
     <div *ngIf="item">
 
+
+        <!-- Category and Location -->
         <div *ngIf="this.step === 0" class="step-0">
             <h3> Category <button *ngIf="category" mat-icon-button class="editButton" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
             <div *ngIf="category" class="category-container">
@@ -29,6 +30,8 @@
             <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Next</button>
         </div>
 
+        
+        <!-- Attributes -->
         <div *ngIf="this.step == 1" class="step-1">
             <h3> Attributes </h3>
             <div *ngIf="attributesForCard">
@@ -66,31 +69,103 @@
             <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Next</button>
         </div>
 
+
+        <!-- Build Title -->
         <div *ngIf="this.step == 2" class="step-2">
-            <h3> Finalize Title </h3>
-            <div> Current title: </div>
-            <div><b> {{ item.fullTitle }} </b></div>
-            <div *ngIf="!item.fullTitle" color="warn"> (No title!) </div>
-            <br>
-            <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
+            <h2> Finalize Title </h2>
             <br>
             <br>
+            <mat-slide-toggle checked="true" (change)="autoTitleBuilder = $event.checked"> <b> Automatic Title Builder </b> <div class="light-text"> from {{ category.name }} </div> </mat-slide-toggle>
             <br>
-            <h4> Title Components: </h4>
-            <div *ngIf="!category || !category.prefix"> Auto Prefix: <span class="light-text">(None)</span> </div>
-            <div *ngIf="category && category.prefix"> Auto Prefix: {{ category.prefix }} </div>
-            <mat-form-field>
-                <mat-label>Additional Text:</mat-label>
-                <input matInput #value
-                type="text"
-                [(ngModel)]="additionalText"
-                (focusout)="updateTitleFromUI()" >
-            </mat-form-field>
-            <div> Attribute text: {{ buildAttributeString() }} <span class="light-text">(Unmodifiable)</span></div>
+            <br>
+            
+            <!-- Auto Title -->
+            <div *ngIf="autoTitleBuilder">
+                <div class="info-box">
+                    <small class="light-text">This also means the item's title can be automatically updated when the item's category changes. </small>
+                </div>
+                <br>
+                <br>
+                <div> Current title: </div>
+                <div><b> {{ item.fullTitle }} </b></div>
+                <div *ngIf="!item.fullTitle"> (No title!) </div>
+                <br>
+                <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
+                <br>
+                <br>
+                <br>
+                <h3> Title Components: </h3>
+                
+                <mat-grid-list cols="3" rowHeight="72px" gutterSize="12px" class="title-builder-grid">
+                    
+                    <!-- Prefix -->
+                    <mat-grid-tile [colspan]="1" [rowspan]="1">
+                        <div class="label-text">Prefix</div>
+                    </mat-grid-tile>
+                    <mat-grid-tile [colspan]="2" [rowspan]="1">
+                        <div *ngIf="!category || !category.prefix" class="title-data-text">
+                            <span class="light-text"> ( No prefix detected in the item's category. ) </span>
+                        </div>
+                        <div *ngIf="category && category.prefix" class="title-data-text"> 
+                            <b> {{ category.prefix }} </b>
+                        </div>
+                    </mat-grid-tile>
+                    
+                    <!-- Add text -->
+                    <mat-grid-tile [colspan]="1" [rowspan]="1">
+                        <div class="label-text"> Additional Text </div>
+                    </mat-grid-tile>
+                    <mat-grid-tile [colspan]="2" [rowspan]="1">
+                        <div class="title-data-text">
+                            <mat-form-field class="additional-text-form">
+                                <mat-label> Add text: </mat-label>
+                                <input matInput #value
+                                type="text"
+                                [(ngModel)]="additionalText"
+                                (focusout)="updateTitleFromUI()" >
+                            </mat-form-field>
+                        </div>
+                    </mat-grid-tile>
+
+                    <!-- Attribute Suffix -->
+                    <mat-grid-tile [colspan]="1" [rowspan]="1">
+                        <div class="label-text"> Attribute Suffix </div>
+                    </mat-grid-tile>
+                    <mat-grid-tile [colspan]="2" [rowspan]="1">
+                        <div class="title-data-text"> <b> {{ buildAttributeString() }} </b> </div>
+                    </mat-grid-tile>
+                </mat-grid-list>
+                <br>
+            </div>
+
+            <!-- Manual Title -->
+            <div *ngIf="!autoTitleBuilder">
+                <br>
+                <mat-form-field>
+                    <mat-label> Title: </mat-label>
+                    <textarea
+                    matInput
+                    type="text"
+                    [(ngModel)]="item.fullTitle"
+                    cdkTextareaAutosize
+                    #autosize="cdkTextareaAutosize"
+                    cdkAutosizeMinRows="1"
+                    cdkAutosizeMaxRows="3"
+                    ></textarea>
+                </mat-form-field>
+                <br>
+                <br>
+                <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
+            </div>
+
+            <!-- Skip Button -->
             <br>
             <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
+            <br>
         </div>
 
+
+        <!-- Picture -->
         <div *ngIf="this.step == 3" class="step-3">
             <h3> Would you like to take a picture of the item? </h3>
             <br>
@@ -100,6 +175,8 @@
             <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
         </div>
 
+
+        <!-- Extras -->
         <div *ngIf="this.step == 4" class="step-4">
             <h3> Add extra information as needed: </h3>
             <h4> Description </h4>

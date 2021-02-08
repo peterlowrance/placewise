@@ -83,3 +83,30 @@
   top: 0.2rem;
   left: 0.2rem;
 }
+
+.label-text {
+  text-align: right;
+  width: 100%;
+}
+
+.grid-spacer {
+  margin-top: 12px;
+}
+
+.title-data-text {
+  width: 100%;
+  padding: 0 12px;
+  text-align: left;
+}
+
+.title-builder-grid {
+  max-width: 400px;
+}
+
+.info-box {
+  max-width: 400px;
+}
+
+.additional-text-form {
+  top: 4px;
+}

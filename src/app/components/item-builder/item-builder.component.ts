@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Category } from 'src/app/models/Category';
 import { Item } from 'src/app/models/Item';
@@ -10,6 +10,7 @@ import { HierarchyItem } from 'src/app/models/HierarchyItem';
 import {MatChipInputEvent, MatSnackBar} from '@angular/material';
 import { ImageService } from 'src/app/services/image.service';
 import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
+import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 
 
 
@@ -38,6 +39,8 @@ export class ItemBuilderComponent implements OnInit {
     private snack: MatSnackBar
     ) { }
 
+    @ViewChild('autosize', {static: false}) autosize: CdkTextareaAutosize;
+
     readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
     readonly MAX_STEP = 4;
     readonly MIN_STEP = 0;
@@ -50,6 +53,7 @@ export class ItemBuilderComponent implements OnInit {
     locationsAndAncestors: HierarchyItem[][]; // The locations and their ancestors
     attributesForCard: AttributeCard[];       // Attributes of the item, for the UI
     additionalText: string;                   // Helps with setting up the title
+    autoTitleBuilder: Boolean = true;
 
   ngOnInit() {
     // retrieve id
@@ -143,15 +147,17 @@ export class ItemBuilderComponent implements OnInit {
           this.adminService.addToRecent(newCategory);
 
           if(newCategory.prefix){
-            if(!this.item.name){ // If the item doesn't have a name yet, jsut set it to be the prefix
+            if(!this.item.name){ // If the item doesn't have a name yet, just set it to be the prefix
               this.item.name = newCategory.prefix;
               this.item.fullTitle = this.item.name + this.buildAttributeString();
             }
             else if(!this.item.name.startsWith(newCategory.prefix)){ // Replace old prefix if it's there
               if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
-                this.item.name = newCategory.prefix + " " + this.item.name.substring(this.category.prefix.length-1, this.item.name.length-1).trim();
+                this.item.name = newCategory.prefix + " " + this.item.name.substring(this.category.prefix.length, this.item.name.length).trim();
+                this.item.fullTitle = this.item.name + this.buildAttributeString();
               } else {
                 this.item.name = newCategory.prefix + " " + this.item.name;
+                this.item.fullTitle = this.item.name + this.buildAttributeString();
               }
             }
           }
@@ -425,13 +431,16 @@ export class ItemBuilderComponent implements OnInit {
   //
 
   updateTitleFromUI(){
-    if(this.category.prefix){
-      this.item.name = this.category.prefix + this.additionalText;
+    if(this.additionalText){
+      this.item.fullTitle = this.category.prefix + " " + this.additionalText.trim() + this.buildAttributeString();
     }
     else {
-      this.item.name = this.additionalText;
+      this.item.fullTitle = this.category.prefix + this.buildAttributeString();
     }
-    this.item.fullTitle = this.item.name + this.buildAttributeString();
+  }
+
+  checkPrefixOverwritten(): Boolean {
+    return this.category.prefix === this.item.name.substring(0, this.category.prefix.length);
   }
 
   isReadyForNextStep(): Boolean {

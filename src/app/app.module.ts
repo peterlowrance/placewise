@@ -23,6 +23,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatBadgeModule} from '@angular/material/badge';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatSelectModule} from '@angular/material/select';
+import {TextFieldModule} from '@angular/cdk/text-field';
 
 import {SmdFabSpeedDialModule} from 'node_modules/angular-speed-dial';
 // Imports for all Placewise modules
@@ -120,7 +121,8 @@ import { ItemBuilderComponent } from './components/item-builder/item-builder.com
     MatCheckboxModule,
     MatRadioModule,
     MatTableModule,
-    HttpClientModule
+    HttpClientModule,
+    TextFieldModule
   ],
   providers: [],
   bootstrap: [AppComponent],
