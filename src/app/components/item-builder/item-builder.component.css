@@ -17,7 +17,7 @@
 .locations-container {
   display: flex;
   align-items: center;
-  margin-top: -6px;
+  margin-top: 6px;
   padding-bottom: 4px;
   height: 60px;
 }
@@ -34,31 +34,19 @@
   padding-left: 12px;
 }
 
-.category-picture {
-  min-width: 60px;
-  min-height: 60px;
-  max-width: 60px;
-  max-height: 60px;
-  border-radius: 100%;
-}
-
-.location-picture {
-  min-width: 60px;
-  min-height: 60px;
-  max-width: 60px;
-  max-height: 60px;
-  border-radius: 100%;
-}
-
 .categoryImg {
-  max-width: 100%;
-  max-height: 100%;
+  min-width: 60px;
+  min-height: 60px;
+  max-width: 60px;
+  max-height: 60px;
   object-fit: cover;
 }
 
 .locationImg {
-  max-width: 100%;
-  max-height: 100%;
+  min-width: 60px;
+  min-height: 60px;
+  max-width: 60px;
+  max-height: 60px;
   object-fit: cover;
 }
 
@@ -109,4 +97,8 @@
 
 .additional-text-form {
   top: 4px;
+}
+
+.bottom-spacer {
+  min-height: 24px;
 }

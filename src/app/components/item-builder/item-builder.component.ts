@@ -509,6 +509,7 @@ export class ItemBuilderComponent implements OnInit {
     }
     //this.step += 1;
     this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: this.step + 1 } });
+    window.scrollTo(0, 0);
   }
 
 }
