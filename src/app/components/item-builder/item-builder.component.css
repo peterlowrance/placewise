@@ -1,5 +1,5 @@
 .all-content {
-    margin: 16px;
+    margin: 30px min(4vw, 48px);
 }
 
 .btn-spacer {
@@ -101,4 +101,27 @@
 
 .bottom-spacer {
   min-height: 24px;
+}
+
+.attribute-card {
+  margin: 6px 0 0 0;
+  max-width: 300px;
+  padding: 24px;
+}
+
+.attribute-category-text {
+  color: #999;
+  font-size: 12px;
+}
+
+.attribute-input {
+  font-size: 20px;
+  width: 75%;
+}
+
+.item-picture {
+  min-width: 300px;
+  min-height: 300px;
+  max-width: 300px;
+  max-height: 300px;
 }

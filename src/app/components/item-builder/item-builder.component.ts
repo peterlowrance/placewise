@@ -357,6 +357,7 @@ export class ItemBuilderComponent implements OnInit {
     this.item.fullTitle = this.item.name + this.buildAttributeString();
   }
 
+
   //
   // MODIFIED FROM ITEM DISPLAY
   //
@@ -380,7 +381,6 @@ export class ItemBuilderComponent implements OnInit {
             this.item.imageUrl = url;
             // set dirty and save for upload
             this.saveItemImage();
-            this.nextStep();
           });
         }
       };
@@ -395,6 +395,18 @@ export class ItemBuilderComponent implements OnInit {
       this.item.imageUrl = link;
       this.placeIntoDB();
     });
+  }
+
+  deleteAttribute(card: AttributeCard){
+    let deleteCardIndex = this.attributesForCard.indexOf(card);
+    this.attributesForCard.splice(deleteCardIndex, 1);
+
+    for(let attributeIndex in this.item.attributes){
+      if(this.item.attributes[attributeIndex].ID === card.ID){
+        this.item.attributes.splice(Number.parseInt(attributeIndex), 1);
+      }
+    }
+    this.placeIntoDB();
   }
 
   addTag(event: MatChipInputEvent | any): void {
@@ -425,6 +437,7 @@ export class ItemBuilderComponent implements OnInit {
       this.snack.open('Item Save Failed: ' + reject, "OK", {duration: 3000, panelClass: ['mat-warn']});
     });
   }
+
 
   //
   // ACTUAL DIFFERENCES FROM ITEM DISPLAY

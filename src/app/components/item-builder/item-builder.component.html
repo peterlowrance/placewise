@@ -169,19 +169,35 @@
 
         <!-- Picture -->
         <div *ngIf="this.step == 3" class="step-3">
-            <h3> Would you like to take a picture of the item? </h3>
-            <br>
-            <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
-            <span class="btn-spacer"></span>
-            <button mat-raised-button class="rect-action-button" (click)="camera.click()" color="primary"><mat-icon>photo_camera</mat-icon> Yes</button>
+            <h2> Item Picture </h2>
+            <div *ngIf="item.imageUrl == '../../../assets/notFound.png'">
+                <h3> Would you like to take a picture of {{item.fullTitle}}? </h3>
+                <br>
+                <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
+                <span class="btn-spacer"></span>
+                <button mat-raised-button class="rect-action-button" (click)="camera.click()" color="primary"> <mat-icon>photo_camera</mat-icon> Yes </button>
+            </div>
+            <div *ngIf="item.imageUrl != '../../../assets/notFound.png'">
+                <h4> For {{item.fullTitle}}: </h4>
+                <img class="item-picture" src={{item.imageUrl}} alt="Image load failed!">
+                <div class="bottom-spacer"></div>
+                <button mat-raised-button class="rect-action-button" (click)="camera.click()" color="accent"> <mat-icon>photo_camera</mat-icon> Retake </button>
+                <span class="btn-spacer"></span>
+                <button mat-raised-button class="rect-action-button" (click)="nextStep()" color="primary"> <mat-icon>check</mat-icon> Confirm </button>
+            </div>
+            <div *ngIf="!item.imageUrl">
+                <div> Something went wrong with the item's image! </div>
+                <br>
+                <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
+            </div>
             <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
         </div>
 
 
         <!-- Extras -->
         <div *ngIf="this.step == 4" class="step-4">
-            <h3> Add extra information as needed: </h3>
-            <h4> Description </h4>
+            <h2> Extras </h2>
+            <h4> Description <small class="light-text"> (Not required) </small> </h4>
             <div class="light-text">
                 This adds extra information to the item that does not affect anything. This includes not being picked up by the search engine.
             </div>
@@ -195,7 +211,7 @@
                     ></textarea>
                 </mat-form-field>
             </form>
-            <h4> Tags </h4>
+            <h4> Tags <small class="light-text"> (Not required) </small> </h4>
             <div class="light-text">
                 These are phrases that are picked up by the search engine. Use this when there are certain phrases or words connected to this item that are not in the title or attributes. 
             </div>
