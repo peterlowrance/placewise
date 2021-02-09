@@ -101,9 +101,10 @@
                     <br>
                     <br>
                     <br>
+                    <br>
                     <h3> Title Components: </h3>
                     
-                    <mat-grid-list cols="3" rowHeight="72px" gutterSize="12px" class="title-builder-grid">
+                    <mat-grid-list cols="3" rowHeight="72px" gutterSize="0px" class="title-builder-grid">
                         
                         <!-- Prefix -->
                         <mat-grid-tile [colspan]="1" [rowspan]="1">
@@ -123,15 +124,13 @@
                             <div class="label-text"> Additional Text </div>
                         </mat-grid-tile>
                         <mat-grid-tile [colspan]="2" [rowspan]="1">
-                            <div class="title-data-text">
-                                <mat-form-field class="additional-text-form">
-                                    <mat-label> Add text: </mat-label>
-                                    <input matInput #value
-                                    type="text"
-                                    [(ngModel)]="additionalText"
-                                    (focusout)="updateTitleFromUI()" >
-                                </mat-form-field>
-                            </div>
+                            <mat-form-field class="additional-text-form title-data-text">
+                                <mat-label> Add text: </mat-label>
+                                <input matInput #value
+                                type="text"
+                                [(ngModel)]="additionalText"
+                                (focusout)="updateTitleFromUI()" >
+                            </mat-form-field>
                         </mat-grid-tile>
 
                         <!-- Attribute Suffix -->
