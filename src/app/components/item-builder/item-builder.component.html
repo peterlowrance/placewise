@@ -77,88 +77,93 @@
         <div *ngIf="this.step == 2" class="step-2">
             <h2> Finalize Title </h2>
             <br>
-            <br>
-            <mat-slide-toggle checked="true" (change)="autoTitleBuilder = $event.checked"> <b> Automatic Title Builder </b> <div class="light-text"> from {{ category.name }} </div> </mat-slide-toggle>
-            <br>
-            <br>
-            
-            <!-- Auto Title -->
-            <div *ngIf="autoTitleBuilder">
-                <div class="info-box">
-                    <small class="light-text">This also means the item's title can be automatically updated when the item's category changes. </small>
-                </div>
-                <br>
-                <br>
-                <div> Current title: </div>
-                <div><b> {{ item.fullTitle }} </b></div>
-                <div *ngIf="!item.fullTitle"> (No title!) </div>
-                <br>
-                <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
-                <br>
-                <br>
-                <br>
-                <h3> Title Components: </h3>
-                
-                <mat-grid-list cols="3" rowHeight="72px" gutterSize="12px" class="title-builder-grid">
-                    
-                    <!-- Prefix -->
-                    <mat-grid-tile [colspan]="1" [rowspan]="1">
-                        <div class="label-text">Prefix</div>
-                    </mat-grid-tile>
-                    <mat-grid-tile [colspan]="2" [rowspan]="1">
-                        <div *ngIf="!category || !category.prefix" class="title-data-text">
-                            <span class="light-text"> ( No prefix detected in the item's category. ) </span>
-                        </div>
-                        <div *ngIf="category && category.prefix" class="title-data-text"> 
-                            <b> {{ category.prefix }} </b>
-                        </div>
-                    </mat-grid-tile>
-                    
-                    <!-- Add text -->
-                    <mat-grid-tile [colspan]="1" [rowspan]="1">
-                        <div class="label-text"> Additional Text </div>
-                    </mat-grid-tile>
-                    <mat-grid-tile [colspan]="2" [rowspan]="1">
-                        <div class="title-data-text">
-                            <mat-form-field class="additional-text-form">
-                                <mat-label> Add text: </mat-label>
-                                <input matInput #value
-                                type="text"
-                                [(ngModel)]="additionalText"
-                                (focusout)="updateTitleFromUI()" >
-                            </mat-form-field>
-                        </div>
-                    </mat-grid-tile>
-
-                    <!-- Attribute Suffix -->
-                    <mat-grid-tile [colspan]="1" [rowspan]="1">
-                        <div class="label-text"> Attribute Suffix </div>
-                    </mat-grid-tile>
-                    <mat-grid-tile [colspan]="2" [rowspan]="1">
-                        <div class="title-data-text"> <b> {{ buildAttributeString() }} </b> </div>
-                    </mat-grid-tile>
-                </mat-grid-list>
-                <br>
+            <div *ngIf="!category">
+                Loading category information...
             </div>
+            <div *ngIf="category">
+                <br>
+                <mat-slide-toggle checked="true" (change)="autoTitleBuilder = $event.checked"> <b> Automatic Title Builder </b> <div class="light-text"> from {{ category.name }} </div> </mat-slide-toggle>
+                <br>
+                <br>
+                
+                <!-- Auto Title -->
+                <div *ngIf="autoTitleBuilder">
+                    <div class="info-box">
+                        <small class="light-text">This also means the item's title can be automatically updated when the item's category changes. </small>
+                    </div>
+                    <br>
+                    <br>
+                    <div> Current title: </div>
+                    <div><b> {{ item.fullTitle }} </b></div>
+                    <div *ngIf="!item.fullTitle"> (No title!) </div>
+                    <br>
+                    <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
+                    <br>
+                    <br>
+                    <br>
+                    <h3> Title Components: </h3>
+                    
+                    <mat-grid-list cols="3" rowHeight="72px" gutterSize="12px" class="title-builder-grid">
+                        
+                        <!-- Prefix -->
+                        <mat-grid-tile [colspan]="1" [rowspan]="1">
+                            <div class="label-text">Prefix</div>
+                        </mat-grid-tile>
+                        <mat-grid-tile [colspan]="2" [rowspan]="1">
+                            <div *ngIf="!category || !category.prefix" class="title-data-text">
+                                <span class="light-text"> ( No prefix detected in the item's category. ) </span>
+                            </div>
+                            <div *ngIf="category && category.prefix" class="title-data-text"> 
+                                <b> {{ category.prefix }} </b>
+                            </div>
+                        </mat-grid-tile>
+                        
+                        <!-- Add text -->
+                        <mat-grid-tile [colspan]="1" [rowspan]="1">
+                            <div class="label-text"> Additional Text </div>
+                        </mat-grid-tile>
+                        <mat-grid-tile [colspan]="2" [rowspan]="1">
+                            <div class="title-data-text">
+                                <mat-form-field class="additional-text-form">
+                                    <mat-label> Add text: </mat-label>
+                                    <input matInput #value
+                                    type="text"
+                                    [(ngModel)]="additionalText"
+                                    (focusout)="updateTitleFromUI()" >
+                                </mat-form-field>
+                            </div>
+                        </mat-grid-tile>
 
-            <!-- Manual Title -->
-            <div *ngIf="!autoTitleBuilder">
-                <br>
-                <mat-form-field>
-                    <mat-label> Title: </mat-label>
-                    <textarea
-                    matInput
-                    type="text"
-                    [(ngModel)]="item.fullTitle"
-                    cdkTextareaAutosize
-                    #autosize="cdkTextareaAutosize"
-                    cdkAutosizeMinRows="1"
-                    cdkAutosizeMaxRows="3"
-                    ></textarea>
-                </mat-form-field>
-                <br>
-                <br>
-                <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
+                        <!-- Attribute Suffix -->
+                        <mat-grid-tile [colspan]="1" [rowspan]="1">
+                            <div class="label-text"> Attribute Suffix </div>
+                        </mat-grid-tile>
+                        <mat-grid-tile [colspan]="2" [rowspan]="1">
+                            <div class="title-data-text"> <b> {{ buildAttributeString() }} </b> </div>
+                        </mat-grid-tile>
+                    </mat-grid-list>
+                    <br>
+                </div>
+
+                <!-- Manual Title -->
+                <div *ngIf="!autoTitleBuilder">
+                    <br>
+                    <mat-form-field>
+                        <mat-label> Title: </mat-label>
+                        <textarea
+                        matInput
+                        type="text"
+                        [(ngModel)]="item.fullTitle"
+                        cdkTextareaAutosize
+                        #autosize="cdkTextareaAutosize"
+                        cdkAutosizeMinRows="1"
+                        cdkAutosizeMaxRows="3"
+                        ></textarea>
+                    </mat-form-field>
+                    <br>
+                    <br>
+                    <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
+                </div>
             </div>
 
             <!-- Skip Button -->
