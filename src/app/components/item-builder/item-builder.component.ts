@@ -46,14 +46,15 @@ export class ItemBuilderComponent implements OnInit {
     readonly MIN_STEP = 0;
 
     id: string;                               // item id
-    step = -1;                                 // What step are we at in filling in data
+    step = -1;                                // What step are we at in filling in data
     item: Item;                               // Item being setup
     category: Category;                       // Category of the item
     categoryAncestors: Category[];            // All of the Category's parents
     locationsAndAncestors: HierarchyItem[][]; // The locations and their ancestors
     attributesForCard: AttributeCard[];       // Attributes of the item, for the UI
     additionalText: string;                   // Helps with setting up the title
-    autoTitleBuilder: Boolean = true;
+    autoTitleBuilder: boolean;                // Switch value on UI
+    attributeSuffix: string;                  // Pre-loaded suffix
 
   ngOnInit() {
     // retrieve id
@@ -75,18 +76,33 @@ export class ItemBuilderComponent implements OnInit {
       this.searchService.getCategory(item.category).subscribe(category => {
         this.category = category;
 
-        // Setup additional text if there's extra. 
-        // This also means if the title is significantly different, it will not show. I believe this is best as this is setting something up like it is new.
-        if(category.prefix){
-          if(category.prefix === item.name.substring(0, category.prefix.length) && category.prefix.length < item.name.length){
-            this.additionalText = item.name.substring(category.prefix.length);
-          }
-        }
-        
-
         this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
           if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
             this.categoryAncestors = categoryAncestors[0];
+            this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAncestors);
+
+            // Setup additional text for auto title builder
+            if(category.prefix && item.name.startsWith(category.prefix)){
+              if(this.attributeSuffix && item.name.endsWith(this.attributeSuffix)){
+                this.autoTitleBuilder = true;
+                this.additionalText = item.name.substring(category.prefix.length, item.name.length - this.attributeSuffix.length).trim();
+              }
+              else {
+                this.autoTitleBuilder = true;
+                this.additionalText = item.name.substring(category.prefix.length).trim();
+              }    
+            }
+            else {
+              if(this.attributeSuffix && item.name.endsWith(this.attributeSuffix)){
+                this.autoTitleBuilder = true;
+                this.additionalText = item.name.substring(0, item.name.length - this.attributeSuffix.length).trim();
+              }
+              else {
+                this.autoTitleBuilder = false;
+                this.additionalText = item.name;
+              } 
+            }
+
             let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
             if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
               this.attributesForCard = rebuiltCards;
@@ -146,6 +162,7 @@ export class ItemBuilderComponent implements OnInit {
         if(newCategory){
           this.adminService.addToRecent(newCategory);
 
+          /*                                              TODO
           if(newCategory.prefix){
             if(!this.item.name){ // If the item doesn't have a name yet, just set it to be the prefix
               this.item.name = newCategory.prefix;
@@ -165,6 +182,7 @@ export class ItemBuilderComponent implements OnInit {
             this.item.name = '';
             this.item.fullTitle = this.item.name + this.buildAttributeString();
           }
+          */
   
           this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0]);
           localSub.unsubscribe(); // Don't want this screwing with us later
@@ -240,41 +258,6 @@ export class ItemBuilderComponent implements OnInit {
         })
       }
     }
-  }
-
-  // YIKES REPEATED CODE
-  buildAttributeString(category: Category = this.category): string {
-    if(!this.category){
-      return '';
-    }
-
-    let buildingString = '';
-    for(let suffixIndex in category.suffixStructure){
-      let id = category.suffixStructure[suffixIndex].attributeID;
-
-      if(id === 'parent'){
-        for(let index in this.categoryAncestors){
-          if(this.categoryAncestors[index].ID === category.parent){
-            buildingString += category.suffixStructure[suffixIndex].beforeText + 
-            this.buildAttributeString(this.categoryAncestors[index]) +
-            category.suffixStructure[suffixIndex].afterText;
-          }
-        }
-      }
-
-      else {
-        for(let attr in this.item.attributes){
-          if(this.item.attributes[attr].ID === id){
-            if(this.item.attributes[attr].value){ // Don't insert anything if there's no value
-              buildingString += category.suffixStructure[suffixIndex].beforeText + 
-              this.item.attributes[attr].value +
-              category.suffixStructure[suffixIndex].afterText;
-            }
-          }
-        }
-      }
-    }
-    return buildingString;
   }
 
   loadAttributesForCards(parents: Category[], item: Item): AttributeCard[] {
@@ -354,7 +337,7 @@ export class ItemBuilderComponent implements OnInit {
         })
       }
     }
-    this.item.fullTitle = this.item.name + this.buildAttributeString();
+    //this.item.fullTitle = this.item.name + this.buildAttributeString();      TODO
   }
 
 
@@ -443,12 +426,15 @@ export class ItemBuilderComponent implements OnInit {
   // ACTUAL DIFFERENCES FROM ITEM DISPLAY
   //
 
+  // Build and set title string from auto title
   updateTitleFromUI(){
-    if(this.additionalText){
-      this.item.fullTitle = this.category.prefix + " " + this.additionalText.trim() + this.buildAttributeString();
-    }
-    else {
-      this.item.fullTitle = this.category.prefix + this.buildAttributeString();
+    if(this.category.prefix){
+      if(this.additionalText){
+        this.item.name = this.category.prefix + " " + this.additionalText.trim() + this.attributeSuffix;
+      }
+      else {
+        this.item.name = this.category.prefix + this.attributeSuffix;
+      }
     }
   }
 
@@ -504,7 +490,7 @@ export class ItemBuilderComponent implements OnInit {
     // Setup title
     else if(this.step == 2){
       // Only disable if the title is blank
-      if(!this.item.fullTitle){
+      if(!this.item.name){
         return false;
       }
 
@@ -523,6 +509,11 @@ export class ItemBuilderComponent implements OnInit {
     //this.step += 1;
     this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: this.step + 1 } });
     window.scrollTo(0, 0);
+  }
+
+  // REEEEEMOVE
+  buildAttributeString(category: Category = this.category): string {
+    return "BAD";
   }
 
 }

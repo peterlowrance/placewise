@@ -26,6 +26,7 @@
       </div>
     </div>
   </div>
+  
   <!-- Attribute filters -->
   <mat-chip-list #chipList>
     <mat-chip *ngFor="let attr of filteredAttributes" color="primary" [selected]="true"
@@ -34,6 +35,7 @@
       <mat-icon matChipRemove>cancel</mat-icon>
     </mat-chip>
   </mat-chip-list>
+
   <!--Attribute values, if we're searching for that-->
   <div *ngIf="attributeValues && attributeValues.length > 0">
     <div class="header">{{"Found for " + currentAttribute.name + ":"}}</div>
@@ -46,7 +48,8 @@
     </mat-grid-list>
     <br>
   </div>
-<!--Hierarchy Items-->
+
+  <!--Hierarchy Items-->
   <div *ngIf="hierarchyItems && hierarchyItems.length > 0 && !filteredAttributes" (window:resize)="onResize($event)">
     <!--Show header if there are both items and hierarchies or if there is no toggle-->
     <div class="header">{{typeForSelectionButtons === 'category' ? 'Categories' : 'Locations'}}</div>
@@ -65,6 +68,7 @@
     </mat-grid-list>
     <br>
   </div>
+
   <!--Items-->
   <div *ngIf="items && items.length > 0">
     <div class="header">Items</div>
@@ -74,8 +78,8 @@
           <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
           <mat-card-content>
             <div class='item-text'>
-              <p *ngIf="item.fullTitle"> {{ item.fullTitle }} </p>
-              <h4 *ngIf="!item.fullTitle" class="light-text"> ( No title ) </h4>
+              <p *ngIf="item.name"> {{ item.name }} </p>
+              <h4 *ngIf="!item.name" class="light-text"> ( No title ) </h4>
             </div>
           </mat-card-content>
         </mat-card>

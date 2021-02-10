@@ -78,7 +78,7 @@
     <tr mat-header-row *matHeaderRowDef="headers"></tr>
     <tr class = "row" mat-row (click)="openModal(row)" *matRowDef="let row; columns: headers" ></tr>
   </table>
-  <div  class = 'button-container' *ngIf="externalReports">
+  <div  class='button-container' *ngIf="externalReports">
         <!--  Clearing all reports is probably going to do more damage than help, removing for now. -->
           <!-- <button *ngIf = "reports.length > 0" mat-raised-button class = "clear-button" (click)="confirmClear()">Clear All Reports</button> -->
           <div *ngIf = "externalReports.length == 0">

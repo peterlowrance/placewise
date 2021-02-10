@@ -147,10 +147,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       if(!this.originalItem) { // We don't want to overwrite if there's already old data
         this.originalItem = JSON.parse(JSON.stringify(item)); // deep copy
         this.previousItem = JSON.parse(JSON.stringify(item)); // another for recording short term changes
-      } 
-
-      if(item.fullTitle){
-        this.attributeSuffix = item.fullTitle.substring(item.name.length);
       }
 
       // Load image for item TODO: Not any more
@@ -214,6 +210,8 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
           if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
             this.categoryAncestors = categoryAncestors[0];
+            this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAncestors);
+
             let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
             if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
               this.attributesForCard = rebuiltCards;
@@ -474,7 +472,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     // if it's valid, build and isue report, else leave
     if (this.errorDesc.valid) {
       this.report.description = this.errorDesc.desc;
-      this.report.item.name = this.item.fullTitle;
+      this.report.item.name = this.item.name;
       this.report.item.ID = this.item.ID;
       this.report.item.imageUrl = this.item.imageUrl;
       // TODO: input reporter name from auth service
@@ -504,7 +502,7 @@ export class ItemComponent implements OnInit, OnDestroy {
       desc = "Auto Report: There's only " + amount + " left in stock.";
     }
     this.report.description = desc;
-    this.report.item.name = this.item.fullTitle;
+    this.report.item.name = this.item.name;
     this.report.item.ID = this.item.ID;
     this.report.item.imageUrl = this.item.imageUrl;
     this.report.reportDate = new Date().toDateString();
@@ -632,6 +630,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         if(newCategory){
           this.adminService.addToRecent(newCategory);
 
+          /*                                 TODO
           if(newCategory.prefix){
             if(!this.item.name){ // If the item doesn't have a name yet, jsut set it to be the prefix
               this.item.name = newCategory.prefix;
@@ -649,6 +648,7 @@ export class ItemComponent implements OnInit, OnDestroy {
             this.item.name = '';
             this.item.fullTitle = this.item.name + this.buildAttributeString();
           }
+          */
   
           this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0])
           localSub.unsubscribe(); // Don't want this screwing with us later
@@ -918,9 +918,6 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   async saveItem() {
     this.isSaving = true;
-    if(this.item.attributes !== this.previousItem.attributes || this.item.name !== this.previousItem.name){
-      this.item.fullTitle = this.item.name + this.buildAttributeString();
-    }
 
     // first, upload the image if edited, upload when we get the new ID
     if (this.previousItem.imageUrl !== this.item.imageUrl) {

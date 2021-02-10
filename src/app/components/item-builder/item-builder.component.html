@@ -75,27 +75,27 @@
 
         <!-- Build Title -->
         <div *ngIf="this.step == 2" class="step-2">
-            <h2> Finalize Title </h2>
+            <h2> Title Builder </h2>
             <br>
-            <div *ngIf="!category">
+            <div *ngIf="!categoryAncestors">
                 Loading category information...
             </div>
-            <div *ngIf="category">
+            <div *ngIf="categoryAncestors">
                 <br>
-                <mat-slide-toggle checked="true" (change)="autoTitleBuilder = $event.checked"> <b> Automatic Title Builder </b> <div class="light-text"> from {{ category.name }} </div> </mat-slide-toggle>
+                <mat-slide-toggle [(ngModel)]="autoTitleBuilder"> <b> Automatic Title Builder </b> <div class="light-text"> from {{ category.name }} </div> </mat-slide-toggle>
                 <br>
                 <br>
                 
                 <!-- Auto Title -->
                 <div *ngIf="autoTitleBuilder">
                     <div class="info-box">
-                        <small class="light-text">This also means the item's title can be automatically updated when the item's category changes. </small>
+                        <small class="light-text">In the future, this also means the item's title can be automatically updated when the item's category changes. </small>
                     </div>
                     <br>
                     <br>
                     <div> Current title: </div>
-                    <div><b> {{ item.fullTitle }} </b></div>
-                    <div *ngIf="!item.fullTitle"> (No title!) </div>
+                    <div><b> {{ item.name }} </b></div>
+                    <div *ngIf="!item.name"> (No title!) </div>
                     <br>
                     <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
                     <br>
@@ -112,7 +112,7 @@
                         </mat-grid-tile>
                         <mat-grid-tile [colspan]="2" [rowspan]="1">
                             <div *ngIf="!category || !category.prefix" class="title-data-text">
-                                <span class="light-text"> ( No prefix detected in the item's category. ) </span>
+                                <span class="light-text"> ( No prefix in the item's category. ) </span>
                             </div>
                             <div *ngIf="category && category.prefix" class="title-data-text"> 
                                 <b> {{ category.prefix }} </b>
@@ -138,7 +138,12 @@
                             <div class="label-text"> Attribute Suffix </div>
                         </mat-grid-tile>
                         <mat-grid-tile [colspan]="2" [rowspan]="1">
-                            <div class="title-data-text"> <b> {{ buildAttributeString() }} </b> </div>
+                            <div *ngIf="!category || !attributeSuffix" class="title-data-text">
+                                <span class="light-text"> ( No suffix in the item's category. ) </span>
+                            </div>
+                            <div *ngIf="category && attributeSuffix" class="title-data-text">
+                                <b> {{ attributeSuffix }} </b>
+                            </div>
                         </mat-grid-tile>
                     </mat-grid-list>
                     <br>
@@ -152,7 +157,7 @@
                         <textarea
                         matInput
                         type="text"
-                        [(ngModel)]="item.fullTitle"
+                        [(ngModel)]="item.name"
                         cdkTextareaAutosize
                         #autosize="cdkTextareaAutosize"
                         cdkAutosizeMinRows="1"
@@ -175,14 +180,14 @@
         <div *ngIf="this.step == 3" class="step-3">
             <h2> Item Picture </h2>
             <div *ngIf="item.imageUrl == '../../../assets/notFound.png'">
-                <h3> Would you like to take a picture of {{item.fullTitle}}? </h3>
+                <h3> Would you like to take a picture of {{item.name}}? </h3>
                 <br>
                 <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
                 <span class="btn-spacer"></span>
                 <button mat-raised-button class="rect-action-button" (click)="camera.click()" color="primary"> <mat-icon>photo_camera</mat-icon> Yes </button>
             </div>
             <div *ngIf="item.imageUrl != '../../../assets/notFound.png'">
-                <h4> For {{item.fullTitle}}: </h4>
+                <h4> For {{item.name}}: </h4>
                 <img class="item-picture" src={{item.imageUrl}} alt="Image load failed!">
                 <div class="bottom-spacer"></div>
                 <button mat-raised-button class="rect-action-button" (click)="camera.click()" color="accent"> <mat-icon>photo_camera</mat-icon> Retake </button>

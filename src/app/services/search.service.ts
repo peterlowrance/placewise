@@ -13,6 +13,7 @@ import {ImageService} from './image.service';
 import { HierarchyObject } from '../models/HierarchyObject';
 import { Category } from '../models/Category';
 import { Location } from '../models/Location';
+import { ContentObserver } from '@angular/cdk/observers';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -305,6 +306,63 @@ export class SearchService implements SearchInterfaceService {
         return excludeRoot ? returnedHierarchy.filter(g => g.ID !== 'root') : returnedHierarchy;
       }));
   }
+
+  buildAttributeSuffixFrom(item: Item, categoryAndAncestors: Category[], startingIndex = 0){
+    // If there's no category, return empty string
+    if(!categoryAndAncestors){
+      return '';
+    }
+
+    // Start building attribute string
+    let buildingString = '';
+
+    // Go through each suffix piece in the category we're in
+    for(let suffix of categoryAndAncestors[startingIndex].suffixStructure){
+      let id = suffix.attributeID;
+
+      // If the piece points to the parent's suffix, build that piece out
+      if(id === 'parent'){
+        this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex++) + suffix.afterText;
+      }
+
+      // Otherwise, insert that suffix piece with the corresponding value
+      else {
+        for(let attr in item.attributes){
+          if(item.attributes[attr].ID === id){
+            if(item.attributes[attr].value){ // Don't insert anything if there's no value
+              buildingString += suffix.beforeText + 
+                item.attributes[attr].value +
+                suffix.afterText;
+            }
+          }
+        }
+      }
+    }
+
+    return buildingString;
+  }
+
+  // TEMPORARY HAX
+  /*
+  hack(){
+    this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').get().toPromise().then((querySnapshot => {
+      querySnapshot.forEach(doc => {
+        let item = doc.data() as Item;
+        if(item.fullTitle){
+          console.log(item.name + " - - " + item.fullTitle);
+          item.name = item.fullTitle;
+          console.log(item.name + " - - " + item.fullTitle);
+          delete(item.fullTitle);
+          console.log(item.name + " - - " + item.fullTitle);
+          this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + doc.id).set(item)
+        }
+        else {
+          console.log("skipped");
+        }
+      })
+    }))
+  }
+  */
 
   constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService) {
   }
