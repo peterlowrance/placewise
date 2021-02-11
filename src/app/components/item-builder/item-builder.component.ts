@@ -151,42 +151,47 @@ export class ItemBuilderComponent implements OnInit {
   }
 
   /**
-   * Updates the item's category
+   * Update the item on UI and in DB with a new category
    * @param result The new category/s chosen
    * @param oldCategory old category
    */
   updateItemCategory(result: string[], oldCategory: string) {
-    if (result && result.length > 0 && this.item.category !== result[0]) {
-      this.item.category = result[0];
-      let localSub = this.searchService.getCategory(result[0]).subscribe(newCategory => {
-        if(newCategory){
-          this.adminService.addToRecent(newCategory);
+    // Make sure we got data and that it wasn't just the same category
+    if (result && result.length > 0 && this.item.category !== result[0]) { 
 
-          /*                                              TODO
-          if(newCategory.prefix){
-            if(!this.item.name){ // If the item doesn't have a name yet, just set it to be the prefix
-              this.item.name = newCategory.prefix;
-              this.item.fullTitle = this.item.name + this.buildAttributeString();
-            }
-            else if(!this.item.name.startsWith(newCategory.prefix)){ // Replace old prefix if it's there
-              if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
-                this.item.name = newCategory.prefix + " " + this.item.name.substring(this.category.prefix.length, this.item.name.length).trim();
-                this.item.fullTitle = this.item.name + this.buildAttributeString();
-              } else {
-                this.item.name = newCategory.prefix + " " + this.item.name;
-                this.item.fullTitle = this.item.name + this.buildAttributeString();
+      // Get category data
+      let localSub = this.searchService.getCategory(result[0]).subscribe(newCategory => {
+        if(newCategory){ // For for the actual data to come in
+
+          // Load new category ancestors before continuing
+          this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => {
+
+            // If this was using the auto prefix, replace it.
+            if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
+              this.item.name = this.item.name.substring(this.category.prefix.length);
+              if(newCategory.prefix){
+                this.item.name = newCategory.prefix + this.item.name;
               }
             }
-          }
-          else if(newCategory.ID !== 'root'){ // If it has no prefix but it's not the root, make the name blank
-            this.item.name = '';
-            this.item.fullTitle = this.item.name + this.buildAttributeString();
-          }
-          */
-  
-          this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0]);
-          localSub.unsubscribe(); // Don't want this screwing with us later
-          this.adminService.updateItem(this.item, oldCategory, null); // TODO: Not good placement, seperate from normal saving routine
+
+            // If this was using the auto suffix, replace it.
+            if (this.attributeSuffix && this.item.name.endsWith(this.attributeSuffix)) {
+              this.item.name = this.item.name.substring(0, this.item.name.length - this.attributeSuffix.length).trim()
+              if(newCategory.suffixStructure){
+                this.item.name = this.item.name + this.searchService.buildAttributeSuffixFrom(this.item, categoryAncestors[0]);
+              }
+            }
+    
+            // Don't want this screwing with us later
+            localSub.unsubscribe();
+
+            // Update the item's category on the UI and update the DB
+            this.adminService.addToRecent(newCategory); // UI category cache
+            this.item.category = result[0];
+            this.categoryAncestors = categoryAncestors[0]
+            this.adminService.updateItem(this.item, oldCategory, null); // TODO: Not good placement, seperate from normal saving routine
+          });
+
         }
       });
     }
