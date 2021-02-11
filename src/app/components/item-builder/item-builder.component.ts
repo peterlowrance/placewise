@@ -342,7 +342,15 @@ export class ItemBuilderComponent implements OnInit {
         })
       }
     }
-    //this.item.fullTitle = this.item.name + this.buildAttributeString();      TODO
+
+    // Rebuild title
+    if(this.attributeSuffix){
+      // Remove current suffix
+      this.item.name = this.item.name.substring(0, this.item.name.length - this.attributeSuffix.length);
+    }
+    // Add new suffix
+    this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAncestors);
+    this.item.name = this.item.name + this.attributeSuffix;
   }
 
 
