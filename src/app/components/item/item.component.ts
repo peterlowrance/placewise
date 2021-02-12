@@ -4,7 +4,7 @@ import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {Item} from 'src/app/models/Item';
 import {Report} from 'src/app/models/Report';
 import {ItemReportModalData} from 'src/app/models/ItemReportModalData';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {SearchService} from 'src/app/services/search.service';
 import {MatDialog} from '@angular/material/dialog';
 import {ReportDialogComponent} from '../report-dialog/report-dialog.component';
@@ -78,6 +78,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private imageService: ImageService,
     private navService: NavService,
+    private router: Router,
     private snack: MatSnackBar
   ) {
   }
@@ -518,9 +519,10 @@ export class ItemComponent implements OnInit, OnDestroy {
     // set edit field value to enable state change, then set focus
     switch (field) {
       case 'name': 
-        this.textEditFields.name = true;
+        //this.textEditFields.name = true;
         // focus
-        setTimeout(() => this.nameField.nativeElement.focus(), 0);
+        //setTimeout(() => this.nameField.nativeElement.focus(), 0);
+        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 2, singleStep: true } });
         break;
       case 'desc':
         this.textEditFields.desc = true;

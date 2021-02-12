@@ -11,7 +11,6 @@ import {MatChipInputEvent, MatSnackBar} from '@angular/material';
 import { ImageService } from 'src/app/services/image.service';
 import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
-import {Location} from '@angular/common';
 
 
 
@@ -37,8 +36,7 @@ export class ItemBuilderComponent implements OnInit {
     private imageService: ImageService,
     private route: ActivatedRoute,
     private router: Router,
-    private snack: MatSnackBar,
-    private routeLocation: Location
+    private snack: MatSnackBar
     ) { }
 
     @ViewChild('autosize', {static: false}) autosize: CdkTextareaAutosize;
@@ -563,13 +561,16 @@ export class ItemBuilderComponent implements OnInit {
   }
 
   nextStep(){
-    if(this.singleStep){
-      this.routeLocation.back();
-    }
-
     if(this.step == 1 || this.step == 2){
       this.placeIntoDB();
     }
+
+    
+    if(this.singleStep){
+      this.router.navigate(['/item/' + this.id]);
+      return;
+    }
+
     //this.step += 1;
     this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: this.step + 1 } });
     window.scrollTo(0, 0);
