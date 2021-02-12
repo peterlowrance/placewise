@@ -77,10 +77,11 @@
         <div *ngIf="this.step == 2" class="step-2">
             <h2> Title Builder </h2>
             <br>
-            <div *ngIf="!categoryAncestors">
+            <!-- Still loading category -->
+            <div *ngIf="!category">
                 Loading category information...
             </div>
-            <div *ngIf="categoryAncestors">
+            <div *ngIf="(category && categoryAncestors) || (category && category.name === 'root')">
                 <br>
                 <mat-slide-toggle [(ngModel)]="autoTitleBuilder" (change)="onToggleAutoTitle($event)"> <b> Automatic Title Builder </b> <div class="light-text"> from {{ category.name }} </div> </mat-slide-toggle>
                 <br>
@@ -95,7 +96,7 @@
                     <br>
                     <div> Current title: </div>
                     <div><b> {{ item.name }} </b></div>
-                    <div *ngIf="!item.name"> (No title!) </div>
+                    <div *ngIf="!item.name" class="light-text"> (No title!) </div>
                     <br>
                     <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
                     <br>
