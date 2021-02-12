@@ -82,26 +82,9 @@ export class ItemBuilderComponent implements OnInit {
             this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAncestors);
 
             // Setup additional text for auto title builder
-            if(category.prefix && item.name.startsWith(category.prefix)){
-              if(this.attributeSuffix && item.name.endsWith(this.attributeSuffix)){
-                this.autoTitleBuilder = true;
-                this.additionalText = item.name.substring(category.prefix.length, item.name.length - this.attributeSuffix.length).trim();
-              }
-              else {
-                this.autoTitleBuilder = true;
-                this.additionalText = item.name.substring(category.prefix.length).trim();
-              }    
-            }
-            else {
-              if(this.attributeSuffix && item.name.endsWith(this.attributeSuffix)){
-                this.autoTitleBuilder = true;
-                this.additionalText = item.name.substring(0, item.name.length - this.attributeSuffix.length).trim();
-              }
-              else {
-                this.autoTitleBuilder = false;
-                this.additionalText = item.name;
-              } 
-            }
+            let additionalTextData = this.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name);
+            this.additionalText = additionalTextData.additionalText;
+            this.autoTitleBuilder = additionalTextData.isAutoTitle;
 
             let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
             if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
@@ -344,13 +327,15 @@ export class ItemBuilderComponent implements OnInit {
     }
 
     // Rebuild title
-    if(this.attributeSuffix){
-      // Remove current suffix
-      this.item.name = this.item.name.substring(0, this.item.name.length - this.attributeSuffix.length);
+
+    let newSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAncestors);
+
+    // If we had the auto suffix, replace it
+    if(this.attributeSuffix && this.item.name.endsWith(this.attributeSuffix)){
+      this.item.name = this.item.name.substring(0, this.item.name.length - this.attributeSuffix.length) + newSuffix;
     }
-    // Add new suffix
-    this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAncestors);
-    this.item.name = this.item.name + this.attributeSuffix;
+
+    this.attributeSuffix = newSuffix;
   }
 
 
@@ -515,6 +500,58 @@ export class ItemBuilderComponent implements OnInit {
     return false;
   }
 
+  /** 
+  * @return The additional text between the suffix and prefix. 
+  * If it could not remove both, the auto title flag is set to false.
+  */
+  getAdditionalTextFrom(prefix: string, suffix: string, name: string): {additionalText: string, isAutoTitle: boolean} {
+    let result = {additionalText: name, isAutoTitle: true};
+
+    // Check for a prefix. If there is one, remove it. If that was not possible, uncheck auto title.
+    if(prefix){
+      if(name.startsWith(prefix)){
+        result.additionalText = result.additionalText.substring(prefix.length).trim();
+      }
+      else {
+        result.isAutoTitle = false;
+      }
+    }
+
+    // Check for a suffix. If there is one, remove it. If that was not possible, uncheck auto title.
+    if(suffix){
+      if(name.endsWith(suffix)){
+        result.additionalText = name.substring(0, name.length - suffix.length).trim();
+      }
+      else {
+        if(result.isAutoTitle){
+          result.isAutoTitle = false;
+        }
+        else {
+          // If there was no prefix either, then there is no additional text
+          result.additionalText = "";
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /*
+  * Called when the auto title is triggered
+  */
+  onToggleAutoTitle(event){
+    // If we just turned it on, replace old manual title
+    if(event.checked){
+
+      this.additionalText = this.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name).additionalText;
+
+      // Build title, if additionalText exists put a space between it and the prefix
+      this.item.name = this.category.prefix + 
+        (this.additionalText ? " " + this.additionalText : "")
+          + this.attributeSuffix;
+    }
+  }
+
   nextStep(){
     if(this.step == 1 || this.step == 2){
       this.placeIntoDB();
@@ -522,11 +559,6 @@ export class ItemBuilderComponent implements OnInit {
     //this.step += 1;
     this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: this.step + 1 } });
     window.scrollTo(0, 0);
-  }
-
-  // REEEEEMOVE
-  buildAttributeString(category: Category = this.category): string {
-    return "BAD";
   }
 
 }

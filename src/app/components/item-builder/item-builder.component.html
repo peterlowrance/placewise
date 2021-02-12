@@ -82,7 +82,7 @@
             </div>
             <div *ngIf="categoryAncestors">
                 <br>
-                <mat-slide-toggle [(ngModel)]="autoTitleBuilder"> <b> Automatic Title Builder </b> <div class="light-text"> from {{ category.name }} </div> </mat-slide-toggle>
+                <mat-slide-toggle [(ngModel)]="autoTitleBuilder" (change)="onToggleAutoTitle($event)"> <b> Automatic Title Builder </b> <div class="light-text"> from {{ category.name }} </div> </mat-slide-toggle>
                 <br>
                 <br>
                 
