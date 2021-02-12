@@ -317,22 +317,24 @@ export class SearchService implements SearchInterfaceService {
     let buildingString = '';
 
     // Go through each suffix piece in the category we're in
-    for(let suffix of categoryAndAncestors[startingIndex].suffixStructure){
-      let id = suffix.attributeID;
-
-      // If the piece points to the parent's suffix, build that piece out
-      if(id === 'parent'){
-        this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex++) + suffix.afterText;
-      }
-
-      // Otherwise, insert that suffix piece with the corresponding value
-      else {
-        for(let attr in item.attributes){
-          if(item.attributes[attr].ID === id){
-            if(item.attributes[attr].value){ // Don't insert anything if there's no value
-              buildingString += suffix.beforeText + 
-                item.attributes[attr].value +
-                suffix.afterText;
+    if(categoryAndAncestors[startingIndex].suffixStructure){
+      for(let suffix of categoryAndAncestors[startingIndex].suffixStructure){
+        let id = suffix.attributeID;
+  
+        // If the piece points to the parent's suffix, build that piece out
+        if(id === 'parent'){
+          this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex++) + suffix.afterText;
+        }
+  
+        // Otherwise, insert that suffix piece with the corresponding value
+        else {
+          for(let attr in item.attributes){
+            if(item.attributes[attr].ID === id){
+              if(item.attributes[attr].value){ // Don't insert anything if there's no value
+                buildingString += suffix.beforeText + 
+                  item.attributes[attr].value +
+                  suffix.afterText;
+              }
             }
           }
         }

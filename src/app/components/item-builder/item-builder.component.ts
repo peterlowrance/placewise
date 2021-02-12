@@ -546,9 +546,10 @@ export class ItemBuilderComponent implements OnInit {
       this.additionalText = this.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name).additionalText;
 
       // Build title, if additionalText exists put a space between it and the prefix
-      this.item.name = this.category.prefix + 
-        (this.additionalText ? " " + this.additionalText : "")
-          + this.attributeSuffix;
+      this.item.name = 
+        (this.category.prefix ? this.category.prefix : "") + 
+        (this.additionalText ? " " + this.additionalText : "") +
+        (this.attributeSuffix ? this.attributeSuffix : "");
     }
   }
 
