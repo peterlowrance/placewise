@@ -10,6 +10,8 @@ import { ReportDetailViewComponent } from '../report-detail-view/report-detail-v
 import { AuthService } from 'src/app/services/auth.service';
 import { ConfirmComponent } from '../confirm/confirm.component';
 import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
+import { Subscription } from 'rxjs';
+import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 
 @Component({
   selector: 'app-admin-report',
@@ -17,12 +19,13 @@ import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modif
   styleUrls: ['./admin-report.component.css']
 })
 export class AdminReportComponent implements OnInit {
-  relevantReports: SentReport[];
+  notifiedReports: SentReport[];
   externalReports: SentReport[];
   headers: string[] = ['Image','Item','User'];
-  listeningToLocations: string[];
-  listeningToLocationNames: string[];
+  //listeningToLocations: string[];
+  //listeningToLocationNames: string[];
   numberOfAllReports = 0; // Little bit of a hack, this teels the tables when we're ready to build
+  userSub: Subscription;
 
   constructor(
     private searchService: SearchService,
@@ -35,19 +38,22 @@ export class AdminReportComponent implements OnInit {
     public dialog: MatDialog) { }
 
   ngOnInit() {
-    this.adminService.getListenedReportLocations().subscribe(locations => {
-      this.listeningToLocations = locations;
+    this.adminService.getReports().subscribe(reports => {
+      this.numberOfAllReports = reports.length;
+      this.notifiedReports = [];
+      this.externalReports = [];
 
-      
-      this.adminService.getReports().subscribe(reports => {
-        this.numberOfAllReports = reports.length;
-        this.relevantReports = [];
-        this.externalReports = [];
+      // First get the user
+      this.authService.getUser().subscribe(user => {
 
+        // Setup the item and if it is notified for each report
         for(let i = 0; i < reports.length; i++)
         {
           this.searchService.getItem(reports[i].item).subscribe(z => {
             reports[i].trueItem = z;
+
+            /*
+            OLD NOTIFICATION SYSTEM
 
             this.searchService.getAncestorsOf(z).subscribe(itemLocations => {
               let found = false;
@@ -75,17 +81,53 @@ export class AdminReportComponent implements OnInit {
                 for(let locIndex in locations){
                   this.searchService.getLocation(locations[locIndex]).subscribe(loc => {
                     localSetOfLocationNames.push(loc.name);
-                    this.listeningToLocationNames = localSetOfLocationNames;
+                      this.listeningToLocationNames = localSetOfLocationNames;
                   })
                 }
               }
+
             })
-
+              */
           })
+          
+          // Add to the notified section if it was for the person reading it
+          if(reports[i].reportedTo && reports[i].reportedTo.indexOf(user.id) > -1){
+            this.notifiedReports.push(reports[i]);
+          }
+          else {
+            this.externalReports.push(reports[i]);
+          }
 
+          // Only sort the reports once after all is loaded
+          if(i === reports.length - 1){
+            this.notifiedReports.sort(function(a, b) {
+              if(a.timestamp > b.timestamp){
+                return -1;
+              }
+              else if(a.timestamp < b.timestamp){
+                return 1;
+              }
+              else {
+                return 0;
+              }
+            });
+            this.externalReports.sort(function(a, b) {
+              if(a.timestamp > b.timestamp){
+                return -1;
+              }
+              else if(a.timestamp < b.timestamp){
+                return 1;
+              }
+              else {
+                return 0;
+              }
+            });
+          }
+
+          // Get the name of the person that reported it
           this.authService.getUserInfo(reports[i].user).subscribe(z => {reports[i].userName = z.firstName + " " + z.lastName});
         }
-      });
+      })
     });
   }
 
@@ -141,6 +183,7 @@ export class AdminReportComponent implements OnInit {
   //   this.reports = this.adminService.clearReports(this.reports);
   // }
 
+  /*
   editListenedLocations() {
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
@@ -151,5 +194,6 @@ export class AdminReportComponent implements OnInit {
       this.adminService.setListenedReportLocations(result)
     });
   }
+  */
 
 }

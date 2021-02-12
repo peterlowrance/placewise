@@ -116,8 +116,6 @@ THE SOFTWARE.
 
 @angular/material/icon
 
-@angular/material/list
-
 @angular/material/menu
 
 @angular/material/progress-bar

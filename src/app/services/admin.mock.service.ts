@@ -33,7 +33,7 @@ export class AdminMockService {
 
   getReports(): Observable<SentReport[]> {
     const trueItem: Item = {name: 'test', ID: '1', locations: [], category: 'cat'};
-    const report: SentReport = {item: 'I1', desc: 'an item', user: 'aP87kgghQ8mqvvwcZGQV', sentTo: ['no'], ID: '1', trueItem, userName: 'Bobbo'};
+    const report: SentReport = {item: 'I1', desc: 'an item', user: 'aP87kgghQ8mqvvwcZGQV', reportedTo: ['no'], ID: '1', trueItem, userName: 'Bobbo', timestamp: 0};
     return of([report]);
   }
 
@@ -81,7 +81,7 @@ export class AdminMockService {
   }
 
   deleteUserByEmail(email: string){
-    if(email === "abray@gamil.com") return new Promise<{user:User, role:string}>((resolve, reject) => resolve());
+    if(email === "abray@gamil.com") return new Promise<{user:User, role:string} | void>((resolve, reject) => resolve());
     else return new Promise<{user:User, role:string}>((resolve, reject) => reject('ERROR'));
   }
 

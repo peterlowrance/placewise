@@ -92,8 +92,6 @@ export class NavbarComponent implements OnInit {
       if(workspaceInfo && workspaceInfo.id !== ''){ // Make sure we have a workspace before subscribing to reports
 
         if(reportLocationsSub) reportLocationsSub.unsubscribe();
-        this.adminService.getListenedReportLocations().subscribe(locations => {
-          if(locations){
             
             if(reportsSub) reportsSub.unsubscribe();
             reportsSub = this.adminService.getReports().subscribe(reports => {
@@ -103,8 +101,16 @@ export class NavbarComponent implements OnInit {
                 if(this.locationString !== '/reports'){
                   this.hasReadReportsColor = 'warn';
                 }
-                if(locations.length > 0){
-                  for(let reportIndex in reports){
+
+                this.authService.getUser().subscribe(user => {
+                  for(let report of reports){
+
+                    if(report.reportedTo && report.reportedTo.indexOf(user.id) > -1){
+                      this.numberOfReports++;
+                    }
+                    
+                    /*
+                    OLD NASTY SYSTEM
                     let itemSub = this.searchService.getItem(reports[reportIndex].item).subscribe(item => {
                         this.searchService.getAncestorsOf(item).subscribe(itemLocations => {
                           
@@ -122,16 +128,12 @@ export class NavbarComponent implements OnInit {
                           itemSub.unsubscribe(); // Don't want this messing with numbers later
                         })
                     })
+                    */
                   }
-                }
-                else {
-                  this.numberOfReports = reports.length;
-                }
+                });
 
               }
             });
-          }
-        });
       }
     })
   }
