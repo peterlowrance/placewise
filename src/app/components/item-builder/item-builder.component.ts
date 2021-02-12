@@ -11,6 +11,7 @@ import {MatChipInputEvent, MatSnackBar} from '@angular/material';
 import { ImageService } from 'src/app/services/image.service';
 import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
+import {Location} from '@angular/common';
 
 
 
@@ -36,7 +37,8 @@ export class ItemBuilderComponent implements OnInit {
     private imageService: ImageService,
     private route: ActivatedRoute,
     private router: Router,
-    private snack: MatSnackBar
+    private snack: MatSnackBar,
+    private routeLocation: Location
     ) { }
 
     @ViewChild('autosize', {static: false}) autosize: CdkTextareaAutosize;
@@ -47,6 +49,7 @@ export class ItemBuilderComponent implements OnInit {
 
     id: string;                               // item id
     step = -1;                                // What step are we at in filling in data
+    singleStep: Boolean;                      // If we are here to edit one piece of the item
     item: Item;                               // Item being setup
     category: Category;                       // Category of the item
     categoryAncestors: Category[];            // All of the Category's parents
@@ -57,13 +60,19 @@ export class ItemBuilderComponent implements OnInit {
     attributeSuffix: string;                  // Pre-loaded suffix
 
   ngOnInit() {
-    // retrieve id
+    // Retrieve id
     this.id = this.route.snapshot.paramMap.get('id');
+
     // Actively retrieve if the step changes
     this.route.queryParamMap.subscribe(params => {
+
       this.step = Number(params.get('step'));
       if(this.step > this.MAX_STEP || this.step < this.MIN_STEP){
         this.router.navigate(['/item/' + this.id], {replaceUrl:true});
+      }
+
+      if(params.get('singleStep')){
+        this.singleStep = true;
       }
     })
 
@@ -554,6 +563,10 @@ export class ItemBuilderComponent implements OnInit {
   }
 
   nextStep(){
+    if(this.singleStep){
+      this.routeLocation.back();
+    }
+
     if(this.step == 1 || this.step == 2){
       this.placeIntoDB();
     }
