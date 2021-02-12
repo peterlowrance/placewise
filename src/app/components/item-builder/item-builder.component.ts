@@ -520,7 +520,7 @@ export class ItemBuilderComponent implements OnInit {
     // Check for a suffix. If there is one, remove it. If that was not possible, uncheck auto title.
     if(suffix){
       if(name.endsWith(suffix)){
-        result.additionalText = name.substring(0, name.length - suffix.length).trim();
+        result.additionalText = result.additionalText.substring(0, result.additionalText.length - suffix.length).trim();
       }
       else {
         if(result.isAutoTitle){
