@@ -96,7 +96,7 @@ export class ItemBuilderComponent implements OnInit {
             // If there is no item name, build an automatic title.
             if(!this.item.name){
               this.item.name = (this.category.prefix ? this.category.prefix : "") + (this.attributeSuffix ? this.attributeSuffix : "");
-              
+
               // If this resulted in a name, toggle on the Automatic Title Builder
               if(this.item.name){
                 this.autoTitleBuilder = true;
@@ -350,6 +350,11 @@ export class ItemBuilderComponent implements OnInit {
     // If we had the auto suffix, replace it
     if(this.attributeSuffix && this.item.name.endsWith(this.attributeSuffix)){
       this.item.name = this.item.name.substring(0, this.item.name.length - this.attributeSuffix.length) + newSuffix;
+    }
+
+    // If there was no suffix, add on the new one
+    if(!this.attributeSuffix){
+      this.item.name += newSuffix;
     }
 
     this.attributeSuffix = newSuffix;

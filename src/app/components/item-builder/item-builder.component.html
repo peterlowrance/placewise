@@ -25,7 +25,7 @@
                     <mat-icon *ngIf="location[0].name == 'root'" class="missing-data-icon">error_outline</mat-icon>
                 </div>
             </div>
-            <div *ngIf="locationsAndAncestors.length === 0">
+            <div *ngIf="locationsAndAncestors && locationsAndAncestors.length === 0">
                 No Locations <mat-icon class="missing-data-icon">error_outline</mat-icon>
                 <br>
                 <br>
