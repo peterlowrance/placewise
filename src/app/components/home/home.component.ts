@@ -86,7 +86,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   miniFabState = 'shrunk'
   itemSearchOptions = {
     shouldSort: true,
-    keys: ['fullTitle', 'tags', 'attributes.value'],
+    keys: ['name', 'tags', 'attributes.value'],
     distance: 50,
     threshold: .4
   };

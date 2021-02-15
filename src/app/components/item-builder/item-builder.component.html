@@ -18,12 +18,17 @@
             </div>
             <p *ngIf="!category"> Loading category... </p>
             <br>
-            <h3> Locations <button *ngIf="locationsAndAncestors" mat-icon-button class="editButton" (click)="editLocation()"><mat-icon>edit</mat-icon></button></h3>
+            <h3> Locations <button mat-icon-button class="editButton" (click)="editLocation()"><mat-icon>edit</mat-icon></button></h3>
             <div *ngFor="let location of locationsAndAncestors" class="locations-container">
                 <img class="locationImg" src={{location[0].imageUrl}}>
                 <div class="location-name">{{location[0].name !== 'root' ? location[0].name : 'Unassigned'}}
                     <mat-icon *ngIf="location[0].name == 'root'" class="missing-data-icon">error_outline</mat-icon>
                 </div>
+            </div>
+            <div *ngIf="locationsAndAncestors.length === 0">
+                No Locations <mat-icon class="missing-data-icon">error_outline</mat-icon>
+                <br>
+                <br>
             </div>
             <p *ngIf="!locationsAndAncestors"> Loading locations... </p>
             <br>
@@ -98,7 +103,8 @@
                     <div><b> {{ item.name }} </b></div>
                     <div *ngIf="!item.name" class="light-text"> (No title!) </div>
                     <br>
-                    <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
+                    <button *ngIf="!singleStep" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
+                    <button *ngIf="singleStep" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary"> <mat-icon>check</mat-icon> Confirm</button>
                     <br>
                     <br>
                     <br>
@@ -167,13 +173,14 @@
                     </mat-form-field>
                     <br>
                     <br>
-                    <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
+                    <button *ngIf="!singleStep" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Looks Good, Next</button>
+                    <button *ngIf="singleStep" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary"> <mat-icon>check</mat-icon> Confirm</button>
                 </div>
             </div>
 
             <!-- Skip Button -->
             <br>
-            <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
+            <button *ngIf="!singleStep" mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
         </div>
 
 
