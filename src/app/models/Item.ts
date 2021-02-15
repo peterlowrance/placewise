@@ -4,7 +4,6 @@ import { Attribute } from './Attribute';
 export interface Item extends HierarchyObject {
   desc?: string;
   tags?: string[];
-  fullTitle: string;
   locations: string[];
   category: string;
   imageUrl?: string;
@@ -19,5 +18,5 @@ export interface Item extends HierarchyObject {
     locationID: string;
     type: string;
     amount: any;
-  }]
+  }];
 }

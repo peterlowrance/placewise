@@ -62,7 +62,6 @@ export const ITEMS: Item[] = [
     {
         ID: '999',
         name: 'Niner',
-        fullTitle: 'Niner',
         desc: 'A big ol boy',
         tags: ['Round','High'],
         locations: ['110'],
@@ -72,7 +71,6 @@ export const ITEMS: Item[] = [
     {
         ID: '998',
         name: 'An 8',
-        fullTitle: 'An 8',
         desc: 'Had to be different?',
         tags: ['Hated'],
         locations: ['110','200'],
@@ -82,7 +80,6 @@ export const ITEMS: Item[] = [
     {
         ID: '997',
         name: 'Smaller',
-        fullTitle: 'Smaller',
         desc: 'Oh wee bab',
         tags: [],
         locations: ['111','210'],

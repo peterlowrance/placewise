@@ -23,6 +23,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatBadgeModule} from '@angular/material/badge';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatSelectModule} from '@angular/material/select';
+import {TextFieldModule} from '@angular/cdk/text-field';
 
 import {SmdFabSpeedDialModule} from 'node_modules/angular-speed-dial';
 // Imports for all Placewise modules
@@ -57,6 +58,7 @@ import { ConfirmComponent } from './components/confirm/confirm.component';
 import { AncestorViewComponent } from './components/ancestor-view/ancestor-view.component';
 import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-item.component';
 import { UserSelectComponent } from './components/user-select/user-select.component';
+import { ItemBuilderComponent } from './components/item-builder/item-builder.component';
 
 @NgModule({
   declarations: [
@@ -80,7 +82,8 @@ import { UserSelectComponent } from './components/user-select/user-select.compon
     ConfirmComponent,
     AncestorViewComponent,
     HierarchyItemComponent,
-    UserSelectComponent
+    UserSelectComponent,
+    ItemBuilderComponent
   ],
   imports: [
     BrowserModule,
@@ -118,7 +121,8 @@ import { UserSelectComponent } from './components/user-select/user-select.compon
     MatCheckboxModule,
     MatRadioModule,
     MatTableModule,
-    HttpClientModule
+    HttpClientModule,
+    TextFieldModule
   ],
   providers: [],
   bootstrap: [AppComponent],

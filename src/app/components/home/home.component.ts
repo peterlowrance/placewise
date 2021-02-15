@@ -86,7 +86,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   miniFabState = 'shrunk'
   itemSearchOptions = {
     shouldSort: true,
-    keys: ['fullTitle', 'tags', 'attributes.value'],
+    keys: ['name', 'tags', 'attributes.value'],
     distance: 50,
     threshold: .4
   };
@@ -318,16 +318,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
             // Add it if not found, and keep it in sorted order
             if(!itemFound){
-              let newItemNameCapped = returnedItem.fullTitle.toUpperCase();
+              let newItemNameCapped = returnedItem.name.toUpperCase();
               if(this.items.length === 0){
                 this.items.push(returnedItem);
               }
-              else if(this.items[this.items.length-1].fullTitle.toUpperCase() < newItemNameCapped){
+              else if(this.items[this.items.length-1].name.toUpperCase() < newItemNameCapped){
                 this.items.splice(this.items.length, 0, returnedItem);
               }
               else {
                 for(let item in this.items){
-                  if(newItemNameCapped <= this.items[item].fullTitle.toUpperCase()){
+                  if(newItemNameCapped <= this.items[item].name.toUpperCase()){
                     this.items.splice(parseInt(item), 0, returnedItem);
                     break;
                   }
@@ -394,7 +394,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // add the item
     let category = 'root';
     let location = null;
-    let name = '(New - Enter the Item Info first.)';
+    let name = '';
     // to category
     if (this.root.type === 'category') {
       category = this.root.ID;
@@ -406,7 +406,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       location = this.root.ID;
     }
     this.adminService.createItemAtLocation(name, '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
-      this.router.navigate(['/item/' + id]);
+      this.router.navigate(['/itemBuilder/' + id], { queryParams: { step: 0 } });
     });
   }
 

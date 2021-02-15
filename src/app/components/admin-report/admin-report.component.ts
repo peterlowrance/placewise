@@ -140,7 +140,7 @@ export class AdminReportComponent implements OnInit {
   {
         // reset report data, ensure clicking out defaults to fail and no double send
         var reportData : DetailedReportModalData = {
-          itemName:r.trueItem.fullTitle,itemID: r.trueItem.ID, reportDesc : r.desc,reportID : r.ID,toBeRemoved:false, toGoToItem: false
+          itemName:r.trueItem.name,itemID: r.trueItem.ID, reportDesc : r.desc,reportID : r.ID,toBeRemoved:false, toGoToItem: false
         }
 
 

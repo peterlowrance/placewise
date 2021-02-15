@@ -14,11 +14,11 @@
             </mat-form-field>
             <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
         </form></span>
-        <div class="attribute-suffix">{{attributeSuffix ? attributeSuffix + " (Attribute suffix)" : "(No attribute suffix)"}}</div>
     </div>
     <div class="titleHolder" *ngSwitchDefault>
       <h2>
-        {{item.fullTitle}}
+        <span *ngIf="item.name"> {{item.name}} </span>
+        <span *ngIf="!item.name" class="light-text"> ( No Title ) </span>
         <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
       </h2>
     </div>
@@ -131,7 +131,8 @@
         <mat-card>
             <mat-card-header>
                 <mat-card-title>Description <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button>
-                    <button mat-icon-button class="fake-confirm-button" *ngIf="textEditFields.desc"><mat-icon>done</mat-icon></button></mat-card-title>
+                    <button mat-icon-button class="fake-confirm-button" *ngIf="textEditFields.desc"><mat-icon>done</mat-icon></button>
+                </mat-card-title>
             </mat-card-header>
             <mat-card-content class="form-appear">
                 <div [ngSwitch]="this.textEditFields.desc">
@@ -172,7 +173,7 @@
                                  [matChipInputFor]="tagList"
                                  [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
                                  [matChipInputAddOnBlur]="true"
-                                 (matChipInputTokenEnd)="add($event)"
+                                 (matChipInputTokenEnd)="addTag($event)"
                                  name="tags"
                             >
                         </mat-chip-list>

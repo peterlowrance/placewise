@@ -4,7 +4,7 @@ import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {Item} from 'src/app/models/Item';
 import {Report} from 'src/app/models/Report';
 import {ItemReportModalData} from 'src/app/models/ItemReportModalData';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {SearchService} from 'src/app/services/search.service';
 import {MatDialog} from '@angular/material/dialog';
 import {ReportDialogComponent} from '../report-dialog/report-dialog.component';
@@ -78,6 +78,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private imageService: ImageService,
     private navService: NavService,
+    private router: Router,
     private snack: MatSnackBar
   ) {
   }
@@ -148,10 +149,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       if(!this.originalItem) { // We don't want to overwrite if there's already old data
         this.originalItem = JSON.parse(JSON.stringify(item)); // deep copy
         this.previousItem = JSON.parse(JSON.stringify(item)); // another for recording short term changes
-      } 
-
-      if(item.fullTitle){
-        this.attributeSuffix = item.fullTitle.substring(item.name.length);
       }
 
       // Load image for item TODO: Not any more
@@ -161,6 +158,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.locationsAndAncestors = locations;
       });
 
+      // Build tracking information
       for(let location in item.locations){
         let found = false;
         for(let tracked in item.tracking){
@@ -214,6 +212,8 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
           if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
             this.categoryAncestors = categoryAncestors[0];
+            this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAncestors);
+
             let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
             if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
               this.attributesForCard = rebuiltCards;
@@ -472,7 +472,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     // if it's valid, build and isue report, else leave
     if (this.errorDesc.valid) {
       this.report.description = this.errorDesc.desc;
-      this.report.item.name = this.item.fullTitle;
+      this.report.item.name = this.item.name;
       this.report.item.ID = this.item.ID;
       this.report.item.imageUrl = this.item.imageUrl;
       this.report.timestamp = new Date().getUTCSeconds();
@@ -500,7 +500,7 @@ export class ItemComponent implements OnInit, OnDestroy {
       desc = "Auto Report: There's only " + amount + " left in stock.";
     }
     this.report.description = desc;
-    this.report.item.name = this.item.fullTitle;
+    this.report.item.name = this.item.name;
     this.report.item.ID = this.item.ID;
     this.report.item.imageUrl = this.item.imageUrl;
     this.report.timestamp = new Date().getUTCSeconds();
@@ -519,10 +519,10 @@ export class ItemComponent implements OnInit, OnDestroy {
     // set edit field value to enable state change, then set focus
     switch (field) {
       case 'name': 
-        if(this.item.name === "(New - Enter the Item Info first.)") this.item.name = ''; // Clear default name immediately
-        this.textEditFields.name = true;
+        //this.textEditFields.name = true;
         // focus
-        setTimeout(() => this.nameField.nativeElement.focus(), 0);
+        //setTimeout(() => this.nameField.nativeElement.focus(), 0);
+        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 2, singleStep: true } });
         break;
       case 'desc':
         this.textEditFields.desc = true;
@@ -629,12 +629,13 @@ export class ItemComponent implements OnInit, OnDestroy {
         if(newCategory){
           this.adminService.addToRecent(newCategory);
 
-          if(newCategory.prefix){ // Add the prefix if it's not there, make sure to remove old
-            if(this.item.name === "(New - Enter the Item Info first.)"){
+          /*                                 TODO
+          if(newCategory.prefix){
+            if(!this.item.name){ // If the item doesn't have a name yet, jsut set it to be the prefix
               this.item.name = newCategory.prefix;
               this.item.fullTitle = this.item.name + this.buildAttributeString();
             }
-            else if(!this.item.name.startsWith(newCategory.prefix)){
+            else if(!this.item.name.startsWith(newCategory.prefix)){ // Replace old prefix if it's there
               if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
                 this.item.name = newCategory.prefix + " " + this.item.name.substring(this.category.prefix.length-1, this.item.name.length-1).trim();
               } else {
@@ -646,6 +647,7 @@ export class ItemComponent implements OnInit, OnDestroy {
             this.item.name = '';
             this.item.fullTitle = this.item.name + this.buildAttributeString();
           }
+          */
   
           this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0])
           localSub.unsubscribe(); // Don't want this screwing with us later
@@ -814,7 +816,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Adds a tag to the list
    * @param event tag input event
    */
-  add(event: MatChipInputEvent | any): void {
+  addTag(event: MatChipInputEvent | any): void {
     const input = event.input;
     const value = event.value;
     if (this.item.tags == null) this.item.tags = [];
@@ -861,6 +863,10 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
   }
 
+  /*
+  * ITEM DISPLAY ONLY (Don't bring this over in the future for item builder)
+  * Undoes all modifications while the user was on this page
+  */
   undoChanges(original: Item = this.originalItem) {
     let itemToRevert = this.item;
     this.item = JSON.parse(JSON.stringify(this.originalItem)); // Copy so then the original stays original
@@ -911,9 +917,6 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   async saveItem() {
     this.isSaving = true;
-    if(this.item.attributes !== this.previousItem.attributes || this.item.name !== this.previousItem.name){
-      this.item.fullTitle = this.item.name + this.buildAttributeString();
-    }
 
     // first, upload the image if edited, upload when we get the new ID
     if (this.previousItem.imageUrl !== this.item.imageUrl) {

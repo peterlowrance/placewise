@@ -145,6 +145,8 @@ export class NavbarComponent implements OnInit {
   checkLocation(): string {
     if (this.locationString.includes('/item/')) {
       return 'item';
+    } else if (this.locationString.includes('/itemBuilder/')) {
+      return 'itemBuilder';
     } else if (this.locationString === '/login') {
       return 'login';
     } else if (this.locationString === '/settings') {
