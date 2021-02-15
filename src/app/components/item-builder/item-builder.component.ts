@@ -91,7 +91,17 @@ export class ItemBuilderComponent implements OnInit {
             // Setup additional text for auto title builder
             let additionalTextData = this.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name);
             this.additionalText = additionalTextData.additionalText;
-            this.autoTitleBuilder = additionalTextData.isAutoTitle;
+            this.autoTitleBuilder = additionalTextData.isAutoTitle; 
+            
+            // If there is no item name, build an automatic title.
+            if(!this.item.name){
+              this.item.name = (this.category.prefix ? this.category.prefix : "") + (this.attributeSuffix ? this.attributeSuffix : "");
+              
+              // If this resulted in a name, toggle on the Automatic Title Builder
+              if(this.item.name){
+                this.autoTitleBuilder = true;
+              }
+            }
 
             let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
             if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
@@ -424,6 +434,25 @@ export class ItemBuilderComponent implements OnInit {
     reject => {
       this.snack.open('Item Save Failed: ' + reject, "OK", {duration: 3000, panelClass: ['mat-warn']});
     });
+  }
+
+  //
+  // TODO: Untidy way of saving elements every change
+  //
+
+  removeTag(tag: string): void {
+    const index = this.item.tags.indexOf(tag);
+
+    if (index >= 0) {
+      this.item.tags.splice(index, 1);
+    }
+
+    // TODO: not the best to be putting it in the DB every time
+    this.placeIntoDB();
+  }
+
+  onDescSubmit() {
+    this.placeIntoDB();
   }
 
 
