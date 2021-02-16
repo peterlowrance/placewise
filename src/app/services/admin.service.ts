@@ -89,27 +89,23 @@ export class AdminService {
   }
 
   placeReport(itemID: string, text: string, reportedTo: string[]) {
-    let rID: string;
-    this.auth.getAuth().subscribe(x => this.placeReportHelper(itemID, text, x.uid, reportedTo).then(x => rID = x.id));
-    return of(true);
-  }
-
-  placeReportHelper(itemID: string, text: string, userID: string, reportedTo: string[]): Promise<DocumentReference> {
-    for(let userID of reportedTo){
-      this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + userID).get().toPromise().then(function(user) {
-        if(user){
-          if(user.data().emailReports){
-            console.log("Emailing not complete!")
+    return new Promise((resolve, reject) => {
+      this.auth.getAuth().subscribe(auth => {
+        auth.getIdTokenResult().then(
+          token => {
+            // with token remove user by pinging server with token and email
+            this.http.post(`${adServe}/createReport`, {
+              idToken: token,
+              item: itemID,
+              message: text,
+              reportTo: reportedTo
+            }).toPromise().then(
+              () => resolve(`Report sent!`),
+              (err) => reject(err.error)
+            );
           }
-        }
-      })
-    }
-    return this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Reports').add({
-      desc: text,
-      item: itemID,
-      user: userID,
-      timestamp: Date.now(),
-      reportedTo: reportedTo
+        );
+      });
     });
   }
 
@@ -597,7 +593,11 @@ export class AdminService {
                 }).toPromise().then(
                   () => resolve(role),
                   // error in posting
-                  (err) => reject(err.error)
+                  (err) => {
+                    reject(err.error)
+                    console.log(err);
+                    console.log(email);
+                  }
                 );
               },
               // reject, error getting auth token

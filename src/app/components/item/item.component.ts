@@ -469,18 +469,21 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   issueReport(result: ItemReportModalData) {
     this.errorDesc = result;
-    // if it's valid, build and isue report, else leave
+    // if it's valid, build and issue report, else leave
     if (this.errorDesc.valid) {
       this.report.description = this.errorDesc.desc;
-      this.report.item.name = this.item.name;
+      this.report.item.name = this.item.name; // old
       this.report.item.ID = this.item.ID;
-      this.report.item.imageUrl = this.item.imageUrl;
-      this.report.timestamp = new Date().getUTCSeconds();
+      this.report.item.imageUrl = this.item.imageUrl; // old
+      this.report.timestamp = new Date().getUTCSeconds(); // old
 
-      // TODO: issue report
-      return this.adminService.placeReport(this.report.item.ID, this.report.description, result.selectedUsers.map(user => user.id)).toPromise().then(
+      // Issue report
+      return this.adminService.placeReport(this.report.item.ID, this.report.description, result.selectedUsers.map(user => user.id)).then(
         () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
-        (err) => this.snack.open("Report Failed, Please Try Later", "OK", {duration: 3000, panelClass: ['mat-toolbar']})
+        (err) => {
+          this.snack.open("Report Failed, " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
+          console.log(JSON.stringify(err));
+        }
       );
     }
   }
@@ -505,9 +508,9 @@ export class ItemComponent implements OnInit, OnDestroy {
     this.report.item.imageUrl = this.item.imageUrl;
     this.report.timestamp = new Date().getUTCSeconds();
 
-    return this.adminService.placeReport(this.report.item.ID, this.report.description, this.authService.workspace.defaultUsersForReports).toPromise().then(
+    return this.adminService.placeReport(this.report.item.ID, this.report.description, this.authService.workspace.defaultUsersForReports).then(
       () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
-      (err) => this.snack.open("Report Failed, Please Try Later", "OK", {duration: 3000, panelClass: ['mat-toolbar']})
+      (err) => this.snack.open("Report Failed, " + err.status, "OK", {duration: 3000, panelClass: ['mat-toolbar']})
     );
   }
 
