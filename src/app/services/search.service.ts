@@ -14,6 +14,7 @@ import { HierarchyObject } from '../models/HierarchyObject';
 import { Category } from '../models/Category';
 import { Location } from '../models/Location';
 import { ContentObserver } from '@angular/cdk/observers';
+import { CacheService } from './cache.service';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -148,6 +149,14 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getItem(id: string): Observable<Item> {
+    /*
+    let cache = this.cacheService.getItem(id);
+    if(cache){
+      console.log("beep! " + id);
+      return cache;
+    }
+    */
+
     return this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as Item;
       if (!data) {
@@ -366,6 +375,6 @@ export class SearchService implements SearchInterfaceService {
   }
   */
 
-  constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService) {
+  constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService, private cacheService: CacheService) {
   }
 }

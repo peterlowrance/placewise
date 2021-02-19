@@ -18,12 +18,13 @@ import {AdminService} from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
 import {ModifyHierarchyDialogComponent} from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 import {NavService} from 'src/app/services/nav.service';
-import {Subscription} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 import {Location} from '@angular/common';
 import {MatSnackBar} from '@angular/material';
 import { Category } from 'src/app/models/Category';
 import { trigger, style, transition, animate, keyframes} from '@angular/animations';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
+import { CacheService } from 'src/app/services/cache.service';
 
 
 interface TreeNode {
@@ -78,6 +79,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private imageService: ImageService,
     private navService: NavService,
+    private cacheService: CacheService,
     private router: Router,
     private snack: MatSnackBar
   ) {
@@ -91,6 +93,7 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   id: string; // item id
   item: Item; // item returned by id
+  itemObs: Subscription; // Subscription to destroy after leaving
   previousItem: Item; // records short term edits for saving
   originalItem: Item; // how the item was when we started, before edits were made
   attributeSuffix: string;
@@ -139,8 +142,30 @@ export class ItemComponent implements OnInit, OnDestroy {
     // retrieve id
     this.id = this.route.snapshot.paramMap.get('id');
 
+    /* TESTING
+    let honk = this.searchService.getItem(this.id);
+    let temp = honk.subscribe(no => {});
+    temp.unsubscribe();
+    temp = honk.subscribe(no => {});
+    temp.unsubscribe();
+    temp = honk.subscribe(no => {});
+    temp.unsubscribe();
+    */
+
+    console.time("a");
+    let cache = this.cacheService.get(this.id, "item");
+    if(cache){
+      window.scrollTo(0,0); 
+      this.item = cache as Item;
+    }
+    console.timeEnd("a");
+
+    console.time("e");
+
     // get the item from the id
-    this.searchService.getItem(this.id).subscribe(item => {
+    this.itemObs = this.searchService.getItem(this.id).subscribe(item => {
+      console.timeEnd("e");
+      console.log("reporting 2");
       if (!item) {
         return;
       }
@@ -258,7 +283,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    //this.deleteSub.unsubscribe();
+    this.itemObs.unsubscribe();
   }
 
   formatMissingDataString(item: Item): string {
