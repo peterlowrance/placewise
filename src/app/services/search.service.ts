@@ -51,6 +51,7 @@ export class SearchService implements SearchInterfaceService {
    * @param locations array of hierarchy items to find ancestors out of
    */
   getAncestors(parentIDs: string[], hierItems: HierarchyItem[]): HierarchyItem[][] {
+    console.log("locations loaded: " + hierItems.length);
     const result: HierarchyItem[][] = [];
     // Find all parents of items and add an array for each parent
     for(const parentID of parentIDs)                                            // TODO: YIKES
@@ -114,6 +115,31 @@ export class SearchService implements SearchInterfaceService {
     });
   }
 
+  // TESTING METHOD
+  // INCLUDES PARENT
+  getLocationAncestorsByChain(locationID: string): Promise<HierarchyItem[]> {
+    return new Promise<HierarchyItem[]>( async resolve => {
+      let results: HierarchyItem[] = [];
+      let nextLocationID = locationID;
+      let finished = false;
+
+      while(!finished){
+        let location = (await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Locations/' + nextLocationID).get().toPromise()).data() as Location;
+        location.ID = nextLocationID;
+        results.push(location);
+        
+        if(location.parent){
+          nextLocationID = location.parent;
+        }
+        else {
+          finished = true;
+        }
+      }
+
+      resolve(results);
+    })
+  }
+
   /**
    * Returns the hierarchy items that immediately descend from a node
    * @param rootID the node to find the descendants of
@@ -149,14 +175,6 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getItem(id: string): Observable<Item> {
-    /*
-    let cache = this.cacheService.getItem(id);
-    if(cache){
-      console.log("beep! " + id);
-      return cache;
-    }
-    */
-
     return this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as Item;
       if (!data) {
@@ -299,7 +317,7 @@ export class SearchService implements SearchInterfaceService {
     if (appropriateCache) {
       return of(excludeRoot ? appropriateCache.filter(c => c.ID !== 'root') : appropriateCache);
     }
-    //console.time('firebase answered get all in');
+    console.time('firebase processed get all in');
     return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + (isCategory ? '/Category' : '/Locations'))
       .snapshotChanges().pipe(map(a => {
         //if(a.length > 1 ) console.timeEnd('firebase answered get all in'); // cache likes to store one that is returned
@@ -312,6 +330,7 @@ export class SearchService implements SearchInterfaceService {
           data.type = isCategory ? 'category' : 'location';
           return data;
         });
+        console.timeEnd('firebase processed get all in');
         return excludeRoot ? returnedHierarchy.filter(g => g.ID !== 'root') : returnedHierarchy;
       }));
   }

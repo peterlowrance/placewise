@@ -148,6 +148,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     const urlID = this.route.snapshot.paramMap.get('id');
     const selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'category' : 'location';
     this.typeForSelectionButtons = selectedSearch;
+
+    // Load root from cache if possible
+    
+    let cache = this.cacheService.get(urlID, selectedSearch);
+    if(cache){
+      window.scrollTo(0,0); 
+      this.root = cache as HierarchyItem;
+    }
+
     // Load the current level
     this.updateSubscribedParent(urlID, selectedSearch);
 
@@ -365,7 +374,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   goToItem(item: Item) {
     this.cacheService.store(item);
-    this.cacheService.store(this.root);
+    this.cacheService.store(this.root); // Currently this only helps if you go back to this page, but that still happens often
     this.router.navigate(['/item/', item.ID]);
   }
 
