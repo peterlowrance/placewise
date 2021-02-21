@@ -126,6 +126,11 @@ export class ItemComponent implements OnInit, OnDestroy {
   attributesForCard: AttributeCard[];
   trackingCards: TrackingCard[] = [];
 
+  itemLocations: [{
+    location: Location;
+    ancestors?: HierarchyItem[];
+  }]
+
   role: string; // user role for editing
   missingData: string; // string of data missing, null if nothing is missing
   recordingForPhoto = false;
@@ -323,9 +328,10 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     // Subscribe to the locations
     for(let locIndex in item.locations){
-      this.searchService.getLocation(item.locations[locIndex]).subscribe(location => {
-
+      let sub = this.searchService.getLocation(item.locations[locIndex]).subscribe(location => {
+        // NEXT
       })
+      subs.push(sub);
     }
     return subs;
   }

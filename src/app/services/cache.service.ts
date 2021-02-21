@@ -11,7 +11,7 @@ interface HierarchyObjectCache {
 
 /**
  * This service makes navigating more snappy by pre-loading a 
- * raw heirarchy object into the UI to immediately start building from.
+ * raw heirarchy objects into the UI to immediately start building from.
  * On nearly every page, we already subscribe to its related 
  * categories/locations/items/etc. so this takes of advantage of that.
  */
