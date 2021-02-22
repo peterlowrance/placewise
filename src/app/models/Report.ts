@@ -8,4 +8,5 @@ export interface Report {
     reporter: string;
     reportedTo: string[];
     description: string;
+    location: string;
 }

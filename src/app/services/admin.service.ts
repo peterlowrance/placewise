@@ -88,7 +88,7 @@ export class AdminService {
     }));
   }
 
-  placeReport(itemID: string, text: string, reportedTo: string[]) {
+  placeReport(itemID: string, text: string, reportedTo: string[], locationID: string) {
     return new Promise((resolve, reject) => {
       this.auth.getAuth().subscribe(auth => {
         auth.getIdTokenResult().then(
@@ -97,6 +97,7 @@ export class AdminService {
             this.http.post(`${adServe}/createReport`, {
               idToken: token,
               item: itemID,
+              location: locationID,
               message: text,
               reportTo: reportedTo
             }).toPromise().then(

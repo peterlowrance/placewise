@@ -16,11 +16,13 @@ interface TreeNode {
   styleUrls: ['./ancestor-view.component.css']
 })
 export class AncestorViewComponent implements OnInit {
-  @Input() parentsToDisplay: HierarchyItem[][];
+  @Input() parentsToDisplay: HierarchyItem[];
+  @Input() displayText: string = "How to find...";
 
   constructor(
   ) { }
 
+  /*
   // tree components from material source
   treeControl = new NestedTreeControl<TreeNode>(node => node.children);
 
@@ -31,12 +33,15 @@ export class AncestorViewComponent implements OnInit {
 
   toTree = (h: HierarchyItem) => ({name: h.name, imageUrl: h.imageUrl, children: [], ID: h.ID});
   hasChild = (_: number, node: TreeNode) => !!node.children && node.children.length > 0;
+  */
 
   ngOnInit(){
 
   }
 
   ngOnChanges(changes: {[propKey: string]: SimpleChange}) {
+
+    /*
     this.parent = {name: null, imageUrl: null, children: null, ID: null};
     if(this.parentsToDisplay){
       // need to loop over first elements, pop off, and combine any like
@@ -76,8 +81,10 @@ export class AncestorViewComponent implements OnInit {
       this.treeControl.dataNodes = this.dataSource.data;
       if (oneAncestor) this.treeControl.expandAll();
     }
+    */
   }
 
+  /*
   convertList(items: HierarchyItem[]): TreeNode {
     if (items.length === 0) {
       return null;
@@ -97,7 +104,7 @@ export class AncestorViewComponent implements OnInit {
    * Collapses a single level of the node hierarchy
    * Adapted with insight from: https://stackoverflow.com/questions/16747798/delete-duplicate-elements-from-an-array
    * @param node
-   */
+   *
   collapseNodes(node: TreeNode) {
     if (node && node.children) {
       const m = {}, newarr = [];
@@ -118,5 +125,6 @@ export class AncestorViewComponent implements OnInit {
       }
     }
   }
+  */
 
 }

@@ -105,7 +105,8 @@ export class ItemComponent implements OnInit, OnDestroy {
     },
     timestamp: 0,
     reporter: '',
-    reportedTo: []
+    reportedTo: [],
+    location: ''
   }; // user report
   errorDesc: ItemReportModalData = {valid: false, desc: '', selectedUsers: [], allUsers: []}; // user-reported error description
   expanded = false;  // is the more info panel expanded
@@ -408,16 +409,25 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.checkDirty();
     }
 
+    console.log(JSON.stringify(this.locationsAndAncestors));
     // For reporting
     if(sendReport){
       if(type === 'approx'){
-        if(value !== "Good"){
-          this.sendAutoReport(value);
+        if(value !== "Good"){ // Outdated?
+          for(let loc of this.locationsAndAncestors){
+            if(loc[0].ID === locationID){
+              this.sendAutoReport(value, locationID, loc[0].name);
+            }
+          }
         }
       }
       else if(type.startsWith('number')){
         if(value <= parseInt(type.substring(7))){
-          this.sendAutoReport(value);
+          for(let loc of this.locationsAndAncestors){
+            if(loc[0].ID === locationID){
+              this.sendAutoReport(value, locationID, loc[0].name);
+            }
+          }
         }
       }
     }
@@ -432,7 +442,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
   }
 
-  createReport() {
+  createReport(locationID: string) {
     // reset report data, ensure clicking out defaults to fail and no double send
     this.errorDesc = {valid: false, desc: '', selectedUsers: [], allUsers: []};
     let reportedTo = this.adminService.getWorkspaceUsers().subscribe(users => {
@@ -457,7 +467,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         });
     
         dialogRef.afterClosed().subscribe(result => {
-          if (result) this.issueReport(result);
+          if (result) this.issueReport(result, locationID);
         });
       }
     });
@@ -467,7 +477,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Issues a report to the backend DB
    * @param result The resulting report from the report modal
    */
-  issueReport(result: ItemReportModalData) {
+  issueReport(result: ItemReportModalData, locationID: string) {
     this.errorDesc = result;
     // if it's valid, build and issue report, else leave
     if (this.errorDesc.valid) {
@@ -478,7 +488,7 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.report.timestamp = new Date().getUTCSeconds(); // old
 
       // Issue report
-      return this.adminService.placeReport(this.report.item.ID, this.report.description, result.selectedUsers.map(user => user.id)).then(
+      return this.adminService.placeReport(this.report.item.ID, this.report.description, result.selectedUsers.map(user => user.id), locationID).then(
         () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
         (err) => {
           this.snack.open("Report Failed, " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
@@ -488,27 +498,30 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
   }
 
-  sendAutoReport(amount: any) {
+  sendAutoReport(amount: any, locationID: string, locationName: string) {
     let desc = "Low";
     if(amount === "Low"){
-      desc = "Auto Report: Item is low on supply.";
+      desc = "Auto Report: Item is low on supply in " + locationName + ".";
     } 
     else if (amount === "Empty") {
-      desc = "Auto Report: There's no items left!";
+      desc = "Auto Report: There's no items left in " + locationName + "!";
     }
     else if (amount === 0) {
-      desc = "Auto Report: There's no items left!";
+      desc = "Auto Report: There's no items left in " + locationName + "!";
     } 
     else {
-      desc = "Auto Report: There's only " + amount + " left in stock.";
+      desc = "Auto Report: There's only " + amount + " left in stock of " + locationName +  ".";
     }
+
+    // smelly code
     this.report.description = desc;
     this.report.item.name = this.item.name;
     this.report.item.ID = this.item.ID;
     this.report.item.imageUrl = this.item.imageUrl;
     this.report.timestamp = new Date().getUTCSeconds();
+    this.report.location = locationID;
 
-    return this.adminService.placeReport(this.report.item.ID, this.report.description, this.authService.workspace.defaultUsersForReports).then(
+    return this.adminService.placeReport(this.report.item.ID, this.report.description, this.authService.workspace.defaultUsersForReports, locationID).then(
       () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
       (err) => this.snack.open("Report Failed, " + err.status, "OK", {duration: 3000, panelClass: ['mat-toolbar']})
     );

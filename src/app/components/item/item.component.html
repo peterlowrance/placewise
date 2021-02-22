@@ -43,9 +43,9 @@
     </mat-grid-tile>
     <!-- report button -->
     <mat-grid-tile class="reportButtonHolder">
-        <button class="reportButton" mat-raised-button color="primary" (click)="createReport()" [class.mat-elevation-z3]="true">Report
+        <!--button class="reportButton" mat-raised-button color="primary" (click)="createReport()" [class.mat-elevation-z3]="true">Report
             <mat-icon>report_problem</mat-icon>
-        </button>
+        </button-->
     </mat-grid-tile>
     <!-- warnings -->
     <mat-grid-tile class="reportButtonHolder">
@@ -230,10 +230,13 @@
                 </div>
                 <div *ngIf="!card.isNumber" class="tracking-input-approx">
                     <h4>Last reported as: <span class="amount-reported">{{card.amount}}</span></h4>
-                    <button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button>
+                    <!--button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button-->
                     <button mat-raised-button class="approx-button approx-low" (click)="setTrackingAmount(card.locationID, 'Low')">Low</button>
                     <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(card.locationID, 'Empty')">Empty</button>
                 </div>
+                <button class="approx-button reportButton" mat-raised-button color="primary" (click)="createReport()" [class.mat-elevation-z3]="true">Report
+                    <mat-icon>report_problem</mat-icon>
+                </button>
             </mat-card-content>
         </mat-card>
     </div>
@@ -245,18 +248,22 @@
 
 <!-- steps to find -->
 <!-- adapted from https://material.angular.io/components/tree/examples -->
-<h2>Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
+<h2>
+    Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
 </h2>
-<app-ancestor-view [parentsToDisplay]="locationsAndAncestors"></app-ancestor-view>
+<div *ngFor="let locationSet of locationsAndAncestors">
+    <mat-expansion-panel class="location-card">
+        <mat-expansion-panel-header [collapsedHeight]="'84px'" [expandedHeight]="'96px'" class="location-header">
+            <img class="location-img" src={{locationSet[0].imageUrl}}>
+            <div class="location-name"> chonk hado foapro ajdpr;t ksdaokok</div>
+        </mat-expansion-panel-header>
+        <br>
+        <app-ancestor-view [parentsToDisplay]="locationSet"></app-ancestor-view>
+    </mat-expansion-panel>
+</div>
 <br>
 <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete Item</button>
 </div>
-
-<!-- FAB for saving -->
-<!-- <button class="fab" *ngIf="this.role === 'Admin' && this.getDirty()" @open-save-fab mat-fab color="primary" (click)="saveItem()">
-    <mat-icon>save</mat-icon>
-    <mat-progress-spinner *ngIf="isSaving" class="save-spinner" mode="indeterminate"></mat-progress-spinner>
-</button> -->
 
 <button mat-mini-fab class="extended-fab-button" *ngIf="this.role === 'Admin' && this.getDirty()" @open-undo-fab matTooltip="Undo" color="accent" (click)="undoChanges()">
     <mat-icon>edit</mat-icon><span class="extended-fab-button__text">Revert</span>

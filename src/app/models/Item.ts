@@ -19,4 +19,9 @@ export interface Item extends HierarchyObject {
     type: string;
     amount: any;
   }];
+
+  reports?: [{
+    location: string;
+    report: string;
+  }]
 }

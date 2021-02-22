@@ -15,6 +15,24 @@ h2 {
 /*Photo Container CSS*/
 /*Ref: https://stackoverflow.com/questions/54508374/how-can-i-position-an-icon-over-an-image*/
 
+.location-name {
+  margin: 0 12px 0 24px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.location-header {
+  margin-left: -12px;
+}
+
+.location-img {
+  height: 60px;
+  width: 60px;
+  max-width: 60px;
+  max-height: 60px;
+  border-radius: 60px;
+}
+
 .container-img{
     display: block;
 }
@@ -272,9 +290,10 @@ p {
 }
 
 .approx-button {
-  margin-right: 8px;
+  margin-right: 12px;
   color: white;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  min-width: 120px;
 }
 
 .approx-good {
@@ -310,7 +329,7 @@ p {
 
 .tracking-input-approx {
   padding-top: 2px;
-  padding-bottom: 8px;
+  padding-bottom: 12px;
 }
 
 .tracking-switch {
