@@ -308,6 +308,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         let found = false;
         
         // First try to find tracking data for this location that already exists on the item
+        if(item.tracking)
         for(let tracked of item.tracking){
           if(tracked.locationID === location.ID){
             found = true;
@@ -317,7 +318,7 @@ export class ItemComponent implements OnInit, OnDestroy {
             tracking = { type: tracked.type, isNumber, amount: tracked.amount, cap }
             break;
           }
-        }
+        };
 
         // Otherwise, fill in default tracking data
         if(!found){
