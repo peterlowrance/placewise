@@ -252,10 +252,10 @@
     Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
 </h2>
 <div *ngFor="let locationSet of locationsAndAncestors">
-    <mat-expansion-panel class="location-card">
+    <mat-expansion-panel class="location-data">
         <mat-expansion-panel-header [collapsedHeight]="'84px'" [expandedHeight]="'96px'" class="location-header">
             <img class="location-img" src={{locationSet[0].imageUrl}}>
-            <div class="location-name"> chonk hado foapro ajdpr;t ksdaokok</div>
+            <div class="location-name"> {{locationSet[0].name}} </div>
         </mat-expansion-panel-header>
         <br>
         <app-ancestor-view [parentsToDisplay]="locationSet"></app-ancestor-view>
