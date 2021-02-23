@@ -189,6 +189,7 @@
     </mat-expansion-panel>
 </mat-accordion>
 
+<!--
 <mat-card class="tracking-card" [class.mat-elevation-z2]="true">
     <h3>Tracking:</h3>
     <div *ngFor="let card of trackingCards">
@@ -230,7 +231,7 @@
                 </div>
                 <div *ngIf="!card.isNumber" class="tracking-input-approx">
                     <h4>Last reported as: <span class="amount-reported">{{card.amount}}</span></h4>
-                    <!--button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button-->
+                    <!--button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button
                     <button mat-raised-button class="approx-button approx-low" (click)="setTrackingAmount(card.locationID, 'Low')">Low</button>
                     <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(card.locationID, 'Empty')">Empty</button>
                 </div>
@@ -245,18 +246,64 @@
     </div>
 </mat-card>
 <br>
+-->
 
 <!-- steps to find -->
 <!-- adapted from https://material.angular.io/components/tree/examples -->
 <h2>
     Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
 </h2>
-<div *ngFor="let locationSet of locationsAndAncestors">
-    <mat-expansion-panel class="location-data">
+<div *ngFor="let locationData of itemLocations">
+    <mat-expansion-panel class="location-data" [expanded]="locationData.isPanelExtended">
         <mat-expansion-panel-header [collapsedHeight]="'84px'" [expandedHeight]="'96px'" class="location-header">
-            <img class="location-img" src={{locationSet[0].imageUrl}}>
-            <div class="location-name"> {{locationSet[0].name}} </div>
+            <img class="location-img" src={{locationData.location.imageUrl}}>
+            <div class="location-name"> {{locationData.location.name}} </div>
         </mat-expansion-panel-header>
+        <h3>
+            Reporting:
+        </h3>
+        <h4 *ngIf="this.role === 'Admin'" class="tracking-switch">Use exact numbers:<mat-slide-toggle class="tracking-numbers-toggle" [(ngModel)]="locationData.tracking.isNumber" (click)="toggleNumberTrackingForLocation(locationData.location.ID)"></mat-slide-toggle></h4>
+        <div *ngIf="locationData.tracking.isNumber" class="tracking-input-number">
+            <div *ngIf="!locationData.tracking.isBeingEdited">
+                <button mat-raised-button color="accent" class="box-button minus-button" (click)="modifyTrackingNumber(locationData.location.ID, 'subtract one', locationData.tracking.type, locationData.tracking.amount)"><mat-icon>remove</mat-icon></button>
+                <button mat-stroked-button class="number-display">{{locationData.tracking.amount}}</button>
+                <button mat-raised-button color="accent" class="box-button plus-button" (click)="modifyTrackingNumber(locationData.location.ID, 'add one', locationData.tracking.type, locationData.tracking.amount)"><mat-icon>add</mat-icon></button>
+                <button mat-raised-button color="primary" class="box-button edit-number-button" (click)="locationData.tracking.isBeingEdited = true"><mat-icon>edit</mat-icon></button>
+            </div>
+            <div *ngIf="locationData.tracking.isBeingEdited">
+                <mat-form-field class="cap-form" id="editTrackingNumber">
+                    <mat-label class="cap-label">Enter amount in stock:</mat-label>
+                    <input matInput #amount
+                    type="number"
+                    [(ngModel)]="locationData.tracking.amount"
+                    (focusout)="closeEditingTrackingNumber(locationData.tracking, locationData.location.ID)"
+                    autofocus
+                    >
+                </mat-form-field>
+                <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
+            </div>
+            <div *ngIf="this.role === 'Admin'">
+                <mat-form-field class="cap-form">
+                    <mat-label class="cap-label">Auto report when at or below:</mat-label>
+                    <input matInput #cap
+                    type="number"
+                    [(ngModel)]="locationData.tracking.cap"
+                    (focusout)="updateTrackingCap(locationData.tracking, locationData.location.ID)"
+                    (focus)="locationData.tracking.capFocus = true"
+                    >
+                </mat-form-field>
+                <button mat-icon-button class="fake-confirm-button" *ngIf="locationData.tracking.capFocus"><mat-icon>done</mat-icon></button>
+            </div>
+        </div>
+        <div *ngIf="!locationData.tracking.isNumber" class="tracking-input-approx">
+            <h4>Last reported as: <span class="amount-reported">{{locationData.tracking.amount}}</span></h4>
+            <!--button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button-->
+            <button mat-raised-button class="approx-button approx-low" (click)="setTrackingAmount(locationData.location.ID, 'Low')">Low</button>
+            <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(locationData.location.ID, 'Empty')">Empty</button>
+        </div>
+        <button class="approx-button reportButton" mat-raised-button color="primary" (click)="createReport()" [class.mat-elevation-z3]="true">Report
+            <mat-icon>report_problem</mat-icon>
+        </button>
         <br>
         <app-ancestor-view [parentsToDisplay]="locationSet"></app-ancestor-view>
     </mat-expansion-panel>

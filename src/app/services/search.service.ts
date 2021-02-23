@@ -12,7 +12,7 @@ import {AuthService} from './auth.service';
 import {ImageService} from './image.service';
 import { HierarchyObject } from '../models/HierarchyObject';
 import { Category } from '../models/Category';
-import { Location } from '../models/Location';
+import { HierarchyLocation } from '../models/Location';
 import { ContentObserver } from '@angular/cdk/observers';
 import { CacheService } from './cache.service';
 
@@ -124,7 +124,7 @@ export class SearchService implements SearchInterfaceService {
       let finished = false;
 
       while(!finished){
-        let location = (await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Locations/' + nextLocationID).get().toPromise()).data() as Location;
+        let location = (await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Locations/' + nextLocationID).get().toPromise()).data() as HierarchyLocation;
         location.ID = nextLocationID;
         results.push(location);
         
@@ -186,12 +186,12 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getLocation(id: string): Observable<Location> {
+  getLocation(id: string): Observable<HierarchyLocation> {
     if (!id) {
       return of(null);
     }
-    return this.afs.doc<Location>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {
-      const data = a.payload.data() as Location;
+    return this.afs.doc<HierarchyLocation>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {
+      const data = a.payload.data() as HierarchyLocation;
       data.ID = a.payload.id;
       if (data.imageUrl == null) {
         data.imageUrl = '../../../assets/notFound.png';
@@ -306,7 +306,7 @@ export class SearchService implements SearchInterfaceService {
     return this.getAllHierarchy(excludeRoot, true);
   }
 
-  getAllLocations(excludeRoot: boolean = false): Observable<Location[]> {
+  getAllLocations(excludeRoot: boolean = false): Observable<HierarchyLocation[]> {
     return this.getAllHierarchy(excludeRoot, false);
   }
 
@@ -322,7 +322,7 @@ export class SearchService implements SearchInterfaceService {
       .snapshotChanges().pipe(map(a => {
         //if(a.length > 1 ) console.timeEnd('firebase answered get all in'); // cache likes to store one that is returned
         const returnedHierarchy = a.map(g => {
-          const data = isCategory ? (g.payload.doc.data() as Category) : (g.payload.doc.data() as Location);
+          const data = isCategory ? (g.payload.doc.data() as Category) : (g.payload.doc.data() as HierarchyLocation);
           data.ID = g.payload.doc.id;
           if (data.imageUrl == null) {
             data.imageUrl = '../../../assets/notFound.png';

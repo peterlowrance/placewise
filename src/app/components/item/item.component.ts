@@ -25,6 +25,7 @@ import { Category } from 'src/app/models/Category';
 import { trigger, style, transition, animate, keyframes} from '@angular/animations';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 import { CacheService } from 'src/app/services/cache.service';
+import {HierarchyLocation} from 'src/app/models/Location';
 
 
 interface TreeNode {
@@ -50,6 +51,21 @@ interface TrackingCard {
   amount: any;
   cap?: number;
   isBeingEdited?: boolean;
+}
+
+interface TrackingData {
+  type: string;
+  isNumber: boolean;
+  amount: any;
+  cap?: number;
+  isBeingEdited?: boolean;
+}
+
+interface ItemLocation {
+  location: HierarchyLocation;
+  ancestors?: HierarchyItem[];
+  tracking: TrackingData;
+  isPanelExtended?: Boolean;
 }
 
 @Component({
@@ -125,12 +141,8 @@ export class ItemComponent implements OnInit, OnDestroy {
   categoryAncestors: Category[];
   locationsAndAncestors: HierarchyItem[][];
   attributesForCard: AttributeCard[];
-  trackingCards: TrackingCard[] = [];
 
-  itemLocations: [{
-    location: Location;
-    ancestors?: HierarchyItem[];
-  }]
+  itemLocations: ItemLocation[] = [];
 
   role: string; // user role for editing
   missingData: string; // string of data missing, null if nothing is missing
@@ -173,7 +185,7 @@ export class ItemComponent implements OnInit, OnDestroy {
       console.time("chain test");
       this.searchService.getLocationAncestorsByChain(item.locations[0]).then((data) => {
         console.timeEnd("chain test");
-        console.log(data);
+        //console.log(data);
       })
 
       // Setup change/revert tracking info
@@ -182,56 +194,9 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.previousItem = JSON.parse(JSON.stringify(item));
       }
 
+      //if(locationSub)
       // Go through each location and build a tracker for each
-      for(let location in item.locations){
-        let found = false;
-
-        // First try to find tracking data that already exists
-        for(let tracked in item.tracking){
-          if(item.tracking[tracked].locationID === item.locations[location]){
-            found = true;
-
-            let localSub = this.searchService.getLocation(item.locations[location]).subscribe(loc => {
-              if(loc){
-                let cardFound = false;
-                let isNumber = item.tracking[tracked].type.startsWith('number');
-                let cap = isNumber ? parseInt(item.tracking[tracked].type.substring(7)) : 0; // If there's a cap, it will be formatted like "number,[number]" so start at 7 to read it
-
-                for(let card in this.trackingCards){
-                  if(this.trackingCards[card].locationID === item.locations[location]){
-                    cardFound = true;
-                    this.trackingCards[card] = {name: loc.name, locationID: item.locations[location], type: item.tracking[tracked].type, isNumber, amount: item.tracking[tracked].amount, cap};
-                    break;
-                  }
-                }
-
-                if(!cardFound){
-                  this.trackingCards.push({ name: loc.name, locationID: item.locations[location], type: item.tracking[tracked].type, isNumber, amount: item.tracking[tracked].amount, cap});
-                }
-                localSub.unsubscribe();
-              }
-            })
-            break;
-          }
-        }
-        if(!found){
-          let foundEmptyCard = false;
-          for(let card in this.trackingCards){ // This is so then we aren't re-adding cards that have the tracking turned off
-            if(this.trackingCards[card].locationID === item.locations[location]){
-              foundEmptyCard = true;
-              break;
-            }
-          }
-          if(!foundEmptyCard){
-            let localSub = this.searchService.getLocation(item.locations[location]).subscribe(loc => {
-              if(loc){
-                this.trackingCards.push({ name: loc.name, locationID: item.locations[location], type: 'approx', isNumber: false, amount: 'Good'});
-                localSub.unsubscribe();
-              }
-            })
-          }
-        }
-      }
+      this.locationsSub = this.setupLocationsSubscriptions(item);
       
       // If there was cache, remove it
       if(cache){
@@ -321,16 +286,54 @@ export class ItemComponent implements OnInit, OnDestroy {
   private setupLocationsSubscriptions(item: Item): Subscription[] {
     let subs: Subscription[] = [];
 
-    // Setup empty space for all of the location data to be loaded into
-    this.locationsAndAncestors = [];
-    for(let i = 0; i < item.locations.length; i++){
-      this.locationsAndAncestors.push([]);
+    // Delete any locations that are not included in the item now
+    for(let dataIndex in this.itemLocations){
+      let found = false;
+      for(let locationID of item.locations){
+        if(this.itemLocations[dataIndex].location.ID === locationID){
+          found = true;
+          break;
+        }
+      }
+
+      if(!found){
+        this.itemLocations.splice(Number.parseInt(dataIndex), 1);
+      }
     }
 
-    // Subscribe to the locations
+    // Subscribe to the locations individually
     for(let locIndex in item.locations){
       let sub = this.searchService.getLocation(item.locations[locIndex]).subscribe(location => {
-        // NEXT
+        let tracking: TrackingData;
+        let found = false;
+        
+        // First try to find tracking data for this location that already exists on the item
+        for(let tracked of item.tracking){
+          if(tracked.locationID === location.ID){
+            found = true;
+            let isNumber = tracked.type.startsWith('number');
+            let cap = isNumber ? parseInt(tracked.type.substring(7)) : 0; // If there's a cap, it will be formatted like "number,[number]" so start at 7 to read it
+
+            tracking = { type: tracked.type, isNumber, amount: tracked.amount, cap }
+            break;
+          }
+        }
+
+        // Otherwise, fill in default tracking data
+        if(!found){
+          tracking = { type: "amount", isNumber: false, amount: "Good", cap: 0 }
+        }
+        
+        // See if there's already an ItemLocation corresponding to this and update it.
+        let index = this.itemLocations.findIndex((elem) => {return elem.location.ID === location.ID});
+        if(index > -1){
+          this.itemLocations[index].location = location;
+          this.itemLocations[index].tracking = tracking;
+        }
+        // Otherwise, add the new location
+        else {
+          this.itemLocations.push({location, tracking, isPanelExtended: item.locations.length < 2});
+        }
       })
       subs.push(sub);
     }
@@ -382,28 +385,29 @@ export class ItemComponent implements OnInit, OnDestroy {
   }
 
   toggleNumberTrackingForLocation(locationID: string) {
-    for(let card in this.trackingCards){
-      if(this.trackingCards[card].locationID === locationID){
-        if(this.trackingCards[card].isNumber){ // New value hasn't been set yet so this is reversed
-          this.trackingCards[card].amount = 'Good';
+    for(let locationData of this.itemLocations){
+      if(locationData.location.ID === locationID){
+        if(locationData.tracking.isNumber){ // New value hasn't been set yet so this is reversed
+          locationData.tracking.amount = 'Good';
 
-          for(let dataCard in this.item.tracking){
-            if(this.item.tracking[dataCard].locationID === locationID){
-              this.item.tracking[dataCard].type = 'approx';
-              this.item.tracking[dataCard].amount = 'Good';
+          for(let trackingData of this.item.tracking){
+            
+            if(trackingData.locationID === locationID){
+              trackingData.type = 'approx';
+              trackingData.amount = 'Good';
               break;
             }
           }
         }
         else {
-          this.trackingCards[card].amount = 0;
+          locationData.tracking.amount = 0;
 
           let found = false;
-          for(let dataCard in this.item.tracking){
-            if(this.item.tracking[dataCard].locationID === locationID){
+          for(let trackingData of this.item.tracking){
+            if(trackingData.locationID === locationID){
               found = true;
-              this.item.tracking[dataCard].type = 'number,0';
-              this.item.tracking[dataCard].amount = 0;
+              trackingData.type = 'number,0';
+              trackingData.amount = 0;
               break;
             }
           }
@@ -419,13 +423,15 @@ export class ItemComponent implements OnInit, OnDestroy {
       }
     }
 
+    console.log(this.item);
+
     this.checkDirty();
   }
 
-  closeEditingTrackingNumber(card: TrackingCard){
+  closeEditingTrackingNumber(card: TrackingData, locationID){
     card.isBeingEdited = false;
     for(let dataCard in this.item.tracking){
-      if(this.item.tracking[dataCard].locationID === card.locationID){
+      if(this.item.tracking[dataCard].locationID === locationID){
         this.item.tracking[dataCard].amount = card.amount;
       }
     }
@@ -434,12 +440,12 @@ export class ItemComponent implements OnInit, OnDestroy {
   }
 
   // Auto report number
-  updateTrackingCap(card: TrackingCard){
+  updateTrackingCap(card: TrackingData, locationID){
     // @ts-ignore capFocus is not apart of code, just for UI
     card.capFocus = false;
 
     for(let dataCard in this.item.tracking){
-      if(this.item.tracking[dataCard].locationID === card.locationID){
+      if(this.item.tracking[dataCard].locationID === locationID){
         this.item.tracking[dataCard].type = 'number,' + card.cap;
       }
     }
@@ -463,7 +469,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     // For Database
     if(this.role !== 'Admin'){
       this.adminService.updateTracking(locationID, this.item.ID, 'approx', value).then(
-        (fulfilled) => this.setLocalTrackingCard(locationID, value),
+        (fulfilled) => this.updateUITrackingData(locationID, value),
       (reject) => {
         console.log("Tracking Update Rejected: " + JSON.stringify(reject));
       })
@@ -486,7 +492,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         }
       }
 
-      this.setLocalTrackingCard(locationID, value)
+      this.updateUITrackingData(locationID, value)
       this.checkDirty();
     }
 
@@ -514,10 +520,10 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
   }
 
-  setLocalTrackingCard(locationID: string, value: string){
-    for(let card in this.trackingCards){ // For UI
-      if(this.trackingCards[card].locationID === locationID){
-        this.trackingCards[card].amount = value;
+  updateUITrackingData(locationID: string, value: string){
+    for(let data of this.itemLocations){ // For UI
+      if(data.location.ID === locationID){
+        data.tracking.amount = value;
         break;
       }
     }
@@ -676,6 +682,7 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.item.locations = result;
       
       // NOTE: Inside the updateItem, the tracked data for old locations in the data structure get removed. But the card is removed here:
+      /* OLD TRACKING
       for(let oldLocIndex in oldLocations){
         if(newLocations.indexOf(oldLocations[oldLocIndex]) === -1){
           for(let cardIndex in this.trackingCards){
@@ -685,12 +692,16 @@ export class ItemComponent implements OnInit, OnDestroy {
           }
         }
       }
+      */
 
       this.adminService.updateItem(this.item, null, oldLocations); // TODO: Not good placement, seperate from main saving mechanism
       this.setDirty(true);
+
+      /* OLD LOCATION GET
       this.searchService.getAncestorsOf(this.item).subscribe(locations => {
         this.locationsAndAncestors = locations;
       });
+      */
 
       // Update recent locations
       for(let index in newLocations){
@@ -1038,6 +1049,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     },
     reject => {
       this.snack.open('Item Save Failed: ' + reject, "OK", {duration: 3000, panelClass: ['mat-warn']});
+      console.log(this.item);
       this.undoChanges(this.previousItem); // Revert to last saved data
     });
   }

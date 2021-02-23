@@ -15,7 +15,7 @@ import { User } from '../models/User';
 import * as firebase from 'firebase';
 import { promise } from 'protractor';
 import { Category } from '../models/Category';
-import { Location } from '../models/Location';
+import { HierarchyLocation } from '../models/Location';
 import { type } from 'os';
 import { WorkspaceUser } from '../models/WorkspaceUser';
 
@@ -35,9 +35,9 @@ const adServe = 'https://placewise-d040e.appspot.com/';
 export class AdminService {
 
   private recentCategories: Category[]; // This helps the user not have to click so many buttons setting categories up
-  private recentLocations: Location[]; // This helps the user not have to click so many buttons setting categories up
+  private recentLocations: HierarchyLocation[]; // This helps the user not have to click so many buttons setting categories up
   getRecentCategories(): Category[] {return this.recentCategories};
-  getRecentLocations(): Location[] {return this.recentLocations};
+  getRecentLocations(): HierarchyLocation[] {return this.recentLocations};
 
   addToRecent(recent: HierarchyItem){
     if(recent.ID === 'root') return; // Roots should not be saved
