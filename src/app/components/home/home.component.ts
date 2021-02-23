@@ -5,7 +5,7 @@ import {HierarchyItem} from '../../models/HierarchyItem';
 import {FormControl} from '@angular/forms';
 import {SearchService} from '../../services/search.service';
 import {NavService} from '../../services/nav.service';
-import {Subscription} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 import {AuthService} from 'src/app/services/auth.service';
 import * as Fuse from 'fuse.js';
 import {AdminService} from 'src/app/services/admin.service';
@@ -15,6 +15,7 @@ import { Category } from 'src/app/models/Category';
 import { switchMap } from 'rxjs/operators';
 import { url } from 'inspector';
 import { Identifiers } from '@angular/compiler';
+import { CacheService } from 'src/app/services/cache.service';
 
 /**
  *
@@ -55,6 +56,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   originalHierarchyItems: HierarchyItem[];
   items: Item[];
   originalItems: Item[];
+  obsItems: {[itemId: string] : Observable<Item>} = {}; // For cache
+  subItems: {[itemId: string] : Subscription} = {}; // For cache
 
   columns: number;
   previousSearch = '';
@@ -109,6 +112,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private authService: AuthService,
     private adminService: AdminService,
+    private cacheService: CacheService,
     public dialog: MatDialog) {
     // subscribe to nav state
     this.returnSub = this.navService.getReturnState().subscribe(
@@ -136,6 +140,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.parentSub.unsubscribe();
     this.returnSub.unsubscribe();
+    Object.values(this.subItems).forEach(sub => sub.unsubscribe());
   }
 
   ngOnInit() {
@@ -143,6 +148,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     const urlID = this.route.snapshot.paramMap.get('id');
     const selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'category' : 'location';
     this.typeForSelectionButtons = selectedSearch;
+
+    // Load root from cache if possible
+    
+    let cache = this.cacheService.get(urlID, selectedSearch);
+    if(cache){
+      window.scrollTo(0,0); 
+      this.root = cache as HierarchyItem;
+    }
+
     // Load the current level
     this.updateSubscribedParent(urlID, selectedSearch);
 
@@ -303,7 +317,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (root.items) {
       // For each itemID descending from root, get the item from the data and added to the global items array
       for (const itemID of root.items) {
-        this.searchService.getItem(itemID).subscribe(returnedItem => {
+        this.obsItems[itemID] = this.searchService.getItem(itemID);
+        this.subItems[itemID] = this.obsItems[itemID].subscribe(returnedItem => {
           if (returnedItem !== null && typeof returnedItem !== 'undefined') {
             let itemFound = false;
             
@@ -358,6 +373,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   goToItem(item: Item) {
+    this.cacheService.store(item);
+    this.cacheService.store(this.root); // Currently this only helps if you go back to this page, but that still happens often
     this.router.navigate(['/item/', item.ID]);
   }
 

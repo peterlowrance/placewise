@@ -18,12 +18,13 @@ import {AdminService} from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
 import {ModifyHierarchyDialogComponent} from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 import {NavService} from 'src/app/services/nav.service';
-import {Subscription} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 import {Location} from '@angular/common';
 import {MatSnackBar} from '@angular/material';
 import { Category } from 'src/app/models/Category';
 import { trigger, style, transition, animate, keyframes} from '@angular/animations';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
+import { CacheService } from 'src/app/services/cache.service';
 
 
 interface TreeNode {
@@ -78,6 +79,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private imageService: ImageService,
     private navService: NavService,
+    private cacheService: CacheService,
     private router: Router,
     private snack: MatSnackBar
   ) {
@@ -93,7 +95,12 @@ export class ItemComponent implements OnInit, OnDestroy {
   item: Item; // item returned by id
   previousItem: Item; // records short term edits for saving
   originalItem: Item; // how the item was when we started, before edits were made
-  attributeSuffix: string;
+  attributeSuffix: string; // Current suffix text so then we don't calculate it every time
+
+  // Subscriptions to destroy after leaving
+  itemSub: Subscription;
+  categorySub: Subscription;
+  locationsSub: Subscription[];
 
   loading = true;  // whether the page is actively loading
   report: Report = {
@@ -120,6 +127,11 @@ export class ItemComponent implements OnInit, OnDestroy {
   attributesForCard: AttributeCard[];
   trackingCards: TrackingCard[] = [];
 
+  itemLocations: [{
+    location: Location;
+    ancestors?: HierarchyItem[];
+  }]
+
   role: string; // user role for editing
   missingData: string; // string of data missing, null if nothing is missing
   recordingForPhoto = false;
@@ -140,31 +152,45 @@ export class ItemComponent implements OnInit, OnDestroy {
     // retrieve id
     this.id = this.route.snapshot.paramMap.get('id');
 
-    // get the item from the id
-    this.searchService.getItem(this.id).subscribe(item => {
+    let cache = this.cacheService.get(this.id, "item");
+
+    // If the item is in cache, we can load everything at once
+    if(cache){
+      window.scrollTo(0,0); 
+      this.item = cache as Item;
+      this.categorySub = this.setupCategorySubscription(this.item);
+      //this.locationsSub = this.searchService.getAncestorsOf(this.item).subscribe(locations => {this.locationsAndAncestors = locations;});
+    }
+
+    // Start live subscription
+    this.itemSub = this.searchService.getItem(this.id).subscribe(item => {
       if (!item) {
         return;
       }
-      // get the item ref
       this.item = item;
+
+      // Location chain loading TEST
+      console.time("chain test");
+      this.searchService.getLocationAncestorsByChain(item.locations[0]).then((data) => {
+        console.timeEnd("chain test");
+        console.log(data);
+      })
+
+      // Setup change/revert tracking info
       if(!this.originalItem) { // We don't want to overwrite if there's already old data
-        this.originalItem = JSON.parse(JSON.stringify(item)); // deep copy
-        this.previousItem = JSON.parse(JSON.stringify(item)); // another for recording short term changes
+        this.originalItem = JSON.parse(JSON.stringify(item));
+        this.previousItem = JSON.parse(JSON.stringify(item));
       }
 
-      // Load image for item TODO: Not any more
-
-      // get the locations information
-      this.searchService.getAncestorsOf(item).subscribe(locations => {
-        this.locationsAndAncestors = locations;
-      });
-
-      // Build tracking information
+      // Go through each location and build a tracker for each
       for(let location in item.locations){
         let found = false;
+
+        // First try to find tracking data that already exists
         for(let tracked in item.tracking){
           if(item.tracking[tracked].locationID === item.locations[location]){
             found = true;
+
             let localSub = this.searchService.getLocation(item.locations[location]).subscribe(loc => {
               if(loc){
                 let cardFound = false;
@@ -206,60 +232,115 @@ export class ItemComponent implements OnInit, OnDestroy {
           }
         }
       }
+      
+      // If there was cache, remove it
+      if(cache){
+        cache = null;
+      }
 
-      // get the category information
-      this.searchService.getCategory(item.category).subscribe(category => {
-        this.category = category;
-        this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
-          if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
-            this.categoryAncestors = categoryAncestors[0];
-            this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAncestors);
-
-            let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
-            if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
-              this.attributesForCard = rebuiltCards;
-            }
-            else {
-              for(let newCard in rebuiltCards){ // This is to attempt to only save over the ones modified. Otherwise, users are often kicked out of edit fields
-                let found = false;
-                for(let originalCard in this.attributesForCard){
-                  if(this.attributesForCard[originalCard].ID === rebuiltCards[newCard].ID){
-                    found = true;
-                    if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
-                      this.attributesForCard[originalCard] = rebuiltCards[newCard]
-                    }
-                    break;
-                  }
-                }
-                if(!found){
-                  this.attributesForCard = rebuiltCards; // Attributes didn't align, so jsut reset
-                  break;
-                }
-              }
-            }
-          }
-          else {
-            this.attributesForCard = this.loadAttributesForCards([category], item)
-          }
-          // Display missing data
-          this.missingData = this.formatMissingDataString(item);
-        })
-      });
+      // Otherwise, this has not been fully loaded yet
+      else {
+        // Load category
+        if(this.categorySub) this.categorySub.unsubscribe();
+        this.categorySub = this.setupCategorySubscription(item);
+        
+        // Load locations
+        /*
+        if(this.locationsSub) this.locationsSub.unsubscribe();
+        this.locationsSub = 
+        */
+        this.searchService.getAncestorsOf(item).subscribe(locations => {
+          this.locationsAndAncestors = locations;
+        });
+      }
 
     });
 
     // get user role
     this.role = this.authService.role;
 
-    // set up admin change forms
-    // this.nameForm = this.formBuilder.group({name: this.nameControl})
+  }
 
-    // set up link to delete
-    // this.deleteSub = this.navService.getDeleteMessage().subscribe(val => this.requestDelete(val));
+  
+  private setupCategorySubscription(item: Item): Subscription { // I could also take in Obs<Cat> if that helps in the future
+    // Return it for unsubscribing
+    return this.searchService.getCategory(item.category).subscribe(category => {
+      this.category = category;
+
+      // Load category ancestors for attributes
+      this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
+
+        // Make sure it exists, and also make sure it's not just an empty array
+        if(categoryAncestors[0]){
+          // Update component data
+          this.categoryAncestors = categoryAncestors[0];
+          this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(item, this.categoryAncestors)
+          // Load item attributes into card data
+          let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
+
+          // If we'd never had them loaded or the amount of cards/attributes have changed, update them
+          if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
+            this.attributesForCard = rebuiltCards;
+          }
+
+          // Otherwise, update the neccesary information but keep the structure
+          // This is so that when users enter data, they don't get kicked out of text fields
+          // since the UI would be completely replacing them.
+          else {
+            // Go through the cards and update the info
+            for(let newCard in rebuiltCards){
+              let found = false;
+              for(let originalCard in this.attributesForCard){
+                if(this.attributesForCard[originalCard].ID === rebuiltCards[newCard].ID){
+                  found = true;
+                  // Deep check to see if it needs updated
+                  if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
+                    this.attributesForCard[originalCard] = rebuiltCards[newCard]
+                  }
+                  break;
+                }
+              }
+              // Attributes didn't align, so just reset
+              if(!found){
+                this.attributesForCard = rebuiltCards; 
+                break;
+              }
+            }
+          }
+        }
+        else { // Otherwise it's just root? Does loading attributes make sense here?
+          this.attributesForCard = this.loadAttributesForCards([category], item)
+        }
+
+        // Display missing data
+        this.missingData = this.formatMissingDataString(item);
+      })
+    });
+  }
+
+  private setupLocationsSubscriptions(item: Item): Subscription[] {
+    let subs: Subscription[] = [];
+
+    // Setup empty space for all of the location data to be loaded into
+    this.locationsAndAncestors = [];
+    for(let i = 0; i < item.locations.length; i++){
+      this.locationsAndAncestors.push([]);
+    }
+
+    // Subscribe to the locations
+    for(let locIndex in item.locations){
+      let sub = this.searchService.getLocation(item.locations[locIndex]).subscribe(location => {
+        // NEXT
+      })
+      subs.push(sub);
+    }
+    return subs;
   }
 
   ngOnDestroy() {
-    //this.deleteSub.unsubscribe();
+    this.itemSub.unsubscribe();
+    this.categorySub.unsubscribe();
+    //this.locationsSub.unsubscribe();
   }
 
   formatMissingDataString(item: Item): string {
