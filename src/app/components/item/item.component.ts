@@ -143,6 +143,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   attributesForCard: AttributeCard[];
 
   itemLocations: ItemLocation[] = [];
+  displayedColumns = ['Bad', 'Symbol'];
 
   role: string; // user role for editing
   missingData: string; // string of data missing, null if nothing is missing
@@ -181,13 +182,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       }
       this.item = item;
 
-      // Location chain loading TEST
-      console.time("chain test");
-      this.searchService.getLocationAncestorsByChain(item.locations[0]).then((data) => {
-        console.timeEnd("chain test");
-        //console.log(data);
-      })
-
       // Setup change/revert tracking info
       if(!this.originalItem) { // We don't want to overwrite if there's already old data
         this.originalItem = JSON.parse(JSON.stringify(item));
@@ -214,9 +208,6 @@ export class ItemComponent implements OnInit, OnDestroy {
         if(this.locationsSub) this.locationsSub.unsubscribe();
         this.locationsSub = 
         */
-        this.searchService.getAncestorsOf(item).subscribe(locations => {
-          this.locationsAndAncestors = locations;
-        });
       }
 
     });

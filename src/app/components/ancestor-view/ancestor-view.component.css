@@ -27,6 +27,11 @@
   border-radius: 60px;
 }
 
+.loading-text {
+  margin: auto;
+  text-align: center;
+}
+
 
 .invisible {
     display: none;

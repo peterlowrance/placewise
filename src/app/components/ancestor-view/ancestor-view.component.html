@@ -6,7 +6,10 @@
     </mat-expansion-panel-header>
 
     <div *ngIf="!parentsToDisplay">
-        <mat-spinner></mat-spinner>
+        <br>
+        <mat-spinner [diameter]="36" class="loading-text"></mat-spinner>
+        <br>
+        <div class="loading-text"> Loading structure... </div>
     </div>
 
     <div *ngIf="parentsToDisplay" class="parent-hierarchy">
