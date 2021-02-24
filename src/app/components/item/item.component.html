@@ -1,4 +1,4 @@
-<img class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
+<img *ngIf="item" class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
 <div class="allContent" *ngIf="item">
     <!-- item name goes here, switch by edit val -->
     <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
@@ -98,38 +98,16 @@
         </mat-expansion-panel>
     </div>
 
-    <br>
-
     <!-- tags -->
-    <h3>Tags <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('tags')"><mat-icon>add</mat-icon></button></h3>
-    <div [ngSwitch]="this.textEditFields.tags">
-        <div *ngSwitchCase=true>
-            <form>
-                <mat-form-field class="form-appear">
-                    <mat-chip-list #tagList>
-                    <mat-chip *ngFor="let tag of item.tags" [selectable]=true
-                            [removable]=true (removed)="removeTag(tag)">
-                        {{tag}}
-                        <mat-icon matChipRemove>cancel</mat-icon>
-                    </mat-chip>
-                    <input #tags placeholder="New tag"
-                            [matChipInputFor]="tagList"
-                            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-                            [matChipInputAddOnBlur]="true"
-                            (matChipInputTokenEnd)="addTag($event)"
-                            name="tags"
-                        >
-                    </mat-chip-list>
-                </mat-form-field>
-            </form>
-        </div>
-        <div *ngSwitchDefault class="form-appear">
-            <mat-chip-list selectable=false>
-                <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
-            </mat-chip-list>
-        </div>
+    <div *ngIf="item.tags && item.tags.length > 0">
+        <br>
+        <h3 class="bottom-space">Tags <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('tags')"><mat-icon>edit</mat-icon></button></h3>
+        <mat-chip-list selectable="false">
+            <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
+        </mat-chip-list>
     </div>
 
+    <br>
     <br>
     <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete Item</button>
 </div>

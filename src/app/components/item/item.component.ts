@@ -143,7 +143,6 @@ export class ItemComponent implements OnInit, OnDestroy {
   attributesForCard: AttributeCard[];
 
   itemLocations: ItemLocation[] = [];
-  displayedColumns = ['Bad', 'Symbol'];
 
   role: string; // user role for editing
   missingData: string; // string of data missing, null if nothing is missing
@@ -625,9 +624,8 @@ export class ItemComponent implements OnInit, OnDestroy {
         setTimeout(() => this.descField.nativeElement.focus(), 0);
         break;
       case 'tags':
-        this.textEditFields.tags = true;
         // focus
-        setTimeout(() => this.tagsField.nativeElement.focus(), 0);
+        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 4, singleStep: true } });
         break;
       default:
         break;
