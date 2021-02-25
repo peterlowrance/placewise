@@ -8,11 +8,11 @@
         <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
     </h2>
     <div *ngIf="item.desc" class="item-description">{{item.desc}}</div>
-    <button class="approx-button reportButton" mat-raised-button color="primary" (click)="createReport()" [class.mat-elevation-z3]="true">
-        <mat-icon *ngIf="!reportLoading">report_problem</mat-icon> 
-        <mat-spinner *ngIf="reportLoading" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
+    <button class="big-button report-button" mat-raised-button color="primary" (click)="createReport()" [class.mat-elevation-z3]="true">
+        <mat-icon>report_problem</mat-icon> 
         Report
     </button>
+    <br>
     <!--div class="missing-data-container" *ngIf="this.role === 'Admin' && missingData">
     <mat-icon class="missing-data-icon">error_outline</mat-icon>
     <span class="missing-data-text">
@@ -30,16 +30,7 @@
         </div>
     </div>
 
-    <br>
-
-    <!-- Category -->
-    <div class="category-info">
-        <h3 class="bottom-space">Category  <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
-        <div class="category-container">
-            <div class="category-picture"> <img class="categoryImg" src={{category?.imageUrl}}></div>
-            <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
-        </div>
-    </div>
+    <div class="small-spacer"></div>
 
     <!-- Locations -->
     <h3 class="bottom-space">
@@ -89,16 +80,26 @@
             </div>
             <div *ngIf="!locationData.tracking.isNumber" class="tracking-input-approx">
                 <h4>Last reported as: <span class="amount-reported">{{locationData.tracking.amount}}</span></h4>
-                <!--button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button-->
+                <!--button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button>
                 <button mat-raised-button class="approx-button approx-low" (click)="setTrackingAmount(locationData.location.ID, 'Low')">Low</button>
-                <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(locationData.location.ID, 'Empty')">Empty</button>
+                <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(locationData.location.ID, 'Empty')">Empty</button-->
             </div>
-            <br>
-            <br>
-            <br>
             <app-ancestor-view [parentsOf]="locationData.location"></app-ancestor-view>
         </mat-expansion-panel>
     </div>
+
+    <div class="small-spacer"></div>
+
+    <!-- Category -->
+    <div class="category-info">
+        <h3 class="bottom-space">Category  <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
+        <div class="category-container">
+            <div class="category-picture"> <img class="categoryImg" src={{category?.imageUrl}}></div>
+            <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
+        </div>
+    </div>
+
+    <div class="small-spacer"></div>
 
     <!-- tags -->
     <div *ngIf="item.tags && item.tags.length > 0">
@@ -107,9 +108,9 @@
         <mat-chip-list selectable="false">
             <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
         </mat-chip-list>
+        <div class="small-spacer"></div>
     </div>
 
-    <br>
     <br>
     <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete Item</button>
 </div>

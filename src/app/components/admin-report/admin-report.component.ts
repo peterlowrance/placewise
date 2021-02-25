@@ -89,6 +89,12 @@ export class AdminReportComponent implements OnInit {
             })
               */
           })
+
+          this.searchService.getLocation(reports[i].location).toPromise().then(location => {
+            if(location){
+              reports[i].location = location.name; // NEXT: Not quite there
+            }
+          })
           
           // Add to the notified section if it was for the person reading it
           if(reports[i].reportedTo && reports[i].reportedTo.indexOf(user.id) > -1){
@@ -138,9 +144,10 @@ export class AdminReportComponent implements OnInit {
 
   openModal(r : SentReport )
   {
+
         // reset report data, ensure clicking out defaults to fail and no double send
         var reportData : DetailedReportModalData = {
-          itemName:r.trueItem.name,itemID: r.trueItem.ID, reportDesc : r.desc,reportID : r.ID,toBeRemoved:false, toGoToItem: false
+          itemName:r.trueItem.name,itemID: r.trueItem.ID, reportDesc : r.desc,reportID : r.ID,toBeRemoved:false, toGoToItem: false, location: r.location
         }
 
 
@@ -151,7 +158,8 @@ export class AdminReportComponent implements OnInit {
             reportDesc: reportData.reportDesc,
             reportID: reportData.reportID,
             remove: reportData.toBeRemoved,
-            itemID: reportData.itemID
+            itemID: reportData.itemID, 
+            location: r.location
           }
         });
 

@@ -1,16 +1,66 @@
 <div mat-dialog-content>
-    <h1 mat-dialog-title>Enter Report Details</h1>
-    <h4>Report to:</h4>
-    <app-user-select class="user-select" [selectedUsers]="data.selectedUsers" [allUsers]="data.allUsers"></app-user-select>
-    <br>
-    <br>
 
-    <mat-form-field class="report-text-full-width">
-        <textarea matInput placeholder="Report Description" [(ngModel)]="data.desc"></textarea>
-    </mat-form-field>
-    <div mat-dialog-actions>
-        <button mat-raised-button (click)="onCancelClick()">Cancel</button>
-        <span class="btn-spacer"></span>
-        <button mat-raised-button color="primary" (click)="onSendClick()">Send</button>
+    <!-- Select which type of report -->
+    <div *ngIf="step === 'start'">
+        <h1 mat-dialog-title>What kind of Report?</h1>
+        <button mat-raised-button color="warn" class="big-button" [disabled]="loadingAdmins" (click)="onSendClick()">Item is Low</button>
+        <br>
+        <br>
+        <button mat-raised-button class="big-button empty-button" [disabled]="loadingAdmins" (click)="onSendClick()">Item is Empty</button>
+        <br>
+        <br>
+        <br>
+        <button mat-raised-button color="accent" class="big-button" (click)="onNextClick()">
+            <mat-spinner *ngIf="loadingUsers" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
+            <div *ngIf="!loadingUsers"> Custom... </div>
+        </button>
     </div>
+
+    <!-- Where to report to -->
+    <div *ngIf="step === 'where'">
+        <h1 mat-dialog-title>Which place are you reporting for?</h1>
+        <div *ngFor="let location of data.locations">
+            <mat-card class="hierarchyCard" (click)="setLocation(location.ID)" [class.mat-elevation-z2]="true">
+                <div class="hierarchycard-content">
+                    <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + location.imageUrl + ')'}"></div>
+                    <div class='hierarchy-text'>
+                        <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><div>{{location.name}}</div></div></div>
+                        <div class="hierarchy-desc-text"><p>{{location.desc ? location.desc : ' '}}</p></div>
+                    </div>
+                </div>
+            </mat-card>
+        </div>
+        <mat-card class="hierarchyCard" (click)="setLocation('none')" [class.mat-elevation-z2]="true">
+            <div class="general-text">
+                None: Just do a general report.
+            </div>
+        </mat-card>
+    </div>
+
+    <!-- Who to report to -->
+    <div *ngIf="step === 'who'">
+        <h1 mat-dialog-title>Who will recieve this report?</h1>
+        <app-user-select class="user-select" [selectedUsers]="selectedAdmins" [allUsers]="admins"></app-user-select>
+        <div mat-dialog-actions>
+            <button mat-raised-button (click)="onCancelClick()">Cancel</button>
+            <span class="btn-spacer"></span>
+            <button mat-raised-button color="accent" (click)="onNextClick()">Next</button>
+        </div>
+    </div>
+
+    <!-- Add text, finish -->
+    <div *ngIf="step === 'text'">
+        <h1 mat-dialog-title>Enter Report Details</h1>
+    
+        <mat-form-field class="report-text-full-width">
+            <textarea matInput class="report-textarea" placeholder="Report Description" [(ngModel)]="description"></textarea>
+        </mat-form-field>
+    
+        <div mat-dialog-actions>
+            <button mat-raised-button (click)="onCancelClick()">Cancel</button>
+            <span class="btn-spacer"></span>
+            <button mat-raised-button color="primary" (click)="onSendClick()">Send</button>
+        </div>
+    </div>
+
 </div>

@@ -93,6 +93,7 @@ export class AdminService {
       this.auth.getAuth().subscribe(auth => {
         auth.getIdTokenResult().then(
           token => {
+            console.log(reportedTo);
             // with token remove user by pinging server with token and email
             this.http.post(`${adServe}/createReport`, {
               idToken: token,

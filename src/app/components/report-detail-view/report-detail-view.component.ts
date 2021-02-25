@@ -35,6 +35,7 @@ export class ReportDetailViewComponent implements OnInit {
   }
 
   ngOnInit() {
+    console.log(this.data.location);
   }
 
 }

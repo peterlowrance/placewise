@@ -1,6 +1,10 @@
 <h1 mat-dialog-title>Report Details</h1>
 <mat-dialog-content class="reportText">
-    <div class="item-name">{{data.itemName}}</div>
+    <div class="item-name">
+        {{data.itemName}}
+        <br>
+        in {{ data.location }}
+    </div>
     {{data.reportDesc}}
 </mat-dialog-content>
 <div mat-dialog-actions>

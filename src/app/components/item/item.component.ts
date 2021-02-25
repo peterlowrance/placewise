@@ -135,7 +135,6 @@ export class ItemComponent implements OnInit, OnDestroy {
   expanded = false;  // is the more info panel expanded
   attributesExpanded = false;  // is the more info panel expanded
   isSaving = false;
-  reportLoading = false;
 
   // category of the item
   category: Category;
@@ -521,37 +520,35 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
   }
 
-  createReport(locationID: string) {
+  createReport() {
+
+    const dialogRef = this.dialog.open(ReportDialogComponent, {
+      width: '30rem',
+      data: {
+        item: this.item,
+        locations: this.itemLocations.map(data => { return data.location})
+      }
+    });
+
+    /* OLD
     // reset report data, ensure clicking out defaults to fail and no double send
     this.errorDesc = {valid: false, desc: '', selectedUsers: [], allUsers: []};
-    this.reportLoading = true;
     let reportedTo = this.adminService.getWorkspaceUsers().subscribe(users => {
       if(users && users.length === this.authService.usersInWorkspace){
-        this.reportLoading = false;
 
-        // Load admins for selection
-        let admins: WorkspaceUser[] = users.filter(element => { return element.role === "Admin" });
-        // Load selected people to report to
-        let defaults: WorkspaceUser[] = admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
+        
 
         reportedTo.unsubscribe(); // Immediately unsubscribe, don't want this dialog to pop up again
         // NOTE: This will not work well when you are the only person being reported to
 
-        const dialogRef = this.dialog.open(ReportDialogComponent, {
-          width: '30rem',
-          data: {
-            valid: this.errorDesc.valid,
-            desc: this.errorDesc.desc,
-            selectedUsers: defaults,
-            allUsers: admins
-          }
-        });
-    
+        
         dialogRef.afterClosed().subscribe(result => {
           if (result) this.issueReport(result, locationID);
         });
+        
       }
     });
+    */
   }
 
   /**
