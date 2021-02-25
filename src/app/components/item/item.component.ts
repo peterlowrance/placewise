@@ -135,6 +135,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   expanded = false;  // is the more info panel expanded
   attributesExpanded = false;  // is the more info panel expanded
   isSaving = false;
+  reportLoading = false;
 
   // category of the item
   category: Category;
@@ -523,8 +524,10 @@ export class ItemComponent implements OnInit, OnDestroy {
   createReport(locationID: string) {
     // reset report data, ensure clicking out defaults to fail and no double send
     this.errorDesc = {valid: false, desc: '', selectedUsers: [], allUsers: []};
+    this.reportLoading = true;
     let reportedTo = this.adminService.getWorkspaceUsers().subscribe(users => {
       if(users && users.length === this.authService.usersInWorkspace){
+        this.reportLoading = false;
 
         // Load admins for selection
         let admins: WorkspaceUser[] = users.filter(element => { return element.role === "Admin" });

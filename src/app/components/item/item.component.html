@@ -9,7 +9,9 @@
     </h2>
     <div *ngIf="item.desc" class="item-description">{{item.desc}}</div>
     <button class="approx-button reportButton" mat-raised-button color="primary" (click)="createReport()" [class.mat-elevation-z3]="true">
-        <mat-icon>report_problem</mat-icon> Report
+        <mat-icon *ngIf="!reportLoading">report_problem</mat-icon> 
+        <mat-spinner *ngIf="reportLoading" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
+        Report
     </button>
     <!--div class="missing-data-container" *ngIf="this.role === 'Admin' && missingData">
     <mat-icon class="missing-data-icon">error_outline</mat-icon>

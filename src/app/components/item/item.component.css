@@ -64,6 +64,14 @@ h2 {
   margin-bottom: 24px;
 }
 
+.report-spinner {
+  display: inline-block;
+}
+
+.report-spinner ::ng-deep circle {
+  stroke: white !important;
+}
+
 
 
 .container-img{
