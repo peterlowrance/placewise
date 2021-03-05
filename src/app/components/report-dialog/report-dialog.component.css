@@ -23,6 +23,11 @@
 
 .big-button {
     margin: auto;
+    padding: 0 30px;
+}
+
+.report-button {
+    display: block;
 }
 
 .mat-dialog-title {
@@ -31,6 +36,7 @@
 
 .report-spinner ::ng-deep circle {
     stroke: white !important;
+    display: inline-block;
   }
 
 .report-spinner {
