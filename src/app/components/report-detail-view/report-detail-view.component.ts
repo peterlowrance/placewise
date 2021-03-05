@@ -17,6 +17,8 @@ export class ReportDetailViewComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: DetailedReportModalData
   ) { }
 
+  location: string;
+
   onSendClick(){
     //set invalid report
     this.data.toBeRemoved=true;
@@ -35,7 +37,6 @@ export class ReportDetailViewComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log(this.data.location);
   }
 
 }

@@ -2,10 +2,11 @@
 <mat-dialog-content class="reportText">
     <div class="item-name">
         {{data.itemName}}
-        <br>
-        in {{ data.location }}
+        <span class="light-text" *ngIf="data.location">
+            in {{ data.location }}
+        </span>
     </div>
-    {{data.reportDesc}}
+    <b> {{data.reportDesc}} </b>
 </mat-dialog-content>
 <div mat-dialog-actions>
     <button mat-raised-button (click)="onCancelClick()">Back</button>

@@ -90,11 +90,15 @@ export class AdminReportComponent implements OnInit {
               */
           })
 
-          this.searchService.getLocation(reports[i].location).toPromise().then(location => {
-            if(location){
-              reports[i].location = location.name; // NEXT: Not quite there
-            }
-          })
+          // Replace local data for the item's location with it's name. Temporary.
+          if(reports[i].location){
+            let getLoc = this.searchService.getLocation(reports[i].location).subscribe(location => {
+              if(location){
+                reports[i].location = location.name;
+                getLoc.unsubscribe();
+              }
+            })
+          }
           
           // Add to the notified section if it was for the person reading it
           if(reports[i].reportedTo && reports[i].reportedTo.indexOf(user.id) > -1){
