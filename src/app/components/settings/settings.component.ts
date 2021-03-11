@@ -38,7 +38,10 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit() {
     this.authService.getUser().subscribe(
-      val => this.user = val
+      val => {
+        this.user = val;
+        console.log("aaaa: " + JSON.stringify(val));
+      }
     );
 
     this.authService.getWorkspace().subscribe(
@@ -54,7 +57,6 @@ export class SettingsComponent implements OnInit {
     this.authService.getRecieveEmails().subscribe(
       val => {
         this.recieveEmails = val;
-        console.log('recv ' + val);
       }
     )
   }

@@ -21,7 +21,7 @@
         <br>
         <br>
         <br>
-        <button mat-raised-button color="accent" class="big-button report-button" (click)="onNextClick()">
+        <button mat-raised-button class="big-button action-color report-button" (click)="onNextClick()">
             <mat-spinner *ngIf="loading.custom" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
             <div *ngIf="!loading.custom"> Custom... </div>
         </button>
@@ -55,7 +55,7 @@
         <div mat-dialog-actions>
             <button mat-raised-button (click)="onCancelClick()">Cancel</button>
             <span class="btn-spacer"></span>
-            <button mat-raised-button color="accent" (click)="onNextClick()">Next</button>
+            <button mat-raised-button class="action-color" (click)="onNextClick()">Next</button>
         </div>
     </div>
 
@@ -70,7 +70,7 @@
         <div mat-dialog-actions>
             <button mat-raised-button (click)="onCancelClick()">Cancel</button>
             <span class="btn-spacer"></span>
-            <button mat-raised-button color="primary" (click)="onSendClick()">
+            <button mat-raised-button class="action-color-dark" (click)="onSendClick()">
                 <mat-icon> report_problem </mat-icon>
                 Send
             </button>

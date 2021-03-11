@@ -8,7 +8,7 @@
         <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
     </h2>
     <div *ngIf="item.desc" class="item-description">{{item.desc}}</div>
-    <button class="big-button report-button" mat-raised-button color="primary" (click)="createReport()" [class.mat-elevation-z3]="true">
+    <button class="big-button report-button action-color" mat-raised-button (click)="createReport()" [class.mat-elevation-z3]="true">
         <mat-icon>assignment_late</mat-icon> 
         Report
     </button>
