@@ -65,8 +65,6 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
         this.admins = users.filter(element => { return element.role === "Admin" });
         // Load selected people to report to
         this.defaults = this.admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
-
-        console.log(this.defaults);
       }
     });
   }

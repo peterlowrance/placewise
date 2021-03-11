@@ -9,9 +9,8 @@ mat-button-toggle {
 }
 
 .mat-button-toggle-checked {
-  background-color: #6a4f4b;
-  box-shadow: inset 0 0 6px rgba(56, 56, 56, 0.2);
-  color: #FFF;
+  background-color: #d3b8ae;
+  box-shadow: inset 0 0 12px rgba(56, 56, 56, 0.2);
   border: 0;
 }
 
