@@ -10,3 +10,5 @@ export interface Report {
     description: string;
     location: string;
 }
+
+// This interface is smelly

@@ -88,7 +88,7 @@ export class AdminService {
     }));
   }
 
-  placeReport(itemID: string, text: string, reportedTo: string[], locationID: string) {
+  placeReport(itemID: string, text: string, reportedTo: string[], locationID: string, type: string) {
     return new Promise((resolve, reject) => {
       this.auth.getAuth().subscribe(auth => {
         auth.getIdTokenResult().then(
@@ -100,7 +100,8 @@ export class AdminService {
               item: itemID,
               location: locationID,
               message: text,
-              reportTo: reportedTo
+              reportTo: reportedTo,
+              type: type
             }).toPromise().then(
               () => resolve(`Report sent!`),
               (err) => reject(err.error)
@@ -127,16 +128,37 @@ export class AdminService {
     this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + userID).set({emailReports: value}, {merge: true});
   }
 
-  deleteReport(id: string) {
-    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).delete();
+  deleteReport(reportID: string, itemID: string) {
+    // Try to remove the report from an item's data
+    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + itemID).get().toPromise().then(item => {
+      let reports = (item.data() as Item).reports;
+
+      // Look through connected reports and remove the data associated with the report's ID
+      for(let index in reports){
+        if(reports[index].report === reportID){
+          reports.splice(Number(index), 1);
+          //console.log("Deleted Report: " + reportID);
+
+          this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Items/' + itemID).update({
+            reports: reports
+          });
+          break;
+        }
+      }
+    });
+
+    // Delete actual report data
+    this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Reports/' + reportID).delete();
   }
 
+  /*
   clearReports(reports: SentReport[]) {
     for (let i = 0; i < reports.length; i++) {
       this.deleteReport(reports[i].ID);
     }
     return [];
   }
+  */
 
   getListenedReportLocations(): Observable<string[]> {
     return new Observable(obs => {
@@ -260,7 +282,7 @@ export class AdminService {
       for (let i = 0; i < reports.length; i++) {
         if(reports[i].item == item.ID)
         {
-          this.deleteReport(reports[i].ID);
+          this.deleteReport(reports[i].ID, item.ID);
         }
       }
     }

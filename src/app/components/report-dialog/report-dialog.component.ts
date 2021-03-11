@@ -9,6 +9,7 @@ import { AdminService } from 'src/app/services/admin.service';
 import { AuthService } from 'src/app/services/auth.service';
 import {MatSnackBar} from '@angular/material';
 import { HierarchyLocation } from 'src/app/models/Location';
+import { ItemBuilderComponent } from '../item-builder/item-builder.component';
 
 //placeholder error description
 const PLACEHOLDER: string = 'Something is wrong with this item.\nPlease follow-up.';
@@ -37,11 +38,44 @@ export class ReportDialogComponent implements OnInit {
   admins: WorkspaceUser[];
   selectedAdmins: WorkspaceUser[];
   description: string = '';
+  type: string = 'custom';
   locationID = 'none';
   isAutoReport = false;
 
+  reportLowDisabled = false;
+  reportEmptyDisabled = false;
+  reportCustomDisabled = false;
+
   ngOnInit() {
     this.step = 'start';
+    let timestamp = Date.now();
+
+    // Disable auto report button if it's been less than a day since last report
+    if(this.data.item.autoReportLastTimestamp)
+    for(let autoTimestampSearch of this.data.item.autoReportLastTimestamp){
+      if(autoTimestampSearch.timestamp + 86400000 > timestamp){
+        if(autoTimestampSearch.type === 'Low'){
+          this.reportLowDisabled = true;
+        }
+        else if(autoTimestampSearch.type === 'Empty'){
+          this.reportEmptyDisabled = true;
+        }
+      }
+    };
+    
+    // Reject more than 3 reports per item location a day
+    /*
+    let reportsInPastDay = 0;
+    for(let report of this.data.item.reports){
+      if(report.location === req.body.location && (report.timestamp + 86400000 > timestamp)){
+        reportsInPastDay += 1;
+      }
+    }
+    
+    if(reportsInPastDay >= 3){
+      this.canReport = false;
+    }
+    */
   }
 
   onNextClick() {
@@ -101,10 +135,12 @@ export class ReportDialogComponent implements OnInit {
 
     if(message === "low"){
       this.description = "Item is low."
+      this.type = "Low";
       this.loading.low = true;
     }
     else {
       this.description = "Item is empty!"
+      this.type = "Empty"
       this.loading.empty = true;
     }
 
@@ -137,10 +173,10 @@ export class ReportDialogComponent implements OnInit {
     this.dialogRef.close({wasValid: true});
     this.snack.open("Sending Report...", '', {duration: 2000, panelClass: ['mat-toolbar']});
 
-    this.adminService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID).then(
+    this.adminService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type).then(
       () => this.snack.open("Report Sent!", "OK", {duration: 4000, panelClass: ['mat-toolbar']}),
       (err) => {
-        this.snack.open("Report Failed, " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
+        this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
         console.log(JSON.stringify(err));
       }
     );

@@ -566,10 +566,10 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.report.timestamp = new Date().getUTCSeconds(); // old
 
       // Issue report
-      return this.adminService.placeReport(this.report.item.ID, this.report.description, result.selectedUsers.map(user => user.id), locationID).then(
+      return this.adminService.placeReport(this.report.item.ID, this.report.description, result.selectedUsers.map(user => user.id), locationID, "custom").then(
         () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
         (err) => {
-          this.snack.open("Report Failed, " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
+          this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
           console.log(JSON.stringify(err));
         }
       );
@@ -578,17 +578,22 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   sendAutoReport(amount: any, locationID: string, locationName: string) {
     let desc = "Low";
+    let type = "custom";
     if(amount === "Low"){
       desc = "Auto Report: Item is low on supply in " + locationName + ".";
+      type = "Low";
     } 
     else if (amount === "Empty") {
       desc = "Auto Report: There's no items left in " + locationName + "!";
+      type = "Empty";
     }
     else if (amount === 0) {
       desc = "Auto Report: There's no items left in " + locationName + "!";
+      type = "Empty";
     } 
     else {
       desc = "Auto Report: There's only " + amount + " left in stock of " + locationName +  ".";
+      type = "Low";
     }
 
     // smelly code
@@ -599,9 +604,9 @@ export class ItemComponent implements OnInit, OnDestroy {
     this.report.timestamp = new Date().getUTCSeconds();
     this.report.location = locationID;
 
-    return this.adminService.placeReport(this.report.item.ID, this.report.description, this.authService.workspace.defaultUsersForReports, locationID).then(
+    return this.adminService.placeReport(this.report.item.ID, this.report.description, this.authService.workspace.defaultUsersForReports, locationID, type).then(
       () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
-      (err) => this.snack.open("Report Failed, " + err.status, "OK", {duration: 3000, panelClass: ['mat-toolbar']})
+      (err) => this.snack.open("Report Failed. " + err.status, "OK", {duration: 3000, panelClass: ['mat-toolbar']})
     );
   }
 

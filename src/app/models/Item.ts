@@ -23,5 +23,11 @@ export interface Item extends HierarchyObject {
   reports?: [{
     location: string;
     report: string;
-  }]
+    timestamp: string;
+  }];
+
+  autoReportLastTimestamp?: [{
+    type: string;
+    timestamp: number;
+  }];
 }

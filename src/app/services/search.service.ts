@@ -187,7 +187,7 @@ export class SearchService implements SearchInterfaceService {
   }
 
   getLocation(id: string): Observable<HierarchyLocation> {
-    if (!id) {
+    if (!id || id === 'none') {
       return of(null);
     }
     return this.afs.doc<HierarchyLocation>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {

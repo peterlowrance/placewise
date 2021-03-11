@@ -171,7 +171,7 @@ export class AdminReportComponent implements OnInit {
           reportData = result;
           // if it's valid, build and isue report, else leave
           if (reportData && reportData.toBeRemoved) {
-            this.adminService.deleteReport(reportData.reportID);
+            this.adminService.deleteReport(reportData.reportID, reportData.itemID);
           }
         });
   }

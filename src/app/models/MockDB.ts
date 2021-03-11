@@ -128,7 +128,8 @@ export const REPORTS: SentReport[] = [
         userName: "",
         reportedTo:[],
         timestamp: 0,
-        location: ''
+        location: '',
+        type: 'custom'
     },
     {
         item: '998',
@@ -139,7 +140,8 @@ export const REPORTS: SentReport[] = [
         userName: "",
         reportedTo: [],
         timestamp: 0,
-        location: ''
+        location: '',
+        type: 'custom'
     },
     {
         item: '998',
@@ -150,6 +152,7 @@ export const REPORTS: SentReport[] = [
         userName: "",
         reportedTo: [],
         timestamp: 0,
-        location: ''
+        location: '',
+        type: 'custom'
     }
     ]

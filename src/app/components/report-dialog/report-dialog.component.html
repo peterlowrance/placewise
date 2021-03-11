@@ -3,15 +3,18 @@
     <!-- Select which type of report -->
     <div *ngIf="step === 'start'">
         <h1 mat-dialog-title>What kind of Report?</h1>
-        <button mat-raised-button color="warn" class="big-button report-button" [disabled]="loadingAdmins" (click)="setupAutoReport('low')">
+        <button mat-raised-button color="warn" class="big-button report-button" [disabled]="loadingAdmins || reportLowDisabled" (click)="setupAutoReport('low')">
             <mat-icon *ngIf="!loading.low"> report_problem </mat-icon>
             <span *ngIf="!loading.low"> 
                 Report Low
             </span>
             <mat-spinner *ngIf="loading.low" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
         </button>
+        <div *ngIf="reportLowDisabled" class="disabled-report-text">
+            This item has already been reported as low in the last 24 hours.
+        </div>
         <br>
-        <button mat-raised-button class="big-button report-button empty-button" [disabled]="loadingAdmins" (click)="setupAutoReport('empty')">
+        <button mat-raised-button class="big-button report-button empty-button" [disabled]="loadingAdmins || reportEmptyDisabled" (click)="setupAutoReport('empty')">
             <mat-icon *ngIf="!loading.empty"> report_problem </mat-icon>
             <span *ngIf="!loading.empty"> 
                 Report Empty
