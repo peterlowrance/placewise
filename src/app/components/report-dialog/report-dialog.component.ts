@@ -46,36 +46,60 @@ export class ReportDialogComponent implements OnInit {
   reportEmptyDisabled = false;
   reportCustomDisabled = false;
 
+  reportsInLast12HPerLocation: Map<string, number>;
+  canReport = true;
+
   ngOnInit() {
     this.step = 'start';
     let timestamp = Date.now();
 
     // Disable auto report button if it's been less than a day since last report
-    if(this.data.item.autoReportLastTimestamp)
-    for(let autoTimestampSearch of this.data.item.autoReportLastTimestamp){
-      if(autoTimestampSearch.timestamp + 86400000 > timestamp){
+    if(this.data.item.lastReportTimestampByType)
+    for(let autoTimestampSearch of this.data.item.lastReportTimestampByType){
+      if(autoTimestampSearch.timestamp + 43200000 > timestamp){
         if(autoTimestampSearch.type === 'Low'){
           this.reportLowDisabled = true;
         }
         else if(autoTimestampSearch.type === 'Empty'){
           this.reportEmptyDisabled = true;
+          this.reportLowDisabled = true;
         }
       }
     };
     
-    // Reject more than 3 reports per item location a day
-    /*
-    let reportsInPastDay = 0;
-    for(let report of this.data.item.reports){
-      if(report.location === req.body.location && (report.timestamp + 86400000 > timestamp)){
-        reportsInPastDay += 1;
+    // Scan through reports to count total reports per location in last 24h
+    this.reportsInLast12HPerLocation = this.countReportsInLastDay(this.data.item.locations, timestamp, this.data.item.reports);
+
+    // If there are no locations, see if 'none' location has too many reports
+    if(!this.data.item.locations || this.data.item.locations.length < 1){
+      if(this.reportsInLast12HPerLocation.get('none') > 2){
+        this.canReport = false;
       }
     }
-    
-    if(reportsInPastDay >= 3){
-      this.canReport = false;
+    // If there's one, look at that location for if there's too many reports
+    else if (this.data.item.locations.length < 2) {
+      if(this.reportsInLast12HPerLocation.get(this.data.item.locations[0]) > 2){
+        this.canReport = false;
+      }
     }
-    */
+    // Otherwise, check each one. If any are not full, we can still do a custom report.
+    else {
+      let allFull = true;
+      for(let location of this.data.item.locations){
+        console.log(this.reportsInLast12HPerLocation.get(location));
+        if(this.reportsInLast12HPerLocation.get(location) < 3){
+          allFull = false;
+          break;
+        }
+      }
+
+      if(allFull) {
+        this.canReport = false;
+      }
+    }
+
+    console.log(this.canReport);
+    
   }
 
   onNextClick() {
@@ -95,7 +119,7 @@ export class ReportDialogComponent implements OnInit {
             this.step = 'who';
           }
           // If there's one location, update the report locationID and skip a step
-          if(this.data.locations.length === 1){
+          else if(this.data.locations.length === 1){
             this.locationID = this.data.locations[0].ID;
             this.step = 'who';
           }
@@ -120,6 +144,40 @@ export class ReportDialogComponent implements OnInit {
     else {
       this.step = 'who';
     }
+  }
+
+  countReportsInLastDay(locations: string[], timestamp: number, reports: [{location: string, report: string, timestamp: number}]): Map<string, number> {
+    let reportPerLocationCount: Map<string, number> = new Map();
+    let count: number; // For effciency
+
+    console.log(reportPerLocationCount);
+
+    // Add count of reports per location in the last 24h
+    for(let report of reports){
+      if(report.timestamp + 43200000 > timestamp){
+        count = reportPerLocationCount.get(report.location);
+        if(count){
+          reportPerLocationCount.set(report.location, count + 1);
+        }
+        else {
+          reportPerLocationCount.set(report.location, 1);
+        }
+      }
+    }
+
+    // Add the rest of the locations as 0 reports in last 24h
+    for(let location of locations){
+      if(!reportPerLocationCount.has(location)){
+        reportPerLocationCount.set(location, 0);
+      }
+    }
+
+    // Add empty general reports if none exist
+    if(!reportPerLocationCount.has('none')){
+      reportPerLocationCount.set('none', 0);
+    }
+
+    return reportPerLocationCount;
   }
 
   onSendClick(){

@@ -20,14 +20,17 @@ export interface Item extends HierarchyObject {
     amount: any;
   }];
 
+  // These get added and removed as reports are resolved
   reports?: [{
     location: string;
     report: string;
-    timestamp: string;
+    timestamp: number;
   }];
 
-  autoReportLastTimestamp?: [{
+  // This data sticks around
+  lastReportTimestampByType?: [{
     type: string;
+    location: string;
     timestamp: number;
   }];
 }

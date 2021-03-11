@@ -10,10 +10,9 @@
             </span>
             <mat-spinner *ngIf="loading.low" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
         </button>
-        <div *ngIf="reportLowDisabled" class="disabled-report-text">
-            This item has already been reported as low in the last 24 hours.
+        <div *ngIf="reportLowDisabled && !reportEmptyDisabled" class="disabled-report-text">
+            This item has already been reported as low in the last 12 hours.
         </div>
-        <br>
         <button mat-raised-button class="big-button report-button empty-button" [disabled]="loadingAdmins || reportEmptyDisabled" (click)="setupAutoReport('empty')">
             <mat-icon *ngIf="!loading.empty"> report_problem </mat-icon>
             <span *ngIf="!loading.empty"> 
@@ -21,25 +20,39 @@
             </span>
             <mat-spinner *ngIf="loading.empty" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
         </button>
+        <div *ngIf="reportEmptyDisabled" class="disabled-report-text">
+            This item has already been reported as empty in the last 12 hours.
+        </div>
         <br>
         <br>
-        <br>
-        <button mat-raised-button class="big-button action-color report-button" (click)="onNextClick()">
+        <button mat-raised-button class="big-button action-color report-button" (click)="onNextClick()" [disabled]="!canReport">
             <mat-spinner *ngIf="loading.custom" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
             <div *ngIf="!loading.custom"> Custom... </div>
         </button>
+        <div *ngIf="!canReport" class="disabled-report-text">
+            All locations have had 3 reports in the last 12h.
+        </div>
     </div>
 
     <!-- Where to report to -->
     <div *ngIf="step === 'where'">
         <h1 mat-dialog-title>Which place are you reporting for?</h1>
         <div *ngFor="let location of data.locations">
-            <mat-card class="hierarchyCard" (click)="setLocation(location.ID)" [class.mat-elevation-z2]="true">
+            <mat-card class="hierarchyCard" (click)="setLocation(location.ID)" *ngIf="reportsInLast12HPerLocation.get(location.ID) < 3" [class.mat-elevation-z2]="true">
                 <div class="hierarchycard-content">
                     <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + location.imageUrl + ')'}"></div>
                     <div class='hierarchy-text'>
                         <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><div>{{location.name}}</div></div></div>
-                        <div class="hierarchy-desc-text"><p>{{location.desc ? location.desc : ' '}}</p></div>
+                        <div class="hierarchy-desc-text">{{location.desc ? location.desc : ' '}}</div>
+                    </div>
+                </div>
+            </mat-card>
+            <mat-card *ngIf="reportsInLast12HPerLocation.get(location.ID) >= 3" class="hierarchyCard disabled-card" (click)="setLocation('none')" [class.mat-elevation-z2]="true">
+                <div class="hierarchycard-content">
+                    <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + location.imageUrl + ')'}"></div>
+                    <div class='hierarchy-text'>
+                        <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><div>{{location.name}}</div></div></div>
+                        <div class="hierarchy-desc-text disabled-location-text">Too many reports in 12h.</div>
                     </div>
                 </div>
             </mat-card>
