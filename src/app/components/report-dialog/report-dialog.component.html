@@ -3,7 +3,7 @@
     <!-- Select which type of report -->
     <div *ngIf="step === 'start'">
         <h1 mat-dialog-title>What kind of Report?</h1>
-        <button mat-raised-button color="warn" class="big-button report-button" [disabled]="loadingAdmins || reportLowDisabled" (click)="setupAutoReport('low')">
+        <button mat-raised-button color="warn" class="big-button report-button" [disabled]="loadingAdmins || reportLowDisabled || !canReport" (click)="setupAutoReport('low')">
             <mat-icon *ngIf="!loading.low"> report_problem </mat-icon>
             <span *ngIf="!loading.low"> 
                 Report Low
@@ -13,7 +13,7 @@
         <div *ngIf="reportLowDisabled && !reportEmptyDisabled" class="disabled-report-text">
             This item has already been reported as low in the last 12 hours.
         </div>
-        <button mat-raised-button class="big-button report-button empty-button" [disabled]="loadingAdmins || reportEmptyDisabled" (click)="setupAutoReport('empty')">
+        <button mat-raised-button class="big-button report-button empty-button" [disabled]="loadingAdmins || reportEmptyDisabled || !canReport" (click)="setupAutoReport('empty')">
             <mat-icon *ngIf="!loading.empty"> report_problem </mat-icon>
             <span *ngIf="!loading.empty"> 
                 Report Empty
@@ -37,8 +37,8 @@
     <!-- Where to report to -->
     <div *ngIf="step === 'where'">
         <h1 mat-dialog-title>Which place are you reporting for?</h1>
-        <div *ngFor="let location of data.locations">
-            <mat-card class="hierarchyCard" (click)="setLocation(location.ID)" *ngIf="reportsInLast12HPerLocation.get(location.ID) < 3" [class.mat-elevation-z2]="true">
+        <div *ngFor="let locationWithData of locationData">
+            <mat-card class="hierarchyCard" (click)="setLocation(locationWithData.location.ID)" *ngIf="locationWithData.canReport && locationWithData." [class.mat-elevation-z2]="true">
                 <div class="hierarchycard-content">
                     <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + location.imageUrl + ')'}"></div>
                     <div class='hierarchy-text'>
@@ -57,11 +57,6 @@
                 </div>
             </mat-card>
         </div>
-        <mat-card class="hierarchyCard" (click)="setLocation('none')" [class.mat-elevation-z2]="true">
-            <div class="general-text">
-                None: Just do a general report.
-            </div>
-        </mat-card>
     </div>
 
     <!-- Who to report to -->

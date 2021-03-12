@@ -1,5 +1,7 @@
 import { HierarchyObject } from './HierarchyObject';
 import { Attribute } from './Attribute';
+import { ItemTypeReportTimestamp } from './ItemTypeReportTimestamp';
+import { ItemReport } from './ItemReport';
 
 export interface Item extends HierarchyObject {
   desc?: string;
@@ -21,16 +23,8 @@ export interface Item extends HierarchyObject {
   }];
 
   // These get added and removed as reports are resolved
-  reports?: [{
-    location: string;
-    report: string;
-    timestamp: number;
-  }];
+  reports?: ItemReport[];
 
   // This data sticks around
-  lastReportTimestampByType?: [{
-    type: string;
-    location: string;
-    timestamp: number;
-  }];
+  lastReportTimestampByType?: ItemTypeReportTimestamp[];
 }
