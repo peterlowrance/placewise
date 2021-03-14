@@ -89,16 +89,16 @@ mat-card {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-top: calc(2px + 1%);
-    font-size: 12px;
+    margin-top: 3px;
+    font-size: 14px;
     font-weight: 400;
-    height: 28px;
+    height: 36px;
     color: #888;
 }
 
 .hierarchy-title-text-positioner {
     display: flex;
-    height: 48%;
+    height: 45%;
     align-items: flex-end;
 }
 
@@ -134,9 +134,9 @@ mat-card {
 }
 
 .disabled-card {
-    background-color: #BBB;
+    background-color: #DDD;
 }
 
 .disabled-location-text {
-    color: #600;
+    color: #700;
 }

@@ -14,7 +14,7 @@ import { ItemReport } from 'src/app/models/ItemReport';
 import { ItemTypeReportTimestamp } from 'src/app/models/ItemTypeReportTimestamp';
 
 interface LocationWithReportMeta {
-  location: HierarchyLocation, 
+  location?: HierarchyLocation, 
   canNotAutoReport?: boolean, 
   canReport: boolean
 }
@@ -77,79 +77,6 @@ export class ReportDialogComponent implements OnInit {
       this.reportLowDisabled = !this.isAbleToAutoReportFor("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
     }
 
-    /*
-    // For each report type, mark thier corresponding location as full if it's been reported in 12h
-    if(this.data.item.lastReportTimestampByType){ 
-      for(let autoTimestampSearch of this.data.item.lastReportTimestampByType){
-        for(let location of this.data.locations){
-          if(autoTimestampSearch.location === location.ID){
-
-            // 12 hour check. If it's empty, also mark low reports as full
-            if(autoTimestampSearch.timestamp + 43200000 > timestamp){
-              if(autoTimestampSearch.type === 'Low'){
-                location.lowReportFull = true;
-                console.log("Low: " + location.ID);
-              }
-              else if(autoTimestampSearch.type === 'Empty'){
-                location.emptyReportFull = true;
-                location.lowReportFull = true;
-                console.log("Empty: " + location.ID);
-              }
-            }
-
-            // For some efficiency, once location is found we break this loop
-            break;
-          }
-        };
-      }
-    }
-
-    // Disable auto report button if it's been less than a day since last report
-    if(this.data.item.lastReportTimestampByType)
-    for(let autoTimestampSearch of this.data.item.lastReportTimestampByType){
-      if(autoTimestampSearch.timestamp + 43200000 > timestamp){
-        if(autoTimestampSearch.type === 'Low'){
-          this.reportLowDisabled = true;
-        }
-        else if(autoTimestampSearch.type === 'Empty'){
-          this.reportEmptyDisabled = true;
-          this.reportLowDisabled = true;
-        }
-      }
-    };
-    
-    // Scan through reports to count total reports per location in last 12h
-    this.reportsInLast12HPerLocation = this.countReportsInLastDay(this.data.item.locations, timestamp, this.data.item.reports);
-
-    // If there are no locations, see if 'none' location has too many reports
-    if(!this.data.item.locations || this.data.item.locations.length < 1){
-      if(this.reportsInLast12HPerLocation.get('none') > 2){
-        this.canReport = false;
-      }
-    }
-    // If there's one, look at that location for if there's too many reports
-    else if (this.data.item.locations.length < 2) {
-      if(this.reportsInLast12HPerLocation.get(this.data.item.locations[0]) > 2){
-        this.canReport = false;
-      }
-    }
-    // Otherwise, check each one. If any are not full, we can still do a custom report.
-    else {
-      let allFull = true;
-      for(let location of this.data.item.locations){
-        console.log(this.reportsInLast12HPerLocation.get(location));
-        if(this.reportsInLast12HPerLocation.get(location) < 3){
-          allFull = false;
-          break;
-        }
-      }
-
-      if(allFull) {
-        this.canReport = false;
-      }
-    }
-    */
-
     console.log(this.canReport);
     
   }
@@ -158,31 +85,56 @@ export class ReportDialogComponent implements OnInit {
   countRecentReports(locations: HierarchyLocation[], itemReports: ItemReport[], timestamp: number): LocationWithReportMeta[] {
     let locData: LocationWithReportMeta[] = [];
     
-    // Fill in data for each report
-    for(let location of locations){
-      let locationCounter = 0;
+    // If the item has location, fill in data for each location
+    if(locations && locations.length > 0){
+      for(let location of locations){
+        let locationCounter = 0;
 
-      // Go through all live reports and count up the ones attached to the item's location
-      // in the last 12h
+        // Go through all live reports and count up the ones attached to the item's location
+        // in the last 12h
+        if(itemReports){
+          for(let report of itemReports){
+            if(report.location === location.ID && report.timestamp + 43200000 > timestamp){
+              locationCounter++;
+            }
+            if(locationCounter >= 3){
+              break;
+            }
+          }
+        }
+        
+        // If there's more than three reports per location, mark it as disabled
+        if(locationCounter >= 3){
+          locData.push({location, canReport: false});
+        }
+        else {
+          locData.push({location, canReport: true});
+        }
+      }
+    }
+    // If this item does not have a location, look for reports with the 'none' location
+    else {
+      let noneLocationReports = 0;
+
       if(itemReports){
         for(let report of itemReports){
-          if(report.location === location.ID && report.timestamp + 43200000 > timestamp){
-            locationCounter++;
+          if(report.location === 'none' && report.timestamp + 43200000 > timestamp){
+            noneLocationReports++;
           }
-          if(locationCounter >= 3){
+          if(noneLocationReports >= 3){
             break;
           }
         }
       }
-      
-      // If there's more than three reports per location, mark it as disabled
-      if(locationCounter >= 3){
-        locData.push({location, canReport: false});
+
+      if(noneLocationReports >= 3){
+        locData.push({canReport: false});
       }
       else {
-        locData.push({location, canReport: true});
+        locData.push({canReport: true});
       }
     }
+    
 
     return locData;
   }
@@ -216,18 +168,30 @@ export class ReportDialogComponent implements OnInit {
       // If we can't report for this location, then go to the next location
       if(locationWithReportData.canReport){
         let found = false;
+        let noLocation = locationWithReportData.location ? false : true;
 
         for(let timestampData of typeReportTimestmaps){
-          if(timestampData.location === locationWithReportData.location.ID && timestampData.type === type){
-            // If this report timestamp is old, return good
-            if(timestampData.timestamp + 43200000 < timestamp){
-              return true;
+          if(noLocation){
+            if(timestampData.location === 'none' && timestampData.type === type){
+              // If this report timestamp is old, return good
+              if(timestampData.timestamp + 43200000 < timestamp){
+                return true;
+              }
+              found = true;
             }
-            found = true;
+          }
+          else {
+            if(timestampData.location === locationWithReportData.location.ID && timestampData.type === type){
+              // If this report timestamp is old, return good
+              if(timestampData.timestamp + 43200000 < timestamp){
+                return true;
+              }
+              found = true;
+            }
           }
         }
 
-        // If there's no data for a location, then we're good to report here
+        // If there's no previous data for a location, then we're good to report here
         if(!found){
           return true;
         }
@@ -241,6 +205,7 @@ export class ReportDialogComponent implements OnInit {
   // Update location data to match what type of auto report we are looking for
   updateLocationDataForAutoReport(type: string, locationData: LocationWithReportMeta[], typeReportTimestmaps: ItemTypeReportTimestamp[], timestamp: number){
     for(let locationWithReportData of locationData){
+      if(typeReportTimestmaps)
       for(let timestampData of typeReportTimestmaps){
         if(timestampData.location === locationWithReportData.location.ID && timestampData.type === type){
           // If the last report was less than 12 hours ago, disable this location
@@ -297,40 +262,6 @@ export class ReportDialogComponent implements OnInit {
     else {
       this.step = 'who';
     }
-  }
-
-  countReportsInLastDay(locations: string[], timestamp: number, reports: [{location: string, report: string, timestamp: number}]): Map<string, number> {
-    let reportPerLocationCount: Map<string, number> = new Map();
-    let count: number; // For effciency
-
-    console.log(reportPerLocationCount);
-
-    // Add count of reports per location in the last 12h
-    for(let report of reports){
-      if(report.timestamp + 43200000 > timestamp){
-        count = reportPerLocationCount.get(report.location);
-        if(count){
-          reportPerLocationCount.set(report.location, count + 1);
-        }
-        else {
-          reportPerLocationCount.set(report.location, 1);
-        }
-      }
-    }
-
-    // Add the rest of the locations as 0 reports in last 12h
-    for(let location of locations){
-      if(!reportPerLocationCount.has(location)){
-        reportPerLocationCount.set(location, 0);
-      }
-    }
-
-    // Add empty general reports if none exist
-    if(!reportPerLocationCount.has('none')){
-      reportPerLocationCount.set('none', 0);
-    }
-
-    return reportPerLocationCount;
   }
 
   onSendClick(){

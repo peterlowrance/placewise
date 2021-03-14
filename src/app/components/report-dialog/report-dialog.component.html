@@ -47,13 +47,13 @@
                     </div>
                 </div>
             </mat-card>
-            <mat-card *ngIf="!locationWithData.canReport || locationWithData.canNotAutoReport" class="hierarchyCard disabled-card" (click)="setLocation('none')" [class.mat-elevation-z2]="true">
+            <mat-card *ngIf="!locationWithData.canReport || locationWithData.canNotAutoReport" class="hierarchyCard disabled-card" [class.mat-elevation-z2]="true">
                 <div class="hierarchycard-content">
                     <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + locationWithData.location.imageUrl + ')'}"></div>
                     <div class='hierarchy-text'>
                         <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><div>{{locationWithData.location.name}}</div></div></div>
                         <div *ngIf="!locationWithData.canReport" class="hierarchy-desc-text disabled-location-text">Too many reports in 12h.</div>
-                        <div *ngIf="locationWithData.canReport" class="hierarchy-desc-text disabled-location-text">This has already been reported as {{type}} in the last 12 hours.</div>
+                        <div *ngIf="locationWithData.canReport" class="hierarchy-desc-text disabled-location-text">This has already been reported as {{type}}.</div>
                     </div>
                 </div>
             </mat-card>
