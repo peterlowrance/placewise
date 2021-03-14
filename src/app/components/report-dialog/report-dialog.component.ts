@@ -56,20 +56,26 @@ export class ReportDialogComponent implements OnInit {
   reportLowDisabled = false;
   reportEmptyDisabled = false;
   canReport = true;
+  timestamp = Date.now();
 
   reportsInLast12HPerLocation: Map<string, number>;
 
   ngOnInit() {
     this.step = 'start';
-    let timestamp = Date.now();
 
-    this.locationData = this.countRecentReports(this.data.locations, this.data.item.reports, timestamp);
+    this.locationData = this.countRecentReports(this.data.locations, this.data.item.reports, this.timestamp);
 
     this.canReport = this.isAbleToReport(this.locationData);
 
-    let autoData: {isLow: boolean, isEmpty: boolean} = this.isAbleToAutoReport(this.locationData, this.data.item.lastReportTimestampByType, timestamp);
-    this.reportLowDisabled = autoData.isLow;
-    this.reportEmptyDisabled = autoData.isEmpty;
+    this.reportEmptyDisabled = !this.isAbleToAutoReportFor("Empty", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
+    
+    // If it's empty, then it's low
+    if(this.reportEmptyDisabled) {
+      this.reportLowDisabled = true;
+    }
+    else {
+      this.reportLowDisabled = !this.isAbleToAutoReportFor("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
+    }
 
     /*
     // For each report type, mark thier corresponding location as full if it's been reported in 12h
@@ -197,47 +203,54 @@ export class ReportDialogComponent implements OnInit {
   }
 
   // This sees if we are able to create any report for this type of report
-  isAbleToAutoReport(locationData: LocationWithReportMeta[], typeReportTimestmaps: ItemTypeReportTimestamp[], timestamp: number): { isLow: boolean, isEmpty: boolean }{
-    let result = { isLow: false, isEmpty: false };
+  isAbleToAutoReportFor(type: string, locationData: LocationWithReportMeta[], typeReportTimestmaps: ItemTypeReportTimestamp[], timestamp: number): boolean {
+    // If there is no time stamps, immediately return good
+    if(!typeReportTimestmaps){
+      return true;
+    }
 
+    // NEXT: This is not working right for full locations
+
+    // Go through each location to see if there's an open spot for this type of auto report
     for(let locationWithReportData of locationData){
-      if(locationWithReportData.canReport && typeReportTimestmaps){
+      // If we can't report for this location, then go to the next location
+      if(locationWithReportData.canReport){
+        let found = false;
+
         for(let timestampData of typeReportTimestmaps){
-          if(timestampData.location === locationWithReportData.location.ID && timestampData.timestamp + 43200000 > timestamp){
-            if(timestampData.type === 'Low'){
-              result.isLow = true;
-            } else {
-              result.isLow = true;
-              result.isEmpty = true;
+          if(timestampData.location === locationWithReportData.location.ID && timestampData.type === type){
+            // If this report timestamp is old, return good
+            if(timestampData.timestamp + 43200000 < timestamp){
+              return true;
             }
+            found = true;
           }
+        }
+
+        // If there's no data for a location, then we're good to report here
+        if(!found){
+          return true;
         }
       }
     }
 
-    return result;
+    // If no open slots were found, return bad
+    return false;
   }
 
   // Update location data to match what type of auto report we are looking for
   updateLocationDataForAutoReport(type: string, locationData: LocationWithReportMeta[], typeReportTimestmaps: ItemTypeReportTimestamp[], timestamp: number){
     for(let locationWithReportData of locationData){
-      let found = false;
-
       for(let timestampData of typeReportTimestmaps){
         if(timestampData.location === locationWithReportData.location.ID && timestampData.type === type){
-          // If the last report was over 12 hours ago, we're good
+          // If the last report was less than 12 hours ago, disable this location
           if(timestampData.timestamp + 43200000 > timestamp){
             locationWithReportData.canNotAutoReport = true;
           }
 
-          found = true;
+          // Since this is the correct location and type, we can break the loop and look at next location
           break;
         }
-      }
-
-      // If there is no data, there hasn't be a report ofr this so we're good
-      if(!found){
-        locationWithReportData.canNotAutoReport = true;
       }
     }
   }
@@ -335,11 +348,13 @@ export class ReportDialogComponent implements OnInit {
       this.description = "Item is low."
       this.type = "Low";
       this.loading.low = true;
+      this.updateLocationDataForAutoReport("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
     }
     else {
       this.description = "Item is empty!"
       this.type = "Empty"
       this.loading.empty = true;
+      this.updateLocationDataForAutoReport("Empty", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
     }
 
     this.adminService.getWorkspaceUsers().subscribe(users => {

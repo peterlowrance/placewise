@@ -38,21 +38,22 @@
     <div *ngIf="step === 'where'">
         <h1 mat-dialog-title>Which place are you reporting for?</h1>
         <div *ngFor="let locationWithData of locationData">
-            <mat-card class="hierarchyCard" (click)="setLocation(locationWithData.location.ID)" *ngIf="locationWithData.canReport && locationWithData." [class.mat-elevation-z2]="true">
+            <mat-card class="hierarchyCard" (click)="setLocation(locationWithData.location.ID)" *ngIf="locationWithData.canReport && !locationWithData.canNotAutoReport" [class.mat-elevation-z2]="true">
                 <div class="hierarchycard-content">
-                    <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + location.imageUrl + ')'}"></div>
+                    <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + locationWithData.location.imageUrl + ')'}"></div>
                     <div class='hierarchy-text'>
-                        <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><div>{{location.name}}</div></div></div>
-                        <div class="hierarchy-desc-text">{{location.desc ? location.desc : ' '}}</div>
+                        <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><div>{{locationWithData.location.name}}</div></div></div>
+                        <div class="hierarchy-desc-text">{{locationWithData.location.desc ? locationWithData.location.desc : ' '}}</div>
                     </div>
                 </div>
             </mat-card>
-            <mat-card *ngIf="reportsInLast12HPerLocation.get(location.ID) >= 3" class="hierarchyCard disabled-card" (click)="setLocation('none')" [class.mat-elevation-z2]="true">
+            <mat-card *ngIf="!locationWithData.canReport || locationWithData.canNotAutoReport" class="hierarchyCard disabled-card" (click)="setLocation('none')" [class.mat-elevation-z2]="true">
                 <div class="hierarchycard-content">
-                    <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + location.imageUrl + ')'}"></div>
+                    <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + locationWithData.location.imageUrl + ')'}"></div>
                     <div class='hierarchy-text'>
-                        <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><div>{{location.name}}</div></div></div>
-                        <div class="hierarchy-desc-text disabled-location-text">Too many reports in 12h.</div>
+                        <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><div>{{locationWithData.location.name}}</div></div></div>
+                        <div *ngIf="!locationWithData.canReport" class="hierarchy-desc-text disabled-location-text">Too many reports in 12h.</div>
+                        <div *ngIf="locationWithData.canReport" class="hierarchy-desc-text disabled-location-text">This has already been reported as {{type}} in the last 12 hours.</div>
                     </div>
                 </div>
             </mat-card>
