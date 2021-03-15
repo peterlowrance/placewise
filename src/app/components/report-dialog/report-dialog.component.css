@@ -10,6 +10,7 @@
 
 .btn-spacer {
     flex: 1 1 auto;
+    min-width: 18px;
 }
 
 .mat-dialog-actions {
@@ -21,15 +22,9 @@
     color: white;
 }
 
-.big-button {
-    margin: auto;
-    padding: 0 30px;
-}
-
 .report-button {
     display: block;
-    margin-top: 30px;
-    margin-bottom: 6px;
+    margin: 18px auto 6px auto;
 }
 
 .mat-dialog-title {
@@ -139,4 +134,20 @@ mat-card {
 
 .disabled-location-text {
     color: #700;
+}
+
+.dialog-button {
+    margin-top: 18px;
+}
+
+.report-button-wrapper {
+    flex-wrap: wrap-reverse;
+}
+
+.less-padding {
+    padding-top: 0px;
+}
+
+.action-color-dark .mat-simple-snackbar-action  {
+    color: white;
 }

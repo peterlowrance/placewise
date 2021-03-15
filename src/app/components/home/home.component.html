@@ -59,7 +59,9 @@
           <div class="hierarchycard-content">
             <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
             <div class='hierarchy-text'>
-              <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><p>{{hierarchyItem.name}}</p></div></div>
+              <div class="hierarchy-title-text-positioner">
+                <div class="hierarchy-title-text"><p>{{hierarchyItem.name}}</p></div>
+              </div>
               <div class="hierarchy-desc-text"><p>{{hierarchyItem.desc ? hierarchyItem.desc : ' '}}</p></div>
             </div>
           </div>

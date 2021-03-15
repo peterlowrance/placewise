@@ -24,7 +24,6 @@
             This item has already been reported as empty in the last 12 hours.
         </div>
         <br>
-        <br>
         <button mat-raised-button class="big-button action-color report-button" (click)="onNextClick()" [disabled]="!canReport">
             <mat-spinner *ngIf="loading.custom" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
             <div *ngIf="!loading.custom"> Custom... </div>
@@ -58,16 +57,19 @@
                 </div>
             </mat-card>
         </div>
+        <div mat-dialog-actions>
+            <button mat-raised-button class="big-button dialog-button" (click)="onCancelClick()">Cancel</button>
+        </div>
     </div>
 
     <!-- Who to report to -->
     <div *ngIf="step === 'who'">
         <h1 mat-dialog-title>Who will recieve this report?</h1>
         <app-user-select class="user-select" [selectedUsers]="selectedAdmins" [allUsers]="admins"></app-user-select>
-        <div mat-dialog-actions>
-            <button mat-raised-button (click)="onCancelClick()">Cancel</button>
+        <div mat-dialog-actions class="report-button-wrapper">
+            <button mat-raised-button class="big-button dialog-button" (click)="onCancelClick()">Cancel</button>
             <span class="btn-spacer"></span>
-            <button mat-raised-button class="action-color" (click)="onNextClick()">Next</button>
+            <button mat-raised-button class="big-button action-color dialog-button" (click)="onNextClick()">Next</button>
         </div>
     </div>
 
@@ -79,11 +81,10 @@
             <textarea matInput class="report-textarea" placeholder="Report Description" [(ngModel)]="description"></textarea>
         </mat-form-field>
     
-        <div mat-dialog-actions>
-            <button mat-raised-button (click)="onCancelClick()">Cancel</button>
+        <div mat-dialog-actions class="report-button-wrapper less-padding">
+            <button mat-raised-button class="big-button dialog-button" (click)="onCancelClick()">Cancel</button>
             <span class="btn-spacer"></span>
-            <button mat-raised-button class="action-color-dark" (click)="onSendClick()">
-                <mat-icon> report_problem </mat-icon>
+            <button mat-raised-button class="big-button action-color-dark dialog-button" (click)="onSendClick()">
                 Send
             </button>
         </div>

@@ -64,7 +64,6 @@ export class ReportDialogComponent implements OnInit {
     this.step = 'start';
 
     this.locationData = this.countRecentReports(this.data.locations, this.data.item.reports, this.timestamp);
-
     this.canReport = this.isAbleToReport(this.locationData);
 
     this.reportEmptyDisabled = !this.isAbleToAutoReportFor("Empty", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
@@ -204,19 +203,42 @@ export class ReportDialogComponent implements OnInit {
 
   // Update location data to match what type of auto report we are looking for
   updateLocationDataForAutoReport(type: string, locationData: LocationWithReportMeta[], typeReportTimestmaps: ItemTypeReportTimestamp[], timestamp: number){
-    for(let locationWithReportData of locationData){
-      if(typeReportTimestmaps)
-      for(let timestampData of typeReportTimestmaps){
-        if(timestampData.location === locationWithReportData.location.ID && timestampData.type === type){
-          // If the last report was less than 12 hours ago, disable this location
-          if(timestampData.timestamp + 43200000 > timestamp){
-            locationWithReportData.canNotAutoReport = true;
-          }
+    
+    // If there's no timestamps, nothing is affected
+    if(!typeReportTimestmaps){
+      return;
+    }
 
-          // Since this is the correct location and type, we can break the loop and look at next location
-          break;
+    for(let locationWithReportData of locationData){
+      // If there's a location, look for matching reports 
+      if(locationWithReportData.location){
+        for(let timestampData of typeReportTimestmaps){
+          if(timestampData.location === locationWithReportData.location.ID && timestampData.type === type){
+            // If the last report was less than 12 hours ago, disable this location
+            if(timestampData.timestamp + 43200000 > timestamp){
+              locationWithReportData.canNotAutoReport = true;
+            }
+  
+            // Since this is the correct location and type, we can break the loop and look at next location
+            break;
+          }
         }
       }
+      // If there's no location, look for matching reports with 'none' location
+      else {
+        for(let timestampData of typeReportTimestmaps){
+          if(timestampData.location === 'none' && timestampData.type === type){
+            // If the last report was less than 12 hours ago, disable this location
+            if(timestampData.timestamp + 43200000 > timestamp){
+              locationWithReportData.canNotAutoReport = true;
+            }
+  
+            // Since this is the correct location and type, we can break the loop and look at next location
+            break;
+          }
+        }
+      }
+      
     }
   }
 
@@ -318,7 +340,7 @@ export class ReportDialogComponent implements OnInit {
     this.snack.open("Sending Report...", '', {duration: 2000, panelClass: ['mat-toolbar']});
 
     this.adminService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type).then(
-      () => this.snack.open("Report Sent!", "OK", {duration: 4000, panelClass: ['action-color-dark']}),
+      () => this.snack.open("Report Sent!", "OK", {duration: 4000, panelClass: ['successful-report']}),
       (err) => {
         this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
         console.log(JSON.stringify(err));

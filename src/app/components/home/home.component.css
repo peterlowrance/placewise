@@ -199,7 +199,7 @@ mat-form-field {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: calc(2px + 1%);
+  margin-top: 1%;
   font-size: 12px;
   font-weight: 400;
   height: 28px;
@@ -216,7 +216,7 @@ mat-form-field {
 
 .hierarchy-title-text-positioner {
   display: flex;
-  height: 48%;
+  height: calc(40% + 10px);
   align-items: flex-end;
 }
 
