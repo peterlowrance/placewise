@@ -351,7 +351,7 @@ export class SearchService implements SearchInterfaceService {
   
         // If the piece points to the parent's suffix, build that piece out
         if(id === 'parent'){
-          this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex++) + suffix.afterText;
+          this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex + 1) + suffix.afterText;
         }
   
         // Otherwise, insert that suffix piece with the corresponding value

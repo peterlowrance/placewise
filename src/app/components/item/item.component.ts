@@ -229,7 +229,8 @@ export class ItemComponent implements OnInit, OnDestroy {
         if(categoryAncestors[0]){
           // Update component data
           this.categoryAncestors = categoryAncestors[0];
-          this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(item, this.categoryAncestors)
+          this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(item, this.categoryAncestors);
+          
           // Load item attributes into card data
           let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
 

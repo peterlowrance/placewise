@@ -318,7 +318,7 @@ export class ReportDialogComponent implements OnInit {
     this.snack.open("Sending Report...", '', {duration: 2000, panelClass: ['mat-toolbar']});
 
     this.adminService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type).then(
-      () => this.snack.open("Report Sent!", "OK", {duration: 4000, panelClass: ['mat-toolbar']}),
+      () => this.snack.open("Report Sent!", "OK", {duration: 4000, panelClass: ['action-color-dark']}),
       (err) => {
         this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
         console.log(JSON.stringify(err));
