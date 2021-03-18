@@ -1,118 +1,239 @@
-<img *ngIf="item" class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
-<div class="allContent" *ngIf="item">
-    <!-- item name goes here, switch by edit val -->
-    <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
-    <h2 class="title">
-        <span *ngIf="item.name"> {{item.name}} </span>
-        <span *ngIf="!item.name" class="light-text"> ( No Title ) </span>
-        <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
-    </h2>
-    <div *ngIf="item.desc" class="item-description">{{item.desc}}</div>
-    <button class="big-button report-button action-color" mat-raised-button (click)="createReport()" [class.mat-elevation-z3]="true">
-        <mat-icon>assignment_late</mat-icon> 
-        Report
-    </button>
-    <br>
-    <!--div class="missing-data-container" *ngIf="this.role === 'Admin' && missingData">
-    <mat-icon class="missing-data-icon">error_outline</mat-icon>
-    <span class="missing-data-text">
-        {{missingData}}
-    </span>
-    </div-->
-    <div class="small-spacer"></div>
-
-    <h3> Attributes </h3>
-
-    <div *ngIf="attributesForCard">
-        <div *ngFor="let attrCard of attributesForCard" class="attribute-data">
-            <span class="attribute-name"> {{attrCard.name}} </span>
-            <span class="attribute-value"> {{attrCard.value}} </span>
-        </div>
-    </div>
-
-    <div class="small-spacer"></div>
-
-    <!-- Locations -->
-    <h3 class="bottom-space">
-        Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
-    </h3>
-    <div *ngFor="let locationData of itemLocations">
-        <mat-expansion-panel class="location-data" [expanded]="locationData.isPanelExtended">
-            <mat-expansion-panel-header [collapsedHeight]="'84px'" [expandedHeight]="'96px'" class="location-header">
-                <img class="location-img" src={{locationData.location.imageUrl}}>
-                <div class="location-name"> {{locationData.location.name}} </div>
-            </mat-expansion-panel-header>
-            <h3>
-                Reports:
-            </h3>
-            <h4 *ngIf="this.role === 'Admin'" class="tracking-switch">Use exact numbers:<mat-slide-toggle class="tracking-numbers-toggle" [(ngModel)]="locationData.tracking.isNumber" (click)="toggleNumberTrackingForLocation(locationData.location.ID)"></mat-slide-toggle></h4>
-            <div *ngIf="locationData.tracking.isNumber" class="tracking-input-number">
-                <div *ngIf="!locationData.tracking.isBeingEdited">
-                    <button mat-raised-button color="accent" class="box-button minus-button" (click)="modifyTrackingNumber(locationData.location.ID, 'subtract one', locationData.tracking.type, locationData.tracking.amount)"><mat-icon>remove</mat-icon></button>
-                    <button mat-stroked-button class="number-display">{{locationData.tracking.amount}}</button>
-                    <button mat-raised-button color="accent" class="box-button plus-button" (click)="modifyTrackingNumber(locationData.location.ID, 'add one', locationData.tracking.type, locationData.tracking.amount)"><mat-icon>add</mat-icon></button>
-                    <button mat-raised-button color="primary" class="box-button edit-number-button" (click)="locationData.tracking.isBeingEdited = true"><mat-icon>edit</mat-icon></button>
-                </div>
-                <div *ngIf="locationData.tracking.isBeingEdited">
-                    <mat-form-field class="cap-form" id="editTrackingNumber">
-                        <mat-label class="cap-label">Enter amount in stock:</mat-label>
-                        <input matInput #amount
-                        type="number"
-                        [(ngModel)]="locationData.tracking.amount"
-                        (focusout)="closeEditingTrackingNumber(locationData.tracking, locationData.location.ID)"
-                        autofocus
-                        >
-                    </mat-form-field>
-                    <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
-                </div>
-                <div *ngIf="this.role === 'Admin'">
-                    <mat-form-field class="cap-form">
-                        <mat-label class="cap-label">Auto report when at or below:</mat-label>
-                        <input matInput #cap
-                        type="number"
-                        [(ngModel)]="locationData.tracking.cap"
-                        (focusout)="updateTrackingCap(locationData.tracking, locationData.location.ID)"
-                        (focus)="locationData.tracking.capFocus = true"
-                        >
-                    </mat-form-field>
-                    <button mat-icon-button class="fake-confirm-button" *ngIf="locationData.tracking.capFocus"><mat-icon>done</mat-icon></button>
-                </div>
-            </div>
-            <div *ngIf="!locationData.tracking.isNumber" class="tracking-input-approx">
-                <h4>Last reported as: <span class="amount-reported">{{locationData.tracking.amount}}</span></h4>
-                <!--button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button>
-                <button mat-raised-button class="approx-button approx-low" (click)="setTrackingAmount(locationData.location.ID, 'Low')">Low</button>
-                <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(locationData.location.ID, 'Empty')">Empty</button-->
-            </div>
-            <app-ancestor-view [parentsOf]="locationData.location"></app-ancestor-view>
-        </mat-expansion-panel>
-    </div>
-
-    <div class="small-spacer"></div>
-
-    <!-- Category -->
-    <div class="category-info">
-        <h3 class="bottom-space">Category  <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
-        <div class="category-container">
-            <div class="category-picture"> <img class="categoryImg" src={{category?.imageUrl}}></div>
-            <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
-        </div>
-    </div>
-
-    <div class="small-spacer"></div>
-
-    <!-- tags -->
-    <div *ngIf="item.tags && item.tags.length > 0">
+<div class="mobile-content">
+    <img *ngIf="item" class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
+    <div class="item-content" *ngIf="item">
+        <!-- item name goes here, switch by edit val -->
+        <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
+        <h2 class="title">
+            <span *ngIf="item.name"> {{item.name}} </span>
+            <span *ngIf="!item.name" class="light-text"> ( No Title ) </span>
+            <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
+        </h2>
+        <div *ngIf="item.desc" class="item-description">{{item.desc}}</div>
+        <button class="big-button report-button action-color" mat-raised-button (click)="createReport()" [class.mat-elevation-z3]="true">
+            <mat-icon>assignment_late</mat-icon> 
+            Report
+        </button>
         <br>
-        <h3 class="bottom-space">Tags <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('tags')"><mat-icon>edit</mat-icon></button></h3>
-        <mat-chip-list selectable="false">
-            <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
-        </mat-chip-list>
         <div class="small-spacer"></div>
+
+        <h3> Attributes </h3>
+
+        <div *ngIf="attributesForCard">
+            <div *ngFor="let attrCard of attributesForCard" class="attribute-data">
+                <span class="attribute-name"> {{attrCard.name}} </span>
+                <span class="attribute-value"> {{attrCard.value}} </span>
+            </div>
+        </div>
+
+        <div class="small-spacer"></div>
+
+        <!-- Locations -->
+        <h3 class="bottom-space">
+            Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
+        </h3>
+        <div *ngFor="let locationData of itemLocations">
+            <mat-expansion-panel class="location-data" [expanded]="locationData.isPanelExtended">
+                <mat-expansion-panel-header [collapsedHeight]="'84px'" [expandedHeight]="'96px'" class="location-header">
+                    <img class="location-img" src={{locationData.location.imageUrl}}>
+                    <div class="location-name"> {{locationData.location.name}} </div>
+                </mat-expansion-panel-header>
+                <h3>
+                    Reports:
+                </h3>
+                <h4 *ngIf="this.role === 'Admin'" class="tracking-switch">Use exact numbers:<mat-slide-toggle class="tracking-numbers-toggle" [(ngModel)]="locationData.tracking.isNumber" (click)="toggleNumberTrackingForLocation(locationData.location.ID)"></mat-slide-toggle></h4>
+                <div *ngIf="locationData.tracking.isNumber" class="tracking-input-number">
+                    <div *ngIf="!locationData.tracking.isBeingEdited">
+                        <button mat-raised-button color="accent" class="box-button minus-button" (click)="modifyTrackingNumber(locationData.location.ID, 'subtract one', locationData.tracking.type, locationData.tracking.amount)"><mat-icon>remove</mat-icon></button>
+                        <button mat-stroked-button class="number-display">{{locationData.tracking.amount}}</button>
+                        <button mat-raised-button color="accent" class="box-button plus-button" (click)="modifyTrackingNumber(locationData.location.ID, 'add one', locationData.tracking.type, locationData.tracking.amount)"><mat-icon>add</mat-icon></button>
+                        <button mat-raised-button color="primary" class="box-button edit-number-button" (click)="locationData.tracking.isBeingEdited = true"><mat-icon>edit</mat-icon></button>
+                    </div>
+                    <div *ngIf="locationData.tracking.isBeingEdited">
+                        <mat-form-field class="cap-form" id="editTrackingNumber">
+                            <mat-label class="cap-label">Enter amount in stock:</mat-label>
+                            <input matInput #amount
+                            type="number"
+                            [(ngModel)]="locationData.tracking.amount"
+                            (focusout)="closeEditingTrackingNumber(locationData.tracking, locationData.location.ID)"
+                            autofocus
+                            >
+                        </mat-form-field>
+                        <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
+                    </div>
+                    <div *ngIf="this.role === 'Admin'">
+                        <mat-form-field class="cap-form">
+                            <mat-label class="cap-label">Auto report when at or below:</mat-label>
+                            <input matInput #cap
+                            type="number"
+                            [(ngModel)]="locationData.tracking.cap"
+                            (focusout)="updateTrackingCap(locationData.tracking, locationData.location.ID)"
+                            (focus)="locationData.tracking.capFocus = true"
+                            >
+                        </mat-form-field>
+                        <button mat-icon-button class="fake-confirm-button" *ngIf="locationData.tracking.capFocus"><mat-icon>done</mat-icon></button>
+                    </div>
+                </div>
+                <div *ngIf="!locationData.tracking.isNumber" class="tracking-input-approx">
+                    <h4>Last reported as: <span class="amount-reported">{{locationData.tracking.amount}}</span></h4>
+                    <!--button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button>
+                    <button mat-raised-button class="approx-button approx-low" (click)="setTrackingAmount(locationData.location.ID, 'Low')">Low</button>
+                    <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(locationData.location.ID, 'Empty')">Empty</button-->
+                </div>
+                <app-ancestor-view [parentsOf]="locationData.location"></app-ancestor-view>
+            </mat-expansion-panel>
+        </div>
+
+        <div class="small-spacer"></div>
+
+        <!-- Category -->
+        <div class="category-info">
+            <h3 class="bottom-space">Category  <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
+            <div class="category-container">
+                <div class="category-picture"> <img class="categoryImg" src={{category?.imageUrl}}></div>
+                <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
+            </div>
+        </div>
+
+        <div class="small-spacer"></div>
+
+        <!-- tags -->
+        <div *ngIf="item.tags && item.tags.length > 0">
+            <br>
+            <h3 class="bottom-space">Tags <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('tags')"><mat-icon>edit</mat-icon></button></h3>
+            <mat-chip-list selectable="false">
+                <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
+            </mat-chip-list>
+            <div class="small-spacer"></div>
+        </div>
+
+        <br>
+        <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete Item</button>
+    </div>
+</div>
+
+
+<div class="desktop-content">
+
+    <div class="small-spacer"></div>
+
+    <div class="title">
+        <h1>
+            <span *ngIf="item.name"> {{item.name}} </span>
+            <span *ngIf="!item.name" class="light-text"> ( No Title ) </span>
+            <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('name')"><mat-icon>edit</mat-icon></button>
+        </h1>
+        <div *ngIf="item.desc" class="item-description">{{item.desc}}</div>
+        <button class="big-button report-button action-color" mat-raised-button (click)="createReport()" [class.mat-elevation-z3]="true">
+            <mat-icon>assignment_late</mat-icon>
+            Report
+        </button>
     </div>
 
-    <br>
-    <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete Item</button>
+    <div class="item-content">
+
+        <div class="item-content-block">
+            <div class="small-spacer"></div>
+            <img *ngIf="item" class="desktop-image container-img" src={{item.imageUrl}} layout-fit>
+            <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
+
+            <div class="small-spacer"></div>
+
+            <!-- Category -->
+            <div class="category-info">
+                <h3 class="bottom-space">Category  <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
+                <div class="category-container">
+                    <div class="category-picture"> <img class="categoryImg" src={{category?.imageUrl}}></div>
+                    <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
+                </div>
+            </div>
+    
+            <div class="small-spacer"></div>
+    
+            <!-- tags -->
+            <div *ngIf="item.tags && item.tags.length > 0">
+                <br>
+                <h3 class="bottom-space">Tags <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('tags')"><mat-icon>edit</mat-icon></button></h3>
+                <mat-chip-list selectable="false">
+                    <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
+                </mat-chip-list>
+                <div class="small-spacer"></div>
+            </div>
+
+            
+            <div class="small-spacer"></div>
+    
+            <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete Item</button>
+        </div>
+    
+        <div class="item-content-block">
+            <h3 class="attribute-header"> Attributes </h3>
+    
+            <div *ngIf="attributesForCard">
+                <div *ngFor="let attrCard of attributesForCard" class="attribute-data">
+                    <span class="attribute-name"> {{attrCard.name}} </span>
+                    <span class="attribute-value"> {{attrCard.value}} </span>
+                </div>
+            </div>
+    
+            <div class="small-spacer"></div>
+    
+            <!-- Locations -->
+            <h3 class="bottom-space">
+                Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
+            </h3>
+            <div *ngFor="let locationData of itemLocations">
+                <mat-expansion-panel class="location-data" [expanded]="locationData.isPanelExtended">
+                    <mat-expansion-panel-header [collapsedHeight]="'84px'" [expandedHeight]="'96px'" class="location-header">
+                        <img class="location-img" src={{locationData.location.imageUrl}}>
+                        <div class="location-name"> {{locationData.location.name}} </div>
+                    </mat-expansion-panel-header>
+                    <h3>
+                        Reports:
+                    </h3>
+                    <h4 *ngIf="this.role === 'Admin'" class="tracking-switch">Use exact numbers:<mat-slide-toggle class="tracking-numbers-toggle" [(ngModel)]="locationData.tracking.isNumber" (click)="toggleNumberTrackingForLocation(locationData.location.ID)"></mat-slide-toggle></h4>
+                    <div *ngIf="locationData.tracking.isNumber" class="tracking-input-number">
+                        <div *ngIf="!locationData.tracking.isBeingEdited">
+                            <button mat-raised-button color="accent" class="box-button minus-button" (click)="modifyTrackingNumber(locationData.location.ID, 'subtract one', locationData.tracking.type, locationData.tracking.amount)"><mat-icon>remove</mat-icon></button>
+                            <button mat-stroked-button class="number-display">{{locationData.tracking.amount}}</button>
+                            <button mat-raised-button color="accent" class="box-button plus-button" (click)="modifyTrackingNumber(locationData.location.ID, 'add one', locationData.tracking.type, locationData.tracking.amount)"><mat-icon>add</mat-icon></button>
+                            <button mat-raised-button color="primary" class="box-button edit-number-button" (click)="locationData.tracking.isBeingEdited = true"><mat-icon>edit</mat-icon></button>
+                        </div>
+                        <div *ngIf="locationData.tracking.isBeingEdited">
+                            <mat-form-field class="cap-form" id="editTrackingNumber">
+                                <mat-label class="cap-label">Enter amount in stock:</mat-label>
+                                <input matInput #amount
+                                type="number"
+                                [(ngModel)]="locationData.tracking.amount"
+                                (focusout)="closeEditingTrackingNumber(locationData.tracking, locationData.location.ID)"
+                                autofocus
+                                >
+                            </mat-form-field>
+                            <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
+                        </div>
+                        <div *ngIf="this.role === 'Admin'">
+                            <mat-form-field class="cap-form">
+                                <mat-label class="cap-label">Auto report when at or below:</mat-label>
+                                <input matInput #cap
+                                type="number"
+                                [(ngModel)]="locationData.tracking.cap"
+                                (focusout)="updateTrackingCap(locationData.tracking, locationData.location.ID)"
+                                (focus)="locationData.tracking.capFocus = true"
+                                >
+                            </mat-form-field>
+                            <button mat-icon-button class="fake-confirm-button" *ngIf="locationData.tracking.capFocus"><mat-icon>done</mat-icon></button>
+                        </div>
+                    </div>
+                    <div *ngIf="!locationData.tracking.isNumber" class="tracking-input-approx">
+                        <h4>Last reported as: <span class="amount-reported">{{locationData.tracking.amount}}</span></h4>
+                        <!--button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button>
+                        <button mat-raised-button class="approx-button approx-low" (click)="setTrackingAmount(locationData.location.ID, 'Low')">Low</button>
+                        <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(locationData.location.ID, 'Empty')">Empty</button-->
+                    </div>
+                    <app-ancestor-view [parentsOf]="locationData.location"></app-ancestor-view>
+                </mat-expansion-panel>
+            </div>
+        </div>
+    </div>
 </div>
 
 <button mat-mini-fab class="extended-fab-button" *ngIf="this.role === 'Admin' && this.getDirty()" @open-undo-fab matTooltip="Undo" color="accent" (click)="undoChanges()">

@@ -1,6 +1,6 @@
 .responsive-item-image {
-  width: 100%;
-  max-width: 100vw;
+  width: 100vw;
+  max-width: 720px;
   max-height: 75vw;
   height: auto;
   object-fit: cover;
@@ -9,6 +9,10 @@
 
 h2 {
     margin: 0 0;
+}
+
+h1 {
+  margin: 0;
 }
 
 .title {
@@ -100,11 +104,24 @@ h2 {
     z-index: 1;
 }
 
-.allContent {
-  padding: 8px 16px 32px 16px;
+.all-content {
   max-width: 600px;
   position: center;
   margin: auto;
+}
+
+.item-content {
+  padding: 8px 16px 32px 16px;
+  position: center;
+  margin: auto;
+}
+
+.desktop-content {
+  display: none;
+}
+
+.upper-half {
+  margin-bottom: 48px;
 }
 
 .small-spacer {
@@ -397,6 +414,55 @@ p {
   margin-bottom: 8px;
 }
 
+/* Desktop verion */
+@media screen and (min-width: 720px){
+
+  .attribute-header {
+    margin-top: 26px;
+  }
+
+  .title {
+    padding: 30px 46px 0 46px;
+  }
+
+  .item-content-block {
+    padding: 30px;
+    max-width: 50%;
+    width: 100%;
+  }
+
+  .mobile-content {
+    display: none;
+  }
+
+  .desktop-content {
+    display: block;
+    max-width: 1200px;
+    position: center;
+    margin: auto;
+  }
+
+  .item-content {
+    display: flex;
+  }
+
+  .responsive-item-image {
+    display: none;
+  }
+
+  .desktop-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+    margin: 0 auto;
+  }
+
+  .camera-button {
+    left: calc(100% - 64px);
+    top: -22px;
+  }
+}
 
 @media screen and (min-width: 600px){
   .extended-fab-button {
