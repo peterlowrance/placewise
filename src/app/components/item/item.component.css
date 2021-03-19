@@ -37,13 +37,26 @@ h1 {
   margin-left: -6px;
 }
 
-.location-img {
+.clickable-image {
   height: 60px;
   width: 60px;
   max-width: 60px;
   max-height: 60px;
-  border-radius: 30px;
-  margin: auto 0;
+  border-radius: 60px;
+  cursor: pointer;
+  /*box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%), 0px 2px 2px 0px rgb(0 0 0 / 14%), 0px 1px 5px 0px rgb(0 0 0 / 12%);*/
+}
+
+.location-img {
+  margin: 6px;
+  border-radius: 15px;
+}
+
+.attribute-break {
+  margin-top: 12px;
+  height: 1px;
+  background-color: lightgrey;
+  width: 100%;
 }
 
 .attribute-data {
@@ -111,9 +124,7 @@ h1 {
 }
 
 .item-content {
-  padding: 8px 16px 32px 16px;
-  position: center;
-  margin: auto;
+  margin: 8px 16px 32px 16px;
 }
 
 .desktop-content {
@@ -186,7 +197,7 @@ p {
 
 .editButton {
   float: end;
-  top: -0.3rem;
+  top: -0.25rem;
   left: -0.3rem;
 }
 
@@ -391,7 +402,7 @@ p {
 .category-name {
   font-weight: 500;
   font-size: 18px;
-  padding-left: 12px;
+  padding-left: 24px;
 }
 
 .category-container {
@@ -422,13 +433,13 @@ p {
   }
 
   .title {
-    padding: 30px 46px 0 46px;
+    padding: 30px 30px 0 30px;
   }
 
   .item-content-block {
     padding: 30px;
     max-width: 50%;
-    width: 100%;
+    width: calc(50vw - 60px);
   }
 
   .mobile-content {
@@ -437,13 +448,14 @@ p {
 
   .desktop-content {
     display: block;
-    max-width: 1200px;
+    max-width: 1320px;
     position: center;
     margin: auto;
   }
 
   .item-content {
     display: flex;
+    margin: 0;
   }
 
   .responsive-item-image {

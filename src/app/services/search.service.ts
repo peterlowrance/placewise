@@ -54,24 +54,34 @@ export class SearchService implements SearchInterfaceService {
     console.log(hierItems[0].type + " loaded: " + hierItems.length);
     const result: HierarchyItem[][] = [];
     // Find all parents of items and add an array for each parent
-    for(const parentID of parentIDs)                                            // TODO: YIKES
-    for(const firstParent of hierItems) {
-      if (firstParent.ID === parentID) {
-        const ancestors: HierarchyItem[] = [firstParent];
-        result.push(ancestors);
-        // Find all parents in this ancestor list
-        // While the last parent of the last array of ancestors is not the root
-        while (result[result.length - 1][result[result.length - 1].length - 1].ID !== 'root') {
-          for (const nextParent of hierItems) {
-            // If the item has the same ID as the parent of the last item in the ancestor list, add it
-            if (nextParent.ID === result[result.length - 1][result[result.length - 1].length - 1].parent) {
-              result[result.length - 1].push(nextParent);
+    for(const parentID of parentIDs){
+      for(const firstParent of hierItems) {
+        if (firstParent.ID === parentID) {
+          const ancestors: HierarchyItem[] = [firstParent];
+          result.push(ancestors);
+          // Find all parents in this ancestor list
+          // While the last parent of the last array of ancestors is not the root
+          while (result[result.length - 1][result[result.length - 1].length - 1].ID !== 'root') {
+            let not_found_error = true; // Prevent infinite loop
+
+            for (const nextParent of hierItems) {
+              // If the item has the same ID as the parent of the last item in the ancestor list, add it
+              if (nextParent.ID === result[result.length - 1][result[result.length - 1].length - 1].parent) {
+                result[result.length - 1].push(nextParent);
+                not_found_error = false;
+                break;
+              }
+            }
+
+            if(not_found_error){
+              console.log("ERROR! Categories improperly loaded.");
               break;
             }
           }
         }
       }
     }
+    
     return result;
   }
 
@@ -95,6 +105,7 @@ export class SearchService implements SearchInterfaceService {
         if(hierItem.type === 'category'){
           this.getAllCategories().subscribe(categories =>
             {
+              console.log("RECV ALL CATS");
               obs.next(this.getAncestors([hierItem.parent], categories));
 
               if(categories.length > 1){  // Finish when we have all the data (It always has at least a length of one ??)
@@ -336,6 +347,7 @@ export class SearchService implements SearchInterfaceService {
   }
 
   buildAttributeSuffixFrom(item: Item, categoryAndAncestors: Category[], startingIndex = 0){
+
     // If there's no category, return empty string
     if(!categoryAndAncestors){
       return '';

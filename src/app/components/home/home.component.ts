@@ -314,9 +314,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   // This is called every time the carrently viewed root is updated
   displayItems(root: HierarchyItem) {
     this.items = [];
+    if(this.subItems){
+      Object.values(this.subItems).forEach(sub => sub.unsubscribe());
+    }
+
     if (root.items) {
       // For each itemID descending from root, get the item from the data and added to the global items array
-      for (const itemID of root.items) {
+      for (let itemID of root.items) {
         this.obsItems[itemID] = this.searchService.getItem(itemID);
         this.subItems[itemID] = this.obsItems[itemID].subscribe(returnedItem => {
           if (returnedItem !== null && typeof returnedItem !== 'undefined') {

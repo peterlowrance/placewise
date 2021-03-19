@@ -72,9 +72,9 @@
             </div>
             <br>
             <br>
-            <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
+            <button mat-raised-button class="rect-action-button" (click)="nextStep()">{{ singleStep ? "Cancel" : "Skip" }}</button>
             <span class="btn-spacer"></span>
-            <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Next</button>
+            <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">{{ singleStep ? "Confirm" : "Next" }}</button>
         </div>
 
 

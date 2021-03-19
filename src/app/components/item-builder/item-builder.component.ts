@@ -75,6 +75,7 @@ export class ItemBuilderComponent implements OnInit {
     })
 
     this.searchService.getItem(this.id).subscribe(item => {
+      
       if (!item) {
         return;
       }
@@ -91,8 +92,7 @@ export class ItemBuilderComponent implements OnInit {
             // Setup additional text for auto title builder
             let additionalTextData = this.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name);
             this.additionalText = additionalTextData.additionalText;
-            this.autoTitleBuilder = additionalTextData.isAutoTitle; 
-            
+            this.autoTitleBuilder = additionalTextData.isAutoTitle;
             // If there is no item name, build an automatic title.
             if(!this.item.name){
               this.item.name = (this.category.prefix ? this.category.prefix : "") + (this.attributeSuffix ? this.attributeSuffix : "");

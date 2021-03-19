@@ -216,6 +216,15 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   }
 
+  linkTo(objID: string, type: string){
+    if(type === "category"){
+      this.router.navigate(['/search/categories/' + objID]);
+    }
+    else if(type === "location") {
+      this.router.navigate(['/search/locations/' + objID]);
+    }
+  }
+
   
   private setupCategorySubscription(item: Item): Subscription { // I could also take in Obs<Cat> if that helps in the future
     // Return it for unsubscribing
@@ -619,18 +628,19 @@ export class ItemComponent implements OnInit, OnDestroy {
     // set edit field value to enable state change, then set focus
     switch (field) {
       case 'name': 
-        //this.textEditFields.name = true;
-        // focus
-        //setTimeout(() => this.nameField.nativeElement.focus(), 0);
         this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 2, singleStep: true } });
         break;
+      /*
       case 'desc':
         this.textEditFields.desc = true;
         // focus
         setTimeout(() => this.descField.nativeElement.focus(), 0);
         break;
+      */
+      case 'attributes': 
+        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 1, singleStep: true } });
+        break;
       case 'tags':
-        // focus
         this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 4, singleStep: true } });
         break;
       default:

@@ -16,12 +16,19 @@
         <br>
         <div class="small-spacer"></div>
 
-        <h3> Attributes </h3>
+        <h3> 
+            Attributes 
+            <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('attributes')"><mat-icon>edit</mat-icon></button>
+        </h3>
 
+        <p *ngIf="!attributesForCard || attributesForCard.length < 1" class="light-text">
+            ( None )
+        </p>
         <div *ngIf="attributesForCard">
             <div *ngFor="let attrCard of attributesForCard" class="attribute-data">
                 <span class="attribute-name"> {{attrCard.name}} </span>
                 <span class="attribute-value"> {{attrCard.value}} </span>
+                <div class="attribute-break"></div>
             </div>
         </div>
 
@@ -29,12 +36,16 @@
 
         <!-- Locations -->
         <h3 class="bottom-space">
-            Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
+            Located In: 
+            <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
         </h3>
+        <p *ngIf="!itemLocations || itemLocations.length < 1" class="light-text">
+            ( None )
+        </p>
         <div *ngFor="let locationData of itemLocations">
             <mat-expansion-panel class="location-data" [expanded]="locationData.isPanelExtended">
                 <mat-expansion-panel-header [collapsedHeight]="'84px'" [expandedHeight]="'96px'" class="location-header">
-                    <img class="location-img" src={{locationData.location.imageUrl}}>
+                    <img class="clickable-image location-img" [class.mat-elevation-z4]="true" (click)="linkTo(locationData.location.ID, 'location')" src={{locationData.location.imageUrl}}>
                     <div class="location-name"> {{locationData.location.name}} </div>
                 </mat-expansion-panel-header>
                 <h3>
@@ -89,7 +100,7 @@
         <div class="category-info">
             <h3 class="bottom-space">Category  <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
             <div class="category-container">
-                <div class="category-picture"> <img class="categoryImg" src={{category?.imageUrl}}></div>
+                <div class="category-picture"> <img class="clickable-image categoryImg" [class.mat-elevation-z4]="true" src={{category?.imageUrl}} (click)="linkTo(category?.ID, 'category')"></div>
                 <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
             </div>
         </div>
@@ -112,7 +123,7 @@
 </div>
 
 
-<div class="desktop-content">
+<div class="desktop-content" *ngIf="item">
 
     <div class="small-spacer"></div>
 
@@ -142,7 +153,7 @@
             <div class="category-info">
                 <h3 class="bottom-space">Category  <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
                 <div class="category-container">
-                    <div class="category-picture"> <img class="categoryImg" src={{category?.imageUrl}}></div>
+                    <div class="category-picture"> <img class="clickable-image categoryImg" [class.mat-elevation-z4]="true" (click)="linkTo(category?.ID, 'category')" src={{category?.imageUrl}}></div>
                     <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
                 </div>
             </div>
@@ -166,25 +177,37 @@
         </div>
     
         <div class="item-content-block">
-            <h3 class="attribute-header"> Attributes </h3>
-    
+            <h3 class="attribute-header"> 
+                Attributes 
+                <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('attributes')"><mat-icon>edit</mat-icon></button>
+            </h3>
+
+            <p *ngIf="!attributesForCard || attributesForCard.length < 1" class="light-text">
+                ( None )
+            </p>
             <div *ngIf="attributesForCard">
                 <div *ngFor="let attrCard of attributesForCard" class="attribute-data">
                     <span class="attribute-name"> {{attrCard.name}} </span>
                     <span class="attribute-value"> {{attrCard.value}} </span>
+                    <div class="attribute-break"></div>
                 </div>
             </div>
+            
     
             <div class="small-spacer"></div>
     
             <!-- Locations -->
             <h3 class="bottom-space">
-                Located In: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
+                Located In: 
+                <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editLocation()"><mat-icon>edit</mat-icon></button>
             </h3>
+            <p *ngIf="!itemLocations || itemLocations.length < 1" class="light-text">
+                ( None )
+            </p>
             <div *ngFor="let locationData of itemLocations">
                 <mat-expansion-panel class="location-data" [expanded]="locationData.isPanelExtended">
                     <mat-expansion-panel-header [collapsedHeight]="'84px'" [expandedHeight]="'96px'" class="location-header">
-                        <img class="location-img" src={{locationData.location.imageUrl}}>
+                        <img class="clickable-image location-img" [class.mat-elevation-z4]="true" (click)="linkTo(locationData.location.ID, 'location')" src={{locationData.location.imageUrl}}>
                         <div class="location-name"> {{locationData.location.name}} </div>
                     </mat-expansion-panel-header>
                     <h3>
