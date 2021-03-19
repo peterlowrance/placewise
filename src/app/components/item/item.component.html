@@ -49,7 +49,7 @@
                     <div class="location-name"> {{locationData.location.name}} </div>
                 </mat-expansion-panel-header>
                 <h3>
-                    Reports:
+                    Tracking:
                 </h3>
                 <h4 *ngIf="this.role === 'Admin'" class="tracking-switch">Use exact numbers:<mat-slide-toggle class="tracking-numbers-toggle" [(ngModel)]="locationData.tracking.isNumber" (click)="toggleNumberTrackingForLocation(locationData.location.ID)"></mat-slide-toggle></h4>
                 <div *ngIf="locationData.tracking.isNumber" class="tracking-input-number">
@@ -85,8 +85,8 @@
                     </div>
                 </div>
                 <div *ngIf="!locationData.tracking.isNumber" class="tracking-input-approx">
-                    <h4>Last reported as: <span class="amount-reported">{{locationData.tracking.amount}}</span></h4>
-                    <!--button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button>
+                    <!-- REPLACE <h4>Last reported as: <span class="amount-reported">{{locationData.tracking.amount}}</span></h4>
+                    button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button>
                     <button mat-raised-button class="approx-button approx-low" (click)="setTrackingAmount(locationData.location.ID, 'Low')">Low</button>
                     <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(locationData.location.ID, 'Empty')">Empty</button-->
                 </div>
@@ -247,8 +247,8 @@
                         </div>
                     </div>
                     <div *ngIf="!locationData.tracking.isNumber" class="tracking-input-approx">
-                        <h4>Last reported as: <span class="amount-reported">{{locationData.tracking.amount}}</span></h4>
-                        <!--button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button>
+                        <!-- REPLACE <h4>Last reported as: <span class="amount-reported">{{locationData.tracking.amount}}</span></h4>
+                        button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button>
                         <button mat-raised-button class="approx-button approx-low" (click)="setTrackingAmount(locationData.location.ID, 'Low')">Low</button>
                         <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(locationData.location.ID, 'Empty')">Empty</button-->
                     </div>
