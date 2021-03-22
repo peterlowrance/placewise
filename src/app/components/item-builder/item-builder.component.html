@@ -33,8 +33,6 @@
             <p *ngIf="!locationsAndAncestors"> Loading locations... </p>
             <br>
             <br>
-            <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
-            <span class="btn-spacer"></span>
             <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Next</button>
         </div>
 
@@ -72,8 +70,8 @@
             </div>
             <br>
             <br>
-            <button mat-raised-button class="rect-action-button" (click)="nextStep()">{{ singleStep ? "Cancel" : "Skip" }}</button>
-            <span class="btn-spacer"></span>
+            <button *ngIf="singleStep" mat-raised-button class="rect-action-button" (click)="nextStep(true)">Cancel</button>
+            <span *ngIf="singleStep" class="btn-spacer"></span>
             <button mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">{{ singleStep ? "Confirm" : "Next" }}</button>
         </div>
 
@@ -180,7 +178,7 @@
 
             <!-- Skip Button -->
             <br>
-            <button *ngIf="!singleStep" mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
+            <button *ngIf="singleStep" mat-raised-button class="rect-action-button" (click)="nextStep(true)"> Cancel </button>
         </div>
 
 
@@ -190,7 +188,7 @@
             <div *ngIf="item.imageUrl == '../../../assets/notFound.png'">
                 <h3> Would you like to take a picture of {{item.name}}? </h3>
                 <br>
-                <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
+                <button mat-raised-button class="rect-action-button" (click)="nextStep(true)">Skip</button>
                 <span class="btn-spacer"></span>
                 <button mat-raised-button class="rect-action-button" (click)="camera.click()" color="primary"> <mat-icon>photo_camera</mat-icon> Yes </button>
             </div>
@@ -205,7 +203,7 @@
             <div *ngIf="!item.imageUrl">
                 <div> Something went wrong with the item's image! </div>
                 <br>
-                <button mat-raised-button class="rect-action-button" (click)="nextStep()">Skip</button>
+                <button mat-raised-button class="rect-action-button" (click)="nextStep(true)">Skip</button>
             </div>
             <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
         </div>

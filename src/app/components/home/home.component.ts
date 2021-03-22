@@ -446,7 +446,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         children: [],
         items: [],
         suffixStructure: [{afterText: '', attributeID: 'parent', beforeText: ''}],
-        prefix: 'NEW CATEGORY'
       }
 
       this.adminService.addCategory(categoryData, this.root.ID).subscribe(id => {

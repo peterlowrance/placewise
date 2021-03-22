@@ -109,6 +109,10 @@ mat-card {
   height: 86%;
 }
 
+.category-card {
+  border-radius: 60px;
+}
+
 mat-card-content {
   padding: calc(5% - 0.1rem) calc(0.2rem + 6%) ;
 }
@@ -212,6 +216,8 @@ mat-form-field {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: "Roboto", sans-serif;
+  color: rgba(0, 0, 0, 0.87);
 }
 
 .hierarchy-title-text-positioner {

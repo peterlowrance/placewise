@@ -55,7 +55,7 @@
     <div class="header">{{typeForSelectionButtons === 'category' ? 'Categories' : 'Locations'}}</div>
     <mat-grid-list class="row" [cols]="columns" rowHeight="4:1.2">
       <mat-grid-tile class="holder" *ngFor="let hierarchyItem of hierarchyItems">
-        <mat-card class="hierarchyCard" (click)="goToHierarchy(hierarchyItem)" [class.mat-elevation-z2]="true">
+        <mat-card class="hierarchyCard {{typeForSelectionButtons === 'category' ? 'category-card' : 'location-card'}}" (click)="goToHierarchy(hierarchyItem)" [class.mat-elevation-z2]="true">
           <div class="hierarchycard-content">
             <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
             <div class='hierarchy-text'>

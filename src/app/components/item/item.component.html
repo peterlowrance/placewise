@@ -51,7 +51,7 @@
                 <h3>
                     Tracking:
                 </h3>
-                <h4 *ngIf="this.role === 'Admin'" class="tracking-switch">Use exact numbers:<mat-slide-toggle class="tracking-numbers-toggle" [(ngModel)]="locationData.tracking.isNumber" (click)="toggleNumberTrackingForLocation(locationData.location.ID)"></mat-slide-toggle></h4>
+                <h4 *ngIf="this.role === 'Admin'" class="tracking-switch"><mat-slide-toggle class="tracking-numbers-toggle" [(ngModel)]="locationData.tracking.isNumber" (click)="toggleNumberTrackingForLocation(locationData.location.ID)"> Use Exact Numbers </mat-slide-toggle></h4>
                 <div *ngIf="locationData.tracking.isNumber" class="tracking-input-number">
                     <div *ngIf="!locationData.tracking.isBeingEdited">
                         <button mat-raised-button color="accent" class="box-button minus-button" (click)="modifyTrackingNumber(locationData.location.ID, 'subtract one', locationData.tracking.type, locationData.tracking.amount)"><mat-icon>remove</mat-icon></button>
@@ -211,9 +211,9 @@
                         <div class="location-name"> {{locationData.location.name}} </div>
                     </mat-expansion-panel-header>
                     <h3>
-                        Reports:
+                        Tracking:
                     </h3>
-                    <h4 *ngIf="this.role === 'Admin'" class="tracking-switch">Use exact numbers:<mat-slide-toggle class="tracking-numbers-toggle" [(ngModel)]="locationData.tracking.isNumber" (click)="toggleNumberTrackingForLocation(locationData.location.ID)"></mat-slide-toggle></h4>
+                    <h4 *ngIf="this.role === 'Admin'" class="tracking-switch"><mat-slide-toggle class="tracking-numbers-toggle" [(ngModel)]="locationData.tracking.isNumber" (click)="toggleNumberTrackingForLocation(locationData.location.ID)"> Use Exact Numbers </mat-slide-toggle></h4>
                     <div *ngIf="locationData.tracking.isNumber" class="tracking-input-number">
                         <div *ngIf="!locationData.tracking.isBeingEdited">
                             <button mat-raised-button color="accent" class="box-button minus-button" (click)="modifyTrackingNumber(locationData.location.ID, 'subtract one', locationData.tracking.type, locationData.tracking.amount)"><mat-icon>remove</mat-icon></button>

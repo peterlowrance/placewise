@@ -333,11 +333,6 @@ p {
   position: absolute;
 }
 
-.tracking-numbers-toggle {
-  position: relative;
-  left: 40px;
-}
-
 .box-button {
   padding: 0;
   max-width: 36px;

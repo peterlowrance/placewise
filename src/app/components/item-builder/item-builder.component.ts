@@ -11,7 +11,8 @@ import {MatChipInputEvent, MatSnackBar} from '@angular/material';
 import { ImageService } from 'src/app/services/image.service';
 import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
-
+import { Subscription, SubscriptionLike } from 'rxjs';
+import {Location} from "@angular/common";
 
 
 interface AttributeCard {
@@ -36,7 +37,8 @@ export class ItemBuilderComponent implements OnInit {
     private imageService: ImageService,
     private route: ActivatedRoute,
     private router: Router,
-    private snack: MatSnackBar
+    private snack: MatSnackBar,
+    private location: Location
     ) { }
 
     @ViewChild('autosize', {static: false}) autosize: CdkTextareaAutosize;
@@ -57,6 +59,8 @@ export class ItemBuilderComponent implements OnInit {
     autoTitleBuilder: boolean;                // Switch value on UI
     attributeSuffix: string;                  // Pre-loaded suffix
 
+    backSubscription: SubscriptionLike;
+
   ngOnInit() {
     // Retrieve id
     this.id = this.route.snapshot.paramMap.get('id');
@@ -73,6 +77,19 @@ export class ItemBuilderComponent implements OnInit {
         this.singleStep = true;
       }
     })
+
+    // Make the back button work intuitively - since we are not saving the history
+    this.backSubscription = this.location.subscribe(event => {
+      if(event.type && event.type === "popstate"){
+
+        // If we are a few steps in, navigate to the last step
+        if(this.step > 0){
+          this.location.replaceState('/itemBuilder/' + this.id, { step: this.step + 1 });
+          // NEXT
+        }
+      }
+      console.log(event.type);
+    });
 
     this.searchService.getItem(this.id).subscribe(item => {
       
@@ -136,6 +153,10 @@ export class ItemBuilderComponent implements OnInit {
         this.locationsAndAncestors = locations;
       });
     })
+  }
+
+  ngOnDestroy(){
+    this.backSubscription.unsubscribe();
   }
 
   /**
@@ -409,7 +430,6 @@ export class ItemBuilderComponent implements OnInit {
         this.item.attributes.splice(Number.parseInt(attributeIndex), 1);
       }
     }
-    this.placeIntoDB();
   }
 
   addTag(event: MatChipInputEvent | any): void {
@@ -425,9 +445,6 @@ export class ItemBuilderComponent implements OnInit {
     if (input) {
       input.value = '';
     }
-
-    // check dirty
-    this.placeIntoDB();
   }
 
   /**
@@ -451,13 +468,10 @@ export class ItemBuilderComponent implements OnInit {
     if (index >= 0) {
       this.item.tags.splice(index, 1);
     }
-
-    // TODO: not the best to be putting it in the DB every time
-    this.placeIntoDB();
   }
 
   onDescSubmit() {
-    this.placeIntoDB();
+    // Use to put in DB each time
   }
 
 
@@ -546,6 +560,11 @@ export class ItemBuilderComponent implements OnInit {
   * If it could not remove both, the auto title flag is set to false.
   */
   getAdditionalTextFrom(prefix: string, suffix: string, name: string): {additionalText: string, isAutoTitle: boolean} {
+    // If there is no prefix or suffix, then there's no auto title
+    if(!prefix && !suffix){
+      return {additionalText: name, isAutoTitle: false};
+    }
+
     let result = {additionalText: name, isAutoTitle: true};
 
     // Check for a prefix. If there is one, remove it. If that was not possible, uncheck auto title.
@@ -594,19 +613,18 @@ export class ItemBuilderComponent implements OnInit {
     }
   }
 
-  nextStep(){
-    if(this.step == 1 || this.step == 2){
+  nextStep(cancelled?){
+    if(!cancelled && this.step !== 0 && this.step !== 3){
       this.placeIntoDB();
     }
-
     
     if(this.singleStep){
-      this.router.navigate(['/item/' + this.id]);
+      this.router.navigate(['/item/' + this.id], {replaceUrl: true});
       return;
     }
 
     //this.step += 1;
-    this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: this.step + 1 } });
+    this.router.navigate(['/itemBuilder/' + this.id], { replaceUrl: true, queryParams: { step: this.step + 1 } });
     window.scrollTo(0, 0);
   }
 

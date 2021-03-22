@@ -139,7 +139,6 @@ export class ItemComponent implements OnInit, OnDestroy {
   // category of the item
   category: Category;
   categoryAncestors: Category[];
-  locationsAndAncestors: HierarchyItem[][];
   attributesForCard: AttributeCard[];
 
   itemLocations: ItemLocation[] = [];
@@ -497,28 +496,30 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.checkDirty();
     }
 
-    console.log(JSON.stringify(this.locationsAndAncestors));
     // For reporting
+    /* TOO JARRING/UNEXPECTED. Will need to write a different dialog for this,
+       And refactor reporting so that it's not duplicated
     if(sendReport){
       if(type === 'approx'){
         if(value !== "Good"){ // Outdated?
-          for(let loc of this.locationsAndAncestors){
-            if(loc[0].ID === locationID){
-              this.sendAutoReport(value, locationID, loc[0].name);
+          for(let loc of this.itemLocations){
+            if(loc.location.ID === locationID){
+              this.sendAutoReport(value, locationID, loc.location.name);
             }
           }
         }
       }
       else if(type.startsWith('number')){
         if(value <= parseInt(type.substring(7))){
-          for(let loc of this.locationsAndAncestors){
-            if(loc[0].ID === locationID){
-              this.sendAutoReport(value, locationID, loc[0].name);
+          for(let loc of this.itemLocations){
+            if(loc.location.ID === locationID){
+              this.sendAutoReport(value, locationID, loc.location.name);
             }
           }
         }
       }
     }
+    */
   }
 
   updateUITrackingData(locationID: string, value: string){
@@ -614,9 +615,11 @@ export class ItemComponent implements OnInit, OnDestroy {
     this.report.timestamp = new Date().getUTCSeconds();
     this.report.location = locationID;
 
+    this.snack.open("Sending Report...", "OK", {duration: 2000, panelClass: ['mat-toolbar']});
+
     return this.adminService.placeReport(this.report.item.ID, this.report.description, this.authService.workspace.defaultUsersForReports, locationID, type).then(
-      () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
-      (err) => this.snack.open("Report Failed. " + err.status, "OK", {duration: 3000, panelClass: ['mat-toolbar']})
+      () => this.snack.open("Report Sent", "OK", {duration: 4000, panelClass: ['successful-report']}),
+      (err) => this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
     );
   }
 
