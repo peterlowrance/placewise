@@ -26,6 +26,7 @@ import { trigger, style, transition, animate, keyframes} from '@angular/animatio
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 import { CacheService } from 'src/app/services/cache.service';
 import {HierarchyLocation} from 'src/app/models/Location';
+import { stringify } from '@angular/compiler/src/util';
 
 
 interface TreeNode {
@@ -155,6 +156,9 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   deleteSub: Subscription; // delete subscription
 
+  returnTo: string; // If we just added this item, this gives a quick route back to where we were
+  returnToName: string; // Display name for where we are returning
+
   getDirty(){ return this.navService.getDirty() }
   setDirty(value: boolean){ this.navService.setDirty(value); }
 
@@ -164,6 +168,17 @@ export class ItemComponent implements OnInit, OnDestroy {
     this.id = this.route.snapshot.paramMap.get('id');
 
     let cache = this.cacheService.get(this.id, "item");
+
+    this.route.queryParamMap.subscribe(params => {
+      // Retrieve data if this item should have a quick route back to where it came
+      if(params.get('returnTo')){
+        let returnParams = params.get('returnTo').split(':');
+        this.returnTo = returnParams[0];
+        this.returnToName = returnParams[1];
+        console.log("To: " + this.returnTo +  "  Name: " + this.returnToName);
+        // NEXT
+      }
+    });
 
     // If the item is in cache, we can load everything at once
     if(cache){
@@ -1084,7 +1099,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     //remove image
     return this.adminService.removeItem(this.item).toPromise().then(val => {
       if (val) {
-        this.snack.open('Item Successfully Deleted', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
+        this.snack.open('Item Successfully Deleted', "OK", {duration: 2000, panelClass: ['mat-toolbar']});
         this.navService.returnState();
         this.routeLocation.back();
       } else this.snack.open('Item Deletion Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});

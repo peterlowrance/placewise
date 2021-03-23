@@ -13,6 +13,7 @@ import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
 import { Subscription, SubscriptionLike } from 'rxjs';
 import {Location} from "@angular/common";
+import { HostListener } from '@angular/core';
 
 
 interface AttributeCard {
@@ -59,7 +60,8 @@ export class ItemBuilderComponent implements OnInit {
     autoTitleBuilder: boolean;                // Switch value on UI
     attributeSuffix: string;                  // Pre-loaded suffix
 
-    backSubscription: SubscriptionLike;
+    returnTo: string;
+    returnToName: string;
 
   ngOnInit() {
     // Retrieve id
@@ -70,26 +72,16 @@ export class ItemBuilderComponent implements OnInit {
 
       this.step = Number(params.get('step'));
       if(this.step > this.MAX_STEP || this.step < this.MIN_STEP){
-        this.router.navigate(['/item/' + this.id], {replaceUrl:true});
+        this.router.navigate(['/item/' + this.id]);
       }
 
       if(params.get('singleStep')){
         this.singleStep = true;
       }
+
+      this.returnTo = params.get('returnTo');
+      console.log("AAAAAH: " + this.returnTo);
     })
-
-    // Make the back button work intuitively - since we are not saving the history
-    this.backSubscription = this.location.subscribe(event => {
-      if(event.type && event.type === "popstate"){
-
-        // If we are a few steps in, navigate to the last step
-        if(this.step > 0){
-          this.location.replaceState('/itemBuilder/' + this.id, { step: this.step + 1 });
-          // NEXT
-        }
-      }
-      console.log(event.type);
-    });
 
     this.searchService.getItem(this.id).subscribe(item => {
       
@@ -156,7 +148,7 @@ export class ItemBuilderComponent implements OnInit {
   }
 
   ngOnDestroy(){
-    this.backSubscription.unsubscribe();
+
   }
 
   /**
@@ -618,14 +610,26 @@ export class ItemBuilderComponent implements OnInit {
       this.placeIntoDB();
     }
     
-    if(this.singleStep){
-      this.router.navigate(['/item/' + this.id], {replaceUrl: true});
+    if(this.singleStep || this.step + 1 > this.MAX_STEP){
+      if(this.returnTo){
+        this.router.navigate(['/item/' + this.id], { queryParams: { returnTo: this.returnTo } });
+      }
+      else {
+        this.router.navigate(['/item/' + this.id]);
+      }
       return;
     }
 
-    //this.step += 1;
-    this.router.navigate(['/itemBuilder/' + this.id], { replaceUrl: true, queryParams: { step: this.step + 1 } });
-    window.scrollTo(0, 0);
+    else {
+      //this.step += 1;
+      if(this.returnTo){
+        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: this.step + 1, returnTo: this.returnTo } });
+      }
+      else {
+        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: this.step + 1 } });
+      }
+      window.scrollTo(0, 0);
+    }
   }
 
 }

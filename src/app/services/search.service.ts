@@ -51,7 +51,6 @@ export class SearchService implements SearchInterfaceService {
    * @param locations array of hierarchy items to find ancestors out of
    */
   getAncestors(parentIDs: string[], hierItems: HierarchyItem[]): HierarchyItem[][] {
-    console.log(hierItems[0].type + " loaded: " + hierItems.length);
     const result: HierarchyItem[][] = [];
     // Find all parents of items and add an array for each parent
     for(const parentID of parentIDs){
