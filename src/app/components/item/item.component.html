@@ -1,3 +1,4 @@
+
 <div class="mobile-content">
     <img *ngIf="item" class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
     <div class="item-content" *ngIf="item">
@@ -259,6 +260,11 @@
     </div>
 </div>
 
-<button mat-mini-fab class="extended-fab-button" *ngIf="this.role === 'Admin' && this.getDirty()" @open-undo-fab matTooltip="Undo" color="accent" (click)="undoChanges()">
+<button mat-mini-fab class="extended-fab-button undo-fab" *ngIf="this.role === 'Admin' && this.getDirty()" @open-undo-fab matTooltip="Undo" color="accent" (click)="undoChanges()">
     <mat-icon>edit</mat-icon><span class="extended-fab-button__text">Revert</span>
+</button>
+
+<!-- Button for if we are to return somewhere -->
+<button mat-mini-fab class="extended-fab-button structure-color-light return-fab" *ngIf="returnToName" color="none" (click)="returnBack()">
+    <mat-icon>arrow_back</mat-icon><span class="extended-fab-button__text">Return to {{returnToName}}</span>
 </button>

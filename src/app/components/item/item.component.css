@@ -311,22 +311,40 @@ p {
 }
 
 .extended-fab-button {
-  padding: 0 0.8rem;
   border-radius: 10rem;
-  width: 132px;
   position: fixed;
-  top: 8px;
-  left: 10px;
   z-index: 10;
 }
 
+.undo-fab {
+  top: 8px;
+  left: 10px;
+  width: 132px;
+  padding: 0 0.8rem;
+}
+
+.return-fab {
+  width: auto;
+  right: 0;
+  left: 0;
+  margin: 0 auto;
+  max-width: 95vw;
+  padding: 0 30px;
+  bottom: calc(12px + 3vh);
+}
+
 .extended-fab-button__text {
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: .1em;
   font-size: 14px;
   text-transform: uppercase;
-  text-overflow: clip;
-  padding-left: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  padding: 0 10px;
+  width: 90%;
+  max-width: 70vw;
 }
 
 .tracking-toggle {
@@ -472,7 +490,7 @@ p {
 }
 
 @media screen and (min-width: 600px){
-  .extended-fab-button {
+  .undo-button {
     top: 12px;
     left: 12px;
   }

@@ -61,7 +61,6 @@ export class ItemBuilderComponent implements OnInit {
     attributeSuffix: string;                  // Pre-loaded suffix
 
     returnTo: string;
-    returnToName: string;
 
   ngOnInit() {
     // Retrieve id

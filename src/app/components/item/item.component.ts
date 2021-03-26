@@ -1014,6 +1014,11 @@ export class ItemComponent implements OnInit, OnDestroy {
     this.setDirty(false);
   }
 
+  // Currently used for navigating back from building an item, but can be used for other things
+  returnBack(){
+    this.router.navigate([this.returnTo]);
+  }
+
   buildAttributeString(category: Category = this.category): string {
     let buildingString = '';
     for(let suffixIndex in category.suffixStructure){
