@@ -29,7 +29,7 @@ export class AncestorViewComponent implements OnInit {
 
   onExpandPanel(){
     if(!this.parentsToDisplay){
-      this.searchService.getLocationAncestorsByChain(this.parentsOf.ID).then(data => {
+      this.searchService.getAncestorsByChain(this.parentsOf.ID, this.parentsOf.type).then(data => {
         this.parentsToDisplay = data;
       })
     }

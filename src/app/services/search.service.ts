@@ -127,19 +127,20 @@ export class SearchService implements SearchInterfaceService {
 
   // TESTING METHOD
   // INCLUDES PARENT
-  getLocationAncestorsByChain(locationID: string): Promise<HierarchyItem[]> {
+  getAncestorsByChain(ID: string, type: string): Promise<HierarchyItem[]> {
     return new Promise<HierarchyItem[]>( async resolve => {
       let results: HierarchyItem[] = [];
-      let nextLocationID = locationID;
+      let nextID = ID;
       let finished = false;
+      let typeURL = type === 'category' ? 'Category' : 'Locations';
 
       while(!finished){
-        let location = (await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Locations/' + nextLocationID).get().toPromise()).data() as HierarchyLocation;
-        location.ID = nextLocationID;
+        let location = (await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/' + typeURL + '/' + nextID).get().toPromise()).data() as HierarchyLocation;
+        location.ID = nextID;
         results.push(location);
         
         if(location.parent){
-          nextLocationID = location.parent;
+          nextID = location.parent;
         }
         else {
           finished = true;

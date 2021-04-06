@@ -661,6 +661,9 @@ export class ItemComponent implements OnInit, OnDestroy {
       case 'tags':
         this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 4, singleStep: true } });
         break;
+      case 'photo':
+        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 3, singleStep: true } });
+        break;
       default:
         break;
     }

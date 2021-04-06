@@ -1,4 +1,8 @@
 <div class="allContent" *ngIf="hierarchyItem">
+  <img class="responsive-item-image container-img" src={{hierarchyItem.imageUrl}} layout-fit>
+  <div class="info-content">
+    <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
+    <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
     <div [ngSwitch]="this.textEditFields.name">
       <div *ngSwitchCase=true>
         <form (ngSubmit)="onNameSubmit()">
@@ -25,15 +29,38 @@
         </h2>
       </div>
     </div>
-    <div class="image-block">
-      <img class="responsive-item-image container-img" src={{hierarchyItem.imageUrl}} layout-fit>
-      <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button"  (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
-      <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="file-button"  (click)="uploader.click()"><mat-icon>perm_media</mat-icon></button>
-      <!-- hidden item uploader -->
-      <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
-      <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
+
+    <!-- Description -->
+    <div [ngSwitch]="this.textEditFields.desc">
+      <!-- If we are editing, display text form -->
+      <div *ngSwitchCase=true>
+        <form (ngSubmit)="onDescSubmit()" class="form-appear">
+            <mat-form-field class="form-appear">
+                <textarea matInput #desc type="text"
+                placeholder="Desc"
+                [(ngModel)]="hierarchyItem.desc"
+                name="desc"
+                (focusout)="onDescSubmit()"
+                required
+                ></textarea>
+            </mat-form-field>
+        </form>
+      </div>
+      <!-- Otherwise, display the description or "no description" with edit button -->
+      <div *ngSwitchDefault>
+        <div *ngIf="hierarchyItem.desc">
+          {{ hierarchyItem.desc }} 
+          <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button>
+        </div>
+        <div *ngIf="!hierarchyItem.desc">
+          <span class="light-text">( No Description )</span> 
+          <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button>
+        </div>
+      </div>
     </div>
+
     <br>
+    <!--
     <mat-card>
       <mat-card-header>
           <mat-card-title>Description <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button></mat-card-title>
@@ -57,9 +84,9 @@
           </div>
       </mat-card-content>
       <mat-card-actions>
-          <!-- edit field -->
       </mat-card-actions>
     </mat-card>
+    -->
     <div *ngIf="hierarchyItem.type === 'category'">
       <br>
       <mat-card class="attributes-card" [class.mat-elevation-z0]="true">
@@ -194,13 +221,11 @@
 
     <br>
     <h2>Inside of: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editHierarchy()"><mat-icon>edit</mat-icon></button></h2>
-    <app-ancestor-view [parentsToDisplay]="parentsToDisplay"></app-ancestor-view>
+    <app-ancestor-view [parentsOf]="hierarchyItem"></app-ancestor-view>
+    <br>
+    <br>
     <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete</button>
-  
-  <!-- <button class="fab" *ngIf="this.role === 'Admin' && getDirty()" @open-save-fab mat-fab color="primary" (click)="saveItem()">
-    <mat-icon>save</mat-icon>
-    <mat-progress-spinner *ngIf="isSaving" class="save-spinner" mode="indeterminate"></mat-progress-spinner>
-  </button> -->
+  </div>  
 </div>
 
 <button mat-mini-fab class="extended-fab-button" *ngIf="this.role === 'Admin' && this.getDirty()" @open-undo-fab matTooltip="Undo" color="accent" (click)="undoChanges()">

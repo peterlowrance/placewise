@@ -3,7 +3,7 @@
     <img *ngIf="item" class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
     <div class="item-content" *ngIf="item">
         <!-- item name goes here, switch by edit val -->
-        <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
+        <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="editField('photo')"><mat-icon>photo_camera</mat-icon></button>
         <h2 class="title">
             <span *ngIf="item.name"> {{item.name}} </span>
             <span *ngIf="!item.name" class="light-text"> ( No Title ) </span>
@@ -146,7 +146,7 @@
         <div class="item-content-block">
             <div class="small-spacer"></div>
             <img *ngIf="item" class="desktop-image container-img" src={{item.imageUrl}} layout-fit>
-            <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
+            <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="editField('photo')"><mat-icon>photo_camera</mat-icon></button>
 
             <div class="small-spacer"></div>
 
