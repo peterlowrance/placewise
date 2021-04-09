@@ -46,16 +46,13 @@
     border-radius: 8px;
     width: 96%;
     height: 72px;
+    padding: 0;
+    margin: 12px 0;
 }
 
 mat-card-content {
     padding: calc(5% - 0.1rem) calc(0.2rem + 6%) ;
 }
-
-mat-card {
-    padding: 0;
-    margin: 12px 0;
-  }
 
 .hierarchycard-content {
     display: flex;
@@ -146,6 +143,16 @@ mat-card {
 
 .less-padding {
     padding-top: 0px;
+}
+
+.low-report {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+.low-send-button {
+    margin: 6px 0;
 }
 
 .action-color-dark .mat-simple-snackbar-action  {

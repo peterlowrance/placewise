@@ -40,7 +40,7 @@ export class ReportDialogComponent implements OnInit {
   loading = {
     custom: false,
     low: false,
-    empty: false
+    //empty: false
   }
 
   locationData: LocationWithReportMeta[] = [];
@@ -54,9 +54,10 @@ export class ReportDialogComponent implements OnInit {
   isAutoReport = false;
 
   reportLowDisabled = false;
-  reportEmptyDisabled = false;
+  //reportEmptyDisabled = false;
   canReport = true;
   timestamp = Date.now();
+  lowAmount;
 
   reportsInLast12HPerLocation: Map<string, number>;
 
@@ -66,15 +67,15 @@ export class ReportDialogComponent implements OnInit {
     this.locationData = this.countRecentReports(this.data.locations, this.data.item.reports, this.timestamp);
     this.canReport = this.isAbleToReport(this.locationData);
 
-    this.reportEmptyDisabled = !this.isAbleToAutoReportFor("Empty", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
+    //this.reportEmptyDisabled = !this.isAbleToAutoReportFor("Empty", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
     
     // If it's empty, then it's low
-    if(this.reportEmptyDisabled) {
-      this.reportLowDisabled = true;
-    }
-    else {
+    //if(this.reportEmptyDisabled) {
+    //  this.reportLowDisabled = true;
+    //}
+    //else {
       this.reportLowDisabled = !this.isAbleToAutoReportFor("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
-    }
+    //}
 
     console.log(this.canReport);
     
@@ -279,7 +280,7 @@ export class ReportDialogComponent implements OnInit {
     this.locationID = locationID;
 
     if(this.isAutoReport){
-      this.sendReport();
+      this.step = 'low';
     }
     else {
       this.step = 'who';
@@ -295,6 +296,47 @@ export class ReportDialogComponent implements OnInit {
     this.dialogRef.close({wasValid: false});
   }
 
+  // Initial setup when the low button is pressed. Brings up location selection if need be.
+  setupLowReport(){
+    this.type = "Low";
+    this.loading.low = true;
+    this.isAutoReport = true;
+
+    this.updateLocationDataForAutoReport("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
+    
+    if(!this.data.locations || this.data.locations.length < 2){
+      if(this.data.locations.length === 1){
+        this.locationID = this.data.locations[0].ID;
+      }
+      this.step = 'low';
+    }
+    else {
+      this.step = 'where';
+    }
+  }
+
+  // Save inputed number from UI each stroke
+  updateReportNumber(event){
+    this.lowAmount = event.target.value;
+  }
+
+  sendLowReport(){
+    this.description = "This item is low, " + this.lowAmount + " more is requested."
+
+    this.adminService.getWorkspaceUsers().subscribe(users => {
+      if(users && users.length === this.authService.usersInWorkspace){
+         
+        // Load admins for selection
+        this.admins = users.filter(element => { return element.role === "Admin" });
+        // Load selected people to report to
+        this.selectedAdmins = this.admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
+
+        this.sendReport();
+      }
+    })
+  }
+
+  /*
   setupAutoReport(message: string){
 
     if(message === "low"){
@@ -334,8 +376,17 @@ export class ReportDialogComponent implements OnInit {
       }
     })
   }
+  */
 
   sendReport(){
+    // Append which location it was from
+    for(let location of this.data.locations){
+      if(location.ID === this.locationID){
+        this.description += " - Located in " + location.name + ".";
+        break;
+      }
+    }
+
     this.dialogRef.close({wasValid: true});
     this.snack.open("Sending Report...", '', {duration: 2000, panelClass: ['mat-toolbar']});
 

@@ -97,10 +97,10 @@
 
             <mat-expansion-panel disabled *ngFor="let inheritAttr of inheritedAttributes">
               <mat-expansion-panel-header>
-                <mat-panel-title>
+                <mat-panel-title class="attribute-data">
                   {{inheritAttr.name}}
                 </mat-panel-title>
-                <mat-panel-description>
+                <mat-panel-description class="attribute-data">
                   {{inheritAttr.categoryName}}
                 </mat-panel-description>
               </mat-expansion-panel-header>
@@ -108,7 +108,7 @@
 
             <mat-expansion-panel *ngFor="let attr of localAttributes" [expanded]="attr.opened">
               <mat-expansion-panel-header>
-                <mat-panel-title>
+                <mat-panel-title class="attribute-data">
                   {{attr.name}}
                 </mat-panel-title>
               </mat-expansion-panel-header>
