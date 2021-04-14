@@ -40,7 +40,6 @@ export class SettingsComponent implements OnInit {
     this.authService.getUser().subscribe(
       val => {
         this.user = val;
-        console.log("aaaa: " + JSON.stringify(val));
       }
     );
 

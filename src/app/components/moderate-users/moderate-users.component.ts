@@ -152,7 +152,6 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
   }
 
   updateDefaultReportedUsers(event) {
-    console.log(event.map(user => user.id));
     this.adminService.updateDefaultReportUsers(event.map(user => user.id));
   }
 }

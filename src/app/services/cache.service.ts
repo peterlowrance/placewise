@@ -77,7 +77,6 @@ export class CacheService {
 
     let index = cache.elements.findIndex(element => element.ID === ID);
     if(index > -1){
-      console.log("cache hit: " + cache.elements[index].name)
       return cache.elements[index];
     }
 
@@ -96,7 +95,6 @@ export class CacheService {
       return this.cachedCategories;
     }
     else {
-      console.log("Error: No cache for type " + type);
       return null;
     }
   }

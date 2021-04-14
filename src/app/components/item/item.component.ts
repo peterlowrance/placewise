@@ -175,8 +175,6 @@ export class ItemComponent implements OnInit, OnDestroy {
         let returnParams = params.get('returnTo').split(':');
         this.returnTo = returnParams[0];
         this.returnToName = returnParams[1];
-        console.log("To: " + this.returnTo +  "  Name: " + this.returnToName);
-        // NEXT
       }
     });
 
@@ -438,8 +436,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       }
     }
 
-    console.log(this.item);
-
     this.checkDirty();
   }
 
@@ -510,31 +506,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.updateUITrackingData(locationID, value)
       this.checkDirty();
     }
-
-    // For reporting
-    /* TOO JARRING/UNEXPECTED. Will need to write a different dialog for this,
-       And refactor reporting so that it's not duplicated
-    if(sendReport){
-      if(type === 'approx'){
-        if(value !== "Good"){ // Outdated?
-          for(let loc of this.itemLocations){
-            if(loc.location.ID === locationID){
-              this.sendAutoReport(value, locationID, loc.location.name);
-            }
-          }
-        }
-      }
-      else if(type.startsWith('number')){
-        if(value <= parseInt(type.substring(7))){
-          for(let loc of this.itemLocations){
-            if(loc.location.ID === locationID){
-              this.sendAutoReport(value, locationID, loc.location.name);
-            }
-          }
-        }
-      }
-    }
-    */
   }
 
   updateUITrackingData(locationID: string, value: string){
@@ -555,87 +526,6 @@ export class ItemComponent implements OnInit, OnDestroy {
         locations: this.itemLocations.map(data => { return data.location})
       }
     });
-
-    /* OLD
-    // reset report data, ensure clicking out defaults to fail and no double send
-    this.errorDesc = {valid: false, desc: '', selectedUsers: [], allUsers: []};
-    let reportedTo = this.adminService.getWorkspaceUsers().subscribe(users => {
-      if(users && users.length === this.authService.usersInWorkspace){
-
-        
-
-        reportedTo.unsubscribe(); // Immediately unsubscribe, don't want this dialog to pop up again
-        // NOTE: This will not work well when you are the only person being reported to
-
-        
-        dialogRef.afterClosed().subscribe(result => {
-          if (result) this.issueReport(result, locationID);
-        });
-        
-      }
-    });
-    */
-  }
-
-  /**
-   * Issues a report to the backend DB
-   * @param result The resulting report from the report modal
-   */
-  issueReport(result: ItemReportModalData, locationID: string) {
-    this.errorDesc = result;
-    // if it's valid, build and issue report, else leave
-    if (this.errorDesc.valid) {
-      this.report.description = this.errorDesc.desc;
-      this.report.item.name = this.item.name; // old
-      this.report.item.ID = this.item.ID;
-      this.report.item.imageUrl = this.item.imageUrl; // old
-      this.report.timestamp = new Date().getUTCSeconds(); // old
-
-      // Issue report
-      return this.adminService.placeReport(this.report.item.ID, this.report.description, result.selectedUsers.map(user => user.id), locationID, "custom").then(
-        () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
-        (err) => {
-          this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
-          console.log(JSON.stringify(err));
-        }
-      );
-    }
-  }
-
-  sendAutoReport(amount: any, locationID: string, locationName: string) {
-    let desc = "Low";
-    let type = "custom";
-    if(amount === "Low"){
-      desc = "Auto Report: Item is low on supply in " + locationName + ".";
-      type = "Low";
-    } 
-    else if (amount === "Empty") {
-      desc = "Auto Report: There's no items left in " + locationName + "!";
-      type = "Empty";
-    }
-    else if (amount === 0) {
-      desc = "Auto Report: There's no items left in " + locationName + "!";
-      type = "Empty";
-    } 
-    else {
-      desc = "Auto Report: There's only " + amount + " left in stock of " + locationName +  ".";
-      type = "Low";
-    }
-
-    // smelly code
-    this.report.description = desc;
-    this.report.item.name = this.item.name;
-    this.report.item.ID = this.item.ID;
-    this.report.item.imageUrl = this.item.imageUrl;
-    this.report.timestamp = new Date().getUTCSeconds();
-    this.report.location = locationID;
-
-    this.snack.open("Sending Report...", "OK", {duration: 2000, panelClass: ['mat-toolbar']});
-
-    return this.adminService.placeReport(this.report.item.ID, this.report.description, this.authService.workspace.defaultUsersForReports, locationID, type).then(
-      () => this.snack.open("Report Sent", "OK", {duration: 4000, panelClass: ['successful-report']}),
-      (err) => this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
-    );
   }
 
   /**
@@ -648,13 +538,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       case 'name': 
         this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 2, singleStep: true } });
         break;
-      /*
-      case 'desc':
-        this.textEditFields.desc = true;
-        // focus
-        setTimeout(() => this.descField.nativeElement.focus(), 0);
-        break;
-      */
       case 'attributes': 
         this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 1, singleStep: true } });
         break;
@@ -707,28 +590,9 @@ export class ItemComponent implements OnInit, OnDestroy {
 
       // Update the item locations
       this.item.locations = result;
-      
-      // NOTE: Inside the updateItem, the tracked data for old locations in the data structure get removed. But the card is removed here:
-      /* OLD TRACKING
-      for(let oldLocIndex in oldLocations){
-        if(newLocations.indexOf(oldLocations[oldLocIndex]) === -1){
-          for(let cardIndex in this.trackingCards){
-            if(this.trackingCards[cardIndex].locationID === oldLocations[oldLocIndex]){
-              this.trackingCards.splice(parseInt(cardIndex), 1);
-            }
-          }
-        }
-      }
-      */
 
       this.adminService.updateItem(this.item, null, oldLocations); // TODO: Not good placement, seperate from main saving mechanism
       this.setDirty(true);
-
-      /* OLD LOCATION GET
-      this.searchService.getAncestorsOf(this.item).subscribe(locations => {
-        this.locationsAndAncestors = locations;
-      });
-      */
 
       // Update recent locations
       for(let index in newLocations){
@@ -763,26 +627,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       let localSub = this.searchService.getCategory(result[0]).subscribe(newCategory => {
         if(newCategory){
           this.adminService.addToRecent(newCategory);
-
-          /*                                 TODO
-          if(newCategory.prefix){
-            if(!this.item.name){ // If the item doesn't have a name yet, jsut set it to be the prefix
-              this.item.name = newCategory.prefix;
-              this.item.fullTitle = this.item.name + this.buildAttributeString();
-            }
-            else if(!this.item.name.startsWith(newCategory.prefix)){ // Replace old prefix if it's there
-              if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
-                this.item.name = newCategory.prefix + " " + this.item.name.substring(this.category.prefix.length-1, this.item.name.length-1).trim();
-              } else {
-                this.item.name = newCategory.prefix + " " + this.item.name;
-              }
-            }
-          }
-          else if(newCategory.ID !== 'root'){ // If it has no prefix but it's not the root, make the name blank
-            this.item.name = '';
-            this.item.fullTitle = this.item.name + this.buildAttributeString();
-          }
-          */
   
           this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0])
           localSub.unsubscribe(); // Don't want this screwing with us later
@@ -1081,7 +925,6 @@ export class ItemComponent implements OnInit, OnDestroy {
     },
     reject => {
       this.snack.open('Item Save Failed: ' + reject, "OK", {duration: 3000, panelClass: ['mat-warn']});
-      console.log(this.item);
       this.undoChanges(this.previousItem); // Revert to last saved data
     });
   }

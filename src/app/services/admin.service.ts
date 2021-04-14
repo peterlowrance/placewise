@@ -523,48 +523,6 @@ export class AdminService {
       }
     });
 
-    // TODO: Make sure these subs close properly
-    
-
-
-    /*
-    try {
-      // get all user metadata
-      const users = this.afs.collection('/Users', ref => ref.where('workspace', '==', this.auth.workspace.id)).snapshotChanges().pipe(map(a => {
-        return a.map(g => {
-        const data = g.payload.doc.data();
-        console.log(console.log("BOOP: " + JSON.stringify(data)))
-        const id = g.payload.doc.id;
-        return {data, id};
-        });
-      }));
-      // get all static user roles from db
-      const wUsers = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().pipe(map(a => {
-        return a.map(g => {
-        const data = g.payload.doc.data();
-        console.log(console.log("BEEP: " + JSON.stringify(data)))
-        const id = g.payload.doc.id;
-        return {data, id};
-        });
-      }));
-      // filter and combine by user ID
-      return combineLatest<WorkspaceUser[]>(users, wUsers, (user, wUser) => {
-        const list: WorkspaceUser[] = [];
-        user.forEach((element, index) => {
-          if (element && element.data) {  list.push({
-            firstName: element.data.firstName, 
-            lastName: element.data.lastName, 
-            email: element.data.email,
-            workspace: element.data.workspace,
-            id: element.id,
-            role: wUser.find((elem) => elem.id === element.id && elem.data).data.role}); }
-        });
-        return list;
-      });
-    } catch (err) {
-      console.log(err);
-    }
-    */
   }
 
   /**

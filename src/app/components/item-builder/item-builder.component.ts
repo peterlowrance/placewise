@@ -79,7 +79,6 @@ export class ItemBuilderComponent implements OnInit {
       }
 
       this.returnTo = params.get('returnTo');
-      console.log("AAAAAH: " + this.returnTo);
     })
 
     this.searchService.getItem(this.id).subscribe(item => {

@@ -126,9 +126,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     // change if parent is different
     this.parentSub = this.navService.getParent().subscribe(val => {
         if(val){
-          // this.displayDescendants(val, this.selectedSearch === 'Categories');
-          // this.loadAttributes();
-          // console.log("Loaded from parentSub:" + val.name);
           this.root = val;
           this.typeForSelectionButtons = this.root.type;
           this.loadLevel();

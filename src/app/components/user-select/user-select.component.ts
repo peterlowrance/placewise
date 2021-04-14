@@ -43,7 +43,6 @@ export class UserSelectComponent implements OnInit {
 
     // Update array
     this.usersForUI = usersForUI;
-    //console.log("D: " + JSON.stringify(usersForUI));
   }
 
   onClickUser(newUser: WorkspaceUser, oldUser: WorkspaceUser){

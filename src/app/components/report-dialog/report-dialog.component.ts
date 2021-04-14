@@ -76,8 +76,6 @@ export class ReportDialogComponent implements OnInit {
     //else {
       this.reportLowDisabled = !this.isAbleToAutoReportFor("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
     //}
-
-    console.log(this.canReport);
     
   }
 
