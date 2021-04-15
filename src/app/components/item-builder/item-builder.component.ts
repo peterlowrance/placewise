@@ -53,7 +53,7 @@ export class ItemBuilderComponent implements OnInit {
     singleStep: Boolean;                      // If we are here to edit one piece of the item
     item: Item;                               // Item being setup
     category: Category;                       // Category of the item
-    categoryAncestors: Category[];            // All of the Category's parents
+    categoryAndAncestors: Category[];
     locationsAndAncestors: HierarchyItem[][]; // The locations and their ancestors
     attributesForCard: AttributeCard[];       // Attributes of the item, for the UI
     additionalText: string;                   // Helps with setting up the title
@@ -68,7 +68,6 @@ export class ItemBuilderComponent implements OnInit {
 
     // Actively retrieve if the step changes
     this.route.queryParamMap.subscribe(params => {
-
       this.step = Number(params.get('step'));
       if(this.step > this.MAX_STEP || this.step < this.MIN_STEP){
         this.router.navigate(['/item/' + this.id]);
@@ -82,7 +81,6 @@ export class ItemBuilderComponent implements OnInit {
     })
 
     this.searchService.getItem(this.id).subscribe(item => {
-      
       if (!item) {
         return;
       }
@@ -93,8 +91,9 @@ export class ItemBuilderComponent implements OnInit {
 
         this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
           if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
-            this.categoryAncestors = categoryAncestors[0];
-            this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAncestors);
+            this.categoryAndAncestors = categoryAncestors[0];
+            this.categoryAndAncestors.unshift(this.category);
+            this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
 
             // Setup additional text for auto title builder
             let additionalTextData = this.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name);
@@ -199,7 +198,8 @@ export class ItemBuilderComponent implements OnInit {
             // Update the item's category on the UI and update the DB
             this.adminService.addToRecent(newCategory); // UI category cache
             this.item.category = result[0];
-            this.categoryAncestors = categoryAncestors[0]
+            this.categoryAndAncestors = categoryAncestors[0];
+            this.categoryAndAncestors.unshift(this.category);
             this.adminService.updateItem(this.item, oldCategory, null); // TODO: Not good placement, seperate from normal saving routine
           });
 
@@ -356,7 +356,7 @@ export class ItemBuilderComponent implements OnInit {
 
     // Rebuild title
 
-    let newSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAncestors);
+    let newSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
 
     // If we had the auto suffix, replace it
     if(this.attributeSuffix && this.item.name.endsWith(this.attributeSuffix)){
