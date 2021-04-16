@@ -134,7 +134,7 @@
                                 <input matInput #value
                                 type="text"
                                 [(ngModel)]="additionalText"
-                                (focusout)="updateTitleFromUI()" >
+                                (keyup)="updateTitleFromUI()" >
                             </mat-form-field>
                         </mat-grid-tile>
 

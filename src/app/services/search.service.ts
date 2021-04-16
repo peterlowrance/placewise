@@ -75,6 +75,7 @@ export class SearchService implements SearchInterfaceService {
             if(not_found_error){
               console.log("ERROR! Categories improperly loaded.");
               console.log(result[result.length - 1][result[result.length - 1].length - 1].ID);
+              // NOTE: this has popped up with a location ID before!
               break;
             }
           }
@@ -351,9 +352,6 @@ export class SearchService implements SearchInterfaceService {
       return '';
     }
 
-    console.log(categoryAndAncestors);
-    console.log(startingIndex);
-
     // Start building attribute string
     let buildingString = '';
 
@@ -372,8 +370,6 @@ export class SearchService implements SearchInterfaceService {
           for(let attr in item.attributes){
             if(item.attributes[attr].ID === id){
               if(item.attributes[attr].value){ // Don't insert anything if there's no value
-                console.log(item.attributes[attr].ID);
-                console.log(item.attributes[attr].value);
                 buildingString += suffix.beforeText + 
                   item.attributes[attr].value +
                   suffix.afterText;

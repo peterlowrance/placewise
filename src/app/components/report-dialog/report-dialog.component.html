@@ -116,7 +116,7 @@
                 <mat-label> Amount </mat-label>
                 <input matInput type="number" (keyup)="updateReportNumber($event)"/>
             </mat-form-field>
-            <button mat-raised-button class="big-button action-color-dark low-send-button" (click)="sendLowReport()" [disabled]="!lowAmount || lowAmount < 1">
+            <button mat-raised-button class="big-button action-color-dark low-send-button" (click)="sendLowReport()" [disabled]="!lowAmount || lowAmount < 0">
                 <mat-spinner *ngIf="loading.custom" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
                 <div *ngIf="!loading.custom"> Send </div>
             </button>

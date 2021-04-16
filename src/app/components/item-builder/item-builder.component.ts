@@ -94,7 +94,6 @@ export class ItemBuilderComponent implements OnInit {
             this.categoryAndAncestors = categoryAncestors[0];
             this.categoryAndAncestors.unshift(this.category);
             this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
-            console.log("sux: " + this.attributeSuffix);
 
             // Setup additional text for auto title builder
             let additionalTextData = this.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name);
@@ -478,6 +477,14 @@ export class ItemBuilderComponent implements OnInit {
       }
       else {
         this.item.name = this.category.prefix + this.attributeSuffix;
+      }
+    }
+    else {
+      if(this.additionalText){
+        this.item.name = this.additionalText.trim() + this.attributeSuffix;
+      }
+      else {
+        this.item.name = this.attributeSuffix;
       }
     }
   }
