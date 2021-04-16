@@ -94,6 +94,7 @@ export class ItemBuilderComponent implements OnInit {
             this.categoryAndAncestors = categoryAncestors[0];
             this.categoryAndAncestors.unshift(this.category);
             this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
+            console.log("sux: " + this.attributeSuffix);
 
             // Setup additional text for auto title builder
             let additionalTextData = this.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name);
@@ -109,7 +110,7 @@ export class ItemBuilderComponent implements OnInit {
               }
             }
 
-            let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
+            let rebuiltCards = this.loadAttributesForCards(this.categoryAndAncestors, item);
             if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
               this.attributesForCard = rebuiltCards;
             }
@@ -175,6 +176,8 @@ export class ItemBuilderComponent implements OnInit {
 
           // Load new category ancestors before continuing
           this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => {
+            this.categoryAndAncestors = categoryAncestors[0];
+            this.categoryAndAncestors.unshift(this.category);
 
             // If this was using the auto prefix, replace it.
             if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
@@ -188,7 +191,7 @@ export class ItemBuilderComponent implements OnInit {
             if (this.attributeSuffix && this.item.name.endsWith(this.attributeSuffix)) {
               this.item.name = this.item.name.substring(0, this.item.name.length - this.attributeSuffix.length).trim()
               if(newCategory.suffixStructure){
-                this.item.name = this.item.name + this.searchService.buildAttributeSuffixFrom(this.item, categoryAncestors[0]);
+                this.item.name = this.item.name + this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
               }
             }
     
@@ -198,8 +201,6 @@ export class ItemBuilderComponent implements OnInit {
             // Update the item's category on the UI and update the DB
             this.adminService.addToRecent(newCategory); // UI category cache
             this.item.category = result[0];
-            this.categoryAndAncestors = categoryAncestors[0];
-            this.categoryAndAncestors.unshift(this.category);
             this.adminService.updateItem(this.item, oldCategory, null); // TODO: Not good placement, seperate from normal saving routine
           });
 

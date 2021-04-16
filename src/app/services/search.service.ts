@@ -74,6 +74,7 @@ export class SearchService implements SearchInterfaceService {
 
             if(not_found_error){
               console.log("ERROR! Categories improperly loaded.");
+              console.log(result[result.length - 1][result[result.length - 1].length - 1].ID);
               break;
             }
           }
@@ -343,7 +344,7 @@ export class SearchService implements SearchInterfaceService {
       }));
   }
 
-  buildAttributeSuffixFrom(item: Item, categoryAndAncestors: Category[], startingIndex = 0){
+  buildAttributeSuffixFrom(item: Item, categoryAndAncestors: Category[], startingIndex = 0): string{
 
     // If there's no category, return empty string
     if(!categoryAndAncestors){
@@ -351,6 +352,7 @@ export class SearchService implements SearchInterfaceService {
     }
 
     console.log(categoryAndAncestors);
+    console.log(startingIndex);
 
     // Start building attribute string
     let buildingString = '';
@@ -362,7 +364,7 @@ export class SearchService implements SearchInterfaceService {
   
         // If the piece points to the parent's suffix, build that piece out
         if(id === 'parent'){
-          this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex + 1) + suffix.afterText;
+          buildingString += suffix.beforeText + this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex + 1) + suffix.afterText;
         }
   
         // Otherwise, insert that suffix piece with the corresponding value
@@ -370,6 +372,8 @@ export class SearchService implements SearchInterfaceService {
           for(let attr in item.attributes){
             if(item.attributes[attr].ID === id){
               if(item.attributes[attr].value){ // Don't insert anything if there's no value
+                console.log(item.attributes[attr].ID);
+                console.log(item.attributes[attr].value);
                 buildingString += suffix.beforeText + 
                   item.attributes[attr].value +
                   suffix.afterText;

@@ -84,7 +84,7 @@
             <div *ngIf="!category">
                 Loading category information...
             </div>
-            <div *ngIf="(category && categoryAncestors) || (category && category.name === 'root')">
+            <div *ngIf="(category && categoryAndAncestors) || (category && category.name === 'root')">
                 <br>
                 <mat-slide-toggle [(ngModel)]="autoTitleBuilder" (change)="onToggleAutoTitle($event)"> <b> Automatic Title Builder </b> <div class="light-text"> from {{ category.name }} </div> </mat-slide-toggle>
                 <br>
