@@ -1,20 +1,17 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { ENTER, COMMA, SPACE } from '@angular/cdk/keycodes';
+import { Component, OnInit, Inject } from '@angular/core';
+import { MatChipInputEvent, MatSnackBar } from '@angular/material';
+import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { Category } from 'src/app/models/Category';
+import { HierarchyItem } from 'src/app/models/HierarchyItem';
 import { Item } from 'src/app/models/Item';
+import { HierarchyLocation } from 'src/app/models/Location';
+import { AdminService } from 'src/app/services/admin.service';
+import { ImageService } from 'src/app/services/image.service';
 import { SearchService } from 'src/app/services/search.service';
 import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
-import {MatDialog} from '@angular/material/dialog';
-import { AdminService } from 'src/app/services/admin.service';
-import { HierarchyItem } from 'src/app/models/HierarchyItem';
-import {MatChipInputEvent, MatSnackBar} from '@angular/material';
-import { ImageService } from 'src/app/services/image.service';
-import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
-import {CdkTextareaAutosize} from '@angular/cdk/text-field';
-import { Subscription, SubscriptionLike } from 'rxjs';
-import {Location} from "@angular/common";
-import { HostListener } from '@angular/core';
-
 
 interface AttributeCard {
   name: string;
@@ -25,13 +22,15 @@ interface AttributeCard {
 }
 
 @Component({
-  selector: 'app-item-builder',
-  templateUrl: './item-builder.component.html',
-  styleUrls: ['./item-builder.component.css']
+  selector: 'app-item-builder-modal',
+  templateUrl: './item-builder-modal.component.html',
+  styleUrls: ['./item-builder-modal.component.css']
 })
-export class ItemBuilderComponent implements OnInit {
+export class ItemBuilderModalComponent implements OnInit {
 
   constructor(
+    public dialogRef: MatDialogRef<ItemBuilderModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: {hierarchyItem: HierarchyItem},
     private searchService: SearchService,
     public dialog: MatDialog,
     private adminService: AdminService,
@@ -39,12 +38,9 @@ export class ItemBuilderComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private snack: MatSnackBar,
-    private routeLocation: Location
-    ) { }
+  ) { }
 
-    @ViewChild('autosize', {static: false}) autosize: CdkTextareaAutosize;
-
-    readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
+  readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
     readonly MAX_STEP = 4;
     readonly MIN_STEP = 0;
 
@@ -54,17 +50,17 @@ export class ItemBuilderComponent implements OnInit {
     item: Item;                               // Item being setup
     category: Category;                       // Category of the item
     categoryAndAncestors: Category[];
-    locationsAndAncestors: HierarchyItem[][]; // The locations and their ancestors
+    locations: HierarchyLocation[]; // The locations and their ancestors
     attributesForCard: AttributeCard[];       // Attributes of the item, for the UI
     additionalText: string;                   // Helps with setting up the title
     autoTitleBuilder: boolean;                // Switch value on UI
     attributeSuffix: string;                  // Pre-loaded suffix
 
+    loadingLocations: boolean = true;
+
     returnTo: string;
 
   ngOnInit() {
-    // Retrieve id
-    this.id = this.route.snapshot.paramMap.get('id');
 
     // Actively retrieve if the step changes
     this.route.queryParamMap.subscribe(params => {
@@ -80,72 +76,120 @@ export class ItemBuilderComponent implements OnInit {
       this.returnTo = params.get('returnTo');
     })
 
-    this.searchService.getItem(this.id).subscribe(item => {
-      if (!item) {
-        return;
-      }
-      this.item = item;
+    // Initialize an item to start adding data to
+    this.item = {
+      name: '',
+      locations: [],
+      category: 'root',
+      imageUrl: '../../../assets/notFound.png'
+    };
 
-      this.searchService.getCategory(item.category).subscribe(category => {
-        this.category = category;
+    // If we started with a category, fill in the data we know
+    if(this.data.hierarchyItem.type === 'category'){
+      this.item.category = this.data.hierarchyItem.ID;
+      this.category = this.data.hierarchyItem;
+    }
+    // Do the same if it was a location
+    else if (this.data.hierarchyItem.type === 'location'){
+      this.item.locations = [this.data.hierarchyItem.ID];
+      
+    }
 
-        this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
-          if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
-            this.categoryAndAncestors = categoryAncestors[0];
-            this.categoryAndAncestors.unshift(this.category);
-            this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
+    this.searchService.getCategory(this.item.category).subscribe(category => {
+      this.category = category;
 
-            // Setup additional text for auto title builder
-            let additionalTextData = this.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name);
-            this.additionalText = additionalTextData.additionalText;
-            this.autoTitleBuilder = additionalTextData.isAutoTitle;
-            // If there is no item name, build an automatic title.
-            if(!this.item.name){
-              this.item.name = (this.category.prefix ? this.category.prefix : "") + (this.attributeSuffix ? this.attributeSuffix : "");
+      this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
+        if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
+          this.categoryAndAncestors = categoryAncestors[0];
+          this.categoryAndAncestors.unshift(this.category);
+          this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
 
-              // If this resulted in a name, toggle on the Automatic Title Builder
-              if(this.item.name){
-                this.autoTitleBuilder = true;
-              }
+          // Setup additional text for auto title builder
+          let additionalTextData = this.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name);
+          this.additionalText = additionalTextData.additionalText;
+          this.autoTitleBuilder = additionalTextData.isAutoTitle;
+          // If there is no item name, build an automatic title.
+          if(!this.item.name){
+            this.item.name = (this.category.prefix ? this.category.prefix : "") + (this.attributeSuffix ? this.attributeSuffix : "");
+
+            // If this resulted in a name, toggle on the Automatic Title Builder
+            if(this.item.name){
+              this.autoTitleBuilder = true;
             }
+          }
 
-            let rebuiltCards = this.loadAttributesForCards(this.categoryAndAncestors, item);
-            if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
-              this.attributesForCard = rebuiltCards;
-            }
-            else {
-              for(let newCard in rebuiltCards){ // This is to attempt to only save over the ones modified. Otherwise, users are often kicked out of edit fields
-                let found = false;
-                for(let originalCard in this.attributesForCard){
-                  if(this.attributesForCard[originalCard].ID === rebuiltCards[newCard].ID){
-                    found = true;
-                    if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
-                      this.attributesForCard[originalCard] = rebuiltCards[newCard]
-                    }
-                    break;
+          let rebuiltCards = this.loadAttributesForCards(this.categoryAndAncestors, this.item);
+          if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
+            this.attributesForCard = rebuiltCards;
+          }
+          else {
+            for(let newCard in rebuiltCards){ // This is to attempt to only save over the ones modified. Otherwise, users are often kicked out of edit fields
+              let found = false;
+              for(let originalCard in this.attributesForCard){
+                if(this.attributesForCard[originalCard].ID === rebuiltCards[newCard].ID){
+                  found = true;
+                  if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
+                    this.attributesForCard[originalCard] = rebuiltCards[newCard]
                   }
-                }
-                if(!found){
-                  this.attributesForCard = rebuiltCards; // Attributes didn't align, so jsut reset
                   break;
                 }
               }
+              if(!found){
+                this.attributesForCard = rebuiltCards; // Attributes didn't align, so jsut reset
+                break;
+              }
             }
           }
-          else {
-            this.attributesForCard = this.loadAttributesForCards([category], item)
-          }
-        })
-      });
+        }
+        else {
+          this.attributesForCard = this.loadAttributesForCards([category], this.item)
+        }
+      })
+    });
 
-      this.searchService.getAncestorsOf(item).subscribe(locations => {
-        this.locationsAndAncestors = locations;
-      });
-    })
+    this.loadLocationsFromIDs(this.item.locations);
   }
 
   ngOnDestroy(){
 
+  }
+
+  /**
+   * Called when locations need to be loaded from init or change. This will get the data once and unsubscribe.
+   * Also shows if there are more to be loaded through "loadingLocations" for UI
+   */
+  loadLocationsFromIDs(locationIDs: string[]){
+    // For counting up how many locations we need to load
+    let needToBeLoaded = locationIDs.length;
+    this.loadingLocations = needToBeLoaded > 0;
+    
+    // If there are no locations, just set the locations to empty
+    if(!this.loadingLocations){
+      this.locations = [];
+      return;
+    }
+    
+    // Reset current data (setting to null for UI)
+    this.locations = null;
+    // Load this in once all are ready
+    let loadedLocations: HierarchyLocation[] = [];
+
+    // Assign data to slots in locations and subs as they load in
+    for(let location in locationIDs){
+      // Manual single get. Maybe we should add this functionaly in search service
+      let localSub = this.searchService.getLocation(locationIDs[location]).subscribe(locationData => {
+        loadedLocations[location] = locationData;
+
+        // For tracking how many we've loaded so far. If we have all loaded, update the loading flag
+        needToBeLoaded -= 1;
+        if(needToBeLoaded < 1){
+          this.loadingLocations = false;
+          this.locations = loadedLocations;
+        }
+
+        localSub.unsubscribe();
+      });
+    }
   }
 
   /**
@@ -218,7 +262,7 @@ export class ItemBuilderComponent implements OnInit {
       width: '45rem',
       data: {hierarchy: 'locations', singleSelection: false, parents: this.item.locations}
     });
-    dialogRef.afterClosed().subscribe(result => this.updateItemLocations(result, oldLocations));
+    dialogRef.beforeClosed().subscribe(result => this.updateItemLocations(result, oldLocations));
   }
 
   /**
@@ -260,11 +304,10 @@ export class ItemBuilderComponent implements OnInit {
       }
       */
 
-      this.adminService.updateItem(this.item, null, oldLocations); // TODO: Not good placement, seperate from main saving mechanism
+      //this.adminService.updateItem(this.item, null, oldLocations); // TODO: Not good placement, seperate from main saving mechanism
       // this.setDirty(true);
-      this.searchService.getAncestorsOf(this.item).subscribe(locations => {
-        this.locationsAndAncestors = locations;
-      });
+
+      this.loadLocationsFromIDs(result);
 
       // Update recent locations
       for(let index in newLocations){
@@ -355,8 +398,11 @@ export class ItemBuilderComponent implements OnInit {
     }
 
     // Rebuild title
-
     let newSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
+
+    if(newSuffix){
+      this.autoTitleBuilder = true;
+    }
 
     // If we had the auto suffix, replace it
     if(this.attributeSuffix && this.item.name.endsWith(this.attributeSuffix)){
@@ -393,8 +439,7 @@ export class ItemBuilderComponent implements OnInit {
         if (typeof reader.result === 'string') {
           this.imageService.resizeImage(reader.result).then(url => {
             this.item.imageUrl = url;
-            // set dirty and save for upload
-            this.saveItemImage();
+            // save for upload later
           });
         }
       };
@@ -506,15 +551,15 @@ export class ItemBuilderComponent implements OnInit {
         return false;
       }
       // If we're still loading locations
-      if(!this.locationsAndAncestors){
+      if(!this.locations){
         return false;
       }
       // If there is no location
-      else if(this.locationsAndAncestors.length == 0){
+      else if(this.locations.length == 0){
         return false;
       }
       // If it is the unassigned location
-      else if(this.locationsAndAncestors[0][0].name === 'root'){
+      else if(this.locations[0].name === 'root'){
         return false;
       }
       // No problems, we're set to go
@@ -612,32 +657,35 @@ export class ItemBuilderComponent implements OnInit {
   }
 
   nextStep(cancelled?){
+    /*
     if(!cancelled && this.step !== 0 && this.step !== 3){
       this.placeIntoDB();
     }
+    */
     
-    if(this.singleStep || this.step + 1 > this.MAX_STEP){
-      if(this.returnTo){
-        history.go(-5);
-        this.router.navigate(['/item/' + this.id]);
-        //this.router.navigate(['/item/' + this.id], { queryParams: { returnTo: this.returnTo } });
+    if(this.step + 1 > this.MAX_STEP){
+      if(this.singleStep){
+        this.router.navigate(['/item/' + this.item.ID]);
       }
       else {
-        this.router.navigate(['/item/' + this.id]);
+        this.finish();
       }
-      return;
     }
 
     else {
-      //this.step += 1;
-      if(this.returnTo){
-        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: this.step + 1, returnTo: this.returnTo } });
-      }
-      else {
-        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: this.step + 1 } });
-      }
+      this.step += 1;
       window.scrollTo(0, 0);
     }
   }
 
+  finish(){
+    this.adminService.createItemAtLocation(this.item).subscribe(id => {
+      this.item.ID = id;
+      if(this.item.imageUrl !== '../../../assets/notFound.png'){
+        this.saveItemImage();
+      }
+      this.router.navigate(['/item/' + id]);
+      this.dialogRef.close({wasValid: true});
+    });
+  }
 }

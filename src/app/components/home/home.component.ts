@@ -16,6 +16,7 @@ import { switchMap } from 'rxjs/operators';
 import { url } from 'inspector';
 import { Identifiers } from '@angular/compiler';
 import { CacheService } from 'src/app/services/cache.service';
+import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
 
 /**
  *
@@ -423,14 +424,22 @@ export class HomeComponent implements OnInit, OnDestroy {
     } else { // add to locations
       location = this.root.ID;
     }
-    this.adminService.createItemAtLocation(name, '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
+
+    const dialogRef = this.dialog.open(ItemBuilderModalComponent, {
+      width: '30rem',
+      data: {
+        hierarchyItem: this.root
+      }
+    });
+
+    /*this.adminService.createItemAtLocation(name, '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
       if(this.root.type === 'category'){
         this.router.navigate(['/itemBuilder/' + id], { queryParams: { step: 0, returnTo: 'search/categories/' + this.root.ID + ':' + this.root.name} });
       }
       else {
         this.router.navigate(['/itemBuilder/' + id], { queryParams: { step: 0, returnTo: 'search/locations/' + this.root.ID + ':' + this.root.name} });
       }
-    });
+    });*/
   }
 
   /** Adds a hierarchy item to the current depth */

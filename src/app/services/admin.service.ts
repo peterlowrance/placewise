@@ -224,36 +224,34 @@ export class AdminService {
     return of(true);
   }
 
-  createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string): Observable<string> {
-    if (!category) {
-      category = 'root';
-    }
+  createItemAtLocation(item: Item): Observable<string> {
 
     return new Observable(obs => {
-      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({name, fullTitle: name, desc, tags, locations: location ? [location] : [], category, imageUrl
-      }).then(
+      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add(item).then(
         val => {
           obs.next(val.id);
 
-          if(location){
-            this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
-              map(doc => doc.data())
-            ).toPromise().then(
-              doc => {
-                const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
-                ary.push(val.id);
-                this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
-              }
-            );
+          if(item.locations.length > 0){
+            for(let location of item.locations){
+              this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
+                map(doc => doc.data())
+              ).toPromise().then(
+                doc => {
+                  const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+                  ary.push(val.id);
+                  this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
+                }
+              );
+            }
           }
 
-          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + category).get().pipe(
+          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).get().pipe(
             map(doc => doc.data())
           ).toPromise().then(
             doc => {
               const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
               ary.push(val.id);
-              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + category).update({items: ary});
+              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: ary});
             }
           );
 
@@ -265,11 +263,14 @@ export class AdminService {
   }
 
   removeItem(item: Item) {
+    console.log("del item");
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).delete();
     if (item.category) {
+      console.log("del cat");
       this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
     }
     if (item.locations && item.locations.length > 0) {
+      console.log("del loc");
       item.locations.forEach(location => {
         this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
       });
@@ -278,6 +279,7 @@ export class AdminService {
     var reports;
 
     this.getReports().subscribe(x => {
+      console.log("del reports");
       reports = x;     
       for (let i = 0; i < reports.length; i++) {
         if(reports[i].item == item.ID)

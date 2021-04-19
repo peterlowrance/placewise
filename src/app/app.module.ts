@@ -59,6 +59,7 @@ import { AncestorViewComponent } from './components/ancestor-view/ancestor-view.
 import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-item.component';
 import { UserSelectComponent } from './components/user-select/user-select.component';
 import { ItemBuilderComponent } from './components/item-builder/item-builder.component';
+import { ItemBuilderModalComponent } from './components/item-builder-modal/item-builder-modal.component';
 
 @NgModule({
   declarations: [
@@ -83,7 +84,8 @@ import { ItemBuilderComponent } from './components/item-builder/item-builder.com
     AncestorViewComponent,
     HierarchyItemComponent,
     UserSelectComponent,
-    ItemBuilderComponent
+    ItemBuilderComponent,
+    ItemBuilderModalComponent
   ],
   imports: [
     BrowserModule,
@@ -126,6 +128,6 @@ import { ItemBuilderComponent } from './components/item-builder/item-builder.com
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent, AddUserDialogComponent, ConfirmComponent]
+  entryComponents: [ItemBuilderModalComponent, ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent, AddUserDialogComponent, ConfirmComponent]
 })
 export class AppModule { }

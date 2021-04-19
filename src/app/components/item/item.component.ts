@@ -164,6 +164,7 @@ export class ItemComponent implements OnInit, OnDestroy {
 
 
   ngOnInit() {
+
     // retrieve id
     this.id = this.route.snapshot.paramMap.get('id');
 
@@ -354,8 +355,8 @@ export class ItemComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.itemSub.unsubscribe();
-    this.categorySub.unsubscribe();
+    if(this.itemSub) this.itemSub.unsubscribe();
+    if(this.categorySub) this.categorySub.unsubscribe();
     //this.locationsSub.unsubscribe();
   }
 
