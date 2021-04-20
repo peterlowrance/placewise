@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Category } from 'src/app/models/Category';
 import { HierarchyItem } from 'src/app/models/HierarchyItem';
+import { HierarchyObject } from 'src/app/models/HierarchyObject';
 import { Item } from 'src/app/models/Item';
 import { HierarchyLocation } from 'src/app/models/Location';
 import { AdminService } from 'src/app/services/admin.service';
@@ -30,7 +31,7 @@ export class ItemBuilderModalComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<ItemBuilderModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: {hierarchyItem: HierarchyItem},
+    @Inject(MAT_DIALOG_DATA) public data: {hierarchyObj: HierarchyObject, step?: number},
     private searchService: SearchService,
     public dialog: MatDialog,
     private adminService: AdminService,
@@ -44,56 +45,52 @@ export class ItemBuilderModalComponent implements OnInit {
     readonly MAX_STEP = 4;
     readonly MIN_STEP = 0;
 
-    id: string;                               // item id
     step = -1;                                // What step are we at in filling in data
     singleStep: Boolean;                      // If we are here to edit one piece of the item
     item: Item;                               // Item being setup
     category: Category;                       // Category of the item
     categoryAndAncestors: Category[];
-    locations: HierarchyLocation[]; // The locations and their ancestors
+    locations: HierarchyLocation[];           // The locations and their ancestors
     attributesForCard: AttributeCard[];       // Attributes of the item, for the UI
     additionalText: string;                   // Helps with setting up the title
     autoTitleBuilder: boolean;                // Switch value on UI
     attributeSuffix: string;                  // Pre-loaded suffix
-
+    currentImg: string;                       // For images that are taken but not uploaded to the DB yet
     loadingLocations: boolean = true;
 
     returnTo: string;
 
   ngOnInit() {
 
-    // Actively retrieve if the step changes
-    this.route.queryParamMap.subscribe(params => {
-      this.step = Number(params.get('step'));
-      if(this.step > this.MAX_STEP || this.step < this.MIN_STEP){
-        this.router.navigate(['/item/' + this.id]);
-      }
-
-      if(params.get('singleStep')){
-        this.singleStep = true;
-      }
-
-      this.returnTo = params.get('returnTo');
-    })
-
-    // Initialize an item to start adding data to
-    this.item = {
-      name: '',
-      locations: [],
-      category: 'root',
-      imageUrl: '../../../assets/notFound.png'
-    };
-
-    // If we started with a category, fill in the data we know
-    if(this.data.hierarchyItem.type === 'category'){
-      this.item.category = this.data.hierarchyItem.ID;
-      this.category = this.data.hierarchyItem;
+    // Setup if this is just for editing one piece of an item
+    if(this.data.step){
+      this.singleStep = true;
+      this.step = this.data.step;
+      this.item = this.data.hierarchyObj as Item;
     }
-    // Do the same if it was a location
-    else if (this.data.hierarchyItem.type === 'location'){
-      this.item.locations = [this.data.hierarchyItem.ID];
-      
+
+    // Otherwise start initializing a new item to build out
+    else {
+      this.item = {
+        name: '',
+        locations: [],
+        category: 'root',
+        imageUrl: '../../../assets/notFound.png'
+      };
+
+      // If we started with a category, fill in the data we know
+      if(this.data.hierarchyObj.type === 'category'){
+        this.item.category = this.data.hierarchyObj.ID;
+        this.category = this.data.hierarchyObj as Category;
+      }
+      // Do the same if it was a location
+      else if (this.data.hierarchyObj.type === 'location'){
+        this.item.locations = [this.data.hierarchyObj.ID];
+        
+      }
     }
+
+    this.currentImg = this.item.imageUrl;
 
     this.searchService.getCategory(this.item.category).subscribe(category => {
       this.category = category;
@@ -438,7 +435,7 @@ export class ItemBuilderModalComponent implements OnInit {
       reader.onload = (ev) => {
         if (typeof reader.result === 'string') {
           this.imageService.resizeImage(reader.result).then(url => {
-            this.item.imageUrl = url;
+            this.currentImg = url;
             // save for upload later
           });
         }
@@ -449,8 +446,8 @@ export class ItemBuilderModalComponent implements OnInit {
   /**
    * Saves the item's image and updates the database
    */
-  async saveItemImage() {
-    return this.imageService.putImage(this.item.imageUrl, this.item.ID).then(link => {
+  saveItemImage() {
+    return this.imageService.putImage(this.currentImg, this.item.ID).then(link => {
       this.item.imageUrl = link;
       this.placeIntoDB();
     });
@@ -656,12 +653,17 @@ export class ItemBuilderModalComponent implements OnInit {
     }
   }
 
-  nextStep(cancelled?){
-    /*
-    if(!cancelled && this.step !== 0 && this.step !== 3){
-      this.placeIntoDB();
+  nextStep(){
+    if(this.singleStep){
+      // If this is to modify the image, save that. Otherwise, do a general save
+      if(this.step === 3){
+        this.saveItemImage().then(() => { this.dialogRef.close({wasValid: false})});
+      }
+      else {
+        this.placeIntoDB().then(() => { this.dialogRef.close({wasValid: false})});
+      }
+      return;
     }
-    */
     
     if(this.step + 1 > this.MAX_STEP){
       if(this.singleStep){
@@ -676,6 +678,10 @@ export class ItemBuilderModalComponent implements OnInit {
       this.step += 1;
       window.scrollTo(0, 0);
     }
+  }
+
+  cancel(){
+    this.dialogRef.close({wasValid: false});
   }
 
   finish(){

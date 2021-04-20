@@ -428,7 +428,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(ItemBuilderModalComponent, {
       width: '30rem',
       data: {
-        hierarchyItem: this.root
+        hierarchyObj: this.root
       }
     });
 

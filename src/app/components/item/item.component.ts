@@ -27,6 +27,7 @@ import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 import { CacheService } from 'src/app/services/cache.service';
 import {HierarchyLocation} from 'src/app/models/Location';
 import { stringify } from '@angular/compiler/src/util';
+import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
 
 
 interface TreeNode {
@@ -537,7 +538,10 @@ export class ItemComponent implements OnInit, OnDestroy {
     // set edit field value to enable state change, then set focus
     switch (field) {
       case 'name': 
-        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 2, singleStep: true } });
+        this.dialog.open(ItemBuilderModalComponent, {
+          width: '480px',
+          data: {hierarchyObj: this.item, step: 2}
+        });
         break;
       case 'attributes': 
         this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 1, singleStep: true } });
@@ -546,7 +550,10 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 4, singleStep: true } });
         break;
       case 'photo':
-        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 3, singleStep: true } });
+        this.dialog.open(ItemBuilderModalComponent, {
+          width: '480px',
+          data: {hierarchyObj: this.item, step: 3}
+        });
         break;
       default:
         break;
