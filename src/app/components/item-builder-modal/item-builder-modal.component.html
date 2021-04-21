@@ -55,7 +55,7 @@
                                 (focus)="attrCard.focused = true"
                                 (focusout)="onAttrValueSubmit(attrCard)">
                             </mat-form-field>
-                            <button mat-icon-button class="fake-confirm-button" *ngIf="attrCard.focused"><mat-icon>done</mat-icon></button>
+                            <!-- I don't think this is needed anymore from better design   <button mat-icon-button class="fake-confirm-button" *ngIf="attrCard.focused"><mat-icon>done</mat-icon></button> -->
                             <span *ngIf="!attrCard.value"><mat-icon class="missing-data-icon">error_outline</mat-icon></span>
                             <span *ngIf="attrCard.category === 'None'"><button mat-icon-button class="delete-attribute-button" (click)="deleteAttribute(attrCard)"><mat-icon>delete</mat-icon></button></span>
                             <div *ngIf="attrCard.category !== 'None'" class="attribute-category-text">{{attrCard.category}}</div>
@@ -85,9 +85,9 @@
                 <mat-slide-toggle [(ngModel)]="autoTitleBuilder" (change)="onToggleAutoTitle($event)"> <b> Automatic Title</b> <div class="light-text"> from {{ category.name }} </div> </mat-slide-toggle>
                 <br>
                 <br>
-                <div class="scrollable title-scroll">
-                    <!-- Auto Title -->
-                    <div *ngIf="autoTitleBuilder">
+                <!-- Auto Title -->
+                <div *ngIf="autoTitleBuilder">
+                    <div class="scrollable title-scroll">
                         <div class="info-box">
                             <small class="light-text">This also means the item's title can be automatically updated when the item's category changes. </small>
                         </div>
@@ -96,7 +96,7 @@
 
                         <div class="label-text">Prefix</div>
                         <div *ngIf="!category || !category.prefix" class="title-data-text">
-                            <span class="light-text"> ( No prefix in the item's category. ) </span>
+                            <small class="light-text"> ( No prefix in the item's category. ) </small>
                         </div>
                         <div *ngIf="category && category.prefix" class="title-data-text"> 
                             <b> {{ category.prefix }} </b>
@@ -104,44 +104,43 @@
 
                         <div class="label-text"> Additional Text </div>
                         <mat-form-field class="additional-text-form title-data-text">
-                            <mat-label> Add text: </mat-label>
-                            <input matInput #value
+                            <textarea matInput #value
                             type="text"
                             [(ngModel)]="additionalText"
-                            (keyup)="updateTitleFromUI()" >
+                            (keyup)="updateTitleFromUI()"></textarea>
                         </mat-form-field>
 
                         <div class="label-text"> Attribute Suffix </div>
                         <div *ngIf="!category || !attributeSuffix" class="title-data-text">
-                            <span class="light-text"> ( No suffix in the item's category. ) </span>
+                            <small class="light-text"> ( No suffix in the item's category. ) </small>
                         </div>
                         <div *ngIf="category && attributeSuffix" class="title-data-text">
                             <b> {{ attributeSuffix }} </b>
                         </div>
                     </div>
-
-                    <!-- Manual Title -->
-                    <div *ngIf="!autoTitleBuilder">
-                        <br>
-                        <mat-form-field>
-                            <mat-label> Title: </mat-label>
-                            <textarea
-                            matInput
-                            type="text"
-                            [(ngModel)]="item.name"
-                            cdkTextareaAutosize
-                            #autosize="cdkTextareaAutosize"
-                            cdkAutosizeMinRows="1"
-                            cdkAutosizeMaxRows="3"
-                            ></textarea>
-                        </mat-form-field>
-                        <br>
-                    </div>
+                    <br>
+                    <div> Current title: </div>
+                    <div><b> {{ item.name }} </b></div>
+                    <div *ngIf="!item.name" class="light-text"> (No title!) </div>
                 </div>
-                <br>
-                <div> Current title: </div>
-                <div><b> {{ item.name }} </b></div>
-                <div *ngIf="!item.name" class="light-text"> (No title!) </div>
+
+                <!-- Manual Title -->
+                <div *ngIf="!autoTitleBuilder">
+                    <br>
+                    <mat-form-field>
+                        <mat-label> Title: </mat-label>
+                        <textarea
+                        matInput
+                        type="text"
+                        [(ngModel)]="item.name"
+                        cdkTextareaAutosize
+                        #autosize="cdkTextareaAutosize"
+                        cdkAutosizeMinRows="1"
+                        cdkAutosizeMaxRows="3"
+                        ></textarea>
+                    </mat-form-field>
+                    <br>
+                </div>
             </div>
         </div>
 
@@ -150,15 +149,15 @@
         <div *ngIf="this.step == 3" class="step-3">
             <h2 mat-dialog-title> Item Picture </h2>
             <div class="scrollable">
-                <div *ngIf="currentImg == '../../../assets/notFound.png'">
+                <div *ngIf="item.imageUrl == '../../../assets/notFound.png'">
                     <h3> Would you like to take a picture of {{item.name}}? </h3>
                 </div>
-                <div *ngIf="currentImg != '../../../assets/notFound.png'">
+                <div *ngIf="item.imageUrl != '../../../assets/notFound.png'">
                     <div> For {{item.name}}: </div>
                     <br>
-                    <img class="item-picture" src={{currentImg}} alt="Image load failed!">
+                    <img class="item-picture" src={{item.imageUrl}} alt="Image load failed!">
                 </div>
-                <div *ngIf="!currentImg">
+                <div *ngIf="!item.imageUrl">
                     <div> Something went wrong with the item's image! </div>
                 </div>
             </div>
@@ -179,7 +178,6 @@
                         placeholder="Add description..."
                         [(ngModel)]="item.desc"
                         name="desc"
-                        (focusout)="placeIntoDB()"
                         ></textarea>
                     </mat-form-field>
                 </form>
@@ -218,13 +216,13 @@
         <!-- For images -->
         <div *ngIf="step == 3" class="stacked-buttons">
             <!-- Skip button for image if there is none -->
-            <button *ngIf="!singleStep && (!currentImg || currentImg == '../../../assets/notFound.png')" mat-raised-button class="rect-action-button action-color" (click)="nextStep(true)">Skip</button>
+            <button *ngIf="!singleStep && (!item.imageUrl || item.imageUrl == '../../../assets/notFound.png')" mat-raised-button class="rect-action-button action-color" (click)="nextStep(true)">Skip</button>
             <!-- Camera button for when there is no image -->
-            <button *ngIf="currentImg == '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="camera.click()" color="primary"> <mat-icon>photo_camera</mat-icon> Yes </button>
+            <button *ngIf="item.imageUrl == '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="camera.click()" color="primary"> <mat-icon>photo_camera</mat-icon> Yes </button>
             <!-- Retake button if there is an image -->
-            <button *ngIf="currentImg != '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="camera.click()" color="accent"> <mat-icon>photo_camera</mat-icon> Retake </button>
+            <button *ngIf="item.imageUrl != '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="camera.click()" color="accent"> <mat-icon>photo_camera</mat-icon> Retake </button>
             <!-- Confirm button if there is an image -->
-            <button *ngIf="currentImg != '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="nextStep()" color="primary"> {{ singleStep ? "Confirm" : "Next" }} </button>
+            <button *ngIf="item.imageUrl != '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="nextStep()" color="primary"> {{ singleStep ? "Confirm" : "Next" }} </button>
             
             <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
         </div>

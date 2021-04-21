@@ -168,6 +168,8 @@ export class ModifyHierarchyComponent implements OnInit {
 
   // Depth first search using a stack
   findByID(ID: string, roots: TreeHierarchyItem[]): TreeHierarchyItem {
+    console.log("ID: " + ID);
+    console.log(roots);
     const stack: TreeHierarchyItem[] = [];
     roots.forEach(r => stack.push(r));
     while (stack.length > 0) {
@@ -176,6 +178,7 @@ export class ModifyHierarchyComponent implements OnInit {
         return node;
       } else if (node.realChildren) {
         // Add the children to the stack
+        console.log("I'm special")
         node.realChildren.forEach(r => stack.push(r));
       }
     }

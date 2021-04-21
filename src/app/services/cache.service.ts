@@ -83,6 +83,23 @@ export class CacheService {
     return null;
   }
 
+  remove(ID: string, type: string): boolean {
+    let cache = this.getTypedCache(type);
+
+    // If the cache is empty, return null
+    if(!cache.elements){
+      return false;
+    }
+
+    let index = cache.elements.findIndex(element => element.ID === ID);
+    if(index > -1){
+      cache.elements.splice(index);
+      return true;
+    }
+
+    return false;
+  }
+
   // Return the correct cache based on type
   private getTypedCache(type: string): HierarchyObjectCache {
     if(type === "item"){

@@ -18,6 +18,7 @@ import { Category } from '../models/Category';
 import { HierarchyLocation } from '../models/Location';
 import { type } from 'os';
 import { WorkspaceUser } from '../models/WorkspaceUser';
+import { CacheService } from './cache.service';
 
 declare var require: any;
 
@@ -263,14 +264,14 @@ export class AdminService {
   }
 
   removeItem(item: Item) {
-    console.log("del item");
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).delete();
+    
+    this.cacheService.remove(item.ID, 'item');
+    
     if (item.category) {
-      console.log("del cat");
       this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
     }
     if (item.locations && item.locations.length > 0) {
-      console.log("del loc");
       item.locations.forEach(location => {
         this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
       });
@@ -279,7 +280,6 @@ export class AdminService {
     var reports;
 
     this.getReports().subscribe(x => {
-      console.log("del reports");
       reports = x;     
       for (let i = 0; i < reports.length; i++) {
         if(reports[i].item == item.ID)
@@ -647,6 +647,12 @@ export class AdminService {
     this.afs.doc('/Workspaces/' + this.auth.workspace.id).update({defaultUsersForReports: userIDs})
   }
 
-  constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService, private http: HttpClient) {
+  constructor(
+    private afs: AngularFirestore, 
+    private auth: AuthService, 
+    private searchService: SearchService, 
+    private http: HttpClient,
+    private cacheService: CacheService
+    ) {
   }
 }

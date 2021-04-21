@@ -45,28 +45,26 @@ export class ItemBuilderModalComponent implements OnInit {
     readonly MAX_STEP = 4;
     readonly MIN_STEP = 0;
 
+
     step = -1;                                // What step are we at in filling in data
     singleStep: Boolean;                      // If we are here to edit one piece of the item
     item: Item;                               // Item being setup
     category: Category;                       // Category of the item
-    categoryAndAncestors: Category[];
+    categoryAndAncestors: Category[];         // For attributes
     locations: HierarchyLocation[];           // The locations and their ancestors
     attributesForCard: AttributeCard[];       // Attributes of the item, for the UI
     additionalText: string;                   // Helps with setting up the title
     autoTitleBuilder: boolean;                // Switch value on UI
     attributeSuffix: string;                  // Pre-loaded suffix
-    currentImg: string;                       // For images that are taken but not uploaded to the DB yet
-    loadingLocations: boolean = true;
+    loadingLocations: boolean = true;         // For if it takes a while to load locations... Doesn't end up being very useful atm
 
-    returnTo: string;
 
   ngOnInit() {
-
     // Setup if this is just for editing one piece of an item
     if(this.data.step){
       this.singleStep = true;
       this.step = this.data.step;
-      this.item = this.data.hierarchyObj as Item;
+      this.item = JSON.parse(JSON.stringify(this.data.hierarchyObj as Item));
     }
 
     // Otherwise start initializing a new item to build out
@@ -77,6 +75,7 @@ export class ItemBuilderModalComponent implements OnInit {
         category: 'root',
         imageUrl: '../../../assets/notFound.png'
       };
+      this.step = 0;
 
       // If we started with a category, fill in the data we know
       if(this.data.hierarchyObj.type === 'category'){
@@ -90,8 +89,7 @@ export class ItemBuilderModalComponent implements OnInit {
       }
     }
 
-    this.currentImg = this.item.imageUrl;
-
+    // Load category info plus category's parents for attributes
     this.searchService.getCategory(this.item.category).subscribe(category => {
       this.category = category;
 
@@ -115,6 +113,7 @@ export class ItemBuilderModalComponent implements OnInit {
             }
           }
 
+          // Whenever category updates, load/reload the attributes into the cards with category metadata
           let rebuiltCards = this.loadAttributesForCards(this.categoryAndAncestors, this.item);
           if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
             this.attributesForCard = rebuiltCards;
@@ -184,6 +183,7 @@ export class ItemBuilderModalComponent implements OnInit {
           this.locations = loadedLocations;
         }
 
+        // Only get the data once
         localSub.unsubscribe();
       });
     }
@@ -240,8 +240,9 @@ export class ItemBuilderModalComponent implements OnInit {
 
             // Update the item's category on the UI and update the DB
             this.adminService.addToRecent(newCategory); // UI category cache
-            this.item.category = result[0];
-            this.adminService.updateItem(this.item, oldCategory, null); // TODO: Not good placement, seperate from normal saving routine
+            this.item.category = newCategory.ID;
+            this.category = newCategory;
+            // this.adminService.updateItem(this.item, oldCategory, null); // TODO: Not good placement, seperate from normal saving routine
           });
 
         }
@@ -368,6 +369,7 @@ export class ItemBuilderModalComponent implements OnInit {
     return cards;
   }
 
+  // Updates and cleans up the attributes and title
   onAttrValueSubmit(card: AttributeCard){
     let hasAttribute = false;
     card.focused = false;
@@ -393,7 +395,10 @@ export class ItemBuilderModalComponent implements OnInit {
         })
       }
     }
+  }
 
+  // After changing attributes, this updates the title
+  rebuildTitle(){
     // Rebuild title
     let newSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
 
@@ -414,11 +419,6 @@ export class ItemBuilderModalComponent implements OnInit {
     this.attributeSuffix = newSuffix;
   }
 
-
-  //
-  // MODIFIED FROM ITEM DISPLAY
-  //
-
   /**
    * Handles uploading an image file to firestorage
    * @param event
@@ -435,7 +435,7 @@ export class ItemBuilderModalComponent implements OnInit {
       reader.onload = (ev) => {
         if (typeof reader.result === 'string') {
           this.imageService.resizeImage(reader.result).then(url => {
-            this.currentImg = url;
+            this.item.imageUrl = url;
             // save for upload later
           });
         }
@@ -447,7 +447,7 @@ export class ItemBuilderModalComponent implements OnInit {
    * Saves the item's image and updates the database
    */
   saveItemImage() {
-    return this.imageService.putImage(this.currentImg, this.item.ID).then(link => {
+    return this.imageService.putImage(this.item.imageUrl, this.item.ID).then(link => {
       this.item.imageUrl = link;
       this.placeIntoDB();
     });
@@ -505,11 +505,6 @@ export class ItemBuilderModalComponent implements OnInit {
   onDescSubmit() {
     // Use to put in DB each time
   }
-
-
-  //
-  // ACTUAL DIFFERENCES FROM ITEM DISPLAY
-  //
 
   // Build and set title string from auto title
   updateTitleFromUI(){
@@ -654,29 +649,36 @@ export class ItemBuilderModalComponent implements OnInit {
   }
 
   nextStep(){
-    if(this.singleStep){
-      // If this is to modify the image, save that. Otherwise, do a general save
-      if(this.step === 3){
-        this.saveItemImage().then(() => { this.dialogRef.close({wasValid: false})});
-      }
-      else {
-        this.placeIntoDB().then(() => { this.dialogRef.close({wasValid: false})});
-      }
-      return;
+    if(this.step === 1){
+      this.rebuildTitle();
     }
-    
-    if(this.step + 1 > this.MAX_STEP){
-      if(this.singleStep){
-        this.router.navigate(['/item/' + this.item.ID]);
+    else if(this.step === 3 && this.item.imageUrl && this.item.imageUrl !== '../../../assets/notFound.png'){
+      this.saveItemImage();
+    }
+
+    if(this.singleStep){
+      // Note: We don't need to do corrections for category/location saving because we pull up those modals directly
+      if(this.step !== 3){
+        this.placeIntoDB();
       }
-      else {
-        this.finish();
-      }
+      this.dialogRef.close({wasValid: true});
+      return;
     }
 
     else {
-      this.step += 1;
-      window.scrollTo(0, 0);
+      if(this.step + 1 > this.MAX_STEP){
+        if(this.singleStep){
+          this.router.navigate(['/item/' + this.item.ID]);
+        }
+        else {
+          this.finish();
+        }
+      }
+
+      else {
+        this.step += 1;
+        window.scrollTo(0, 0);
+      }
     }
   }
 

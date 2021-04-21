@@ -157,9 +157,6 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   deleteSub: Subscription; // delete subscription
 
-  returnTo: string; // If we just added this item, this gives a quick route back to where we were
-  returnToName: string; // Display name for where we are returning
-
   getDirty(){ return this.navService.getDirty() }
   setDirty(value: boolean){ this.navService.setDirty(value); }
 
@@ -171,14 +168,9 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     let cache = this.cacheService.get(this.id, "item");
 
-    this.route.queryParamMap.subscribe(params => {
+    //this.route.queryParamMap.subscribe(params => {
       // Retrieve data if this item should have a quick route back to where it came
-      if(params.get('returnTo')){
-        let returnParams = params.get('returnTo').split(':');
-        this.returnTo = returnParams[0];
-        this.returnToName = returnParams[1];
-      }
-    });
+    //});
 
     // If the item is in cache, we can load everything at once
     if(cache){
@@ -290,9 +282,6 @@ export class ItemComponent implements OnInit, OnDestroy {
         else { // Otherwise it's just root? Does loading attributes make sense here?
           this.attributesForCard = this.loadAttributesForCards([category], item)
         }
-
-        // Display missing data
-        this.missingData = this.formatMissingDataString(item);
       })
     });
   }
@@ -359,36 +348,6 @@ export class ItemComponent implements OnInit, OnDestroy {
     if(this.itemSub) this.itemSub.unsubscribe();
     if(this.categorySub) this.categorySub.unsubscribe();
     //this.locationsSub.unsubscribe();
-  }
-
-  formatMissingDataString(item: Item): string {
-    let builtString = "";
-    if(item.category === "root"){
-      builtString += "No category";
-    }
-    if(item.locations.length == 0 || (item.locations.length == 1 && item.locations[0] === "root")){
-      if(builtString === ""){
-        builtString += "No locations"
-      } else {
-        builtString += " or locations"
-      }
-    }
-    if(this.attributesForCard){
-      for(let card in this.attributesForCard){
-        if(!this.attributesForCard[card].value){
-          if(builtString ===""){
-            builtString += "Missing attributes";
-          } else {
-            builtString += ", missing attributes"
-          }
-          break;
-        }
-      }
-    }
-    if(builtString === ""){
-      builtString = null;
-    }
-    return builtString;
   }
 
   toggleMoreInfo() {
@@ -520,7 +479,6 @@ export class ItemComponent implements OnInit, OnDestroy {
   }
 
   createReport() {
-
     const dialogRef = this.dialog.open(ReportDialogComponent, {
       width: '30rem',
       data: {
@@ -531,32 +489,29 @@ export class ItemComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * A field edit handler
+   * Takes in the element we want to edit and displays the according modal
    * @param field the string name of the item field to edit
    */
   editField(field: string) {
-    // set edit field value to enable state change, then set focus
+    // Find and open the according modal
+    let modalStep = -1;
     switch (field) {
-      case 'name': 
-        this.dialog.open(ItemBuilderModalComponent, {
-          width: '480px',
-          data: {hierarchyObj: this.item, step: 2}
-        });
-        break;
-      case 'attributes': 
-        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 1, singleStep: true } });
-        break;
-      case 'tags':
-        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 4, singleStep: true } });
-        break;
-      case 'photo':
-        this.dialog.open(ItemBuilderModalComponent, {
-          width: '480px',
-          data: {hierarchyObj: this.item, step: 3}
-        });
-        break;
-      default:
-        break;
+      case 'Attributes': modalStep = 1; break;
+      case 'Category': this.editCategory(); break;
+      case 'Description': modalStep = 4; break;
+      case 'Image': modalStep = 3; break;
+      case 'Location': this.editLocation(); break;
+      case 'Tags': modalStep = 4; break;
+      case 'Title': modalStep = 2; break;
+      default: break;
+    }
+
+    // Open the item builder modal if applicable
+    if(modalStep > -1){
+      this.dialog.open(ItemBuilderModalComponent, {
+        width: '480px',
+        data: {hierarchyObj: this.item, step: modalStep}
+      });
     }
   }
 
@@ -696,146 +651,6 @@ export class ItemComponent implements OnInit, OnDestroy {
     return cards;
   }
 
-  onAttrValueSubmit(card: AttributeCard){
-    let hasAttribute = false;
-    card.focused = false;
-    for(let attr in this.item.attributes){
-      if(this.item.attributes[attr].ID === card.ID){
-        this.item.attributes[attr].value = card.value ? card.value.trim() : '';
-        hasAttribute = true;
-      }
-    }
-    if(!hasAttribute && card.value){
-      if(!this.item.attributes){
-        this.item.attributes = [{
-          name: card.name,
-          ID: card.ID,
-          value: card.value.trim()
-        }];
-      }
-      else{
-        this.item.attributes.push({
-          name: card.name,
-          ID: card.ID,
-          value: card.value.trim()
-        })
-      }
-    }
-    this.checkDirty();
-  }
-
-  deleteAttribute(card: AttributeCard){
-    let deleteCardIndex = this.attributesForCard.indexOf(card);
-    this.attributesForCard.splice(deleteCardIndex, 1);
-
-    for(let attributeIndex in this.item.attributes){
-      if(this.item.attributes[attributeIndex].ID === card.ID){
-        this.item.attributes.splice(Number.parseInt(attributeIndex), 1);
-      }
-    }
-    this.checkDirty();
-  }
-
-  /**
-   * Handles logic for submitting the name
-   */
-  onNameSubmit() {
-    // check to see if name is valid
-    if (this.item.name !== '') {
-      // this.item.name = this.nameForm.value;
-      // hide control
-      this.textEditFields.name = false;
-    } else {
-      this.item.name = this.previousItem.name;
-      // TODO: show snackbar
-    }
-
-    // check for dirtiness
-    this.checkDirty();
-  }
-
-  /**
-   * Handles logic for submitting the description
-   */
-  onDescSubmit() {
-    // check to see if name is valid
-    if (this.item.desc !== '') {
-      // this.item.name = this.nameForm.value;
-      // hide control
-      this.textEditFields.desc = false;
-    } else {
-      this.item.desc = this.previousItem.desc;
-      // TODO: show snackbar
-    }
-
-    // check for dirtiness
-    this.checkDirty();
-  }
-
-  /**
-   * Handles uploading an image file to firestorage
-   * @param event
-   */
-  uploadImage(fileEvent: Event) {
-    // cast
-    const element = (fileEvent.target as HTMLInputElement);
-    // only change if there was a file upload
-    if (element.files && element.files[0]) {
-      // set image url file
-      const file = element.files[0];
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (ev) => {
-        if (typeof reader.result === 'string') {
-          this.imageService.resizeImage(reader.result).then(url => {
-            this.item.imageUrl = url;
-            // set dirty and save for upload
-            this.checkDirty();
-          });
-        }
-      };
-    }
-  }
-
-  /** Tag control: https://material.angular.io/components/chips/examples */
-
-  /**
-   * Adds a tag to the list
-   * @param event tag input event
-   */
-  addTag(event: MatChipInputEvent | any): void {
-    const input = event.input;
-    const value = event.value;
-    if (this.item.tags == null) this.item.tags = [];
-    // Add our fruit
-    if ((value || '').trim()) {
-      this.item.tags.push(value.trim());
-    }
-
-    // Reset the input value
-    if (input) {
-      input.value = '';
-    }
-
-    // check dirty
-    this.checkDirty();
-  }
-
-  /**
-   * Removes a tag from the list
-   * @param tag string tag to remove
-   */
-  removeTag(tag: string): void {
-    const index = this.item.tags.indexOf(tag);
-
-    if (index >= 0) {
-      this.item.tags.splice(index, 1);
-    }
-
-    // check dirty
-    this.checkDirty();
-  }
-
   /**
    * Checks to see if the current item is dirty (edited)
    */
@@ -867,41 +682,6 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     this.saveItem();
     this.setDirty(false);
-  }
-
-  // Currently used for navigating back from building an item, but can be used for other things
-  returnBack(){
-    this.router.navigate([this.returnTo]);
-  }
-
-  buildAttributeString(category: Category = this.category): string {
-    let buildingString = '';
-    for(let suffixIndex in category.suffixStructure){
-      let id = category.suffixStructure[suffixIndex].attributeID;
-
-      if(id === 'parent'){
-        for(let index in this.categoryAncestors){
-          if(this.categoryAncestors[index].ID === category.parent){
-            buildingString += category.suffixStructure[suffixIndex].beforeText + 
-            this.buildAttributeString(this.categoryAncestors[index]) +
-            category.suffixStructure[suffixIndex].afterText;
-          }
-        }
-      }
-
-      else {
-        for(let attr in this.item.attributes){
-          if(this.item.attributes[attr].ID === id){
-            if(this.item.attributes[attr].value){ // Don't insert anything if there's no value
-              buildingString += category.suffixStructure[suffixIndex].beforeText + 
-              this.item.attributes[attr].value +
-              category.suffixStructure[suffixIndex].afterText;
-            }
-          }
-        }
-      }
-    }
-    return buildingString;
   }
 
   /**

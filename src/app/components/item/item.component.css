@@ -143,10 +143,8 @@ h1 {
   margin-left: 0.15rem;
 }
 
-.reportButton {
-  width: calc(3.5rem + 8vw);
-  max-width: 120px;
-  padding: 0 0 0 3px;
+.report-button {
+  margin-top: 12px;
 }
 
 .moreInfoButtonHolder {
@@ -495,4 +493,9 @@ p {
     left: 12px;
   }
   
+}
+
+.edit-item {
+  font-size: 1rem;
+  padding: 0 18px;
 }
