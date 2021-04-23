@@ -109,16 +109,19 @@ export class ItemComponent implements OnInit, OnDestroy {
   @ViewChild('desc', {static: false}) descField: ElementRef;
   @ViewChild('tags', {static: false}) tagsField: ElementRef;
 
-  id: string; // item id
-  item: Item; // item returned by id
-  previousItem: Item; // records short term edits for saving
-  originalItem: Item; // how the item was when we started, before edits were made
-  attributeSuffix: string; // Current suffix text so then we don't calculate it every time
+  loaded: boolean = false;  // To tell if the item doesn't exist or just hasn't loaded
+  id: string;  // item id
+  item: Item;  // item returned by id
+  previousItem: Item;  // records short term edits for saving
+  originalItem: Item;  // how the item was when we started, before edits were made
+  attributeSuffix: string;  // Current suffix text so then we don't calculate it every time
 
   // Subscriptions to destroy after leaving
   itemSub: Subscription;
   categorySub: Subscription;
   locationsSub: Subscription[];
+  deleteSub: Subscription; // delete subscription
+  categoryAncestorSub: Subscription;
 
   loading = true;  // whether the page is actively loading
   report: Report = {
@@ -155,8 +158,6 @@ export class ItemComponent implements OnInit, OnDestroy {
     tags: boolean;
   } = {name: false, desc: false, tags: false};
 
-  deleteSub: Subscription; // delete subscription
-
   getDirty(){ return this.navService.getDirty() }
   setDirty(value: boolean){ this.navService.setDirty(value); }
 
@@ -182,6 +183,7 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     // Start live subscription
     this.itemSub = this.searchService.getItem(this.id).subscribe(item => {
+      this.loaded = true;
       if (!item) {
         return;
       }
@@ -237,8 +239,12 @@ export class ItemComponent implements OnInit, OnDestroy {
     return this.searchService.getCategory(item.category).subscribe(category => {
       this.category = category;
 
+      if(this.categoryAncestorSub){
+        this.categoryAncestorSub.unsubscribe();
+      }
+
       // Load category ancestors for attributes
-      this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
+      this.categoryAncestorSub = this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
 
         // Make sure it exists, and also make sure it's not just an empty array
         if(categoryAncestors[0]){
@@ -347,7 +353,10 @@ export class ItemComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if(this.itemSub) this.itemSub.unsubscribe();
     if(this.categorySub) this.categorySub.unsubscribe();
-    //this.locationsSub.unsubscribe();
+    if(this.categoryAncestorSub) this.categoryAncestorSub.unsubscribe();
+    for(let locSub of this.locationsSub){
+      locSub.unsubscribe();
+    }
   }
 
   toggleMoreInfo() {
@@ -586,14 +595,18 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   updateItemCategory(result: string[], oldCategory: string) {
     if (result && result.length > 0 && this.item.category !== result[0]) {
-      this.item.category = result[0];
       let localSub = this.searchService.getCategory(result[0]).subscribe(newCategory => {
         if(newCategory){
           this.adminService.addToRecent(newCategory);
   
-          this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0])
+          this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => {
+            this.categoryAncestors = categoryAncestors[0];
+            this.adminService.updateItemDataFromCategoryAncestors(this.item, [newCategory].concat(this.categoryAncestors), this.category);
+
+            this.item.category = result[0];
+            this.adminService.updateItem(this.item, oldCategory, null);
+          });
           localSub.unsubscribe(); // Don't want this screwing with us later
-          this.adminService.updateItem(this.item, oldCategory, null); // TODO: Not good placement, seperate from normal saving routine
         }
       });
     }

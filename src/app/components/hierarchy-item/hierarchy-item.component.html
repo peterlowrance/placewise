@@ -231,3 +231,13 @@
 <button mat-mini-fab class="extended-fab-button" *ngIf="this.role === 'Admin' && this.getDirty()" @open-undo-fab matTooltip="Undo" color="accent" (click)="undoChanges()">
   <mat-icon>edit</mat-icon><span class="extended-fab-button__text">Revert</span>
 </button>
+
+<div *ngIf="!loaded" style="padding: 18px;">
+  <h3 *ngIf="isCategory">Loading category...</h3>
+  <h3 *ngIf="!isCategory">Loading location...</h3>
+</div>
+
+<div *ngIf="loaded && !hierarchyItem" style="padding: 18px;">
+  <h3 *ngIf="isCategory">This category does not exist or was removed.</h3>
+  <h3 *ngIf="!isCategory">This location does not exist or was removed.</h3>
+</div>

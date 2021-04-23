@@ -218,6 +218,91 @@ export class AdminService {
     return true;
   }
 
+  updateItemDataFromCategoryAncestors(item: Item, categoryAndAncestors: Category[], oldCategory?: Category){
+    let attributeSuffix = this.searchService.buildAttributeSuffixFrom(item, categoryAndAncestors);
+    let category = categoryAndAncestors[0];
+    console.log("dum:")
+    console.log(categoryAndAncestors)
+
+    // Setup additional text for auto title builder
+    let returnData: any = this.getAdditionalTextFrom(category.prefix, attributeSuffix, item.name);
+    returnData.attributeSuffix = attributeSuffix;
+
+    // If there is no item name, build an automatic title.
+    if(!item.name){
+      item.name = (category.prefix ? category.prefix : "") + (attributeSuffix ? attributeSuffix : "");
+
+      // If this resulted in a name, toggle on the Automatic Title Builder
+      if(item.name){
+        returnData.isAutoTitle = true;
+      }
+    }
+
+    // If there is a category replacement, update item title
+    else if(oldCategory) {
+      // If this was using the auto prefix, replace it.
+      if(oldCategory.prefix && item.name.startsWith(oldCategory.prefix)){
+        item.name = item.name.substring(oldCategory.prefix.length);
+        if(category.prefix){
+          console.log("old name: " + item.name);
+          item.name = category.prefix + item.name;
+          console.log("new name: " + item.name);
+        }
+      }
+
+      // If this was using the auto suffix, replace it.
+      if (attributeSuffix && item.name.endsWith(attributeSuffix)) {
+        item.name = item.name.substring(0, item.name.length - attributeSuffix.length).trim()
+        if(category.suffixStructure){
+          item.name = item.name + this.searchService.buildAttributeSuffixFrom(item, categoryAndAncestors);
+        }
+      }
+    }
+
+    return returnData;
+  }
+
+  /** 
+  * @return The additional text between the suffix and prefix. 
+  * If it could not remove both, the auto title flag is set to false.
+  */
+   getAdditionalTextFrom(prefix: string, suffix: string, name: string): {additionalText: string, isAutoTitle: boolean} {
+    // If there is no prefix or suffix, then there's no auto title
+    if(!prefix && !suffix){
+      return {additionalText: name, isAutoTitle: false};
+    }
+
+    let result = {additionalText: name, isAutoTitle: true};
+
+    // Check for a prefix. If there is one, remove it. If that was not possible, uncheck auto title.
+    if(prefix){
+      if(name.startsWith(prefix)){
+        result.additionalText = result.additionalText.substring(prefix.length).trim();
+      }
+      else {
+        result.isAutoTitle = false;
+      }
+    }
+
+    // Check for a suffix. If there is one, remove it. If that was not possible, uncheck auto title.
+    if(suffix){
+      if(name.endsWith(suffix)){
+        result.additionalText = result.additionalText.substring(0, result.additionalText.length - suffix.length).trim();
+      }
+      else {
+        if(result.isAutoTitle){
+          result.isAutoTitle = false;
+        }
+        else {
+          // If there was no prefix either, then there is no additional text
+          result.additionalText = "";
+        }
+      }
+    }
+
+    return result;
+  }
+
   createItem(item: Item): Observable<boolean> {
     this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       item
@@ -350,7 +435,7 @@ export class AdminService {
       map(doc => doc.data())
     ).toPromise().then(
       doc => {
-        // Update parent's children
+        // Update parent location's children to include locations within deleted location
         let newChildren: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
         newChildren = newChildren.filter(obj => obj !== remove.ID);
         if (remove.children) {
@@ -362,9 +447,9 @@ export class AdminService {
           remove.children.forEach(child => this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + child).update({parent: remove.parent}));
         }
         // Update parent's items
-        const newItems: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+        let newItems: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
         if (remove.items) {
-          newItems.concat(remove.items);
+          newItems = newItems.concat(remove.items);
           // Update item's parents
           remove.items.forEach(item => {
             this.searchService.getItem(item).subscribe(i => {

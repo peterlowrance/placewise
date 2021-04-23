@@ -97,45 +97,13 @@ export class ItemBuilderModalComponent implements OnInit {
         if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
           this.categoryAndAncestors = categoryAncestors[0];
           this.categoryAndAncestors.unshift(this.category);
-          this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
+          
+          let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.item, this.categoryAndAncestors);
+          this.attributeSuffix = returnData.attributeSuffix;
+          this.additionalText = returnData.additionalText;
+          this.autoTitleBuilder = returnData.isAutoTitle;
 
-          // Setup additional text for auto title builder
-          let additionalTextData = this.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name);
-          this.additionalText = additionalTextData.additionalText;
-          this.autoTitleBuilder = additionalTextData.isAutoTitle;
-          // If there is no item name, build an automatic title.
-          if(!this.item.name){
-            this.item.name = (this.category.prefix ? this.category.prefix : "") + (this.attributeSuffix ? this.attributeSuffix : "");
-
-            // If this resulted in a name, toggle on the Automatic Title Builder
-            if(this.item.name){
-              this.autoTitleBuilder = true;
-            }
-          }
-
-          // Whenever category updates, load/reload the attributes into the cards with category metadata
-          let rebuiltCards = this.loadAttributesForCards(this.categoryAndAncestors, this.item);
-          if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
-            this.attributesForCard = rebuiltCards;
-          }
-          else {
-            for(let newCard in rebuiltCards){ // This is to attempt to only save over the ones modified. Otherwise, users are often kicked out of edit fields
-              let found = false;
-              for(let originalCard in this.attributesForCard){
-                if(this.attributesForCard[originalCard].ID === rebuiltCards[newCard].ID){
-                  found = true;
-                  if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
-                    this.attributesForCard[originalCard] = rebuiltCards[newCard]
-                  }
-                  break;
-                }
-              }
-              if(!found){
-                this.attributesForCard = rebuiltCards; // Attributes didn't align, so jsut reset
-                break;
-              }
-            }
-          }
+          this.loadCards();
         }
         else {
           this.attributesForCard = this.loadAttributesForCards([category], this.item)
@@ -217,23 +185,15 @@ export class ItemBuilderModalComponent implements OnInit {
           // Load new category ancestors before continuing
           this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => {
             this.categoryAndAncestors = categoryAncestors[0];
-            this.categoryAndAncestors.unshift(this.category);
+            this.categoryAndAncestors.unshift(newCategory);
+            console.log(newCategory);
 
-            // If this was using the auto prefix, replace it.
-            if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
-              this.item.name = this.item.name.substring(this.category.prefix.length);
-              if(newCategory.prefix){
-                this.item.name = newCategory.prefix + this.item.name;
-              }
-            }
+            let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.item, this.categoryAndAncestors, this.category);
+            this.attributeSuffix = returnData.attributeSuffix;
+            this.additionalText = returnData.additionalText;
+            this.autoTitleBuilder = returnData.isAutoTitle;
 
-            // If this was using the auto suffix, replace it.
-            if (this.attributeSuffix && this.item.name.endsWith(this.attributeSuffix)) {
-              this.item.name = this.item.name.substring(0, this.item.name.length - this.attributeSuffix.length).trim()
-              if(newCategory.suffixStructure){
-                this.item.name = this.item.name + this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
-              }
-            }
+            this.loadCards();
     
             // Don't want this screwing with us later
             localSub.unsubscribe();
@@ -313,6 +273,33 @@ export class ItemBuilderModalComponent implements OnInit {
           this.adminService.addToRecent(loc);
           localSub.unsubscribe(); // Don't want this screwing with us later
         })
+      }
+    }
+  }
+
+  loadCards(){
+    // Whenever category updates, load/reload the attributes into the cards with category metadata
+    console.log(this.categoryAndAncestors);
+    let rebuiltCards = this.loadAttributesForCards(this.categoryAndAncestors, this.item);
+    if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
+      this.attributesForCard = rebuiltCards;
+    }
+    else {
+      for(let newCard in rebuiltCards){ // This is to attempt to only save over the ones modified. Otherwise, users are often kicked out of edit fields
+        let found = false;
+        for(let originalCard in this.attributesForCard){
+          if(this.attributesForCard[originalCard].ID === rebuiltCards[newCard].ID){
+            found = true;
+            if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
+              this.attributesForCard[originalCard] = rebuiltCards[newCard]
+            }
+            break;
+          }
+        }
+        if(!found){
+          this.attributesForCard = rebuiltCards; // Attributes didn't align, so jsut reset
+          break;
+        }
       }
     }
   }
@@ -590,47 +577,6 @@ export class ItemBuilderModalComponent implements OnInit {
     return false;
   }
 
-  /** 
-  * @return The additional text between the suffix and prefix. 
-  * If it could not remove both, the auto title flag is set to false.
-  */
-  getAdditionalTextFrom(prefix: string, suffix: string, name: string): {additionalText: string, isAutoTitle: boolean} {
-    // If there is no prefix or suffix, then there's no auto title
-    if(!prefix && !suffix){
-      return {additionalText: name, isAutoTitle: false};
-    }
-
-    let result = {additionalText: name, isAutoTitle: true};
-
-    // Check for a prefix. If there is one, remove it. If that was not possible, uncheck auto title.
-    if(prefix){
-      if(name.startsWith(prefix)){
-        result.additionalText = result.additionalText.substring(prefix.length).trim();
-      }
-      else {
-        result.isAutoTitle = false;
-      }
-    }
-
-    // Check for a suffix. If there is one, remove it. If that was not possible, uncheck auto title.
-    if(suffix){
-      if(name.endsWith(suffix)){
-        result.additionalText = result.additionalText.substring(0, result.additionalText.length - suffix.length).trim();
-      }
-      else {
-        if(result.isAutoTitle){
-          result.isAutoTitle = false;
-        }
-        else {
-          // If there was no prefix either, then there is no additional text
-          result.additionalText = "";
-        }
-      }
-    }
-
-    return result;
-  }
-
   /*
   * Called when the auto title is triggered
   */
@@ -638,7 +584,7 @@ export class ItemBuilderModalComponent implements OnInit {
     // If we just turned it on, replace old manual title
     if(event.checked){
 
-      this.additionalText = this.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name).additionalText;
+      this.additionalText = this.adminService.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name).additionalText;
 
       // Build title, if additionalText exists put a space between it and the prefix
       this.item.name = 

@@ -15,6 +15,7 @@ import { Category } from '../models/Category';
 import { HierarchyLocation } from '../models/Location';
 import { ContentObserver } from '@angular/cdk/observers';
 import { CacheService } from './cache.service';
+import { time } from 'console';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -199,18 +200,23 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getLocation(id: string): Observable<HierarchyLocation> {
+  getLocation(id: string, confirm: string = "normal human"): Observable<HierarchyLocation> {
     if (!id || id === 'none') {
       return of(null);
     }
     return this.afs.doc<HierarchyLocation>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as HierarchyLocation;
-      data.ID = a.payload.id;
-      if (data.imageUrl == null) {
-        data.imageUrl = '../../../assets/notFound.png';
+      if(data){
+        data.ID = a.payload.id;
+        if (data.imageUrl == null) {
+          data.imageUrl = '../../../assets/notFound.png';
+        }
+        data.type = "location";
+        return data;
       }
-      data.type = "location";
-      return data;
+      else {
+        return null;
+      }
     }));
   }
 
@@ -220,12 +226,17 @@ export class SearchService implements SearchInterfaceService {
     }
     return this.afs.doc<Category>('/Workspaces/' + this.auth.workspace.id + '/Category/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as Category;
-      data.ID = a.payload.id;
-      if (data.imageUrl == null) {
-        data.imageUrl = '../../../assets/notFound.png';
+      if(data){
+        data.ID = a.payload.id;
+        if (data.imageUrl == null) {
+          data.imageUrl = '../../../assets/notFound.png';
+        }
+        data.type = "category";
+        return data;
       }
-      data.type = "category";
-      return data;
+      else {
+        return null;
+      }
     }));
   }
 

@@ -1,8 +1,4 @@
 
-<div *ngIf="!item" style="padding: 12px;">
-    <h3>This item does not exist or was removed.</h3>
-</div>
-
 <div class="mobile-content" *ngIf="item">
     <img class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
     <div class="item-content" >
@@ -278,3 +274,11 @@
 <button mat-mini-fab class="extended-fab-button undo-fab" *ngIf="this.role === 'Admin' && this.getDirty()" @open-undo-fab matTooltip="Undo" color="accent" (click)="undoChanges()">
     <mat-icon>edit</mat-icon><span class="extended-fab-button__text">Revert</span>
 </button>
+
+<div *ngIf="!loaded" style="padding: 18px;">
+    <h3>Loading item...</h3>
+</div>
+
+<div *ngIf="loaded && !item" style="padding: 18px;">
+    <h3>This item does not exist or was removed.</h3>
+</div>
