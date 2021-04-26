@@ -9,7 +9,6 @@ import { AdminService } from 'src/app/services/admin.service';
 import { AuthService } from 'src/app/services/auth.service';
 import {MatSnackBar} from '@angular/material';
 import { HierarchyLocation } from 'src/app/models/Location';
-import { ItemBuilderComponent } from '../item-builder/item-builder.component';
 import { ItemReport } from 'src/app/models/ItemReport';
 import { ItemTypeReportTimestamp } from 'src/app/models/ItemTypeReportTimestamp';
 

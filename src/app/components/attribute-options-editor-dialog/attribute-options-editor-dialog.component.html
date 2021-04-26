@@ -1,0 +1,28 @@
+<mat-list *ngIf="localValues.length > 0" class="scrollable">
+    <mat-list-item *ngFor="let value of localValues">
+        {{value}}
+        <button mat-icon-button (click)="delete(value)">
+            <mat-icon>delete</mat-icon>
+        </button>
+    </mat-list-item>
+</mat-list>
+
+<div *ngIf="localValues.length < 1" class="light-text">
+    ( No options exist. )
+    <br>
+</div>
+
+<br>
+
+<button mat-raised-button class="action-color" (click)="openAddOptionModal()">
+    <mat-icon>add</mat-icon> Add Option
+</button>
+
+<br>
+
+<div class="action-buttons">
+    <button mat-raised-button class="rect-action-button" (click)="cancel()">Cancel</button>
+    <button mat-raised-button class="rect-action-button structure-color" (click)="confirm()"> Confirm </button>
+</div>
+
+

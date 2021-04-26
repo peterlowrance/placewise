@@ -120,6 +120,20 @@
                 (focusout)="onAttrNameSubmit(attr.name, rename)">
               </mat-form-field>
               <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
+              <br>
+              <mat-form-field appearance="fill" class="attribute-select-form">
+                <mat-label class="attribute-select-label">Attribute Type</mat-label>
+                <mat-select [(value)]="attr.type">
+                  <mat-option value="text" (click)="setAttributeType(attr.name, 'text')"> Custom Text </mat-option>
+                  <mat-option value="options" (click)="setAttributeType(attr.name, 'options')"> Options </mat-option>
+                </mat-select>
+              </mat-form-field>
+              <br>
+              <div *ngIf="this.role === 'Admin' && attr.type === 'options'">
+                <button mat-raised-button class="structure-color" (click)="openAttributeOptionsModal(attr.name)"> Edit Options </button>
+                <br>
+              </div>
+              <br>
               <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="deleteAttribute(attr.name)">Delete</button>
             </mat-expansion-panel>
           </mat-accordion>

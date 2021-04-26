@@ -58,8 +58,9 @@ import { ConfirmComponent } from './components/confirm/confirm.component';
 import { AncestorViewComponent } from './components/ancestor-view/ancestor-view.component';
 import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-item.component';
 import { UserSelectComponent } from './components/user-select/user-select.component';
-import { ItemBuilderComponent } from './components/item-builder/item-builder.component';
 import { ItemBuilderModalComponent } from './components/item-builder-modal/item-builder-modal.component';
+import { AttributeOptionsEditorDialogComponent } from './components/attribute-options-editor-dialog/attribute-options-editor-dialog.component';
+import { SimpleFieldDialogComponent } from './components/simple-field-dialog/simple-field-dialog.component';
 
 @NgModule({
   declarations: [
@@ -84,8 +85,9 @@ import { ItemBuilderModalComponent } from './components/item-builder-modal/item-
     AncestorViewComponent,
     HierarchyItemComponent,
     UserSelectComponent,
-    ItemBuilderComponent,
-    ItemBuilderModalComponent
+    ItemBuilderModalComponent,
+    AttributeOptionsEditorDialogComponent,
+    SimpleFieldDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -128,6 +130,6 @@ import { ItemBuilderModalComponent } from './components/item-builder-modal/item-
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ItemBuilderModalComponent, ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent, AddUserDialogComponent, ConfirmComponent]
+  entryComponents: [SimpleFieldDialogComponent, AttributeOptionsEditorDialogComponent, ItemBuilderModalComponent, ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent, AddUserDialogComponent, ConfirmComponent]
 })
 export class AppModule { }

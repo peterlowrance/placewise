@@ -16,6 +16,7 @@ import { Timestamp, timestamp } from 'rxjs/internal/operators/timestamp';
 import { trigger, style, transition, animate, keyframes} from '@angular/animations';
 import { NavService } from 'src/app/services/nav.service';
 import { IfStmt } from '@angular/compiler';
+import { AttributeOptionsEditorDialogComponent } from 'src/app/components/attribute-options-editor-dialog/attribute-options-editor-dialog.component';
 
 @Component({
   selector: 'app-hierarchy-item',
@@ -46,6 +47,7 @@ export class HierarchyItemComponent implements OnInit {
   parentsToDisplay: HierarchyItem[][];  // For the ancestor view component (and eventually loading attributes)
   localAttributes: {  // Names of attributes in this category
     name: string,
+    type: string,
     opened: boolean
   }[]
   inheritedAttributes: {
@@ -108,7 +110,11 @@ export class HierarchyItemComponent implements OnInit {
 
           this.localAttributes = [];
           for(let att in cat.attributes){
-            this.localAttributes.push({name: cat.attributes[att]["name"], opened: cat.attributes[att]["name"] === 'New Attribute'});
+            this.localAttributes.push({
+              name: cat.attributes[att]["name"], 
+              type: cat.attributes[att]["type"] ? cat.attributes[att]["type"] : 'text',
+              opened: cat.attributes[att]["name"] === 'New Attribute'
+            });
           }
           this.localAttributes.sort(function(a, b) {
             var nameA = a.name.toUpperCase(); // ignore upper and lowercase
@@ -458,13 +464,13 @@ export class HierarchyItemComponent implements OnInit {
     let attrs = this.hierAsCategory.attributes;
     let newID = Date.now().toString();
     if(attrs){
-      attrs[newID] = {"name": "New Attribute"};
+      attrs[newID] = {"name": "New Attribute"}; // Type can be blank, it will just be set to 'text' upon load
     }
     else {
       attrs = {[newID]: {"name" : "New Attribute"}};
     }
     this.hierAsCategory.attributes = attrs;
-    this.localAttributes.push({name: "New Attribute", opened: true});
+    this.localAttributes.push({name: "New Attribute", type: 'text', opened: true});
     this.addAttributeSuffix(newID);
 
     this.checkDirty();
@@ -499,6 +505,35 @@ export class HierarchyItemComponent implements OnInit {
     this.hierAsCategory.suffixStructure.splice(parseInt(position), 1);
 
     this.checkDirty();
+  }
+
+  setAttributeType(name: string, type: string){
+    let attrs = this.hierAsCategory.attributes;
+    for(let attr in attrs){
+      if(attrs[attr]['name'] === name){
+        attrs[attr]['type'] = type;
+      }
+    }
+    this.checkDirty();
+  }
+
+  openAttributeOptionsModal(name: string){
+    let attrs = this.hierAsCategory.attributes;
+    for(let attr in attrs){
+      if(attrs[attr]['name'] === name){
+        
+        this.dialog.open(AttributeOptionsEditorDialogComponent, {
+          width: '360px',
+          data: {values: (attrs[attr]['values'] ? attrs[attr]['values'] : [])}
+        })
+        .beforeClosed().subscribe(result => {
+          if(result.valid){
+            attrs[attr]['values'] = result.values;
+            this.checkDirty();
+          }
+        });
+      }
+    }
   }
 
   undoChanges() {

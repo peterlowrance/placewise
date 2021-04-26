@@ -14,13 +14,11 @@ import { AdminReportComponent } from './components/admin-report/admin-report.com
 import {ModifyHierarchyComponent} from "./components/modify-hierarchy/modify-hierarchy.component";
 import { ModerateUsersComponent } from './components/moderate-users/moderate-users.component';
 import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-item.component';
-import { ItemBuilderComponent } from './components/item-builder/item-builder.component';
 
 const routes: Routes = [
   {path: 'search/:selectedHierarchy/:id', component: HomeComponent, canActivate: [AuthGuard]},
   {path: 'login', component: LoginComponent},
   {path: 'item/:id', component: ItemComponent, canActivate: [AuthGuard]},
-  {path: 'itemBuilder/:id', component: ItemBuilderComponent, canActivate: [AuthGuard]},
   {path: 'settings', component: SettingsComponent, canActivate: [AuthGuard]},
   {path: 'reports', component: AdminReportComponent, canActivate: [AuthGuard]},
   {path: 'modify/:selectedHierarchy', component: ModifyHierarchyComponent, canActivate: [AuthGuard]},
