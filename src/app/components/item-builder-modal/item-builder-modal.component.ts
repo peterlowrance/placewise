@@ -20,6 +20,8 @@ interface AttributeCard {
   value?: string;
   category: string;
   focused: boolean;
+  type: string;
+  possibleValues?: string[]
 }
 
 @Component({
@@ -314,7 +316,9 @@ export class ItemBuilderModalComponent implements OnInit {
           name: parents[parent].attributes[attr]['name'],
           ID: attr,
           category: parents[parent].name,
-          focused: false
+          focused: false,
+          type: parents[parent].attributes[attr]['type'] || 'text',
+          possibleValues: parents[parent].attributes[attr]['values']
         })
       }
     }
@@ -335,7 +339,8 @@ export class ItemBuilderModalComponent implements OnInit {
           ID: item.attributes[itemAttr].ID,
           value: item.attributes[itemAttr].value,
           category: "None",
-          focused: false
+          focused: false,
+          type: 'text'
         })
       }
     }

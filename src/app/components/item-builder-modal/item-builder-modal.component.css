@@ -128,6 +128,20 @@
   width: 75%;
 }
 
+.attribute-select {
+  font-size: 16px;
+}
+
+.attribute-select-form {
+  max-width: 100%;
+  width: 240px;
+  padding-bottom: 0;
+}
+
+.attribute-select-label {
+  font-size: 16px;
+}
+
 .item-picture {
   min-width: 100%;
   max-width: 100%;

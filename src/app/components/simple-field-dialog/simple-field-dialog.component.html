@@ -2,7 +2,8 @@
     <mat-label>{{data.fieldName}}</mat-label>
     <input matInput #value
     type="text"
-    (keyup)="setValue(value.value)">
+    (keyup)="setValue(value.value)"
+    (keyup.enter)="submit()">
 </mat-form-field>
 
 <br>

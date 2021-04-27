@@ -47,7 +47,7 @@
                             <mat-card-subtitle>{{attrCard.category}}</mat-card-subtitle>
                         </mat-card-header> -->
                         <mat-card-content>
-                            <mat-form-field class="attribute-input">
+                            <mat-form-field *ngIf="attrCard.type === 'text'" class="attribute-input">
                                 <mat-label>{{attrCard.name + ":"}}</mat-label>
                                 <input matInput #value
                                 type="text"
@@ -55,6 +55,12 @@
                                 (focus)="attrCard.focused = true"
                                 (focusout)="onAttrValueSubmit(attrCard)">
                             </mat-form-field>
+                            <mat-form-field *ngIf="attrCard.type === 'options'" class="attribute-select-form" appearance="fill">
+                                <mat-label class="attribute-select-label">{{attrCard.name + ":"}}</mat-label>
+                                <mat-select class="attribute-select" [(value)]="attrCard.value">
+                                  <mat-option *ngFor="let possibleValue of attrCard.possibleValues" value="{{possibleValue}}" (click)="onAttrValueSubmit(attrCard)"> {{ possibleValue }} </mat-option>
+                                </mat-select>
+                              </mat-form-field>
                             <!-- I don't think this is needed anymore from better design   <button mat-icon-button class="fake-confirm-button" *ngIf="attrCard.focused"><mat-icon>done</mat-icon></button> -->
                             <span *ngIf="!attrCard.value"><mat-icon class="missing-data-icon">error_outline</mat-icon></span>
                             <span *ngIf="attrCard.category === 'None'"><button mat-icon-button class="delete-attribute-button" (click)="deleteAttribute(attrCard)"><mat-icon>delete</mat-icon></button></span>

@@ -394,27 +394,170 @@ export class SearchService implements SearchInterfaceService {
     return buildingString;
   }
 
-  // TEMPORARY HAX
-  /*
-  hack(){
-    this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').get().toPromise().then((querySnapshot => {
-      querySnapshot.forEach(doc => {
-        let item = doc.data() as Item;
-        if(item.fullTitle){
-          console.log(item.name + " - - " + item.fullTitle);
-          item.name = item.fullTitle;
-          console.log(item.name + " - - " + item.fullTitle);
-          delete(item.fullTitle);
-          console.log(item.name + " - - " + item.fullTitle);
-          this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + doc.id).set(item)
+  numericAndAplhabeticalComparison(a: string, b: string): boolean {
+    // Use the smaller length
+    let maxLength = a.length > b.length ?  b.length  : a.length; 
+    let aOffset = 0;
+    let bOffset = 0;
+    let aHasNumber = false;
+    let bHasNumber = false;
+    let aNumber = 0;
+    let bNumber = 0;
+
+    let nextA;
+    let nextB;
+    let isANumber = false;
+    let isBNumber = false;
+
+    for(let index = 0; index < maxLength; index+=1){
+
+      if(aHasNumber && bHasNumber){
+        nextA = a[index + aOffset];
+        isANumber = nextA >= '0' || nextA <= '9';
+
+        nextB = b[index + bOffset];
+        isBNumber = nextB >= '0' || nextB <= '9';
+
+        if(isANumber && isBNumber){
+          if(aNumber === bNumber){
+            continue;
+          }
+          else {
+            return aNumber > bNumber;
+          }
         }
-        else {
-          console.log("skipped");
-        }
-      })
-    }))
+
+        // NEXT: other possibilities
+      }
+
+      /*
+      
+
+
+      if both a and b have numbers
+        if the next thing is not a number, direct compare chars from offset
+          if equal, continue
+        if the next thing is another number or is the end, compare the saved numbers
+          if equal, continue
+
+      if offset for a is zero
+        if it is a number, count ahead (func)
+          build number, tracking one number as we go
+            if we hit a decimal, track another number
+              if we hit another decimal or slash, back up to one 
+            if we hit a slash, track another number for a fraction
+              if we hit another slash or decimal, back up to one
+            if we hit something else, save/calc the number, set offset
+        otherwise
+        
+      if offset for b is zero
+          if it is a number, count ahead
+            ...
+          if not
+            if reee
+
+      if both are offset, jump to the lowest number
+
+      */
+    }
+
+    return false;
   }
-  */
+
+  private scanAheadNumbers(str: string): {result: string[], index: number} {
+    let result: string[] = [""];
+    let resultIndex = 0; // I don't trust length - not sure if it's calculated each time
+    let index = 0;
+
+    for(; index < str.length; index+=1){
+      let char = str[index];
+
+      if(char === ' '){
+        result.push("");
+        resultIndex += 1;
+      }
+      else if ((char >= '0' && char <= '9') || char === '.' || char === '/' ) {
+        result[resultIndex] += char;
+      }
+      else {
+        break;
+      }
+    }
+
+    console.log(result);
+
+    return {result, index};
+  }
+
+  // This will also deal with 
+  private isNumberGreater(a: string, b: string): boolean {
+    let slashDetected = false;
+    let decimalDetected = false;
+
+
+
+    return false;
+
+    /*
+    let spaceDetected = false;
+    let overrideElements = false; // For when there's a bunch of slashes or decimals and we're just going to ignore them
+    let result = 0;
+    let length = 0;
+    let numberPiece: string[] = [''];
+    let numberPieceIndex = 0;
+    let char = '';
+
+    for(let index; index < str.length; index += 1){
+      char = str[index]; // For simplicity
+
+      // If the next is a number, just add it to the current section of numbers
+      if(char <= '9' && char >= '0'){
+        numberPiece[numberPieceIndex] += char;
+      }
+
+      else if(char === '.'){
+        if(!overrideElements){
+
+          if(decimalDetected || slashDetected || spaceDetected){
+            overrideElements = true;
+          }
+          else {
+            // If there hasn't been a decimal yet, start a new number section for numbers after decimal
+            decimalDetected = true;
+            numberPiece.push('');
+            numberPieceIndex += 1;
+          }
+
+        }
+      }
+
+      else if(char === '/'){
+        if(!overrideElements){
+          if(decimalDetected || slashDetected){ // We can ignore space here - for things like 1 1/2
+            overrideElements = true;
+          }
+          else {
+            // If there hasn't been a slash yet, start a new number section for numbers after slash
+            decimalDetected = true;
+            numberPiece.push('');
+            numberPieceIndex += 1;
+          }
+        }
+      }
+
+      else if(char === ' '){
+        if(!overrideElements){
+          if(decimalDetected || slashDetected || spaceDetected){
+            overrideElements = true;
+          }
+          else {
+            // NEXT: wait what about things like "2.2 9.8" WAIT NO SPACES? EEEEE
+          }
+        }
+      }
+    }
+    */
+  }
 
   constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService, private cacheService: CacheService) {
   }
