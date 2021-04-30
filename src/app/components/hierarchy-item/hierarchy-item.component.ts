@@ -471,7 +471,7 @@ export class HierarchyItemComponent implements OnInit {
     }
     this.hierAsCategory.attributes = attrs;
     this.localAttributes.push({name: "New Attribute", type: 'text', opened: true});
-    // this.addAttributeSuffix(newID); I believe this is less helpful when on
+    // this.addAttributeSuffix(newID); I believe this is more unexpected than helpful
 
     this.checkDirty();
   }

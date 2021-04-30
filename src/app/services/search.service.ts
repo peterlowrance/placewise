@@ -394,13 +394,18 @@ export class SearchService implements SearchInterfaceService {
     return buildingString;
   }
 
-  numericAndAplhabeticalComparison(a: string, b: string): boolean {
+  /**
+   * Is a greater than b?
+   * Forms actual numbers from groupings of numbers/digits/slashes
+   * Text takes priority over the numbers
+   *
+  humanAplhabeticalComparison(a: string, b: string): boolean {
     // Use the smaller length
-    let maxLength = a.length > b.length ?  b.length  : a.length; 
+    let maxLength = a.length > b.length ?  a.length  : b.length; 
     let aOffset = 0;
     let bOffset = 0;
-    let aHasNumber = false;
-    let bHasNumber = false;
+    let aHasNumbers = false;
+    let bHasNumbers = false;
     let aNumber = 0;
     let bNumber = 0;
 
@@ -411,14 +416,37 @@ export class SearchService implements SearchInterfaceService {
 
     for(let index = 0; index < maxLength; index+=1){
 
-      if(aHasNumber && bHasNumber){
+      if(index + aOffset > a.length){
+        if(index + bOffset <= b.length){
+          return false;
+        }
+        else {
+          // COMPARE NUMBERS
+        }
+      }
+      if(index + bOffset > b.length){
+        if(index + aOffset <= a.length){
+          return true;
+        }
+        else {
+          // COMPARE NUMBERS
+        }
+      }
+
+      
+
+      if(aHasNumbers && bHasNumbers){
         nextA = a[index + aOffset];
         isANumber = nextA >= '0' || nextA <= '9';
 
         nextB = b[index + bOffset];
         isBNumber = nextB >= '0' || nextB <= '9';
 
-        if(isANumber && isBNumber){
+        if(!isANumber && !isBNumber){
+          if(nextA === nextB)
+        }
+
+        else if(isANumber && isBNumber){
           if(aNumber === bNumber){
             continue;
           }
@@ -458,35 +486,30 @@ export class SearchService implements SearchInterfaceService {
 
       if both are offset, jump to the lowest number
 
-      */
+      *
     }
 
     return false;
   }
 
-  private scanAheadNumbers(str: string): {result: string[], index: number} {
-    let result: string[] = [""];
-    let resultIndex = 0; // I don't trust length - not sure if it's calculated each time
-    let index = 0;
+  // returns where the numbers stop
+  private scanAheadNumbers(str: string, startingIndex: number): number {
+    let index = startingIndex;
 
     for(; index < str.length; index+=1){
       let char = str[index];
 
-      if(char === ' '){
-        result.push("");
-        resultIndex += 1;
-      }
-      else if ((char >= '0' && char <= '9') || char === '.' || char === '/' ) {
-        result[resultIndex] += char;
-      }
-      else {
+      if (!((char >= '0' && char <= '9') || char === '.' || char === '/' || char === ' ')) {
         break;
       }
     }
 
-    console.log(result);
+    return index;
+  }
 
-    return {result, index};
+  // If the next characters can be a number
+  private isNumberable(str: string, index: number){
+    if(str[index] >= '0' && str[index] <= '9')
   }
 
   // This will also deal with 
@@ -556,8 +579,8 @@ export class SearchService implements SearchInterfaceService {
         }
       }
     }
-    */
   }
+    */
 
   constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService, private cacheService: CacheService) {
   }

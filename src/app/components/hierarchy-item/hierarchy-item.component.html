@@ -126,9 +126,14 @@
                 <mat-select [(value)]="attr.type">
                   <mat-option value="text" (click)="setAttributeType(attr.name, 'text')"> Custom Text </mat-option>
                   <mat-option value="options" (click)="setAttributeType(attr.name, 'options')"> Options </mat-option>
+                  <mat-option value="unit-options" (click)="setAttributeType(attr.name, 'unit-options')"> Options with Units / Types </mat-option>
                 </mat-select>
               </mat-form-field>
               <br>
+              <app-quick-add-list *ngIf="attr.type === 'options'" [list]="['butter', 'milk', 'eggs']">
+
+              </app-quick-add-list>
+
               <div *ngIf="this.role === 'Admin' && attr.type === 'options'">
                 <button mat-raised-button class="structure-color" (click)="openAttributeOptionsModal(attr.name)"> Edit Options </button>
                 <br>

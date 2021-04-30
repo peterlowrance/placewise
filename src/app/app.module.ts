@@ -61,6 +61,7 @@ import { UserSelectComponent } from './components/user-select/user-select.compon
 import { ItemBuilderModalComponent } from './components/item-builder-modal/item-builder-modal.component';
 import { AttributeOptionsEditorDialogComponent } from './components/attribute-options-editor-dialog/attribute-options-editor-dialog.component';
 import { SimpleFieldDialogComponent } from './components/simple-field-dialog/simple-field-dialog.component';
+import { QuickAddListComponent } from './components/quick-add-list/quick-add-list.component';
 
 @NgModule({
   declarations: [
@@ -87,7 +88,8 @@ import { SimpleFieldDialogComponent } from './components/simple-field-dialog/sim
     UserSelectComponent,
     ItemBuilderModalComponent,
     AttributeOptionsEditorDialogComponent,
-    SimpleFieldDialogComponent
+    SimpleFieldDialogComponent,
+    QuickAddListComponent
   ],
   imports: [
     BrowserModule,
