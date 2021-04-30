@@ -70,8 +70,8 @@ export class HierarchyItemComponent implements OnInit {
   previousName: string; // Needed for automatically making the prefix the name with checking what it was previously: to make sure it's not custom
 
   // edit fields for name and description
-  @ViewChild('name', {static: false}) nameField: ElementRef;
-  @ViewChild('desc', {static: false}) descField: ElementRef;
+  @ViewChild('name') nameField: ElementRef;
+  @ViewChild('desc') descField: ElementRef;
   // @ViewChild('tags', {static: false}) tagsField: ElementRef;
   textEditFields: {
     name: boolean;

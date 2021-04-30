@@ -105,9 +105,9 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
   //edit fields for name and description
-  @ViewChild('name', {static: false}) nameField: ElementRef;
-  @ViewChild('desc', {static: false}) descField: ElementRef;
-  @ViewChild('tags', {static: false}) tagsField: ElementRef;
+  @ViewChild('name') nameField: ElementRef;
+  @ViewChild('desc') descField: ElementRef;
+  @ViewChild('tags') tagsField: ElementRef;
 
   loaded: boolean = false;  // To tell if the item doesn't exist or just hasn't loaded
   id: string;  // item id
