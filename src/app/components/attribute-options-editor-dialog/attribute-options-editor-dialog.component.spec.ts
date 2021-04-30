@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { AttributeOptionsEditorDialogComponent } from './attribute-options-editor-dialog.component';
 
@@ -6,7 +6,7 @@ describe('AttributeOptionsEditorComponent', () => {
   let component: AttributeOptionsEditorDialogComponent;
   let fixture: ComponentFixture<AttributeOptionsEditorDialogComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ AttributeOptionsEditorDialogComponent ]
     })

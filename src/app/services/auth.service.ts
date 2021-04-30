@@ -40,7 +40,7 @@ export class AuthService {
   role: string;
 
   /**Current role behavior subject */
-  currentRole: BehaviorSubject<string> = new BehaviorSubject<string>(this.role);
+  currentRole: BehaviorSubject<string>;
 
   /**Workspace behaviour subject */
   currentWorkspace: BehaviorSubject<WorkspaceInfo> = new BehaviorSubject<WorkspaceInfo>(this.workspace);
@@ -73,6 +73,7 @@ export class AuthService {
         //set behavior subject workspace and role
         this.currentWorkspace.next(this.workspace);
         this.currentRole.next(this.role);
+        this.currentRole = new BehaviorSubject<string>(this.role);
         
         //get info
         const workDoc = this.getWorkspaceInfo(this.workspace.id);

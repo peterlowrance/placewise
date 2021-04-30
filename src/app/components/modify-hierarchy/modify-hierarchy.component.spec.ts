@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ModifyHierarchyComponent } from './modify-hierarchy.component';
 
@@ -6,7 +6,7 @@ describe('ModifyHierarchyComponent', () => {
   let component: ModifyHierarchyComponent;
   let fixture: ComponentFixture<ModifyHierarchyComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ ModifyHierarchyComponent ]
     })

@@ -1,4 +1,4 @@
-import { TestBed, async } from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 import {SentReport} from '../models/SentReport';
 import { AdminService } from './admin.service';
 
@@ -31,7 +31,7 @@ const HttpClientStub = {
 
 
 describe('AdminService', () => {
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       providers: [
         { provide: AngularFireStorage, useValue: storageMock},

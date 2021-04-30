@@ -7,7 +7,7 @@ import { unwatchFile } from 'fs';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 import { AdminService } from 'src/app/services/admin.service';
 import { AuthService } from 'src/app/services/auth.service';
-import {MatSnackBar} from '@angular/material';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import { HierarchyLocation } from 'src/app/models/Location';
 import { ItemReport } from 'src/app/models/ItemReport';
 import { ItemTypeReportTimestamp } from 'src/app/models/ItemTypeReportTimestamp';

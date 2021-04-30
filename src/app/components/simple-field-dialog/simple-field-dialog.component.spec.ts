@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { SimpleFieldDialogComponent } from './simple-field-dialog.component';
 
@@ -6,7 +6,7 @@ describe('SimpleFieldDialogComponent', () => {
   let component: SimpleFieldDialogComponent;
   let fixture: ComponentFixture<SimpleFieldDialogComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ SimpleFieldDialogComponent ]
     })

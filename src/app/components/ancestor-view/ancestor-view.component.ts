@@ -1,6 +1,4 @@
 import { Component, Input, OnInit, SimpleChange } from '@angular/core';
-import {NestedTreeControl} from '@angular/cdk/tree';
-import {MatTreeNestedDataSource} from '@angular/material/tree';
 import {HierarchyItem} from 'src/app/models/HierarchyItem';
 import { SearchService } from 'src/app/services/search.service';
 

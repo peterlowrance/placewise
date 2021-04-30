@@ -1,7 +1,8 @@
 import { ENTER, COMMA, SPACE } from '@angular/cdk/keycodes';
 import { Component, OnInit, Inject } from '@angular/core';
-import { MatChipInputEvent, MatSnackBar } from '@angular/material';
-import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatChipInputEvent } from '@angular/material/chips'
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Category } from 'src/app/models/Category';

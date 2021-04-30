@@ -1,4 +1,4 @@
-import {async, TestBed} from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ImageService } from './image.service';
 import {AngularFireStorage} from '@angular/fire/storage';
@@ -30,7 +30,7 @@ const FireStorageStub = {
 
 describe('ImageService', () => {
 
-  beforeEach(async(() =>
+  beforeEach(waitForAsync(() =>
     TestBed.configureTestingModule({
 
       providers: [

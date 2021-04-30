@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ModifyHierarchyDialogComponent } from './modify-hierarchy-dialog.component';
 
@@ -6,7 +6,7 @@ describe('ModifyHierarchyDialogComponent', () => {
   let component: ModifyHierarchyDialogComponent;
   let fixture: ComponentFixture<ModifyHierarchyDialogComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ ModifyHierarchyDialogComponent ]
     })

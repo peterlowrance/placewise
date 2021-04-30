@@ -5,7 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ImageService } from 'src/app/services/image.service';
 import { SentReport } from 'src/app/models/SentReport';
 import { DetailedReportModalData } from 'src/app/models/DetailedReportModalData';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { ReportDetailViewComponent } from '../report-detail-view/report-detail-view.component';
 import { AuthService } from 'src/app/services/auth.service';
 import { ConfirmComponent } from '../confirm/confirm.component';

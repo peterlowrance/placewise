@@ -5,7 +5,7 @@ import {ActivatedRoute} from '@angular/router';
 import {AuthService} from "../../services/auth.service";
 import { SearchService } from '../../services/search.service';
 import {ImageService} from '../../services/image.service';
-import {MatSnackBar} from '@angular/material';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import {AdminService} from '../../services/admin.service';
 import {MatDialog} from '@angular/material/dialog';
 import {Router} from '@angular/router';

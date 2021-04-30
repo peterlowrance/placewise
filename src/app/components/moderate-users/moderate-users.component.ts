@@ -5,7 +5,7 @@ import { MatCheckboxChange } from '@angular/material/checkbox';
 import {MatDialog} from '@angular/material/dialog';
 import {AddUserDialogComponent} from '../add-user-dialog/add-user-dialog.component';
 import { Subscription } from 'rxjs';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 
 

@@ -24,14 +24,14 @@ const routes: Routes = [
   {path: 'modify/:selectedHierarchy', component: ModifyHierarchyComponent, canActivate: [AuthGuard]},
   {path: 'users', component: ModerateUsersComponent, canActivate: [AuthGuard]},
   {path: 'hierarchyItem/:selectedHierarchy/:id', component: HierarchyItemComponent, canActivate: [AuthGuard]},
-  {path: '', redirectTo:'/search/locations/root', pathMatch:'full', canActivate:[AuthGuard]},
+  { path: '', redirectTo: '/search/locations/root', pathMatch: 'full' },
   {path: '', redirectTo:'/login', pathMatch:'full'},
   {path: '**', component: NotFoundComponent}
 ];
 
 @NgModule({
   providers: [AuthGuard],
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' })],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

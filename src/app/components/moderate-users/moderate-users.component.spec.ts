@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ModerateUsersComponent } from './moderate-users.component';
 import { AuthService } from 'src/app/services/auth.service';
@@ -31,7 +31,7 @@ describe('ModerateUsersComponent', () => {
   let component: ModerateUsersComponent;
   let fixture: ComponentFixture<ModerateUsersComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ ModerateUsersComponent ],
       providers: [ {provide: AuthService, useClass: AuthTest.AuthMockService}, {provide: AdminService, useClass: AdminMockService}, {provide: MatDialog}, {provide: MatSnackBar, useValue: snackMock} ],

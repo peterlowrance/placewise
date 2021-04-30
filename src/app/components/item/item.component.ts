@@ -20,7 +20,7 @@ import {ModifyHierarchyDialogComponent} from '../modify-hierarchy-dialog/modify-
 import {NavService} from 'src/app/services/nav.service';
 import {Observable, Subscription} from 'rxjs';
 import {Location} from '@angular/common';
-import {MatSnackBar} from '@angular/material';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import { Category } from 'src/app/models/Category';
 import { trigger, style, transition, animate, keyframes} from '@angular/animations';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
