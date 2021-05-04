@@ -1,0 +1,28 @@
+
+<!-- Initial select step -->
+<mat-radio-group *ngIf="step === 'select'" class="radio-buttons" [(ngModel)]="selected">
+    <mat-radio-button class="radio-button" value="parent"> Suffix from parent </mat-radio-button>
+    <mat-radio-button *ngFor="let attr of data.attributes" class="radio-button" [value]="attr.name"> {{ attr.name }} </mat-radio-button>
+    <mat-radio-button class="radio-button" value="space"> Space (Spacebar) </mat-radio-button>
+    <mat-radio-button class="radio-button" value="text"> Text </mat-radio-button>
+</mat-radio-group>
+
+<!-- If we had sleected text, input text -->
+<div *ngIf="step === 'text'">
+    <mat-form-field>
+        <mat-label> Unchanging text: </mat-label>
+        <input matInput #nameInput
+        type="text"
+        [(ngModel)]="text"
+        >
+    </mat-form-field>
+</div>
+
+<!-- Buttons -->
+<div class="action-buttons">
+    <!-- Cancel button is always here -->
+    <button mat-raised-button class="rect-action-button" (click)="cancel()"> Cancel </button>
+
+    <button *ngIf="selected === 'text' && step !== 'text'" mat-raised-button [disabled]="!selected" class="rect-action-button structure-color" (click)="nextStep()"> Next </button>
+    <button *ngIf="selected !== 'text' || step === 'text'" mat-raised-button [disabled]="!selected" class="rect-action-button structure-color-dark" (click)="add()"> Add </button>
+</div>

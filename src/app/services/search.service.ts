@@ -366,6 +366,7 @@ export class SearchService implements SearchInterfaceService {
     // Start building attribute string
     let buildingString = '';
 
+    /*
     // Go through each suffix piece in the category we're in
     if(categoryAndAncestors[startingIndex].suffixStructure){
       for(let suffix of categoryAndAncestors[startingIndex].suffixStructure){
@@ -379,7 +380,7 @@ export class SearchService implements SearchInterfaceService {
         // Otherwise, insert that suffix piece with the corresponding value
         else {
           for(let attr in item.attributes){
-            if(item.attributes[attr].ID === id){
+            if(item.attributes[attr].name === name){
               if(item.attributes[attr].value){ // Don't insert anything if there's no value
                 buildingString += suffix.beforeText + 
                   item.attributes[attr].value +
@@ -390,6 +391,7 @@ export class SearchService implements SearchInterfaceService {
         }
       }
     }
+    */
 
     return buildingString;
   }

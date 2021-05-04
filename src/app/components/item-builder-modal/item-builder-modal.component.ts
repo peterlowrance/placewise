@@ -17,7 +17,6 @@ import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modif
 
 interface AttributeCard {
   name: string;
-  ID: string;
   value?: string;
   category: string;
   focused: boolean;
@@ -291,7 +290,7 @@ export class ItemBuilderModalComponent implements OnInit {
       for(let newCard in rebuiltCards){ // This is to attempt to only save over the ones modified. Otherwise, users are often kicked out of edit fields
         let found = false;
         for(let originalCard in this.attributesForCard){
-          if(this.attributesForCard[originalCard].ID === rebuiltCards[newCard].ID){
+          if(this.attributesForCard[originalCard].name === rebuiltCards[newCard].name){
             found = true;
             if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
               this.attributesForCard[originalCard] = rebuiltCards[newCard]
@@ -315,7 +314,6 @@ export class ItemBuilderModalComponent implements OnInit {
       for(let attr in parents[parent].attributes){
         cards.push({
           name: parents[parent].attributes[attr]['name'],
-          ID: attr,
           category: parents[parent].name,
           focused: false,
           type: parents[parent].attributes[attr]['type'] || 'text',
@@ -328,7 +326,7 @@ export class ItemBuilderModalComponent implements OnInit {
     for(let itemAttr in item.attributes){
       let hasAttribute = false;
       for(let card in cards){
-        if(cards[card].ID === item.attributes[itemAttr].ID){
+        if(cards[card].name === item.attributes[itemAttr].name){
           cards[card].value = item.attributes[itemAttr].value;
           hasAttribute = true;
         }
@@ -337,7 +335,6 @@ export class ItemBuilderModalComponent implements OnInit {
       if(!hasAttribute){
         cards.push({
           name: item.attributes[itemAttr].name,
-          ID: item.attributes[itemAttr].ID,
           value: item.attributes[itemAttr].value,
           category: "None",
           focused: false,
@@ -367,7 +364,7 @@ export class ItemBuilderModalComponent implements OnInit {
     let hasAttribute = false;
     card.focused = false;
     for(let attr in this.item.attributes){
-      if(this.item.attributes[attr].ID === card.ID){
+      if(this.item.attributes[attr].name === card.name){
         this.item.attributes[attr].value = card.value ? card.value.trim() : '';
         hasAttribute = true;
       }
@@ -376,14 +373,12 @@ export class ItemBuilderModalComponent implements OnInit {
       if(!this.item.attributes){
         this.item.attributes = [{
           name: card.name,
-          ID: card.ID,
           value: card.value.trim()
         }];
       }
       else{
         this.item.attributes.push({
           name: card.name,
-          ID: card.ID,
           value: card.value.trim()
         })
       }
@@ -451,7 +446,7 @@ export class ItemBuilderModalComponent implements OnInit {
     this.attributesForCard.splice(deleteCardIndex, 1);
 
     for(let attributeIndex in this.item.attributes){
-      if(this.item.attributes[attributeIndex].ID === card.ID){
+      if(this.item.attributes[attributeIndex].name === card.name){
         this.item.attributes.splice(Number.parseInt(attributeIndex), 1);
       }
     }

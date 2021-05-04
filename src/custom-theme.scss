@@ -31,7 +31,7 @@ html {
 }
 
 .light-text {
-  color: #888;
+  color: #999;
 }
 
 .big-button {
@@ -80,5 +80,21 @@ html {
 .action-color-light {
   background-color:  #e7f3ff;
   color: rgba(0, 0, 0, 0.87);
+}
+
+.radio-buttons {
+  display: flex;
+  flex-direction: column;
+  margin: 18px 0;
+}
+
+.radio-button {
+  margin: 6px;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
 }
 

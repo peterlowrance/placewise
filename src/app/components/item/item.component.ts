@@ -39,7 +39,6 @@ interface TreeNode {
 
 interface AttributeCard {
   name: string;
-  ID: string;
   value?: string;
   category: string;
   focused: boolean;
@@ -268,7 +267,7 @@ export class ItemComponent implements OnInit, OnDestroy {
             for(let newCard in rebuiltCards){
               let found = false;
               for(let originalCard in this.attributesForCard){
-                if(this.attributesForCard[originalCard].ID === rebuiltCards[newCard].ID){
+                if(this.attributesForCard[originalCard].name === rebuiltCards[newCard].name){
                   found = true;
                   // Deep check to see if it needs updated
                   if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
@@ -620,7 +619,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       for(let attr in parents[parent].attributes){
         cards.push({
           name: parents[parent].attributes[attr]['name'],
-          ID: attr,
           category: parents[parent].name,
           focused: false
         })
@@ -631,7 +629,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     for(let itemAttr in item.attributes){
       let hasAttribute = false;
       for(let card in cards){
-        if(cards[card].ID === item.attributes[itemAttr].ID){
+        if(cards[card].name === item.attributes[itemAttr].name){
           cards[card].value = item.attributes[itemAttr].value;
           hasAttribute = true;
         }
@@ -640,7 +638,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       if(!hasAttribute){
         cards.push({
           name: item.attributes[itemAttr].name,
-          ID: item.attributes[itemAttr].ID,
           value: item.attributes[itemAttr].value,
           category: "None",
           focused: false

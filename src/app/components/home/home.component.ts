@@ -17,6 +17,8 @@ import { url } from 'inspector';
 import { Identifiers } from '@angular/compiler';
 import { CacheService } from 'src/app/services/cache.service';
 import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
+import { Attribute } from 'src/app/models/Attributes/Attribute';
+import { AttributeValue } from 'src/app/models/Attributes/AttributeValue';
 
 /**
  *
@@ -24,12 +26,6 @@ import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-mo
  * displayDescendents once and then loadLevel (which calls displayDescendents)
  *
  */
-
- interface Attribute {
-   ID: string;
-   name: string;
-   value?: string;
- }
 
 @Component({
   selector: 'app-home',
@@ -69,8 +65,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   filterableAttributes: Attribute[] // For selecting which ones to filter by
   attributeValues: string[];
   originalAttributeValues: string[]; // For resetting after searching
-  currentAttribute: Attribute; // For the current attribute that that values are being searched for
-  filteredAttributes: Attribute[]; // Attributes that are being actively filtered.
+  currentAttribute: AttributeValue; // For the current attribute that that values are being searched for
+  filteredAttributes: AttributeValue[]; // Attributes that are being actively filtered.
   typeForSelectionButtons: string;
 
   parentSub: Subscription;
@@ -206,9 +202,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.filterResults();
   }
 
-  removeAttributeFromFilter(ID: string) {
+  removeAttributeFromFilter(name: string) {
     for(let attr in this.filteredAttributes) {
-      if(this.filteredAttributes[attr].ID === ID){
+      if(this.filteredAttributes[attr].name === name){
         this.filteredAttributes.splice(parseInt(attr), 1);
 
         if(this.filteredAttributes.length === 0){
@@ -234,9 +230,9 @@ export class HomeComponent implements OnInit, OnDestroy {
           for(let parent in allParents){
             for(let attr in allParents[parent].attributes){
               if(attributes){
-                attributes.push({ID: attr, name: allParents[parent].attributes[attr]['name']});
+                attributes.push({name: allParents[parent].attributes[attr]['name']});
               } else {
-                attributes = [{ID: attr, name: allParents[parent].attributes[attr]['name']}];
+                attributes = [{name: allParents[parent].attributes[attr]['name']}];
               }
             }
           }
@@ -247,7 +243,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  gatherAttributeValues(attribute: Attribute){
+  gatherAttributeValues(attribute: AttributeValue){
 
     this.percentLoadedAttributes = 2;
     this.isLoadingAttributes = true;
@@ -263,7 +259,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           this.percentLoadedAttributes += slice;
           if(items[item].attributes)
           for(let attr in items[item].attributes){
-            if(items[item].attributes[attr].ID === attribute.ID){
+            if(items[item].attributes[attr].name === attribute.name){
 
                 let newAttrValueCapped = items[item].attributes[attr].value.toUpperCase();
                 if(newAttrValueCapped){
@@ -490,7 +486,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             for(let requiredAttr in this.filteredAttributes){
               let pass = false;
               for(let attr in items[item].attributes){
-                if(items[item].attributes[attr].ID === this.filteredAttributes[requiredAttr].ID && items[item].attributes[attr].value.toUpperCase() === this.filteredAttributes[requiredAttr].value.toUpperCase()){
+                if(items[item].attributes[attr].name === this.filteredAttributes[requiredAttr].name && items[item].attributes[attr].value.toUpperCase() === this.filteredAttributes[requiredAttr].value.toUpperCase()){
                   pass = true;
                   break;            // TODO: ORDER WRONG
                 }

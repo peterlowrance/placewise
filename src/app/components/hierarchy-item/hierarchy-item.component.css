@@ -145,17 +145,25 @@
   margin-left: 6px;
 }
 
+/*
 .suffix-control-buttons {
   display: flex;
   justify-content: space-between;
 }
+*/
 
 .suffix-card {
   margin-bottom: 6px;
+  padding: 12px;
+  border-radius: 4px;
+  cursor: move;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.suffix-attribute-title {
-  padding-top: 6px;
+.suffix-text {
+  font-size: 16px;
 }
 
 .fake-confirm-button {

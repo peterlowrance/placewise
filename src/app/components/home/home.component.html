@@ -30,7 +30,7 @@
   <!-- Attribute filters -->
   <mat-chip-list #chipList>
     <mat-chip *ngFor="let attr of filteredAttributes" color="primary" [selected]="true"
-      [removable]="true" (removed)="removeAttributeFromFilter(attr.ID)">
+      [removable]="true" (removed)="removeAttributeFromFilter(attr.name)">
       {{attr.name + ": " + attr.value}}
       <mat-icon matChipRemove>cancel</mat-icon>
     </mat-chip>

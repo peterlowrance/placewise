@@ -1,0 +1,29 @@
+
+<!-- Type of attribute -->
+<div *ngIf="step === 'type'">
+    <mat-radio-group class="radio-buttons" [(ngModel)]="type">
+        <mat-radio-button class="radio-button" value="text"> Custom Text </mat-radio-button>
+        <mat-radio-button class="radio-button" value="options"> Options </mat-radio-button>
+        <mat-radio-button class="radio-button" value="derp"> Dependent Options </mat-radio-button>
+    </mat-radio-group>
+</div>
+
+<!-- Name -->
+<div *ngIf="step === 'name'">
+    <mat-form-field>
+        <mat-label> Name of attribute: </mat-label>
+        <input matInput #nameInput
+        type="text"
+        [(ngModel)]="name"
+        >
+    </mat-form-field>
+</div>
+
+<!-- Buttons -->
+<div class="action-buttons">
+    <!-- Cancel button is always here -->
+    <button mat-raised-button class="rect-action-button" (click)="cancel()"> Cancel </button>
+
+    <button *ngIf="!finishStep" mat-raised-button [disabled]="cannotGoNext()" class="rect-action-button structure-color" (click)="nextStep()"> Next </button>
+    <button *ngIf="finishStep" mat-raised-button [disabled]="cannotGoNext()" class="rect-action-button structure-color-dark" (click)="finish()"> Finish </button>
+</div>

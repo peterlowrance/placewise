@@ -26,6 +26,7 @@ import {MatBadgeModule} from '@angular/material/badge';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatSelectModule} from '@angular/material/select';
 import {TextFieldModule} from '@angular/cdk/text-field';
+import {DragDropModule} from '@angular/cdk/drag-drop';
 
 import {SmdFabSpeedDialModule} from 'node_modules/angular-speed-dial';
 // Imports for all Placewise modules
@@ -64,6 +65,8 @@ import { ItemBuilderModalComponent } from './components/item-builder-modal/item-
 import { AttributeOptionsEditorDialogComponent } from './components/attribute-options-editor-dialog/attribute-options-editor-dialog.component';
 import { SimpleFieldDialogComponent } from './components/simple-field-dialog/simple-field-dialog.component';
 import { QuickAddListComponent } from './components/quick-add-list/quick-add-list.component';
+import { AttributeBuilderDialogComponent } from './components/attribute-builder-dialog/attribute-builder-dialog.component';
+import { AddAttributeSuffixDialogComponent } from './components/add-attribute-suffix-dialog/add-attribute-suffix-dialog.component';
 
 @NgModule({
   declarations: [
@@ -91,7 +94,9 @@ import { QuickAddListComponent } from './components/quick-add-list/quick-add-lis
     ItemBuilderModalComponent,
     AttributeOptionsEditorDialogComponent,
     SimpleFieldDialogComponent,
-    QuickAddListComponent
+    QuickAddListComponent,
+    AttributeBuilderDialogComponent,
+    AddAttributeSuffixDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -130,7 +135,8 @@ import { QuickAddListComponent } from './components/quick-add-list/quick-add-lis
     MatRadioModule,
     MatTableModule,
     HttpClientModule,
-    TextFieldModule
+    TextFieldModule,
+    DragDropModule
   ],
   providers: [],
   bootstrap: [AppComponent],

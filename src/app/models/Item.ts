@@ -1,7 +1,8 @@
 import { HierarchyObject } from './HierarchyObject';
-import { Attribute } from './Attribute';
+import { Attribute } from './Attributes/Attribute';
 import { ItemTypeReportTimestamp } from './ItemTypeReportTimestamp';
 import { ItemReport } from './ItemReport';
+import { AttributeValue } from './Attributes/AttributeValue';
 
 export interface Item extends HierarchyObject {
   desc?: string;
@@ -10,11 +11,7 @@ export interface Item extends HierarchyObject {
   category: string;
   imageUrl?: string;
 
-  attributes?: [{  // NEEDS TO BE AN ARRAY for fuse.js searching quicker
-    name: string;  // I'd rather not json a map for every item to search
-    ID: string;
-    value?: string;
-  }];
+  attributes?: AttributeValue[];
 
   tracking?: [{
     locationID: string;

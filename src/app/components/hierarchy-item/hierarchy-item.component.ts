@@ -11,12 +11,14 @@ import {MatDialog} from '@angular/material/dialog';
 import {Router} from '@angular/router';
 import {ModifyHierarchyDialogComponent} from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 import { Category } from 'src/app/models/Category';
-import { Attribute } from 'src/app/models/Attribute';
 import { Timestamp, timestamp } from 'rxjs/internal/operators/timestamp';
 import { trigger, style, transition, animate, keyframes} from '@angular/animations';
 import { NavService } from 'src/app/services/nav.service';
 import { IfStmt } from '@angular/compiler';
 import { AttributeOptionsEditorDialogComponent } from 'src/app/components/attribute-options-editor-dialog/attribute-options-editor-dialog.component';
+import { AttributeBuilderDialogComponent } from '../attribute-builder-dialog/attribute-builder-dialog.component';
+import { AddAttributeSuffixDialogComponent } from '../add-attribute-suffix-dialog/add-attribute-suffix-dialog.component';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-hierarchy-item',
@@ -63,7 +65,7 @@ export class HierarchyItemComponent implements OnInit {
     afterText: string;
     editingBefore: boolean;
     editingAfter: boolean;
-  }[]
+  }[];
   //renameBind: string[] = [];                                       // For attribute renaming inputs from the form field
   isSaving = false;
   dirty = false; // Needed for HTML
@@ -217,6 +219,7 @@ export class HierarchyItemComponent implements OnInit {
                 }
               }
               this.attributeSuffixesForDisplay = buildingSuffixes;
+              console.log(this.attributeSuffixesForDisplay);
             }
 
           });
@@ -461,19 +464,29 @@ export class HierarchyItemComponent implements OnInit {
   }
 
   addAttribute(){
+    this.dialog.open(AttributeBuilderDialogComponent, {width: '360px'})
+    .beforeClosed().subscribe(result => {
+      if(result.wasValid){
+        console.log(this.hierAsCategory.attributes);
+        this.hierAsCategory.attributes.push(result.data);
+        this.update();
+      }
+    });
+
+    /*
     let attrs = this.hierAsCategory.attributes;
-    let newID = Date.now().toString();
     if(attrs){
-      attrs[newID] = {"name": "New Attribute"}; // Type can be blank, it will just be set to 'text' upon load
+      attrs.push({"name": "New Attribute"}); // Type can be blank, it will just be set to 'text' upon load
     }
     else {
-      attrs = {[newID]: {"name" : "New Attribute"}};
+      attrs = [{"name" : "New Attribute"}];
     }
     this.hierAsCategory.attributes = attrs;
     this.localAttributes.push({name: "New Attribute", type: 'text', opened: true});
     // this.addAttributeSuffix(newID); I believe this is more unexpected than helpful
 
     this.checkDirty();
+    */
   }
 
   setAttributeSuffix(idOrName: string, suffixID: string, isLocal: boolean = false){
@@ -492,6 +505,33 @@ export class HierarchyItemComponent implements OnInit {
   }
 
   addAttributeSuffix(newID: string = 'parent'){
+    this.dialog.open(AddAttributeSuffixDialogComponent, {width: '360px', data: { attributes: this.hierAsCategory.attributes, usedAttributes: []}})
+    .beforeClosed().subscribe(result => {
+      if(result.wasValid){
+        console.log(result.data.type);
+
+        if(result.data.data){
+          if(this.hierAsCategory.suffixFormat){
+            this.hierAsCategory.suffixFormat.push({type: result.data.type, data: result.data.data});
+          }
+          else {
+            this.hierAsCategory.suffixFormat = [{type: result.data.type, data: result.data.data}];
+          }
+        }
+        else {
+          if(this.hierAsCategory.suffixFormat){
+            this.hierAsCategory.suffixFormat.push({type: result.data.type});
+          }
+          else {
+            this.hierAsCategory.suffixFormat = [{type: result.data.type}];
+          }
+        }
+
+        this.update();
+      }
+    });
+
+    /*
     if(this.hierAsCategory.suffixStructure){
       this.hierAsCategory.suffixStructure.push({beforeText: ' ', attributeID: newID, afterText: ''})
     }
@@ -499,12 +539,14 @@ export class HierarchyItemComponent implements OnInit {
       this.hierAsCategory.suffixStructure = [{beforeText: ' ', attributeID: newID, afterText: ''}];
     }
     this.checkDirty();
+    */
   }
 
-  deleteAttributeSuffix(position: string){
-    this.hierAsCategory.suffixStructure.splice(parseInt(position), 1);
-
-    this.checkDirty();
+  deleteAttributeSuffix(index: number){
+    if(confirm("Are you sure you want to delete this suffix element?\nThis will not edit the current items - that's for the future.\nBut this will make the titles misaligned and may cause problems in the future.")){
+      console.log(this.hierAsCategory.suffixFormat.splice(index, 1));
+      this.update();
+    }
   }
 
   setAttributeType(name: string, type: string){
@@ -557,7 +599,7 @@ export class HierarchyItemComponent implements OnInit {
       let attrs = this.hierAsCategory.attributes;
       for(let attr in attrs){
         if(attrs[attr]["name"] === name){
-          delete this.hierAsCategory.attributes[attr];
+          this.hierAsCategory.attributes.splice(Number.parseInt(attr));
           this.localAttributes = this.localAttributes.filter(elem => elem.name !== name);
           this.checkDirty();
         }
@@ -619,6 +661,13 @@ export class HierarchyItemComponent implements OnInit {
 
   clearName(){
     this.hierarchyItem.name = '';
+  }
+
+  drop(event: CdkDragDrop<string[]>) {
+    console.log(this.hierAsCategory.suffixFormat);
+    moveItemInArray(this.hierAsCategory.suffixFormat, event.previousIndex, event.currentIndex);
+    console.log(this.hierAsCategory.suffixFormat);
+    this.update();
   }
 
   // /**
