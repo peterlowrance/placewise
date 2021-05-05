@@ -17,8 +17,8 @@ import { url } from 'inspector';
 import { Identifiers } from '@angular/compiler';
 import { CacheService } from 'src/app/services/cache.service';
 import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
-import { Attribute } from 'src/app/models/Attributes/Attribute';
-import { AttributeValue } from 'src/app/models/Attributes/AttributeValue';
+import { Attribute } from 'src/app/models/Attribute';
+import { AttributeValue } from 'src/app/models/Attribute';
 
 /**
  *

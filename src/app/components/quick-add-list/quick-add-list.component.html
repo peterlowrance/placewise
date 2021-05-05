@@ -1,7 +1,23 @@
 <div class="inset-card">
-    <mat-selection-list #listUI [multiple]="false">
+    <mat-selection-list *ngIf="!useValue" #listUI [multiple]="false">
         <mat-list-option *ngFor="let item of list" [value]="item">
-          {{item}}
+          {{item}} 
         </mat-list-option>
     </mat-selection-list>
+
+    <mat-selection-list *ngIf="useValue" #listUIValues [multiple]="false">
+      <mat-list-option class="attribute-value" *ngFor="let item of list" [value]="item.value">
+        {{item.value}} 
+        <button *ngIf="listUIValues.selectedOptions.selected[0]?.value === item.value" mat-mini-fab class="delete-value-button" (click)="deleteValue(item.value)"><mat-icon>delete</mat-icon></button>
+        <button *ngIf="listUIValues.selectedOptions.selected[0]?.value === item.value" mat-mini-fab class="shift-options-button structure-color-light" (click)="deleteValue(item.value)"><mat-icon>arrow_forward</mat-icon></button>
+      </mat-list-option>
+  </mat-selection-list>
 </div>
+
+<mat-form-field appearance="outline">
+  <mat-label>Add options</mat-label>
+  <input matInput 
+  (keyup.enter)="addValue()"
+  [(ngModel)]="inputValue"
+  >
+</mat-form-field>

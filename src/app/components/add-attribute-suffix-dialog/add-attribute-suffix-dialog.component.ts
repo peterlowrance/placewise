@@ -1,6 +1,6 @@
 import { Attribute, Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { CategoryAttribute } from 'src/app/models/Attributes/CategoryAttribute';
+import { CategoryAttribute } from 'src/app/models/Attribute';
 
 @Component({
   selector: 'app-add-attribute-suffix-dialog',

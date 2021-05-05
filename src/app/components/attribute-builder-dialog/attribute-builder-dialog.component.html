@@ -3,8 +3,12 @@
 <div *ngIf="step === 'type'">
     <mat-radio-group class="radio-buttons" [(ngModel)]="type">
         <mat-radio-button class="radio-button" value="text"> Custom Text </mat-radio-button>
+        <small> For this, any input is allowed. </small>
+        <br>
         <mat-radio-button class="radio-button" value="options"> Options </mat-radio-button>
-        <mat-radio-button class="radio-button" value="derp"> Dependent Options </mat-radio-button>
+        <small> Options can also be layered, e.g. first you pick a unit, then a measurement. </small>
+        <br>
+        <!--mat-radio-button class="radio-button" value="derp"> Dependent Options </mat-radio-button-->
     </mat-radio-group>
 </div>
 
@@ -14,9 +18,20 @@
         <mat-label> Name of attribute: </mat-label>
         <input matInput #nameInput
         type="text"
-        [(ngModel)]="name"
+        [(ngModel)]="attribute.name"
         >
     </mat-form-field>
+</div>
+
+<!-- Options -->
+<div *ngIf="step === 'options'" class="scrollable">
+    <app-quick-add-list [list]="attribute.options" [useValue]="true">
+
+    </app-quick-add-list>
+    <br>
+    <!--app-quick-add-list [list]="attribute.options" [useValue]="true">
+
+    </app-quick-add-list-->
 </div>
 
 <!-- Buttons -->

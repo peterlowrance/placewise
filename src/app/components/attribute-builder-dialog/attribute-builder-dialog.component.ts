@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { CategoryAttribute } from 'src/app/models/Attributes/CategoryAttribute';
+import { CategoryAttribute } from 'src/app/models/Attribute';
 
 @Component({
   selector: 'app-attribute-builder-dialog',
@@ -13,17 +13,20 @@ export class AttributeBuilderDialogComponent implements OnInit {
     public dialogRef: MatDialogRef<AttributeBuilderDialogComponent>,
     ) { }
 
-  type: string = 'text';
+  attribute: CategoryAttribute = {
+    name: ''
+  }
   step: string = 'type';
-  name: string = '';
+  type: string = ''; // This is for saving space
   finishStep = false;
+
 
   ngOnInit(): void {
   }
 
   cannotGoNext(): boolean {
     if(this.step === 'name'){
-      if(!this.name){
+      if(!this.attribute.name){
         return true;
       }
     }
@@ -34,22 +37,26 @@ export class AttributeBuilderDialogComponent implements OnInit {
   nextStep(){
     if(this.step === 'type'){
       this.step = 'name';
+
       if(this.type === 'text'){
         this.finishStep = true;
+      }
+      else {
+        this.attribute.options = [{value: "aaa"}];
       }
     }
 
     else if(this.step === 'name'){
-      this.step = '';
+      this.step = 'options';
     }
   }
 
   finish(){
-    let data: CategoryAttribute = {
-      name: this.name,
-      type: this.type
+    if(this.type !== 'text'){ // If it's custom text, don't bother taking up space with saying that.
+      this.attribute.type = this.type;
     }
-    this.dialogRef.close({wasValid: true, data});
+    console.log(this.attribute);
+    //this.dialogRef.close({wasValid: true, data: this.attribute});
   }
 
   cancel(){

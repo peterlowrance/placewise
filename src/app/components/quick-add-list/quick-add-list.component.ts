@@ -7,11 +7,25 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./quick-add-list.component.css']
 })
 export class QuickAddListComponent implements OnInit {
-  @Input() list: string[];
+  @Input() list: any[];
+  @Input() useValue: boolean = false; // Mostly used for displaying attribute values
+
+  inputValue: string = '';
 
   constructor() { }
 
   ngOnInit() {
+    console.log(this.list);
+  }
+
+  addValue(){
+    if(this.useValue){
+      this.list.push({value: this.inputValue});
+    }
+    else {
+      this.list.push(this.inputValue);
+    }
+    this.inputValue = '';
   }
 
 }

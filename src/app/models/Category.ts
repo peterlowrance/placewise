@@ -1,6 +1,5 @@
 import {HierarchyItem} from './HierarchyItem';
-import { Attribute } from './Attributes/Attribute';
-import { CategoryAttribute } from './Attributes/CategoryAttribute';
+import { CategoryAttribute } from './Attribute';
 
 export interface Category extends HierarchyItem {
 

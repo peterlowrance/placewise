@@ -1,8 +1,8 @@
 import { HierarchyObject } from './HierarchyObject';
-import { Attribute } from './Attributes/Attribute';
+import { Attribute } from './Attribute';
 import { ItemTypeReportTimestamp } from './ItemTypeReportTimestamp';
 import { ItemReport } from './ItemReport';
-import { AttributeValue } from './Attributes/AttributeValue';
+import { AttributeValue } from './Attribute';
 
 export interface Item extends HierarchyObject {
   desc?: string;
