@@ -1,6 +1,6 @@
 
 <!-- Initial select step -->
-<mat-radio-group *ngIf="step === 'select'" class="radio-buttons" [(ngModel)]="selected">
+<mat-radio-group *ngIf="step === 'select'" class="radio-buttons" (change)="loadLayers()" [(ngModel)]="selected">
     <mat-radio-button class="radio-button" value="parent"> Suffix from parent </mat-radio-button>
     <mat-radio-button *ngFor="let attr of data.attributes" class="radio-button" [value]="attr.name"> {{ attr.name }} </mat-radio-button>
     <mat-radio-button class="radio-button" value="space"> Space (Spacebar) </mat-radio-button>
@@ -18,11 +18,20 @@
     </mat-form-field>
 </div>
 
+<div *ngIf="step === 'layer'">
+    The attribute you selected has layers. Select a certain layer to be displayed.
+    <br>
+
+    <mat-radio-group class="radio-buttons" [(ngModel)]="selectedLayer">
+        <mat-radio-button *ngFor="let layerName of layerNames" class="radio-button" value="layerName"> {{ layerName }} </mat-radio-button>
+    </mat-radio-group>
+</div>
+
 <!-- Buttons -->
 <div class="action-buttons">
     <!-- Cancel button is always here -->
     <button mat-raised-button class="rect-action-button" (click)="cancel()"> Cancel </button>
 
-    <button *ngIf="selected === 'text' && step !== 'text'" mat-raised-button [disabled]="!selected" class="rect-action-button structure-color" (click)="nextStep()"> Next </button>
-    <button *ngIf="selected !== 'text' || step === 'text'" mat-raised-button [disabled]="!selected" class="rect-action-button structure-color-dark" (click)="add()"> Add </button>
+    <button *ngIf="(selected === 'text' && step !== 'text') || (layerNames && step !== 'layer')" mat-raised-button [disabled]="!selected || (step === 'layer' && !selectedLayer)" class="rect-action-button structure-color" (click)="nextStep()"> Next </button>
+    <button *ngIf="(selected !== 'text' || step === 'text') && (!layerNames || step === 'layer')" mat-raised-button [disabled]="!selected || (step === 'layer' && !selectedLayer)" class="rect-action-button structure-color-dark" (click)="add()"> Add </button>
 </div>

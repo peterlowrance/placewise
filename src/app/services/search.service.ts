@@ -366,6 +366,40 @@ export class SearchService implements SearchInterfaceService {
     // Start building attribute string
     let buildingString = '';
 
+    if(categoryAndAncestors[startingIndex].suffixFormat){
+      for(let suffixPiece of categoryAndAncestors[startingIndex].suffixFormat){
+        switch(suffixPiece.type){
+          case 'space': {
+            buildingString += ' ';
+            break;
+          }
+          case 'text': {
+            buildingString += suffixPiece.data;
+            break;
+          }
+          case 'parent': {
+            buildingString += this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex + 1);
+          }
+          case 'attribute': 
+          {
+            for(let attr in item.attributes){
+
+            }
+          }
+          case 'attribute layer':
+          {
+            let splitData: string[];
+            for(let attr in item.attributes){
+              splitData = suffixPiece.data.split("\n");
+              if(item.attributes[attr].name === splitData[0]){
+                // NEXT
+              }
+            }
+          }
+        }
+      }
+    }
+
     /*
     // Go through each suffix piece in the category we're in
     if(categoryAndAncestors[startingIndex].suffixStructure){
@@ -395,194 +429,6 @@ export class SearchService implements SearchInterfaceService {
 
     return buildingString;
   }
-
-  /**
-   * Is a greater than b?
-   * Forms actual numbers from groupings of numbers/digits/slashes
-   * Text takes priority over the numbers
-   *
-  humanAplhabeticalComparison(a: string, b: string): boolean {
-    // Use the smaller length
-    let maxLength = a.length > b.length ?  a.length  : b.length; 
-    let aOffset = 0;
-    let bOffset = 0;
-    let aHasNumbers = false;
-    let bHasNumbers = false;
-    let aNumber = 0;
-    let bNumber = 0;
-
-    let nextA;
-    let nextB;
-    let isANumber = false;
-    let isBNumber = false;
-
-    for(let index = 0; index < maxLength; index+=1){
-
-      if(index + aOffset > a.length){
-        if(index + bOffset <= b.length){
-          return false;
-        }
-        else {
-          // COMPARE NUMBERS
-        }
-      }
-      if(index + bOffset > b.length){
-        if(index + aOffset <= a.length){
-          return true;
-        }
-        else {
-          // COMPARE NUMBERS
-        }
-      }
-
-      
-
-      if(aHasNumbers && bHasNumbers){
-        nextA = a[index + aOffset];
-        isANumber = nextA >= '0' || nextA <= '9';
-
-        nextB = b[index + bOffset];
-        isBNumber = nextB >= '0' || nextB <= '9';
-
-        if(!isANumber && !isBNumber){
-          if(nextA === nextB)
-        }
-
-        else if(isANumber && isBNumber){
-          if(aNumber === bNumber){
-            continue;
-          }
-          else {
-            return aNumber > bNumber;
-          }
-        }
-
-        // NEXT: other possibilities
-      }
-
-      /*
-      
-
-
-      if both a and b have numbers
-        if the next thing is not a number, direct compare chars from offset
-          if equal, continue
-        if the next thing is another number or is the end, compare the saved numbers
-          if equal, continue
-
-      if offset for a is zero
-        if it is a number, count ahead (func)
-          build number, tracking one number as we go
-            if we hit a decimal, track another number
-              if we hit another decimal or slash, back up to one 
-            if we hit a slash, track another number for a fraction
-              if we hit another slash or decimal, back up to one
-            if we hit something else, save/calc the number, set offset
-        otherwise
-        
-      if offset for b is zero
-          if it is a number, count ahead
-            ...
-          if not
-            if reee
-
-      if both are offset, jump to the lowest number
-
-      *
-    }
-
-    return false;
-  }
-
-  // returns where the numbers stop
-  private scanAheadNumbers(str: string, startingIndex: number): number {
-    let index = startingIndex;
-
-    for(; index < str.length; index+=1){
-      let char = str[index];
-
-      if (!((char >= '0' && char <= '9') || char === '.' || char === '/' || char === ' ')) {
-        break;
-      }
-    }
-
-    return index;
-  }
-
-  // If the next characters can be a number
-  private isNumberable(str: string, index: number){
-    if(str[index] >= '0' && str[index] <= '9')
-  }
-
-  // This will also deal with 
-  private isNumberGreater(a: string, b: string): boolean {
-    let slashDetected = false;
-    let decimalDetected = false;
-
-
-
-    return false;
-
-    /*
-    let spaceDetected = false;
-    let overrideElements = false; // For when there's a bunch of slashes or decimals and we're just going to ignore them
-    let result = 0;
-    let length = 0;
-    let numberPiece: string[] = [''];
-    let numberPieceIndex = 0;
-    let char = '';
-
-    for(let index; index < str.length; index += 1){
-      char = str[index]; // For simplicity
-
-      // If the next is a number, just add it to the current section of numbers
-      if(char <= '9' && char >= '0'){
-        numberPiece[numberPieceIndex] += char;
-      }
-
-      else if(char === '.'){
-        if(!overrideElements){
-
-          if(decimalDetected || slashDetected || spaceDetected){
-            overrideElements = true;
-          }
-          else {
-            // If there hasn't been a decimal yet, start a new number section for numbers after decimal
-            decimalDetected = true;
-            numberPiece.push('');
-            numberPieceIndex += 1;
-          }
-
-        }
-      }
-
-      else if(char === '/'){
-        if(!overrideElements){
-          if(decimalDetected || slashDetected){ // We can ignore space here - for things like 1 1/2
-            overrideElements = true;
-          }
-          else {
-            // If there hasn't been a slash yet, start a new number section for numbers after slash
-            decimalDetected = true;
-            numberPiece.push('');
-            numberPieceIndex += 1;
-          }
-        }
-      }
-
-      else if(char === ' '){
-        if(!overrideElements){
-          if(decimalDetected || slashDetected || spaceDetected){
-            overrideElements = true;
-          }
-          else {
-            // NEXT: wait what about things like "2.2 9.8" WAIT NO SPACES? EEEEE
-          }
-        }
-      }
-    }
-  }
-    */
 
   constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService, private cacheService: CacheService) {
   }

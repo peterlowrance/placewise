@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
-import { CategoryAttribute } from 'src/app/models/Attribute';
+import { Component, Inject, OnInit } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { AttributeOption, CategoryAttribute } from 'src/app/models/Attribute';
 
 @Component({
   selector: 'app-attribute-builder-dialog',
@@ -11,27 +11,54 @@ export class AttributeBuilderDialogComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<AttributeBuilderDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: {attribute: CategoryAttribute, step?: string}
     ) { }
 
-  attribute: CategoryAttribute = {
-    name: ''
-  }
+  name: string = ''; // For category attribute, not layer
   step: string = 'type';
   type: string = ''; // This is for saving space
   finishStep = false;
 
 
+  selectedValueForLayer = '';
+  layerNames: string[] = [];
+  layerNumber: number = 0;
+  layers: {previousValue?: string, options: AttributeOption[]}[] = []; // Keeps track of where we're at
+
   ngOnInit(): void {
+    if(this.data){
+      if(this.data.attribute){
+        let att = this.data.attribute;
+        if(att.type === 'options'){
+          this.name = att.name;
+          this.type = att.type;
+          if(att.layerNames) this.layerNames = att.layerNames;
+          this.layers = [{options: att.options}];
+        }
+      }
+
+      if(this.data.step){
+        this.step = this.data.step;
+      }
+    }
   }
 
   cannotGoNext(): boolean {
     if(this.step === 'name'){
-      if(!this.attribute.name){
+      if(!this.name){
         return true;
       }
     }
 
     return false;
+  }
+
+  getConditionText(){
+    if(this.layerNumber > 0){
+      return "When " + this.layerNames[this.layerNumber - 1] + " is " + this.layers[this.layerNumber].previousValue; 
+    }
+
+    return '';
   }
 
   nextStep(){
@@ -42,21 +69,97 @@ export class AttributeBuilderDialogComponent implements OnInit {
         this.finishStep = true;
       }
       else {
-        this.attribute.options = [{value: "aaa"}];
+        this.layers.push({options: []});
       }
     }
 
     else if(this.step === 'name'){
       this.step = 'options';
+      this.finishStep = true;
+    }
+
+    else if(this.step === 'nameLayer'){
+      if(this.layerNumber !== 0){
+        this.step = 'options';
+        this.finishStep = true;
+        this.goToLayer(this.selectedValueForLayer);
+      }
+      else {
+        this.goToLayer(this.selectedValueForLayer);
+      }
+
+      if(!this.layerNames[this.layerNumber + 1]){
+        this.layerNames.push('');
+      }
+
+      
     }
   }
 
-  finish(){
-    if(this.type !== 'text'){ // If it's custom text, don't bother taking up space with saying that.
-      this.attribute.type = this.type;
+  loadLayer(event: string){
+    this.selectedValueForLayer = event;
+
+    if(!this.layerNames[this.layerNumber + 1]){
+      this.layerNames.push('');
+      this.step = 'nameLayer';
+      this.finishStep = false;
     }
-    console.log(this.attribute);
-    //this.dialogRef.close({wasValid: true, data: this.attribute});
+    else {
+      this.goToLayer(this.selectedValueForLayer);
+    }
+  }
+
+  goToLayer(value: string){
+    for(let option of this.layers[this.layerNumber].options){
+      if(option.value === value){
+
+        // If options do not exist for this value, create empty options
+        if(!option.dependentOptions){
+          option.dependentOptions = [];
+        }
+        this.layers.push({previousValue: value, options: option.dependentOptions});
+        this.layerNumber++;
+      }
+    }
+  }
+
+  nameLayerGoBack(){
+    this.layerNames[this.layerNumber] = '';
+    this.step = 'options';
+  }
+
+  layerGoBack(){
+    this.layerNumber--;
+    this.layers.pop();
+  }
+
+  finish(){
+    let newAttribute: CategoryAttribute;
+    
+    if(this.type === 'options'){
+      if(this.layers.length > 1){
+        newAttribute = {
+          name: this.name,
+          type: this.type,
+          layerNames: this.layerNames,
+          options: this.layers[0].options
+        }
+      }
+      else {
+        newAttribute = {
+          name: this.name,
+          type: this.type,
+          options: this.layers[0].options
+        }
+      }
+    }
+    else {
+      newAttribute = {
+        name: this.name
+      }
+    }
+    
+    this.dialogRef.close({wasValid: true, data: newAttribute});
   }
 
   cancel(){

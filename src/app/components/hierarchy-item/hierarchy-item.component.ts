@@ -468,6 +468,9 @@ export class HierarchyItemComponent implements OnInit {
     .beforeClosed().subscribe(result => {
       if(result.wasValid){
         console.log(this.hierAsCategory.attributes);
+        if(!this.hierAsCategory.attributes){
+          this.hierAsCategory.attributes = [];
+        }
         this.hierAsCategory.attributes.push(result.data);
         this.update();
       }
@@ -562,16 +565,17 @@ export class HierarchyItemComponent implements OnInit {
   openAttributeOptionsModal(name: string){
     let attrs = this.hierAsCategory.attributes;
     for(let attr in attrs){
-      if(attrs[attr]['name'] === name){
+      if(attrs[attr].name === name){
         
-        this.dialog.open(AttributeOptionsEditorDialogComponent, {
+        this.dialog.open(AttributeBuilderDialogComponent, {
           width: '360px',
-          data: {values: (attrs[attr]['values'] ? attrs[attr]['values'] : [])}
+          data: {attribute: attrs[attr], step:  'options'}
         })
         .beforeClosed().subscribe(result => {
-          if(result.valid){
-            attrs[attr]['values'] = result.values;
-            this.checkDirty();
+          if(result.wasValid){
+            attrs[attr] = result.data;
+            console.log(result.data);
+            this.update();
           }
         });
       }

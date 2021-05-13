@@ -18,11 +18,36 @@ export class AddAttributeSuffixDialogComponent implements OnInit {
   text = '';
   step = 'select';
 
+  layerNames: string[];
+  selectedLayer = '';
+
   ngOnInit(): void {
   }
 
   nextStep(){
-    this.step = 'text';
+    if(this.selected === 'text'){
+      this.step = 'text';
+    }
+    else {
+      this.step = "layer";
+    }
+  }
+
+  loadLayers(){
+    for(let attr of this.data.attributes){
+      if(attr.name === this.selected){
+
+        // Used for detecting if we should go next or end
+        if(attr.layerNames){
+          this.layerNames = attr.layerNames;
+        }
+        else {
+          delete this.layerNames;
+        }
+
+        break;
+      }
+    }
   }
 
   add(){
@@ -39,7 +64,12 @@ export class AddAttributeSuffixDialogComponent implements OnInit {
         break;
       }
       default: {
-        data = {type: 'attribute', data: this.selected}
+        if(this.selectedLayer){
+          data = {type: 'attribute layer', data: this.selected + "\n" + this.selectedLayer}
+        }
+        else {
+          data = {type: 'attribute', data: this.selected}
+        }
       }
     }
 

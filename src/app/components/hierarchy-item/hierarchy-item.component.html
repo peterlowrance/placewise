@@ -113,27 +113,22 @@
                 </mat-panel-title>
               </mat-expansion-panel-header>
 
-              <mat-form-field>
+              <!--mat-form-field> Should not change the name - variables are dependent on this.
                 <mat-label>New name:</mat-label>
                 <input matInput #rename
                 type="text"
                 (focusout)="onAttrNameSubmit(attr.name, rename)">
               </mat-form-field>
               <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
-              <br>
+              <br-->
               <mat-form-field appearance="fill" class="attribute-select-form">
                 <mat-label class="attribute-select-label">Attribute Type</mat-label>
                 <mat-select [(value)]="attr.type">
                   <mat-option value="text" (click)="setAttributeType(attr.name, 'text')"> Custom Text </mat-option>
                   <mat-option value="options" (click)="setAttributeType(attr.name, 'options')"> Options </mat-option>
-                  <mat-option value="unit-options" (click)="setAttributeType(attr.name, 'unit-options')"> Options with Units / Types </mat-option>
                 </mat-select>
               </mat-form-field>
               <br>
-              <app-quick-add-list *ngIf="attr.type === 'options'" [list]="['butter', 'milk', 'eggs', '1', '2', '3', '4', '5', '6', '77', '888', '9999']">
-
-              </app-quick-add-list>
-
               <div *ngIf="this.role === 'Admin' && attr.type === 'options'">
                 <button mat-raised-button class="structure-color" (click)="openAttributeOptionsModal(attr.name)"> Edit Options </button>
                 <br>

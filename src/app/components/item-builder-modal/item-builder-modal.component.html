@@ -55,14 +55,23 @@
                                 (focus)="attrCard.focused = true"
                                 (focusout)="onAttrValueSubmit(attrCard)">
                             </mat-form-field>
-                            <mat-form-field *ngIf="attrCard.type === 'options'" class="attribute-select-form" appearance="fill">
-                                <mat-label class="attribute-select-label">{{attrCard.name + ":"}}</mat-label>
-                                <mat-select class="attribute-select" [(value)]="attrCard.value">
-                                  <mat-option *ngFor="let possibleValue of attrCard.possibleValues" value="{{possibleValue}}" (click)="onAttrValueSubmit(attrCard)"> {{ possibleValue }} </mat-option>
-                                </mat-select>
-                              </mat-form-field>
+
+                            <div *ngIf="attrCard.type === 'options'">
+                                <div *ngIf="attrCard.layerNames">
+                                    <b> {{attrCard.name}} </b>
+                                    <br>
+                                    <br>
+                                </div>
+
+                                <mat-form-field *ngFor="let selector of attrCard.selectors; index as selectorIndex" class="attribute-select-form" appearance="fill">
+                                    <mat-label class="attribute-select-label">{{(attrCard.layerNames[selectorIndex] ? attrCard.layerNames[selectorIndex] : attrCard.name) + ":"}}</mat-label>
+                                    <mat-select class="attribute-select" [(value)]="selector.selectedValue">
+                                        <mat-option *ngFor="let option of selector.options; index as optionIndex" value="{{option.value}}" (click)="onAttrOptionSubmit(attrCard, selectorIndex, optionIndex, option.value)"> {{ option.value }} </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                            </div>
                             <!-- I don't think this is needed anymore from better design   <button mat-icon-button class="fake-confirm-button" *ngIf="attrCard.focused"><mat-icon>done</mat-icon></button> -->
-                            <span *ngIf="!attrCard.value"><mat-icon class="missing-data-icon">error_outline</mat-icon></span>
+                            <span *ngIf="!attrCard.isValid"><mat-icon class="missing-data-icon">error_outline</mat-icon></span>
                             <span *ngIf="attrCard.category === 'None'"><button mat-icon-button class="delete-attribute-button" (click)="deleteAttribute(attrCard)"><mat-icon>delete</mat-icon></button></span>
                             <div *ngIf="attrCard.category !== 'None'" class="attribute-category-text">{{attrCard.category}}</div>
                             <div *ngIf="attrCard.category === 'None'" class="attribute-category-text missing-category">

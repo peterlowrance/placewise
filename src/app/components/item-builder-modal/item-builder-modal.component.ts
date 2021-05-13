@@ -14,6 +14,7 @@ import { AdminService } from 'src/app/services/admin.service';
 import { ImageService } from 'src/app/services/image.service';
 import { SearchService } from 'src/app/services/search.service';
 import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
+import { AttributeOption } from 'src/app/models/Attribute';
 
 interface AttributeCard {
   name: string;
@@ -21,7 +22,12 @@ interface AttributeCard {
   category: string;
   focused: boolean;
   type: string;
-  possibleValues?: string[]
+  isValid: boolean;
+  layerNames?: string[];
+  selectors?: {
+    selectedValue?: string,
+    options: AttributeOption[]
+  }[] 
 }
 
 @Component({
@@ -316,8 +322,10 @@ export class ItemBuilderModalComponent implements OnInit {
           name: parents[parent].attributes[attr]['name'],
           category: parents[parent].name,
           focused: false,
+          isValid: false, // If there's data there, it should already be valid
           type: parents[parent].attributes[attr]['type'] || 'text',
-          possibleValues: parents[parent].attributes[attr]['values']
+          layerNames: parents[parent].attributes[attr].layerNames,
+          selectors: [{options: parents[parent].attributes[attr].options}]
         })
       }
     }
@@ -328,6 +336,7 @@ export class ItemBuilderModalComponent implements OnInit {
       for(let card in cards){
         if(cards[card].name === item.attributes[itemAttr].name){
           cards[card].value = item.attributes[itemAttr].value;
+          cards[card].isValid = true;
           hasAttribute = true;
         }
       }
@@ -338,7 +347,8 @@ export class ItemBuilderModalComponent implements OnInit {
           value: item.attributes[itemAttr].value,
           category: "None",
           focused: false,
-          type: 'text'
+          type: 'text',
+          isValid: true
         })
       }
     }
@@ -360,6 +370,7 @@ export class ItemBuilderModalComponent implements OnInit {
   }
 
   // Updates and cleans up the attributes and title
+  // TODO: I did not realize the card is the actual object. This is really inefficient.
   onAttrValueSubmit(card: AttributeCard){
     let hasAttribute = false;
     card.focused = false;
@@ -382,6 +393,25 @@ export class ItemBuilderModalComponent implements OnInit {
           value: card.value.trim()
         })
       }
+    }
+
+    // POST KNOWING IT'S JUST THE SAME THING:
+    card.isValid = true;
+  }
+
+  onAttrOptionSubmit(card: AttributeCard, selectorIndex: number, optionIndex: number, option: string){
+    if(selectorIndex < card.selectors.length - 1){
+      card.selectors.splice(selectorIndex+1, card.selectors.length-selectorIndex-1);
+    }
+    if(card.selectors[selectorIndex].options[optionIndex].dependentOptions){
+      card.isValid = false;
+      card.selectors.push({
+        selectedValue: option, 
+        options: card.selectors[selectorIndex].options[optionIndex].dependentOptions
+      });
+    }
+    else {
+      card.isValid = true;
     }
   }
 
@@ -555,7 +585,7 @@ export class ItemBuilderModalComponent implements OnInit {
       else {
         // Go through each attribute and make sure it has a value
         for(let attr of this.attributesForCard){
-          if(!attr.value){
+          if(!attr.isValid){
             return false;
           }
         }
@@ -593,6 +623,17 @@ export class ItemBuilderModalComponent implements OnInit {
         (this.additionalText ? " " + this.additionalText : "") +
         (this.attributeSuffix ? this.attributeSuffix : "");
     }
+  }
+
+  isCardIncomplete(card: AttributeCard){
+    if(card.value){
+      return false;
+    }
+    else if (card.selectors && !card.selectors[card.selectors.length-1].options){
+      return false;
+    }
+
+    return true;
   }
 
   nextStep(){
