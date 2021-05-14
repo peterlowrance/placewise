@@ -370,7 +370,6 @@ export class ItemBuilderModalComponent implements OnInit {
   }
 
   // Updates and cleans up the attributes and title
-  // TODO: I did not realize the card is the actual object. This is really inefficient.
   onAttrValueSubmit(card: AttributeCard){
     let hasAttribute = false;
     card.focused = false;
@@ -400,18 +399,48 @@ export class ItemBuilderModalComponent implements OnInit {
   }
 
   onAttrOptionSubmit(card: AttributeCard, selectorIndex: number, optionIndex: number, option: string){
+    // Update UI, possibly for another selector
     if(selectorIndex < card.selectors.length - 1){
       card.selectors.splice(selectorIndex+1, card.selectors.length-selectorIndex-1);
     }
     if(card.selectors[selectorIndex].options[optionIndex].dependentOptions){
       card.isValid = false;
       card.selectors.push({
-        selectedValue: option, 
         options: card.selectors[selectorIndex].options[optionIndex].dependentOptions
       });
     }
     else {
       card.isValid = true;
+    }
+
+    // Update item data
+    let hasAttribute = false;
+    for(let attr in this.item.attributes){
+      if(this.item.attributes[attr].name === card.name){
+        this.item.attributes[attr].value = '';
+        for(let index = 0; index < card.selectors.length; index++){
+          // Sometimes we have the card loaded with a selector but no value. In this case, don't bother to add that
+          if(card.selectors[index].selectedValue){
+            this.item.attributes[attr].value += card.layerNames[index] + '\n';
+            this.item.attributes[attr].value += card.selectors[index].selectedValue + '\n';
+          }
+        }
+        hasAttribute = true;
+      }
+    }
+    if(!hasAttribute){
+      if(!this.item.attributes){
+        this.item.attributes = [{
+          name: card.name,
+          value: card.layerNames[0] + '\n' + option + '\n'
+        }];
+      }
+      else{
+        this.item.attributes.push({
+          name: card.name,
+          value: card.layerNames[0] + '\n' + option + '\n'
+        })
+      }
     }
   }
 

@@ -5,6 +5,7 @@
  */
 export interface Attribute {
     name: string;
+    type?: string;
 }
 
 /**
@@ -13,7 +14,6 @@ export interface Attribute {
  * in which this is just a custom text attribute and anything goes
  */
 export interface CategoryAttribute extends Attribute {
-    type?: string;
     options?: AttributeOption[];
     layerNames?: string[]; // To give names to layers like "units" and the corresponding "length"
 }
@@ -37,7 +37,10 @@ export interface AttributeValue extends Attribute {
     // because of how flexible this has been designed to be. Options can change and thier
     // order can change so we cannot rebuild the values clearly when edited. That said, 
     // we may have extra information stored with exactly what was picked. v v v
-    rawData?: any;
+    // rawData?: any;
     // I do not want to be formating the data to a string every single load.
+
+    // ACTUALLY I think I might store raw data in this and separate the layers with /n. 
+    // The client will know what to do with it based on type. (Undefined = custom)
     value: string; // I would have called this "formattedString", but it will stay as value for legacy reasons
 }
