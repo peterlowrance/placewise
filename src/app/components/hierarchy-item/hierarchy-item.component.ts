@@ -219,7 +219,6 @@ export class HierarchyItemComponent implements OnInit {
                 }
               }
               this.attributeSuffixesForDisplay = buildingSuffixes;
-              console.log(this.attributeSuffixesForDisplay);
             }
 
           });
@@ -467,7 +466,6 @@ export class HierarchyItemComponent implements OnInit {
     this.dialog.open(AttributeBuilderDialogComponent, {width: '360px'})
     .beforeClosed().subscribe(result => {
       if(result.wasValid){
-        console.log(this.hierAsCategory.attributes);
         if(!this.hierAsCategory.attributes){
           this.hierAsCategory.attributes = [];
         }
@@ -569,12 +567,11 @@ export class HierarchyItemComponent implements OnInit {
         
         this.dialog.open(AttributeBuilderDialogComponent, {
           width: '360px',
-          data: {attribute: attrs[attr], step:  'options'}
+          data: {attribute: attrs[attr], step:  'options', finishStep: true},
         })
         .beforeClosed().subscribe(result => {
           if(result.wasValid){
             attrs[attr] = result.data;
-            console.log(result.data);
             this.update();
           }
         });

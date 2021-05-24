@@ -165,6 +165,9 @@
           <!-- Drag and drop attributes -->
           <div cdkDropList (cdkDropListDropped)="drop($event)">
             <div *ngFor="let suffix of hierAsCategory.suffixFormat; index as i" class="suffix-card" [class.mat-elevation-z2]="true" cdkDrag>
+                <div *ngIf="suffix.type === 'attribute layer'" class="suffix-text">
+                  {{ suffix.data }} <small class="light-text"> (attribute layer) </small>
+                </div>
                 <div *ngIf="suffix.type === 'attribute'" class="suffix-text">
                   {{ suffix.data }} <small class="light-text"> (attribute) </small>
                 </div>

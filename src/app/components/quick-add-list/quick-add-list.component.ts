@@ -19,6 +19,9 @@ export class QuickAddListComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+    if(!this.list){
+      this.list = [];
+    }
   }
 
   addValue(){
@@ -47,6 +50,25 @@ export class QuickAddListComponent implements OnInit {
         this.list.push(this.inputValue);
       }
       this.inputValue = '';
+    }
+  }
+
+  deleteValue(value: string){
+    if(this.useValue){
+      for(let index in this.list){
+        if(this.list[index].value === value){
+          this.list.splice(Number.parseInt(index), 1);
+          break;
+        }
+      }
+    }
+    else {
+      for(let index in this.list){
+        if(this.list[index] === value){
+          this.list.splice(Number.parseInt(index), 1);
+          break;
+        }
+      }
     }
   }
 

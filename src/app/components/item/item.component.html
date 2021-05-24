@@ -41,7 +41,11 @@
         <div *ngIf="attributesForCard">
             <div *ngFor="let attrCard of attributesForCard" class="attribute-data">
                 <span class="attribute-name"> {{attrCard.name}} </span>
-                <span class="attribute-value"> {{attrCard.value}} </span>
+                <span *ngIf="attrCard.value" class="attribute-value"> {{attrCard.value}} </span>
+                <div *ngFor="let value of attrCard.values; index as i " class="layer-attributes">  
+                    <span class="attribute-layer-name light-text"> {{attrCard.layerNames[i]}} </span>
+                    <span class="attribute-value"> {{value}} </span>
+                </div>
                 <div class="attribute-break"></div>
             </div>
         </div>
@@ -212,9 +216,16 @@
                 ( None )
             </p>
             <div *ngIf="attributesForCard">
+                <br>
+                <br>
+                <br>
                 <div *ngFor="let attrCard of attributesForCard" class="attribute-data">
                     <span class="attribute-name"> {{attrCard.name}} </span>
-                    <span class="attribute-value"> {{attrCard.value}} </span>
+                    <span *ngIf="attrCard.value" class="attribute-value"> {{attrCard.value}} </span>
+                    <div *ngFor="let value of attrCard.values; index as i " class="layer-attributes">  
+                        <span class="attribute-layer-name light-text"> {{attrCard.layerNames[i]}} </span>
+                        <span class="attribute-value"> {{value}} </span>
+                    </div>
                     <div class="attribute-break"></div>
                 </div>
             </div>

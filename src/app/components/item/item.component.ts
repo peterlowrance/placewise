@@ -40,6 +40,8 @@ interface TreeNode {
 interface AttributeCard {
   name: string;
   value?: string;
+  values?: string[];
+  layerNames?: string[];
   category: string;
   focused: boolean;
 }
@@ -630,11 +632,26 @@ export class ItemComponent implements OnInit, OnDestroy {
       let hasAttribute = false;
       for(let card in cards){
         if(cards[card].name === item.attributes[itemAttr].name){
-          cards[card].value = item.attributes[itemAttr].value;
+          let values = item.attributes[itemAttr].value.split('\n');
+          if(values.length < 2){
+            cards[card].value = item.attributes[itemAttr].value;
+          }
+          else {
+            // Initialize first layer
+            cards[card].layerNames = [values[0]];
+            cards[card].values = [values[1]];
+
+            // Add the rest
+            for(let index = 1; index < (values.length-1)/2; index++){
+              cards[card].layerNames.push(values[index*2]);
+              cards[card].values.push(values[index*2 + 1]);
+            }
+          }
           hasAttribute = true;
         }
       }
 
+      // If the data is not connected to something in the category
       if(!hasAttribute){
         cards.push({
           name: item.attributes[itemAttr].name,

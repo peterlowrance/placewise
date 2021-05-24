@@ -23,7 +23,7 @@
     <br>
 
     <mat-radio-group class="radio-buttons" [(ngModel)]="selectedLayer">
-        <mat-radio-button *ngFor="let layerName of layerNames" class="radio-button" value="layerName"> {{ layerName }} </mat-radio-button>
+        <mat-radio-button *ngFor="let layerName of layerNames" class="radio-button" [value]="layerName"> {{ layerName }} </mat-radio-button>
     </mat-radio-group>
 </div>
 

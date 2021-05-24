@@ -11,7 +11,7 @@ export class AttributeBuilderDialogComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<AttributeBuilderDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: {attribute: CategoryAttribute, step?: string}
+    @Inject(MAT_DIALOG_DATA) public data: {attribute: CategoryAttribute, step?: string, finishStep?: boolean}
     ) { }
 
   name: string = ''; // For category attribute, not layer
@@ -21,19 +21,29 @@ export class AttributeBuilderDialogComponent implements OnInit {
 
 
   selectedValueForLayer = '';
+  layerName: string = '';
   layerNames: string[] = [];
   layerNumber: number = 0;
   layers: {previousValue?: string, options: AttributeOption[]}[] = []; // Keeps track of where we're at
 
   ngOnInit(): void {
     if(this.data){
+      if(this.data.finishStep){
+        this.finishStep = this.data.finishStep;
+      }
+
       if(this.data.attribute){
         let att = this.data.attribute;
         if(att.type === 'options'){
           this.name = att.name;
           this.type = att.type;
           if(att.layerNames) this.layerNames = att.layerNames;
-          this.layers = [{options: att.options}];
+          if(att.options){
+            this.layers = [{options: att.options}];
+          }
+          else {
+            this.layers = [{ options: []}];
+          }
         }
       }
 
@@ -79,6 +89,15 @@ export class AttributeBuilderDialogComponent implements OnInit {
     }
 
     else if(this.step === 'nameLayer'){
+      if(this.layerNames[this.layerNumber]){
+        this.layerNames[this.layerNumber] = this.layerName;
+      }
+      else {
+        this.layerNames.push(this.layerName);
+      }
+      this.layerName = '';
+      console.log(this.layerNames);
+
       if(this.layerNumber !== 0){
         this.step = 'options';
         this.finishStep = true;
@@ -87,11 +106,6 @@ export class AttributeBuilderDialogComponent implements OnInit {
       else {
         this.goToLayer(this.selectedValueForLayer);
       }
-
-      if(!this.layerNames[this.layerNumber + 1]){
-        this.layerNames.push('');
-      }
-
       
     }
   }
@@ -100,7 +114,6 @@ export class AttributeBuilderDialogComponent implements OnInit {
     this.selectedValueForLayer = event;
 
     if(!this.layerNames[this.layerNumber + 1]){
-      this.layerNames.push('');
       this.step = 'nameLayer';
       this.finishStep = false;
     }
