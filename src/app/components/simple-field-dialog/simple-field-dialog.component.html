@@ -1,0 +1,14 @@
+<mat-form-field>
+    <mat-label>{{data.fieldName}}</mat-label>
+    <input matInput #value
+    type="text"
+    (keyup)="setValue(value.value)"
+    (keyup.enter)="submit()">
+</mat-form-field>
+
+<br>
+
+<div class="action-buttons">
+    <button mat-raised-button class="rect-action-button" (click)="cancel()">Cancel</button>
+    <button mat-raised-button class="rect-action-button structure-color" (click)="submit()"> Submit </button>
+</div>

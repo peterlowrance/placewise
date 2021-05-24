@@ -1,0 +1,70 @@
+
+<!-- Type of attribute -->
+<div *ngIf="step === 'type'">
+    <mat-radio-group class="radio-buttons" [(ngModel)]="type">
+        <mat-radio-button class="radio-button" value="text"> Custom Text </mat-radio-button>
+        <small> For this, any input is allowed. </small>
+        <br>
+        <mat-radio-button class="radio-button" value="options"> Options </mat-radio-button>
+        <small> Options can also be layered, e.g. first you pick a unit, then a measurement. </small>
+        <br>
+        <!--mat-radio-button class="radio-button" value="derp"> Dependent Options </mat-radio-button-->
+    </mat-radio-group>
+</div>
+
+<!-- Name -->
+<div *ngIf="step === 'name'">
+    <mat-form-field>
+        <mat-label> Name of attribute: </mat-label>
+        <input matInput #nameInput
+        type="text"
+        [(ngModel)]="name"
+        >
+    </mat-form-field>
+</div>
+
+<!-- Options -->
+<div *ngIf="step === 'options'" class="scrollable">
+    <app-quick-add-list (goInLayerEvent)="loadLayer($event)" [list]="layers[layerNumber].options" [useValue]="true" [layerName]="layerNames[layerNumber] || 'Options'" [conditionText]="getConditionText()">
+
+    </app-quick-add-list>
+    <br>
+</div>
+
+<!-- First time adding another layer -->
+<div *ngIf="step === 'nameLayer'">
+    <div *ngIf="layerNumber === 0">
+        You're about to create a new layer of options for when 
+        <b> {{ selectedValueForLayer }} </b>
+        is selected. Before that happens, we'll need to give
+        your <i>previous layer</i> a name. What are they? For example, "Unit of measure"
+    </div>
+    <div *ngIf="layerNumber !== 0">
+        Give a name to your <i>new layer</i> for when 
+        <b> {{ selectedValueForLayer }} </b>
+        is selected. Note: Currently this name will be used no matter what value is
+        selected in the previous layer. For example, "Measurement"
+    </div>  
+
+    <br>
+
+    <mat-form-field>
+        <mat-label> Name of layer: </mat-label>
+        <input matInput #nameInput
+        type="text"
+        [(ngModel)]="layerName"
+        >
+    </mat-form-field>
+</div>
+
+<!-- Buttons -->
+<div class="action-buttons">
+    <!-- Cancel button is always here -->
+    <button mat-raised-button class="rect-action-button" (click)="cancel()"> Cancel </button>
+
+    <button *ngIf="step === 'nameLayer'" mat-raised-button class="rect-action-button structure-color-light" (click)="nameLayerGoBack()"> Back </button>
+    <button *ngIf="step === 'options' && layerNumber > 0" mat-mini-fab class="structure-color-light" (click)="layerGoBack()"><mat-icon>arrow_backward</mat-icon></button>
+
+    <button *ngIf="!finishStep" mat-raised-button [disabled]="cannotGoNext()" class="rect-action-button structure-color" (click)="nextStep()"> Next </button>
+    <button *ngIf="finishStep" mat-raised-button [disabled]="cannotGoNext()" class="rect-action-button structure-color-dark" (click)="finish()"> Finish </button>
+</div>

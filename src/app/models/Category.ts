@@ -1,14 +1,18 @@
 import {HierarchyItem} from './HierarchyItem';
-import { Attribute } from './Attribute';
+import { CategoryAttribute } from './Attribute';
 
 export interface Category extends HierarchyItem {
 
-    attributes?: {[ID:string]: {[settingName:string]: any}};
+    attributes?: CategoryAttribute[];
     prefix?: string;
-    suffixStructure?: [{
+    suffixStructure?: [{ // TO BE KILLED
         beforeText: string;
         attributeID: string;
         afterText: string;
+    }];
+    suffixFormat?: [{
+        type: string;
+        data?: string;
     }];
 
 }

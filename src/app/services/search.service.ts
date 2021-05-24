@@ -12,8 +12,10 @@ import {AuthService} from './auth.service';
 import {ImageService} from './image.service';
 import { HierarchyObject } from '../models/HierarchyObject';
 import { Category } from '../models/Category';
-import { Location } from '../models/Location';
+import { HierarchyLocation } from '../models/Location';
 import { ContentObserver } from '@angular/cdk/observers';
+import { CacheService } from './cache.service';
+import { time } from 'console';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -52,24 +54,36 @@ export class SearchService implements SearchInterfaceService {
   getAncestors(parentIDs: string[], hierItems: HierarchyItem[]): HierarchyItem[][] {
     const result: HierarchyItem[][] = [];
     // Find all parents of items and add an array for each parent
-    for(const parentID of parentIDs)                                            // TODO: YIKES
-    for(const firstParent of hierItems) {
-      if (firstParent.ID === parentID) {
-        const ancestors: HierarchyItem[] = [firstParent];
-        result.push(ancestors);
-        // Find all parents in this ancestor list
-        // While the last parent of the last array of ancestors is not the root
-        while (result[result.length - 1][result[result.length - 1].length - 1].ID !== 'root') {
-          for (const nextParent of hierItems) {
-            // If the item has the same ID as the parent of the last item in the ancestor list, add it
-            if (nextParent.ID === result[result.length - 1][result[result.length - 1].length - 1].parent) {
-              result[result.length - 1].push(nextParent);
+    for(const parentID of parentIDs){
+      for(const firstParent of hierItems) {
+        if (firstParent.ID === parentID) {
+          const ancestors: HierarchyItem[] = [firstParent];
+          result.push(ancestors);
+          // Find all parents in this ancestor list
+          // While the last parent of the last array of ancestors is not the root
+          while (result[result.length - 1][result[result.length - 1].length - 1].ID !== 'root') {
+            let not_found_error = true; // Prevent infinite loop
+
+            for (const nextParent of hierItems) {
+              // If the item has the same ID as the parent of the last item in the ancestor list, add it
+              if (nextParent.ID === result[result.length - 1][result[result.length - 1].length - 1].parent) {
+                result[result.length - 1].push(nextParent);
+                not_found_error = false;
+                break;
+              }
+            }
+
+            if(not_found_error){
+              console.log("ERROR! Categories improperly loaded.");
+              console.log(result[result.length - 1][result[result.length - 1].length - 1].ID);
+              // NOTE: this has popped up with a location ID before!
               break;
             }
           }
         }
       }
     }
+    
     return result;
   }
 
@@ -93,6 +107,7 @@ export class SearchService implements SearchInterfaceService {
         if(hierItem.type === 'category'){
           this.getAllCategories().subscribe(categories =>
             {
+              console.log("RECV ALL CATS");
               obs.next(this.getAncestors([hierItem.parent], categories));
 
               if(categories.length > 1){  // Finish when we have all the data (It always has at least a length of one ??)
@@ -111,6 +126,32 @@ export class SearchService implements SearchInterfaceService {
         }
       }
     });
+  }
+
+  // TESTING METHOD
+  // INCLUDES PARENT
+  getAncestorsByChain(ID: string, type: string): Promise<HierarchyItem[]> {
+    return new Promise<HierarchyItem[]>( async resolve => {
+      let results: HierarchyItem[] = [];
+      let nextID = ID;
+      let finished = false;
+      let typeURL = type === 'category' ? 'Category' : 'Locations';
+
+      while(!finished){
+        let location = (await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/' + typeURL + '/' + nextID).get().toPromise()).data() as HierarchyLocation;
+        location.ID = nextID;
+        results.push(location);
+        
+        if(location.parent){
+          nextID = location.parent;
+        }
+        else {
+          finished = true;
+        }
+      }
+
+      resolve(results);
+    })
   }
 
   /**
@@ -159,18 +200,23 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getLocation(id: string): Observable<Location> {
-    if (!id) {
+  getLocation(id: string, confirm: string = "normal human"): Observable<HierarchyLocation> {
+    if (!id || id === 'none') {
       return of(null);
     }
-    return this.afs.doc<Location>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {
-      const data = a.payload.data() as Location;
-      data.ID = a.payload.id;
-      if (data.imageUrl == null) {
-        data.imageUrl = '../../../assets/notFound.png';
+    return this.afs.doc<HierarchyLocation>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {
+      const data = a.payload.data() as HierarchyLocation;
+      if(data){
+        data.ID = a.payload.id;
+        if (data.imageUrl == null) {
+          data.imageUrl = '../../../assets/notFound.png';
+        }
+        data.type = "location";
+        return data;
       }
-      data.type = "location";
-      return data;
+      else {
+        return null;
+      }
     }));
   }
 
@@ -178,16 +224,19 @@ export class SearchService implements SearchInterfaceService {
     if (!id) {
       return of(null);
     }
-    //console.time('firebase answered category in');
     return this.afs.doc<Category>('/Workspaces/' + this.auth.workspace.id + '/Category/' + id).snapshotChanges().pipe(map(a => {
-      //console.timeEnd('firebase answered category in');
       const data = a.payload.data() as Category;
-      data.ID = a.payload.id;
-      if (data.imageUrl == null) {
-        data.imageUrl = '../../../assets/notFound.png';
+      if(data){
+        data.ID = a.payload.id;
+        if (data.imageUrl == null) {
+          data.imageUrl = '../../../assets/notFound.png';
+        }
+        data.type = "category";
+        return data;
       }
-      data.type = "category";
-      return data;
+      else {
+        return null;
+      }
     }));
   }
 
@@ -279,7 +328,7 @@ export class SearchService implements SearchInterfaceService {
     return this.getAllHierarchy(excludeRoot, true);
   }
 
-  getAllLocations(excludeRoot: boolean = false): Observable<Location[]> {
+  getAllLocations(excludeRoot: boolean = false): Observable<HierarchyLocation[]> {
     return this.getAllHierarchy(excludeRoot, false);
   }
 
@@ -290,12 +339,11 @@ export class SearchService implements SearchInterfaceService {
     if (appropriateCache) {
       return of(excludeRoot ? appropriateCache.filter(c => c.ID !== 'root') : appropriateCache);
     }
-    //console.time('firebase answered get all in');
+
     return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + (isCategory ? '/Category' : '/Locations'))
       .snapshotChanges().pipe(map(a => {
-        //if(a.length > 1 ) console.timeEnd('firebase answered get all in'); // cache likes to store one that is returned
         const returnedHierarchy = a.map(g => {
-          const data = isCategory ? (g.payload.doc.data() as Category) : (g.payload.doc.data() as Location);
+          const data = isCategory ? (g.payload.doc.data() as Category) : (g.payload.doc.data() as HierarchyLocation);
           data.ID = g.payload.doc.id;
           if (data.imageUrl == null) {
             data.imageUrl = '../../../assets/notFound.png';
@@ -303,11 +351,13 @@ export class SearchService implements SearchInterfaceService {
           data.type = isCategory ? 'category' : 'location';
           return data;
         });
+
         return excludeRoot ? returnedHierarchy.filter(g => g.ID !== 'root') : returnedHierarchy;
       }));
   }
 
-  buildAttributeSuffixFrom(item: Item, categoryAndAncestors: Category[], startingIndex = 0){
+  buildAttributeSuffixFrom(item: Item, categoryAndAncestors: Category[], startingIndex = 0): string{
+
     // If there's no category, return empty string
     if(!categoryAndAncestors){
       return '';
@@ -316,6 +366,41 @@ export class SearchService implements SearchInterfaceService {
     // Start building attribute string
     let buildingString = '';
 
+    if(categoryAndAncestors[startingIndex].suffixFormat){
+      for(let suffixPiece of categoryAndAncestors[startingIndex].suffixFormat){
+        switch(suffixPiece.type){
+          case 'space': {
+            buildingString += ' ';
+            break;
+          }
+          case 'text': {
+            buildingString += suffixPiece.data;
+            break;
+          }
+          case 'parent': {
+            buildingString += this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex + 1);
+          }
+          case 'attribute': 
+          {
+            for(let attr in item.attributes){
+
+            }
+          }
+          case 'attribute layer':
+          {
+            let splitData: string[];
+            for(let attr in item.attributes){
+              splitData = suffixPiece.data.split("\n");
+              if(item.attributes[attr].name === splitData[0]){
+                // NEXT
+              }
+            }
+          }
+        }
+      }
+    }
+
+    /*
     // Go through each suffix piece in the category we're in
     if(categoryAndAncestors[startingIndex].suffixStructure){
       for(let suffix of categoryAndAncestors[startingIndex].suffixStructure){
@@ -323,13 +408,13 @@ export class SearchService implements SearchInterfaceService {
   
         // If the piece points to the parent's suffix, build that piece out
         if(id === 'parent'){
-          this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex++) + suffix.afterText;
+          buildingString += suffix.beforeText + this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex + 1) + suffix.afterText;
         }
   
         // Otherwise, insert that suffix piece with the corresponding value
         else {
           for(let attr in item.attributes){
-            if(item.attributes[attr].ID === id){
+            if(item.attributes[attr].name === name){
               if(item.attributes[attr].value){ // Don't insert anything if there's no value
                 buildingString += suffix.beforeText + 
                   item.attributes[attr].value +
@@ -340,32 +425,11 @@ export class SearchService implements SearchInterfaceService {
         }
       }
     }
+    */
 
     return buildingString;
   }
 
-  // TEMPORARY HAX
-  /*
-  hack(){
-    this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').get().toPromise().then((querySnapshot => {
-      querySnapshot.forEach(doc => {
-        let item = doc.data() as Item;
-        if(item.fullTitle){
-          console.log(item.name + " - - " + item.fullTitle);
-          item.name = item.fullTitle;
-          console.log(item.name + " - - " + item.fullTitle);
-          delete(item.fullTitle);
-          console.log(item.name + " - - " + item.fullTitle);
-          this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + doc.id).set(item)
-        }
-        else {
-          console.log("skipped");
-        }
-      })
-    }))
-  }
-  */
-
-  constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService) {
+  constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService, private cacheService: CacheService) {
   }
 }

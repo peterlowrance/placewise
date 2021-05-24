@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LoginComponent } from './login.component';
 
@@ -38,7 +38,7 @@ describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ LoginComponent ],
       providers: [{provide: FormBuilder, useValue: new FormBuilder()}, {provide: Router, useValue: navMock}, {provide: AuthService, useClass: AuthTest.AuthMockService}, {provide: MatSnackBar, useValue: snackMock}, {provide: MatDialog}],

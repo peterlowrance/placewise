@@ -1,4 +1,8 @@
 <div class="allContent" *ngIf="hierarchyItem">
+  <img class="responsive-item-image container-img" src={{hierarchyItem.imageUrl}} layout-fit>
+  <div class="info-content">
+    <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
+    <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
     <div [ngSwitch]="this.textEditFields.name">
       <div *ngSwitchCase=true>
         <form (ngSubmit)="onNameSubmit()">
@@ -25,15 +29,38 @@
         </h2>
       </div>
     </div>
-    <div class="image-block">
-      <img class="responsive-item-image container-img" src={{hierarchyItem.imageUrl}} layout-fit>
-      <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button"  (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
-      <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="file-button"  (click)="uploader.click()"><mat-icon>perm_media</mat-icon></button>
-      <!-- hidden item uploader -->
-      <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
-      <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
+
+    <!-- Description -->
+    <div [ngSwitch]="this.textEditFields.desc">
+      <!-- If we are editing, display text form -->
+      <div *ngSwitchCase=true>
+        <form (ngSubmit)="onDescSubmit()" class="form-appear">
+            <mat-form-field class="form-appear">
+                <textarea matInput #desc type="text"
+                placeholder="Desc"
+                [(ngModel)]="hierarchyItem.desc"
+                name="desc"
+                (focusout)="onDescSubmit()"
+                required
+                ></textarea>
+            </mat-form-field>
+        </form>
+      </div>
+      <!-- Otherwise, display the description or "no description" with edit button -->
+      <div *ngSwitchDefault>
+        <div *ngIf="hierarchyItem.desc">
+          {{ hierarchyItem.desc }} 
+          <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button>
+        </div>
+        <div *ngIf="!hierarchyItem.desc">
+          <span class="light-text">( No Description )</span> 
+          <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button>
+        </div>
+      </div>
     </div>
+
     <br>
+    <!--
     <mat-card>
       <mat-card-header>
           <mat-card-title>Description <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button></mat-card-title>
@@ -57,9 +84,9 @@
           </div>
       </mat-card-content>
       <mat-card-actions>
-          <!-- edit field -->
       </mat-card-actions>
     </mat-card>
+    -->
     <div *ngIf="hierarchyItem.type === 'category'">
       <br>
       <mat-card class="attributes-card" [class.mat-elevation-z0]="true">
@@ -70,10 +97,10 @@
 
             <mat-expansion-panel disabled *ngFor="let inheritAttr of inheritedAttributes">
               <mat-expansion-panel-header>
-                <mat-panel-title>
+                <mat-panel-title class="attribute-data">
                   {{inheritAttr.name}}
                 </mat-panel-title>
-                <mat-panel-description>
+                <mat-panel-description class="attribute-data">
                   {{inheritAttr.categoryName}}
                 </mat-panel-description>
               </mat-expansion-panel-header>
@@ -81,18 +108,32 @@
 
             <mat-expansion-panel *ngFor="let attr of localAttributes" [expanded]="attr.opened">
               <mat-expansion-panel-header>
-                <mat-panel-title>
+                <mat-panel-title class="attribute-data">
                   {{attr.name}}
                 </mat-panel-title>
               </mat-expansion-panel-header>
 
-              <mat-form-field>
+              <!--mat-form-field> Should not change the name - variables are dependent on this.
                 <mat-label>New name:</mat-label>
                 <input matInput #rename
                 type="text"
                 (focusout)="onAttrNameSubmit(attr.name, rename)">
               </mat-form-field>
               <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
+              <br-->
+              <mat-form-field appearance="fill" class="attribute-select-form">
+                <mat-label class="attribute-select-label">Attribute Type</mat-label>
+                <mat-select [(value)]="attr.type">
+                  <mat-option value="text" (click)="setAttributeType(attr.name, 'text')"> Custom Text </mat-option>
+                  <mat-option value="options" (click)="setAttributeType(attr.name, 'options')"> Options </mat-option>
+                </mat-select>
+              </mat-form-field>
+              <br>
+              <div *ngIf="this.role === 'Admin' && attr.type === 'options'">
+                <button mat-raised-button class="structure-color" (click)="openAttributeOptionsModal(attr.name)"> Edit Options </button>
+                <br>
+              </div>
+              <br>
               <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="deleteAttribute(attr.name)">Delete</button>
             </mat-expansion-panel>
           </mat-accordion>
@@ -101,7 +142,7 @@
         </mat-card-content>
       </mat-card>
       <br>
-      <mat-card class="attributes-card" *ngIf="this.role === 'Admin'" [class.mat-elevation-z3]="true">
+      <mat-card class="attributes-card" *ngIf="this.role === 'Admin'" [class.mat-elevation-z0]="true">
         <mat-card-content>
           <h2>Automatic Item Prefix:</h2>
           <br>
@@ -117,76 +158,32 @@
         </mat-card-content>
       </mat-card>
       <br>
-      <mat-card class="attributes-card" *ngIf="this.role === 'Admin'" [class.mat-elevation-z3]="true">
+      <mat-card class="attributes-card" *ngIf="this.role === 'Admin'" [class.mat-elevation-z0]="true">
         <mat-card-content>
           <h2>Automatic Item Suffix:</h2>
           <br>
-          <mat-card class="suffix-card" [class.mat-elevation-z3]="true" *ngFor="let suffix of attributeSuffixesForDisplay">
-            <mat-card-content>
-
-              <div></div> 
-              <h4>Text before attribute:</h4>
-              <div *ngIf="suffix.editingBefore">
-                <mat-form-field class="character-input">
-                  <mat-label>Text (including spaces):</mat-label>
-                  <div class="quoted-text">
-                      <input class="quoted-text-input" matInput #before
-                      type="text"
-                      [(ngModel)]="suffix.beforeText"
-                      (focusout)="setSuffixField(suffix.positionID, 'before', before.value)">
-                  </div>
-                </mat-form-field>
-                <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
-              </div>
-              <div *ngIf="!suffix.editingBefore">
-                <h3>
-                  {{"\"" + suffix.beforeText + "\""}}
-                  <button mat-icon-button class="editButton" (click)="editSuffixField(suffix.positionID, 'before')"><mat-icon>edit</mat-icon></button>
-                </h3>
-              </div>
-
-              <div class="small-spacer"></div>
-              <h3 class="suffix-attribute-title">Attribute:</h3>
-              <mat-form-field appearance="fill" class="attribute-select-form">
-                <mat-label class="attribute-select-label">Choose an attribute</mat-label>
-                <mat-select class="attribute-select" [(value)]="suffix.name">
-                  <mat-option *ngFor="let inheritAttr of inheritedAttributes" [value]="inheritAttr.name" (click)="setAttributeSuffix(inheritAttr.ID, suffix.positionID)">{{inheritAttr.name}}</mat-option>
-                  <mat-option *ngFor="let attr of localAttributes" [value]="attr.name" (click)="setAttributeSuffix(attr.name, suffix.positionID, true)">{{attr.name}}</mat-option>
-                  <mat-option value="Parent Category's Suffix" (click)="setAttributeSuffix('parent', suffix.positionID)">Parent Category's Suffix</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <div class="small-spacer"></div>
-              <div class="small-spacer"></div>
-
-              <h4>Text after attribute:</h4>
-              <div *ngIf="suffix.editingAfter">
-                <mat-form-field class="character-input">
-                  <mat-label>Text (including spaces):</mat-label>
-                  <input matInput #after
-                  type="text"
-                  [(ngModel)]="suffix.afterText"
-                  (focusout)="setSuffixField(suffix.positionID, 'after', after.value)">
-                </mat-form-field>
-                <button mat-icon-button class="fake-confirm-button"><mat-icon>done</mat-icon></button>
-              </div>
-              <div *ngIf="!suffix.editingAfter">
-                <h3>
-                  {{"\"" + suffix.afterText + "\""}}
-                  <button mat-icon-button class="editButton" (click)="editSuffixField(suffix.positionID, 'after')"><mat-icon>edit</mat-icon></button>
-                </h3>
-                <br>
-              </div>
-              <br>
-              
-              <div class="suffix-control-buttons">
-                <div>
-                  <button mat-raised-button color="accent" (click)="bumpSuffixUp(suffix.positionID)"><mat-icon>keyboard_arrow_up</mat-icon></button>
-                  <button mat-raised-button color="accent" class="down-button" (click)="bumpSuffixDown(suffix.positionID)"><mat-icon>keyboard_arrow_down</mat-icon></button>
+          <!-- Drag and drop attributes -->
+          <div cdkDropList (cdkDropListDropped)="drop($event)">
+            <div *ngFor="let suffix of hierAsCategory.suffixFormat; index as i" class="suffix-card" [class.mat-elevation-z2]="true" cdkDrag>
+                <div *ngIf="suffix.type === 'attribute layer'" class="suffix-text">
+                  {{ suffix.data }} <small class="light-text"> (attribute layer) </small>
                 </div>
-                <button mat-icon-button (click)="deleteAttributeSuffix(suffix.positionID)"><mat-icon>delete</mat-icon></button>
-              </div>
-            </mat-card-content>
-          </mat-card>
+                <div *ngIf="suffix.type === 'attribute'" class="suffix-text">
+                  {{ suffix.data }} <small class="light-text"> (attribute) </small>
+                </div>
+                <div *ngIf="suffix.type === 'space'" class="suffix-text">
+                  <small class="light-text"> (space) </small>
+                </div>
+                <div *ngIf="suffix.type === 'parent'" class="suffix-text">
+                  Parent Suffix
+                </div>
+                <div *ngIf="suffix.type === 'text'" class="suffix-text">
+                  {{ suffix.data }} <small class="light-text"> (text) </small>
+                </div>
+
+                <button mat-icon-button (click)="deleteAttributeSuffix(i)"><mat-icon>delete</mat-icon></button>
+            </div>
+          </div>
           <button mat-raised-button color="accent" class="addButton" (click)="addAttributeSuffix()"><mat-icon class="plus-icon">add</mat-icon>Add Attribute Suffix</button>
         </mat-card-content>
       </mat-card>
@@ -194,15 +191,23 @@
 
     <br>
     <h2>Inside of: <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editHierarchy()"><mat-icon>edit</mat-icon></button></h2>
-    <app-ancestor-view [parentsToDisplay]="parentsToDisplay"></app-ancestor-view>
+    <app-ancestor-view [parentsOf]="hierarchyItem"></app-ancestor-view>
+    <br>
+    <br>
     <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete</button>
-  
-  <!-- <button class="fab" *ngIf="this.role === 'Admin' && getDirty()" @open-save-fab mat-fab color="primary" (click)="saveItem()">
-    <mat-icon>save</mat-icon>
-    <mat-progress-spinner *ngIf="isSaving" class="save-spinner" mode="indeterminate"></mat-progress-spinner>
-  </button> -->
+  </div>  
 </div>
 
 <button mat-mini-fab class="extended-fab-button" *ngIf="this.role === 'Admin' && this.getDirty()" @open-undo-fab matTooltip="Undo" color="accent" (click)="undoChanges()">
   <mat-icon>edit</mat-icon><span class="extended-fab-button__text">Revert</span>
 </button>
+
+<div *ngIf="!loaded" style="padding: 18px;">
+  <h3 *ngIf="isCategory">Loading category...</h3>
+  <h3 *ngIf="!isCategory">Loading location...</h3>
+</div>
+
+<div *ngIf="loaded && !hierarchyItem" style="padding: 18px;">
+  <h3 *ngIf="isCategory">This category does not exist or was removed.</h3>
+  <h3 *ngIf="!isCategory">This location does not exist or was removed.</h3>
+</div>

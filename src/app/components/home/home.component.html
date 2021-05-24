@@ -30,7 +30,7 @@
   <!-- Attribute filters -->
   <mat-chip-list #chipList>
     <mat-chip *ngFor="let attr of filteredAttributes" color="primary" [selected]="true"
-      [removable]="true" (removed)="removeAttributeFromFilter(attr.ID)">
+      [removable]="true" (removed)="removeAttributeFromFilter(attr.name)">
       {{attr.name + ": " + attr.value}}
       <mat-icon matChipRemove>cancel</mat-icon>
     </mat-chip>
@@ -55,11 +55,13 @@
     <div class="header">{{typeForSelectionButtons === 'category' ? 'Categories' : 'Locations'}}</div>
     <mat-grid-list class="row" [cols]="columns" rowHeight="4:1.2">
       <mat-grid-tile class="holder" *ngFor="let hierarchyItem of hierarchyItems">
-        <mat-card class="hierarchyCard" (click)="goToHierarchy(hierarchyItem)" [class.mat-elevation-z2]="true">
+        <mat-card class="hierarchyCard {{typeForSelectionButtons === 'category' ? 'category-card' : 'location-card'}}" (click)="goToHierarchy(hierarchyItem)" [class.mat-elevation-z2]="true">
           <div class="hierarchycard-content">
             <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
             <div class='hierarchy-text'>
-              <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><p>{{hierarchyItem.name}}</p></div></div>
+              <div class="hierarchy-title-text-positioner">
+                <div class="hierarchy-title-text"><p>{{hierarchyItem.name}}</p></div>
+              </div>
               <div class="hierarchy-desc-text"><p>{{hierarchyItem.desc ? hierarchyItem.desc : ' '}}</p></div>
             </div>
           </div>
@@ -93,13 +95,13 @@
   <!-- add homescreen fab for admins here -->
   <smd-fab-speed-dial *ngIf="this.role === 'Admin'" class="fab" [direction]="direction" [animationMode]="animation">
     <smd-fab-trigger [spin]="spin">
-      <button mat-fab matTooltip="Add to this hierarchy level" color="accent" (click)="toggleIco()"><mat-icon>{{ico}}</mat-icon></button>
+      <button mat-fab matTooltip="Add to this hierarchy level" class="structure-color-dark" (click)="toggleIco()"><mat-icon>{{ico}}</mat-icon></button>
     </smd-fab-trigger>
     <smd-fab-actions>
-      <button mat-mini-fab class="extended-fab-button" [@button-extention-item]="miniFabState" matTooltip="Add item" color="accent" (click)="addItem()">
+      <button mat-mini-fab class="extended-fab-button structure-color-dark" [@button-extention-item]="miniFabState" matTooltip="Add item" (click)="addItem()">
         <span class="extended-fab-button__text">Item</span>
       </button>
-      <button mat-mini-fab class="extended-fab-button" [@button-extention-hierarchy]="miniFabState" matTooltip="Add item" color="accent" (click)="addHierarchy()">
+      <button mat-mini-fab class="extended-fab-button structure-color-dark" [@button-extention-hierarchy]="miniFabState" matTooltip="Add item" (click)="addHierarchy()">
         <span class="extended-fab-button__text">{{typeForSelectionButtons === 'category' ? 'Category' : 'Location'}}</span>
       </button>
       <!-- <button mat-mini-fab matTooltip="Add hierarchy level" color="primary" (click)="addHierarchy()"><mat-icon>account_tree</mat-icon></button> -->

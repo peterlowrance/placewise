@@ -5,7 +5,7 @@ import {HierarchyItem} from '../../models/HierarchyItem';
 import {FormControl} from '@angular/forms';
 import {SearchService} from '../../services/search.service';
 import {NavService} from '../../services/nav.service';
-import {Subscription} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 import {AuthService} from 'src/app/services/auth.service';
 import * as Fuse from 'fuse.js';
 import {AdminService} from 'src/app/services/admin.service';
@@ -15,6 +15,10 @@ import { Category } from 'src/app/models/Category';
 import { switchMap } from 'rxjs/operators';
 import { url } from 'inspector';
 import { Identifiers } from '@angular/compiler';
+import { CacheService } from 'src/app/services/cache.service';
+import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
+import { Attribute } from 'src/app/models/Attribute';
+import { AttributeValue } from 'src/app/models/Attribute';
 
 /**
  *
@@ -22,12 +26,6 @@ import { Identifiers } from '@angular/compiler';
  * displayDescendents once and then loadLevel (which calls displayDescendents)
  *
  */
-
- interface Attribute {
-   ID: string;
-   name: string;
-   value?: string;
- }
 
 @Component({
   selector: 'app-home',
@@ -55,6 +53,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   originalHierarchyItems: HierarchyItem[];
   items: Item[];
   originalItems: Item[];
+  obsItems: {[itemId: string] : Observable<Item>} = {}; // For cache
+  subItems: {[itemId: string] : Subscription} = {}; // For cache
 
   columns: number;
   previousSearch = '';
@@ -65,8 +65,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   filterableAttributes: Attribute[] // For selecting which ones to filter by
   attributeValues: string[];
   originalAttributeValues: string[]; // For resetting after searching
-  currentAttribute: Attribute; // For the current attribute that that values are being searched for
-  filteredAttributes: Attribute[]; // Attributes that are being actively filtered.
+  currentAttribute: AttributeValue; // For the current attribute that that values are being searched for
+  filteredAttributes: AttributeValue[]; // Attributes that are being actively filtered.
   typeForSelectionButtons: string;
 
   parentSub: Subscription;
@@ -109,6 +109,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private authService: AuthService,
     private adminService: AdminService,
+    private cacheService: CacheService,
     public dialog: MatDialog) {
     // subscribe to nav state
     this.returnSub = this.navService.getReturnState().subscribe(
@@ -122,9 +123,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     // change if parent is different
     this.parentSub = this.navService.getParent().subscribe(val => {
         if(val){
-          // this.displayDescendants(val, this.selectedSearch === 'Categories');
-          // this.loadAttributes();
-          // console.log("Loaded from parentSub:" + val.name);
           this.root = val;
           this.typeForSelectionButtons = this.root.type;
           this.loadLevel();
@@ -136,6 +134,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.parentSub.unsubscribe();
     this.returnSub.unsubscribe();
+    Object.values(this.subItems).forEach(sub => sub.unsubscribe());
   }
 
   ngOnInit() {
@@ -143,6 +142,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     const urlID = this.route.snapshot.paramMap.get('id');
     const selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'category' : 'location';
     this.typeForSelectionButtons = selectedSearch;
+
+    // Load root from cache if possible
+    
+    let cache = this.cacheService.get(urlID, selectedSearch);
+    if(cache){
+      window.scrollTo(0,0); 
+      this.root = cache as HierarchyItem;
+    }
+
     // Load the current level
     this.updateSubscribedParent(urlID, selectedSearch);
 
@@ -194,9 +202,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.filterResults();
   }
 
-  removeAttributeFromFilter(ID: string) {
+  removeAttributeFromFilter(name: string) {
     for(let attr in this.filteredAttributes) {
-      if(this.filteredAttributes[attr].ID === ID){
+      if(this.filteredAttributes[attr].name === name){
         this.filteredAttributes.splice(parseInt(attr), 1);
 
         if(this.filteredAttributes.length === 0){
@@ -222,9 +230,9 @@ export class HomeComponent implements OnInit, OnDestroy {
           for(let parent in allParents){
             for(let attr in allParents[parent].attributes){
               if(attributes){
-                attributes.push({ID: attr, name: allParents[parent].attributes[attr]['name']});
+                attributes.push({name: allParents[parent].attributes[attr]['name']});
               } else {
-                attributes = [{ID: attr, name: allParents[parent].attributes[attr]['name']}];
+                attributes = [{name: allParents[parent].attributes[attr]['name']}];
               }
             }
           }
@@ -235,7 +243,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  gatherAttributeValues(attribute: Attribute){
+  gatherAttributeValues(attribute: AttributeValue){
 
     this.percentLoadedAttributes = 2;
     this.isLoadingAttributes = true;
@@ -251,7 +259,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           this.percentLoadedAttributes += slice;
           if(items[item].attributes)
           for(let attr in items[item].attributes){
-            if(items[item].attributes[attr].ID === attribute.ID){
+            if(items[item].attributes[attr].name === attribute.name){
 
                 let newAttrValueCapped = items[item].attributes[attr].value.toUpperCase();
                 if(newAttrValueCapped){
@@ -300,10 +308,15 @@ export class HomeComponent implements OnInit, OnDestroy {
   // This is called every time the carrently viewed root is updated
   displayItems(root: HierarchyItem) {
     this.items = [];
+    if(this.subItems){
+      Object.values(this.subItems).forEach(sub => sub.unsubscribe());
+    }
+
     if (root.items) {
       // For each itemID descending from root, get the item from the data and added to the global items array
-      for (const itemID of root.items) {
-        this.searchService.getItem(itemID).subscribe(returnedItem => {
+      for (let itemID of root.items) {
+        this.obsItems[itemID] = this.searchService.getItem(itemID);
+        this.subItems[itemID] = this.obsItems[itemID].subscribe(returnedItem => {
           if (returnedItem !== null && typeof returnedItem !== 'undefined') {
             let itemFound = false;
             
@@ -358,6 +371,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   goToItem(item: Item) {
+    this.cacheService.store(item);
+    this.cacheService.store(this.root); // Currently this only helps if you go back to this page, but that still happens often
     this.router.navigate(['/item/', item.ID]);
   }
 
@@ -405,9 +420,22 @@ export class HomeComponent implements OnInit, OnDestroy {
     } else { // add to locations
       location = this.root.ID;
     }
-    this.adminService.createItemAtLocation(name, '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
-      this.router.navigate(['/itemBuilder/' + id], { queryParams: { step: 0 } });
+
+    const dialogRef = this.dialog.open(ItemBuilderModalComponent, {
+      width: '480px',
+      data: {
+        hierarchyObj: this.root
+      }
     });
+
+    /*this.adminService.createItemAtLocation(name, '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
+      if(this.root.type === 'category'){
+        this.router.navigate(['/itemBuilder/' + id], { queryParams: { step: 0, returnTo: 'search/categories/' + this.root.ID + ':' + this.root.name} });
+      }
+      else {
+        this.router.navigate(['/itemBuilder/' + id], { queryParams: { step: 0, returnTo: 'search/locations/' + this.root.ID + ':' + this.root.name} });
+      }
+    });*/
   }
 
   /** Adds a hierarchy item to the current depth */
@@ -425,7 +453,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         children: [],
         items: [],
         suffixStructure: [{afterText: '', attributeID: 'parent', beforeText: ''}],
-        prefix: 'NEW CATEGORY'
       }
 
       this.adminService.addCategory(categoryData, this.root.ID).subscribe(id => {
@@ -459,7 +486,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             for(let requiredAttr in this.filteredAttributes){
               let pass = false;
               for(let attr in items[item].attributes){
-                if(items[item].attributes[attr].ID === this.filteredAttributes[requiredAttr].ID && items[item].attributes[attr].value.toUpperCase() === this.filteredAttributes[requiredAttr].value.toUpperCase()){
+                if(items[item].attributes[attr].name === this.filteredAttributes[requiredAttr].name && items[item].attributes[attr].value.toUpperCase() === this.filteredAttributes[requiredAttr].value.toUpperCase()){
                   pass = true;
                   break;            // TODO: ORDER WRONG
                 }

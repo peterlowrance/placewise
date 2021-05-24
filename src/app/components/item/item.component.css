@@ -1,19 +1,106 @@
 .responsive-item-image {
-  width: 100%;
-  max-width: 100%;
-  max-height: 100%;
+  width: 100vw;
+  max-width: 720px;
+  max-height: 75vw;
   height: auto;
-  object-fit: contain;
+  object-fit: cover;
+  margin: 0 auto;
+}
+
+h3 {
+  margin: 24px 0;
 }
 
 h2 {
     margin: 0 0;
-    padding-top: 24px;
+}
+
+h1 {
+  margin: 0;
+}
+
+.title {
+  padding-top: 6px;
 }
 
 
 /*Photo Container CSS*/
 /*Ref: https://stackoverflow.com/questions/54508374/how-can-i-position-an-icon-over-an-image*/
+
+.location-data {
+  margin-bottom: 12px;
+}
+
+.location-name {
+  margin: auto 24px auto 18px;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.location-header {
+  margin-left: -6px;
+}
+
+.clickable-image {
+  height: 60px;
+  width: 60px;
+  max-width: 60px;
+  max-height: 60px;
+  border-radius: 60px;
+  cursor: pointer;
+  /*box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 20%), 0px 2px 2px 0px rgb(0 0 0 / 14%), 0px 1px 5px 0px rgb(0 0 0 / 12%);*/
+}
+
+.location-img {
+  margin: 6px;
+  border-radius: 15px;
+}
+
+.attribute-break {
+  margin-top: 18px;
+  height: 1px;
+  background-color: lightgrey;
+  width: 100%;
+}
+
+.attribute-data {
+  margin-bottom: 18px;
+}
+
+.attribute-name {
+  display: inline-block;
+  width: 30vw;
+  max-width: 180px;
+  padding-right: 4px;
+  font-weight: 700;
+}
+
+.attribute-value {
+  display: inline-block;
+  width: 60vw;
+  max-width: 360px;
+}
+
+.attribute-layer-name{
+  display: inline-block;
+  width: 30vw;
+  max-width: 180px;
+  padding-right: 4px;
+}
+
+.layer-attributes{
+  margin-top: 12px;
+}
+
+.item-description {
+  margin-bottom: 12px;
+}
+
+.report-spinner {
+  display: inline-block;
+}
+
+
 
 .container-img{
     display: block;
@@ -45,25 +132,34 @@ h2 {
     z-index: 1;
 }
 
-.allContent {
-  padding: 8px 3vw 32px 3vw;
-  max-width: 48rem;
+.all-content {
+  max-width: 600px;
   position: center;
   margin: auto;
 }
 
+.item-content {
+  margin: 8px 16px 32px 16px;
+}
+
+.desktop-content {
+  display: none;
+}
+
+.upper-half {
+  margin-bottom: 48px;
+}
+
 .small-spacer {
-  height: 14px;
+  height: 30px;
 }
 
 .reportButtonHolder {
   margin-left: 0.15rem;
 }
 
-.reportButton {
-  width: calc(3.5rem + 8vw);
-  max-width: 120px;
-  padding: 0 0 0 3px;
+.report-button {
+  margin-top: 12px;
 }
 
 .moreInfoButtonHolder {
@@ -114,7 +210,7 @@ p {
 
 .editButton {
   float: end;
-  top: -0.3rem;
+  top: -0.25rem;
   left: -0.3rem;
 }
 
@@ -203,9 +299,10 @@ p {
 } */
 
 .camera-button {
-  position: absolute;
-  top: 2%;
-  right: 2%;
+  position: relative;
+  top: -28px;
+  left: calc(100% - 48px);
+  margin-bottom: -40px;
 }
 
 .right-button {
@@ -227,31 +324,44 @@ p {
 }
 
 .extended-fab-button {
-  padding: 0 0.8rem;
   border-radius: 10rem;
-  width: 132px;
   position: fixed;
-  top: 8px;
-  left: 10px;
   z-index: 10;
 }
 
+.undo-fab {
+  top: 8px;
+  left: 10px;
+  width: 132px;
+  padding: 0 0.8rem;
+}
+
+.return-fab {
+  width: auto;
+  right: 0;
+  left: 0;
+  margin: 0 auto;
+  max-width: 95vw;
+  padding: 0 30px;
+  bottom: calc(12px + 3vh);
+}
+
 .extended-fab-button__text {
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: .1em;
   font-size: 14px;
   text-transform: uppercase;
-  text-overflow: clip;
-  padding-left: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  padding: 0 10px;
+  width: 90%;
+  max-width: 70vw;
 }
 
 .tracking-toggle {
   position: absolute;
-}
-
-.tracking-numbers-toggle {
-  position: relative;
-  left: 40px;
 }
 
 .box-button {
@@ -269,22 +379,6 @@ p {
 .number-display {
   pointer-events: none;
   margin-right: 8px;
-}
-
-.approx-button {
-  margin-right: 8px;
-  color: white;
-  margin-bottom: 8px;
-}
-
-.approx-good {
-  background-color: rgb(19, 143, 71);
-}
-.approx-low {
-  background-color: #f44336;
-}
-.approx-empty {
-  background-color: rgb(63, 63, 63);
 }
 
 .amount-reported {
@@ -310,7 +404,7 @@ p {
 
 .tracking-input-approx {
   padding-top: 2px;
-  padding-bottom: 8px;
+  padding-bottom: 12px;
 }
 
 .tracking-switch {
@@ -334,7 +428,7 @@ p {
 .category-name {
   font-weight: 500;
   font-size: 18px;
-  padding-left: 12px;
+  padding-left: 24px;
 }
 
 .category-container {
@@ -357,11 +451,66 @@ p {
   margin-bottom: 8px;
 }
 
+/* Desktop verion */
+@media screen and (min-width: 720px){
+
+  .attribute-header {
+    margin-top: 26px;
+  }
+
+  .title {
+    padding: 30px 30px 0 30px;
+  }
+
+  .item-content-block {
+    padding: 30px;
+    max-width: 50%;
+    width: calc(50vw - 60px);
+  }
+
+  .mobile-content {
+    display: none;
+  }
+
+  .desktop-content {
+    display: block;
+    max-width: 1320px;
+    position: center;
+    margin: auto;
+  }
+
+  .item-content {
+    display: flex;
+    margin: 0;
+  }
+
+  .responsive-item-image {
+    display: none;
+  }
+
+  .desktop-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+    margin: 0 auto;
+  }
+
+  .camera-button {
+    left: calc(100% - 64px);
+    top: -22px;
+  }
+}
 
 @media screen and (min-width: 600px){
-  .extended-fab-button {
+  .undo-button {
     top: 12px;
     left: 12px;
   }
   
+}
+
+.edit-item {
+  font-size: 1rem;
+  padding: 0 18px;
 }

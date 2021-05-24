@@ -1,6 +1,6 @@
 import {HierarchyItem} from './HierarchyItem';
 
-export interface Location extends HierarchyItem {
+export interface HierarchyLocation extends HierarchyItem {
 
     //defaultUsersForReports?: string[];    Maybe in the future
     

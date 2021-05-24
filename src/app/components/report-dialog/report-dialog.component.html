@@ -1,16 +1,126 @@
 <div mat-dialog-content>
-    <h1 mat-dialog-title>Enter Report Details</h1>
-    <h4>Report to:</h4>
-    <app-user-select class="user-select" [selectedUsers]="data.selectedUsers" [allUsers]="data.allUsers"></app-user-select>
-    <br>
-    <br>
 
-    <mat-form-field class="report-text-full-width">
-        <textarea matInput placeholder="Report Description" [(ngModel)]="data.desc"></textarea>
-    </mat-form-field>
-    <div mat-dialog-actions>
-        <button mat-raised-button (click)="onCancelClick()">Cancel</button>
-        <span class="btn-spacer"></span>
-        <button mat-raised-button color="primary" (click)="onSendClick()">Send</button>
+    <!-- Select which type of report -->
+    <div *ngIf="step === 'start'">
+        <h1 mat-dialog-title>What kind of Report?</h1>
+        <!--
+        <mat-card style="max-width: 330px; margin: auto;" [class.mat-elevation-z6]="true">
+            <h3> Low and need to order: </h3>
+            <div class="low-report">
+                <mat-form-field>
+                    <mat-label> Amount </mat-label>
+                    <input matInput type="number" (keyup)="updateReportNumber($event)"/>
+                    <mat-hint>Enter a number to report</mat-hint>
+                </mat-form-field>
+                <button mat-raised-button class="big-button action-color-dark low-send-button" [disabled]="!lowAmount || lowAmount < 1">
+                    <mat-spinner *ngIf="loading.custom" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
+                    <div *ngIf="!loading.custom"> Send </div>
+                </button>
+            </div>
+        </mat-card>
+        -->
+        <button mat-raised-button class="big-button action-color report-button" [disabled]="loadingAdmins || reportLowDisabled || !canReport" (click)="setupLowReport()">
+            <span *ngIf="!loading.low"> 
+                Low & Order More
+            </span>
+            <mat-spinner *ngIf="loading.low" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
+        </button>
+        <div *ngIf="reportLowDisabled && !reportEmptyDisabled" class="disabled-report-text">
+            This item has already been reported as low in the last 12 hours.
+        </div>
+        <!--
+        <button mat-raised-button class="big-button report-button empty-button" [disabled]="loadingAdmins || reportEmptyDisabled || !canReport" (click)="setupAutoReport('empty')">
+            <mat-icon *ngIf="!loading.empty"> report_problem </mat-icon>
+            <span *ngIf="!loading.empty"> 
+                Report Empty
+            </span>
+            <mat-spinner *ngIf="loading.empty" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
+        </button>
+        <div *ngIf="reportEmptyDisabled" class="disabled-report-text">
+            This item has already been reported as empty in the last 12 hours.
+        </div>-->
+        <br>
+        <br>
+        <button mat-raised-button class="big-button action-color-light report-button" (click)="onNextClick()" [disabled]="!canReport">
+            <mat-spinner *ngIf="loading.custom" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
+            <div *ngIf="!loading.custom"> Custom... </div>
+        </button>
+        <div *ngIf="!canReport" class="disabled-report-text">
+            All locations have had 3 reports in the last 12h.
+        </div>
     </div>
+
+    <!-- Where to report to -->
+    <div *ngIf="step === 'where'">
+        <h1 mat-dialog-title>Which place are you reporting for?</h1>
+        <div *ngFor="let locationWithData of locationData">
+            <mat-card class="hierarchyCard" (click)="setLocation(locationWithData.location.ID)" *ngIf="locationWithData.canReport && !locationWithData.canNotAutoReport" [class.mat-elevation-z2]="true">
+                <div class="hierarchycard-content">
+                    <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + locationWithData.location.imageUrl + ')'}"></div>
+                    <div class='hierarchy-text'>
+                        <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><div>{{locationWithData.location.name}}</div></div></div>
+                        <div class="hierarchy-desc-text">{{locationWithData.location.desc ? locationWithData.location.desc : ' '}}</div>
+                    </div>
+                </div>
+            </mat-card>
+            <mat-card *ngIf="!locationWithData.canReport || locationWithData.canNotAutoReport" class="hierarchyCard disabled-card" [class.mat-elevation-z2]="true">
+                <div class="hierarchycard-content">
+                    <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + locationWithData.location.imageUrl + ')'}"></div>
+                    <div class='hierarchy-text'>
+                        <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><div>{{locationWithData.location.name}}</div></div></div>
+                        <div *ngIf="!locationWithData.canReport" class="hierarchy-desc-text disabled-location-text">Too many reports in 12h.</div>
+                        <div *ngIf="locationWithData.canReport" class="hierarchy-desc-text disabled-location-text">This has already been reported as {{type}}.</div>
+                    </div>
+                </div>
+            </mat-card>
+        </div>
+        <div mat-dialog-actions>
+            <button mat-raised-button class="big-button dialog-button" (click)="onCancelClick()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Who to report to -->
+    <div *ngIf="step === 'who'">
+        <h1 mat-dialog-title>Who will recieve this report?</h1>
+        <app-user-select class="user-select" [selectedUsers]="selectedAdmins" [allUsers]="admins"></app-user-select>
+        <div mat-dialog-actions class="report-button-wrapper">
+            <button mat-raised-button class="big-button dialog-button" (click)="onCancelClick()">Cancel</button>
+            <span class="btn-spacer"></span>
+            <button mat-raised-button class="big-button action-color dialog-button" (click)="onNextClick()">Next</button>
+        </div>
+    </div>
+
+    <!-- Add text, finish -->
+    <div *ngIf="step === 'text'">
+        <h1 mat-dialog-title>Enter Report Details</h1>
+    
+        <mat-form-field class="report-text-full-width">
+            <textarea matInput class="report-textarea" placeholder="Report Description" [(ngModel)]="description"></textarea>
+        </mat-form-field>
+    
+        <div mat-dialog-actions class="report-button-wrapper less-padding">
+            <button mat-raised-button class="big-button dialog-button" (click)="onCancelClick()">Cancel</button>
+            <span class="btn-spacer"></span>
+            <button mat-raised-button class="big-button action-color-dark dialog-button" (click)="onSendClick()">
+                Send
+            </button>
+        </div>
+    </div>
+
+    <!-- For low report -->
+    <div *ngIf="step === 'low'">
+        <h1 mat-dialog-title> Amount to be ordered: </h1>
+
+        <div class="low-report">
+            <mat-form-field>
+                <mat-label> Amount </mat-label>
+                <input matInput type="number" (keyup)="updateReportNumber($event)"/>
+            </mat-form-field>
+            <button mat-raised-button class="big-button action-color-dark low-send-button" (click)="sendLowReport()" [disabled]="!lowAmount || lowAmount < 0">
+                <mat-spinner *ngIf="loading.custom" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
+                <div *ngIf="!loading.custom"> Send </div>
+            </button>
+        </div>
+    </div>
+
 </div>

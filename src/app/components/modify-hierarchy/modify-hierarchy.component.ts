@@ -54,6 +54,7 @@ export class ModifyHierarchyComponent implements OnInit {
   }
 
   ngOnInit() {
+
     this.authService.getWorkspace().subscribe(
       val => this.workspace = val.name
     );

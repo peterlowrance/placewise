@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { HierarchyItem } from 'src/app/models/HierarchyItem';
 import { DetailedReportModalData } from 'src/app/models/DetailedReportModalData';
 import { Router } from '@angular/router';
@@ -16,6 +16,8 @@ export class ReportDetailViewComponent implements OnInit {
     public dialogRef: MatDialogRef<ReportDetailViewComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DetailedReportModalData
   ) { }
+
+  location: string;
 
   onSendClick(){
     //set invalid report

@@ -18,12 +18,16 @@ import {AdminService} from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
 import {ModifyHierarchyDialogComponent} from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 import {NavService} from 'src/app/services/nav.service';
-import {Subscription} from 'rxjs';
+import {Observable, Subscription} from 'rxjs';
 import {Location} from '@angular/common';
-import {MatSnackBar} from '@angular/material';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import { Category } from 'src/app/models/Category';
 import { trigger, style, transition, animate, keyframes} from '@angular/animations';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
+import { CacheService } from 'src/app/services/cache.service';
+import {HierarchyLocation} from 'src/app/models/Location';
+import { stringify } from '@angular/compiler/src/util';
+import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
 
 
 interface TreeNode {
@@ -35,8 +39,9 @@ interface TreeNode {
 
 interface AttributeCard {
   name: string;
-  ID: string;
   value?: string;
+  values?: string[];
+  layerNames?: string[];
   category: string;
   focused: boolean;
 }
@@ -49,6 +54,21 @@ interface TrackingCard {
   amount: any;
   cap?: number;
   isBeingEdited?: boolean;
+}
+
+interface TrackingData {
+  type: string;
+  isNumber: boolean;
+  amount: any;
+  cap?: number;
+  isBeingEdited?: boolean;
+}
+
+interface ItemLocation {
+  location: HierarchyLocation;
+  ancestors?: HierarchyItem[];
+  tracking: TrackingData;
+  isPanelExtended?: Boolean;
 }
 
 @Component({
@@ -78,6 +98,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private imageService: ImageService,
     private navService: NavService,
+    private cacheService: CacheService,
     private router: Router,
     private snack: MatSnackBar
   ) {
@@ -85,15 +106,23 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
   //edit fields for name and description
-  @ViewChild('name', {static: false}) nameField: ElementRef;
-  @ViewChild('desc', {static: false}) descField: ElementRef;
-  @ViewChild('tags', {static: false}) tagsField: ElementRef;
+  @ViewChild('name') nameField: ElementRef;
+  @ViewChild('desc') descField: ElementRef;
+  @ViewChild('tags') tagsField: ElementRef;
 
-  id: string; // item id
-  item: Item; // item returned by id
-  previousItem: Item; // records short term edits for saving
-  originalItem: Item; // how the item was when we started, before edits were made
-  attributeSuffix: string;
+  loaded: boolean = false;  // To tell if the item doesn't exist or just hasn't loaded
+  id: string;  // item id
+  item: Item;  // item returned by id
+  previousItem: Item;  // records short term edits for saving
+  originalItem: Item;  // how the item was when we started, before edits were made
+  attributeSuffix: string;  // Current suffix text so then we don't calculate it every time
+
+  // Subscriptions to destroy after leaving
+  itemSub: Subscription;
+  categorySub: Subscription;
+  locationsSub: Subscription[];
+  deleteSub: Subscription; // delete subscription
+  categoryAncestorSub: Subscription;
 
   loading = true;  // whether the page is actively loading
   report: Report = {
@@ -105,7 +134,8 @@ export class ItemComponent implements OnInit, OnDestroy {
     },
     timestamp: 0,
     reporter: '',
-    reportedTo: []
+    reportedTo: [],
+    location: ''
   }; // user report
   errorDesc: ItemReportModalData = {valid: false, desc: '', selectedUsers: [], allUsers: []}; // user-reported error description
   expanded = false;  // is the more info panel expanded
@@ -115,9 +145,9 @@ export class ItemComponent implements OnInit, OnDestroy {
   // category of the item
   category: Category;
   categoryAncestors: Category[];
-  locationsAndAncestors: HierarchyItem[][];
   attributesForCard: AttributeCard[];
-  trackingCards: TrackingCard[] = [];
+
+  itemLocations: ItemLocation[] = [];
 
   role: string; // user role for editing
   missingData: string; // string of data missing, null if nothing is missing
@@ -129,166 +159,205 @@ export class ItemComponent implements OnInit, OnDestroy {
     tags: boolean;
   } = {name: false, desc: false, tags: false};
 
-  deleteSub: Subscription; // delete subscription
-
   getDirty(){ return this.navService.getDirty() }
   setDirty(value: boolean){ this.navService.setDirty(value); }
 
 
   ngOnInit() {
+
     // retrieve id
     this.id = this.route.snapshot.paramMap.get('id');
 
-    // get the item from the id
-    this.searchService.getItem(this.id).subscribe(item => {
+    let cache = this.cacheService.get(this.id, "item");
+
+    //this.route.queryParamMap.subscribe(params => {
+      // Retrieve data if this item should have a quick route back to where it came
+    //});
+
+    // If the item is in cache, we can load everything at once
+    if(cache){
+      window.scrollTo(0,0); 
+      this.item = cache as Item;
+      this.categorySub = this.setupCategorySubscription(this.item);
+      //this.locationsSub = this.searchService.getAncestorsOf(this.item).subscribe(locations => {this.locationsAndAncestors = locations;});
+    }
+
+    // Start live subscription
+    this.itemSub = this.searchService.getItem(this.id).subscribe(item => {
+      this.loaded = true;
       if (!item) {
         return;
       }
-      // get the item ref
       this.item = item;
+
+      // Setup change/revert tracking info
       if(!this.originalItem) { // We don't want to overwrite if there's already old data
-        this.originalItem = JSON.parse(JSON.stringify(item)); // deep copy
-        this.previousItem = JSON.parse(JSON.stringify(item)); // another for recording short term changes
+        this.originalItem = JSON.parse(JSON.stringify(item));
+        this.previousItem = JSON.parse(JSON.stringify(item));
       }
 
-      // Load image for item TODO: Not any more
-
-      // get the locations information
-      this.searchService.getAncestorsOf(item).subscribe(locations => {
-        this.locationsAndAncestors = locations;
-      });
-
-      // Build tracking information
-      for(let location in item.locations){
-        let found = false;
-        for(let tracked in item.tracking){
-          if(item.tracking[tracked].locationID === item.locations[location]){
-            found = true;
-            let localSub = this.searchService.getLocation(item.locations[location]).subscribe(loc => {
-              if(loc){
-                let cardFound = false;
-                let isNumber = item.tracking[tracked].type.startsWith('number');
-                let cap = isNumber ? parseInt(item.tracking[tracked].type.substring(7)) : 0; // If there's a cap, it will be formatted like "number,[number]" so start at 7 to read it
-
-                for(let card in this.trackingCards){
-                  if(this.trackingCards[card].locationID === item.locations[location]){
-                    cardFound = true;
-                    this.trackingCards[card] = {name: loc.name, locationID: item.locations[location], type: item.tracking[tracked].type, isNumber, amount: item.tracking[tracked].amount, cap};
-                    break;
-                  }
-                }
-
-                if(!cardFound){
-                  this.trackingCards.push({ name: loc.name, locationID: item.locations[location], type: item.tracking[tracked].type, isNumber, amount: item.tracking[tracked].amount, cap});
-                }
-                localSub.unsubscribe();
-              }
-            })
-            break;
-          }
-        }
-        if(!found){
-          let foundEmptyCard = false;
-          for(let card in this.trackingCards){ // This is so then we aren't re-adding cards that have the tracking turned off
-            if(this.trackingCards[card].locationID === item.locations[location]){
-              foundEmptyCard = true;
-              break;
-            }
-          }
-          if(!foundEmptyCard){
-            let localSub = this.searchService.getLocation(item.locations[location]).subscribe(loc => {
-              if(loc){
-                this.trackingCards.push({ name: loc.name, locationID: item.locations[location], type: 'approx', isNumber: false, amount: 'Good'});
-                localSub.unsubscribe();
-              }
-            })
-          }
-        }
+      //if(locationSub)
+      // Go through each location and build a tracker for each
+      this.locationsSub = this.setupLocationsSubscriptions(item);
+      
+      // If there was cache, remove it
+      if(cache){
+        cache = null;
       }
 
-      // get the category information
-      this.searchService.getCategory(item.category).subscribe(category => {
-        this.category = category;
-        this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
-          if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
-            this.categoryAncestors = categoryAncestors[0];
-            this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAncestors);
-
-            let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
-            if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
-              this.attributesForCard = rebuiltCards;
-            }
-            else {
-              for(let newCard in rebuiltCards){ // This is to attempt to only save over the ones modified. Otherwise, users are often kicked out of edit fields
-                let found = false;
-                for(let originalCard in this.attributesForCard){
-                  if(this.attributesForCard[originalCard].ID === rebuiltCards[newCard].ID){
-                    found = true;
-                    if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
-                      this.attributesForCard[originalCard] = rebuiltCards[newCard]
-                    }
-                    break;
-                  }
-                }
-                if(!found){
-                  this.attributesForCard = rebuiltCards; // Attributes didn't align, so jsut reset
-                  break;
-                }
-              }
-            }
-          }
-          else {
-            this.attributesForCard = this.loadAttributesForCards([category], item)
-          }
-          // Display missing data
-          this.missingData = this.formatMissingDataString(item);
-        })
-      });
+      // Otherwise, this has not been fully loaded yet
+      else {
+        // Load category
+        if(this.categorySub) this.categorySub.unsubscribe();
+        this.categorySub = this.setupCategorySubscription(item);
+        
+        // Load locations
+        /*
+        if(this.locationsSub) this.locationsSub.unsubscribe();
+        this.locationsSub = 
+        */
+      }
 
     });
 
     // get user role
     this.role = this.authService.role;
 
-    // set up admin change forms
-    // this.nameForm = this.formBuilder.group({name: this.nameControl})
-
-    // set up link to delete
-    // this.deleteSub = this.navService.getDeleteMessage().subscribe(val => this.requestDelete(val));
   }
 
-  ngOnDestroy() {
-    //this.deleteSub.unsubscribe();
-  }
-
-  formatMissingDataString(item: Item): string {
-    let builtString = "";
-    if(item.category === "root"){
-      builtString += "No category";
+  linkTo(objID: string, type: string){
+    if(type === "category"){
+      this.router.navigate(['/search/categories/' + objID]);
     }
-    if(item.locations.length == 0 || (item.locations.length == 1 && item.locations[0] === "root")){
-      if(builtString === ""){
-        builtString += "No locations"
-      } else {
-        builtString += " or locations"
+    else if(type === "location") {
+      this.router.navigate(['/search/locations/' + objID]);
+    }
+  }
+
+  
+  private setupCategorySubscription(item: Item): Subscription { // I could also take in Obs<Cat> if that helps in the future
+    // Return it for unsubscribing
+    return this.searchService.getCategory(item.category).subscribe(category => {
+      this.category = category;
+
+      if(this.categoryAncestorSub){
+        this.categoryAncestorSub.unsubscribe();
       }
-    }
-    if(this.attributesForCard){
-      for(let card in this.attributesForCard){
-        if(!this.attributesForCard[card].value){
-          if(builtString ===""){
-            builtString += "Missing attributes";
-          } else {
-            builtString += ", missing attributes"
+
+      // Load category ancestors for attributes
+      this.categoryAncestorSub = this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
+
+        // Make sure it exists, and also make sure it's not just an empty array
+        if(categoryAncestors[0]){
+          // Update component data
+          this.categoryAncestors = categoryAncestors[0];
+          this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(item, this.categoryAncestors);
+          
+          // Load item attributes into card data
+          let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
+
+          // If we'd never had them loaded or the amount of cards/attributes have changed, update them
+          if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
+            this.attributesForCard = rebuiltCards;
           }
+
+          // Otherwise, update the neccesary information but keep the structure
+          // This is so that when users enter data, they don't get kicked out of text fields
+          // since the UI would be completely replacing them.
+          else {
+            // Go through the cards and update the info
+            for(let newCard in rebuiltCards){
+              let found = false;
+              for(let originalCard in this.attributesForCard){
+                if(this.attributesForCard[originalCard].name === rebuiltCards[newCard].name){
+                  found = true;
+                  // Deep check to see if it needs updated
+                  if(JSON.stringify(this.attributesForCard[originalCard]) !== JSON.stringify(rebuiltCards[newCard])){
+                    this.attributesForCard[originalCard] = rebuiltCards[newCard]
+                  }
+                  break;
+                }
+              }
+              // Attributes didn't align, so just reset
+              if(!found){
+                this.attributesForCard = rebuiltCards; 
+                break;
+              }
+            }
+          }
+        }
+        else { // Otherwise it's just root? Does loading attributes make sense here?
+          this.attributesForCard = this.loadAttributesForCards([category], item)
+        }
+      })
+    });
+  }
+
+  private setupLocationsSubscriptions(item: Item): Subscription[] {
+    let subs: Subscription[] = [];
+
+    // Delete any locations that are not included in the item now
+    for(let dataIndex in this.itemLocations){
+      let found = false;
+      for(let locationID of item.locations){
+        if(this.itemLocations[dataIndex].location.ID === locationID){
+          found = true;
           break;
         }
       }
+
+      if(!found){
+        this.itemLocations.splice(Number.parseInt(dataIndex), 1);
+      }
     }
-    if(builtString === ""){
-      builtString = null;
+
+    // Subscribe to the locations individually
+    for(let locIndex in item.locations){
+      let sub = this.searchService.getLocation(item.locations[locIndex]).subscribe(location => {
+        let tracking: TrackingData;
+        let found = false;
+        
+        // First try to find tracking data for this location that already exists on the item
+        if(item.tracking)
+        for(let tracked of item.tracking){
+          if(tracked.locationID === location.ID){
+            found = true;
+            let isNumber = tracked.type.startsWith('number');
+            let cap = isNumber ? parseInt(tracked.type.substring(7)) : 0; // If there's a cap, it will be formatted like "number,[number]" so start at 7 to read it
+
+            tracking = { type: tracked.type, isNumber, amount: tracked.amount, cap }
+            break;
+          }
+        };
+
+        // Otherwise, fill in default tracking data
+        if(!found){
+          tracking = { type: "amount", isNumber: false, amount: "Good", cap: 0 }
+        }
+        
+        // See if there's already an ItemLocation corresponding to this and update it.
+        let index = this.itemLocations.findIndex((elem) => {return elem.location.ID === location.ID});
+        if(index > -1){
+          this.itemLocations[index].location = location;
+          this.itemLocations[index].tracking = tracking;
+        }
+        // Otherwise, add the new location
+        else {
+          this.itemLocations.push({location, tracking, isPanelExtended: item.locations.length < 2});
+        }
+      })
+      subs.push(sub);
     }
-    return builtString;
+    return subs;
+  }
+
+  ngOnDestroy() {
+    if(this.itemSub) this.itemSub.unsubscribe();
+    if(this.categorySub) this.categorySub.unsubscribe();
+    if(this.categoryAncestorSub) this.categoryAncestorSub.unsubscribe();
+    for(let locSub of this.locationsSub){
+      locSub.unsubscribe();
+    }
   }
 
   toggleMoreInfo() {
@@ -300,28 +369,29 @@ export class ItemComponent implements OnInit, OnDestroy {
   }
 
   toggleNumberTrackingForLocation(locationID: string) {
-    for(let card in this.trackingCards){
-      if(this.trackingCards[card].locationID === locationID){
-        if(this.trackingCards[card].isNumber){ // New value hasn't been set yet so this is reversed
-          this.trackingCards[card].amount = 'Good';
+    for(let locationData of this.itemLocations){
+      if(locationData.location.ID === locationID){
+        if(locationData.tracking.isNumber){ // New value hasn't been set yet so this is reversed
+          locationData.tracking.amount = 'Good';
 
-          for(let dataCard in this.item.tracking){
-            if(this.item.tracking[dataCard].locationID === locationID){
-              this.item.tracking[dataCard].type = 'approx';
-              this.item.tracking[dataCard].amount = 'Good';
+          for(let trackingData of this.item.tracking){
+            
+            if(trackingData.locationID === locationID){
+              trackingData.type = 'approx';
+              trackingData.amount = 'Good';
               break;
             }
           }
         }
         else {
-          this.trackingCards[card].amount = 0;
+          locationData.tracking.amount = 0;
 
           let found = false;
-          for(let dataCard in this.item.tracking){
-            if(this.item.tracking[dataCard].locationID === locationID){
+          for(let trackingData of this.item.tracking){
+            if(trackingData.locationID === locationID){
               found = true;
-              this.item.tracking[dataCard].type = 'number,0';
-              this.item.tracking[dataCard].amount = 0;
+              trackingData.type = 'number,0';
+              trackingData.amount = 0;
               break;
             }
           }
@@ -340,10 +410,10 @@ export class ItemComponent implements OnInit, OnDestroy {
     this.checkDirty();
   }
 
-  closeEditingTrackingNumber(card: TrackingCard){
+  closeEditingTrackingNumber(card: TrackingData, locationID){
     card.isBeingEdited = false;
     for(let dataCard in this.item.tracking){
-      if(this.item.tracking[dataCard].locationID === card.locationID){
+      if(this.item.tracking[dataCard].locationID === locationID){
         this.item.tracking[dataCard].amount = card.amount;
       }
     }
@@ -352,12 +422,12 @@ export class ItemComponent implements OnInit, OnDestroy {
   }
 
   // Auto report number
-  updateTrackingCap(card: TrackingCard){
+  updateTrackingCap(card: TrackingData, locationID){
     // @ts-ignore capFocus is not apart of code, just for UI
     card.capFocus = false;
 
     for(let dataCard in this.item.tracking){
-      if(this.item.tracking[dataCard].locationID === card.locationID){
+      if(this.item.tracking[dataCard].locationID === locationID){
         this.item.tracking[dataCard].type = 'number,' + card.cap;
       }
     }
@@ -381,7 +451,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     // For Database
     if(this.role !== 'Admin'){
       this.adminService.updateTracking(locationID, this.item.ID, 'approx', value).then(
-        (fulfilled) => this.setLocalTrackingCard(locationID, value),
+        (fulfilled) => this.updateUITrackingData(locationID, value),
       (reject) => {
         console.log("Tracking Update Rejected: " + JSON.stringify(reject));
       })
@@ -404,141 +474,54 @@ export class ItemComponent implements OnInit, OnDestroy {
         }
       }
 
-      this.setLocalTrackingCard(locationID, value)
+      this.updateUITrackingData(locationID, value)
       this.checkDirty();
-    }
-
-    // For reporting
-    if(sendReport){
-      if(type === 'approx'){
-        if(value !== "Good"){
-          this.sendAutoReport(value);
-        }
-      }
-      else if(type.startsWith('number')){
-        if(value <= parseInt(type.substring(7))){
-          this.sendAutoReport(value);
-        }
-      }
     }
   }
 
-  setLocalTrackingCard(locationID: string, value: string){
-    for(let card in this.trackingCards){ // For UI
-      if(this.trackingCards[card].locationID === locationID){
-        this.trackingCards[card].amount = value;
+  updateUITrackingData(locationID: string, value: string){
+    for(let data of this.itemLocations){ // For UI
+      if(data.location.ID === locationID){
+        data.tracking.amount = value;
         break;
       }
     }
   }
 
   createReport() {
-    // reset report data, ensure clicking out defaults to fail and no double send
-    this.errorDesc = {valid: false, desc: '', selectedUsers: [], allUsers: []};
-    let reportedTo = this.adminService.getWorkspaceUsers().subscribe(users => {
-      if(users && users.length === this.authService.usersInWorkspace){
-
-        // Load admins for selection
-        let admins: WorkspaceUser[] = users.filter(element => { return element.role === "Admin" });
-        // Load selected people to report to
-        let defaults: WorkspaceUser[] = admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
-
-        reportedTo.unsubscribe(); // Immediately unsubscribe, don't want this dialog to pop up again
-        // NOTE: This will not work well when you are the only person being reported to
-
-        const dialogRef = this.dialog.open(ReportDialogComponent, {
-          width: '30rem',
-          data: {
-            valid: this.errorDesc.valid,
-            desc: this.errorDesc.desc,
-            selectedUsers: defaults,
-            allUsers: admins
-          }
-        });
-    
-        dialogRef.afterClosed().subscribe(result => {
-          if (result) this.issueReport(result);
-        });
+    const dialogRef = this.dialog.open(ReportDialogComponent, {
+      width: '30rem',
+      data: {
+        item: this.item,
+        locations: this.itemLocations.map(data => { return data.location})
       }
     });
   }
 
   /**
-   * Issues a report to the backend DB
-   * @param result The resulting report from the report modal
-   */
-  issueReport(result: ItemReportModalData) {
-    this.errorDesc = result;
-    // if it's valid, build and issue report, else leave
-    if (this.errorDesc.valid) {
-      this.report.description = this.errorDesc.desc;
-      this.report.item.name = this.item.name; // old
-      this.report.item.ID = this.item.ID;
-      this.report.item.imageUrl = this.item.imageUrl; // old
-      this.report.timestamp = new Date().getUTCSeconds(); // old
-
-      // Issue report
-      return this.adminService.placeReport(this.report.item.ID, this.report.description, result.selectedUsers.map(user => user.id)).then(
-        () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
-        (err) => {
-          this.snack.open("Report Failed, " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
-          console.log(JSON.stringify(err));
-        }
-      );
-    }
-  }
-
-  sendAutoReport(amount: any) {
-    let desc = "Low";
-    if(amount === "Low"){
-      desc = "Auto Report: Item is low on supply.";
-    } 
-    else if (amount === "Empty") {
-      desc = "Auto Report: There's no items left!";
-    }
-    else if (amount === 0) {
-      desc = "Auto Report: There's no items left!";
-    } 
-    else {
-      desc = "Auto Report: There's only " + amount + " left in stock.";
-    }
-    this.report.description = desc;
-    this.report.item.name = this.item.name;
-    this.report.item.ID = this.item.ID;
-    this.report.item.imageUrl = this.item.imageUrl;
-    this.report.timestamp = new Date().getUTCSeconds();
-
-    return this.adminService.placeReport(this.report.item.ID, this.report.description, this.authService.workspace.defaultUsersForReports).then(
-      () => this.snack.open("Report Sent", "OK", {duration: 3000, panelClass: ['mat-toolbar']}),
-      (err) => this.snack.open("Report Failed, " + err.status, "OK", {duration: 3000, panelClass: ['mat-toolbar']})
-    );
-  }
-
-  /**
-   * A field edit handler
+   * Takes in the element we want to edit and displays the according modal
    * @param field the string name of the item field to edit
    */
   editField(field: string) {
-    // set edit field value to enable state change, then set focus
+    // Find and open the according modal
+    let modalStep = -1;
     switch (field) {
-      case 'name': 
-        //this.textEditFields.name = true;
-        // focus
-        //setTimeout(() => this.nameField.nativeElement.focus(), 0);
-        this.router.navigate(['/itemBuilder/' + this.id], { queryParams: { step: 2, singleStep: true } });
-        break;
-      case 'desc':
-        this.textEditFields.desc = true;
-        // focus
-        setTimeout(() => this.descField.nativeElement.focus(), 0);
-        break;
-      case 'tags':
-        this.textEditFields.tags = true;
-        // focus
-        setTimeout(() => this.tagsField.nativeElement.focus(), 0);
-        break;
-      default:
-        break;
+      case 'Attributes': modalStep = 1; break;
+      case 'Category': this.editCategory(); break;
+      case 'Description': modalStep = 4; break;
+      case 'Image': modalStep = 3; break;
+      case 'Location': this.editLocation(); break;
+      case 'Tags': modalStep = 4; break;
+      case 'Title': modalStep = 2; break;
+      default: break;
+    }
+
+    // Open the item builder modal if applicable
+    if(modalStep > -1){
+      this.dialog.open(ItemBuilderModalComponent, {
+        width: '480px',
+        data: {hierarchyObj: this.item, step: modalStep}
+      });
     }
   }
 
@@ -580,23 +563,9 @@ export class ItemComponent implements OnInit, OnDestroy {
 
       // Update the item locations
       this.item.locations = result;
-      
-      // NOTE: Inside the updateItem, the tracked data for old locations in the data structure get removed. But the card is removed here:
-      for(let oldLocIndex in oldLocations){
-        if(newLocations.indexOf(oldLocations[oldLocIndex]) === -1){
-          for(let cardIndex in this.trackingCards){
-            if(this.trackingCards[cardIndex].locationID === oldLocations[oldLocIndex]){
-              this.trackingCards.splice(parseInt(cardIndex), 1);
-            }
-          }
-        }
-      }
 
       this.adminService.updateItem(this.item, null, oldLocations); // TODO: Not good placement, seperate from main saving mechanism
       this.setDirty(true);
-      this.searchService.getAncestorsOf(this.item).subscribe(locations => {
-        this.locationsAndAncestors = locations;
-      });
 
       // Update recent locations
       for(let index in newLocations){
@@ -627,34 +596,18 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   updateItemCategory(result: string[], oldCategory: string) {
     if (result && result.length > 0 && this.item.category !== result[0]) {
-      this.item.category = result[0];
       let localSub = this.searchService.getCategory(result[0]).subscribe(newCategory => {
         if(newCategory){
           this.adminService.addToRecent(newCategory);
-
-          /*                                 TODO
-          if(newCategory.prefix){
-            if(!this.item.name){ // If the item doesn't have a name yet, jsut set it to be the prefix
-              this.item.name = newCategory.prefix;
-              this.item.fullTitle = this.item.name + this.buildAttributeString();
-            }
-            else if(!this.item.name.startsWith(newCategory.prefix)){ // Replace old prefix if it's there
-              if(this.category.prefix && this.item.name.startsWith(this.category.prefix)){
-                this.item.name = newCategory.prefix + " " + this.item.name.substring(this.category.prefix.length-1, this.item.name.length-1).trim();
-              } else {
-                this.item.name = newCategory.prefix + " " + this.item.name;
-              }
-            }
-          }
-          else if(newCategory.ID !== 'root'){ // If it has no prefix but it's not the root, make the name blank
-            this.item.name = '';
-            this.item.fullTitle = this.item.name + this.buildAttributeString();
-          }
-          */
   
-          this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => this.categoryAncestors = categoryAncestors[0])
+          this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => {
+            this.categoryAncestors = categoryAncestors[0];
+            this.adminService.updateItemDataFromCategoryAncestors(this.item, [newCategory].concat(this.categoryAncestors), this.category);
+
+            this.item.category = result[0];
+            this.adminService.updateItem(this.item, oldCategory, null);
+          });
           localSub.unsubscribe(); // Don't want this screwing with us later
-          this.adminService.updateItem(this.item, oldCategory, null); // TODO: Not good placement, seperate from normal saving routine
         }
       });
     }
@@ -668,7 +621,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       for(let attr in parents[parent].attributes){
         cards.push({
           name: parents[parent].attributes[attr]['name'],
-          ID: attr,
           category: parents[parent].name,
           focused: false
         })
@@ -679,16 +631,30 @@ export class ItemComponent implements OnInit, OnDestroy {
     for(let itemAttr in item.attributes){
       let hasAttribute = false;
       for(let card in cards){
-        if(cards[card].ID === item.attributes[itemAttr].ID){
-          cards[card].value = item.attributes[itemAttr].value;
+        if(cards[card].name === item.attributes[itemAttr].name){
+          let values = item.attributes[itemAttr].value.split('\n');
+          if(values.length < 2){
+            cards[card].value = item.attributes[itemAttr].value;
+          }
+          else {
+            // Initialize first layer
+            cards[card].layerNames = [values[0]];
+            cards[card].values = [values[1]];
+
+            // Add the rest
+            for(let index = 1; index < (values.length-1)/2; index++){
+              cards[card].layerNames.push(values[index*2]);
+              cards[card].values.push(values[index*2 + 1]);
+            }
+          }
           hasAttribute = true;
         }
       }
 
+      // If the data is not connected to something in the category
       if(!hasAttribute){
         cards.push({
           name: item.attributes[itemAttr].name,
-          ID: item.attributes[itemAttr].ID,
           value: item.attributes[itemAttr].value,
           category: "None",
           focused: false
@@ -710,146 +676,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       return 0;
     })
     return cards;
-  }
-
-  onAttrValueSubmit(card: AttributeCard){
-    let hasAttribute = false;
-    card.focused = false;
-    for(let attr in this.item.attributes){
-      if(this.item.attributes[attr].ID === card.ID){
-        this.item.attributes[attr].value = card.value ? card.value.trim() : '';
-        hasAttribute = true;
-      }
-    }
-    if(!hasAttribute && card.value){
-      if(!this.item.attributes){
-        this.item.attributes = [{
-          name: card.name,
-          ID: card.ID,
-          value: card.value.trim()
-        }];
-      }
-      else{
-        this.item.attributes.push({
-          name: card.name,
-          ID: card.ID,
-          value: card.value.trim()
-        })
-      }
-    }
-    this.checkDirty();
-  }
-
-  deleteAttribute(card: AttributeCard){
-    let deleteCardIndex = this.attributesForCard.indexOf(card);
-    this.attributesForCard.splice(deleteCardIndex, 1);
-
-    for(let attributeIndex in this.item.attributes){
-      if(this.item.attributes[attributeIndex].ID === card.ID){
-        this.item.attributes.splice(Number.parseInt(attributeIndex), 1);
-      }
-    }
-    this.checkDirty();
-  }
-
-  /**
-   * Handles logic for submitting the name
-   */
-  onNameSubmit() {
-    // check to see if name is valid
-    if (this.item.name !== '') {
-      // this.item.name = this.nameForm.value;
-      // hide control
-      this.textEditFields.name = false;
-    } else {
-      this.item.name = this.previousItem.name;
-      // TODO: show snackbar
-    }
-
-    // check for dirtiness
-    this.checkDirty();
-  }
-
-  /**
-   * Handles logic for submitting the description
-   */
-  onDescSubmit() {
-    // check to see if name is valid
-    if (this.item.desc !== '') {
-      // this.item.name = this.nameForm.value;
-      // hide control
-      this.textEditFields.desc = false;
-    } else {
-      this.item.desc = this.previousItem.desc;
-      // TODO: show snackbar
-    }
-
-    // check for dirtiness
-    this.checkDirty();
-  }
-
-  /**
-   * Handles uploading an image file to firestorage
-   * @param event
-   */
-  uploadImage(fileEvent: Event) {
-    // cast
-    const element = (fileEvent.target as HTMLInputElement);
-    // only change if there was a file upload
-    if (element.files && element.files[0]) {
-      // set image url file
-      const file = element.files[0];
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (ev) => {
-        if (typeof reader.result === 'string') {
-          this.imageService.resizeImage(reader.result).then(url => {
-            this.item.imageUrl = url;
-            // set dirty and save for upload
-            this.checkDirty();
-          });
-        }
-      };
-    }
-  }
-
-  /** Tag control: https://material.angular.io/components/chips/examples */
-
-  /**
-   * Adds a tag to the list
-   * @param event tag input event
-   */
-  addTag(event: MatChipInputEvent | any): void {
-    const input = event.input;
-    const value = event.value;
-    if (this.item.tags == null) this.item.tags = [];
-    // Add our fruit
-    if ((value || '').trim()) {
-      this.item.tags.push(value.trim());
-    }
-
-    // Reset the input value
-    if (input) {
-      input.value = '';
-    }
-
-    // check dirty
-    this.checkDirty();
-  }
-
-  /**
-   * Removes a tag from the list
-   * @param tag string tag to remove
-   */
-  removeTag(tag: string): void {
-    const index = this.item.tags.indexOf(tag);
-
-    if (index >= 0) {
-      this.item.tags.splice(index, 1);
-    }
-
-    // check dirty
-    this.checkDirty();
   }
 
   /**
@@ -883,36 +709,6 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     this.saveItem();
     this.setDirty(false);
-  }
-
-  buildAttributeString(category: Category = this.category): string {
-    let buildingString = '';
-    for(let suffixIndex in category.suffixStructure){
-      let id = category.suffixStructure[suffixIndex].attributeID;
-
-      if(id === 'parent'){
-        for(let index in this.categoryAncestors){
-          if(this.categoryAncestors[index].ID === category.parent){
-            buildingString += category.suffixStructure[suffixIndex].beforeText + 
-            this.buildAttributeString(this.categoryAncestors[index]) +
-            category.suffixStructure[suffixIndex].afterText;
-          }
-        }
-      }
-
-      else {
-        for(let attr in this.item.attributes){
-          if(this.item.attributes[attr].ID === id){
-            if(this.item.attributes[attr].value){ // Don't insert anything if there's no value
-              buildingString += category.suffixStructure[suffixIndex].beforeText + 
-              this.item.attributes[attr].value +
-              category.suffixStructure[suffixIndex].afterText;
-            }
-          }
-        }
-      }
-    }
-    return buildingString;
   }
 
   /**
@@ -969,7 +765,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     //remove image
     return this.adminService.removeItem(this.item).toPromise().then(val => {
       if (val) {
-        this.snack.open('Item Successfully Deleted', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
+        this.snack.open('Item Successfully Deleted', "OK", {duration: 2000, panelClass: ['mat-toolbar']});
         this.navService.returnState();
         this.routeLocation.back();
       } else this.snack.open('Item Deletion Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});

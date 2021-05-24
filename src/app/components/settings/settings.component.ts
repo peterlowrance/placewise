@@ -27,6 +27,7 @@ export class SettingsComponent implements OnInit {
     defaultUsersForReports: []
   };
   role: string; //the user's role, user or admin
+  recieveEmails: boolean;
 
   constructor(
     private authService: AuthService,
@@ -37,7 +38,9 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit() {
     this.authService.getUser().subscribe(
-      val => this.user = val
+      val => {
+        this.user = val;
+      }
     );
 
     this.authService.getWorkspace().subscribe(
@@ -47,9 +50,14 @@ export class SettingsComponent implements OnInit {
     this.authService.getRole().subscribe(
       val => {
         this.role = val;
-        console.log('role' + val);
       }
     );
+
+    this.authService.getRecieveEmails().subscribe(
+      val => {
+        this.recieveEmails = val;
+      }
+    )
   }
 
   /**

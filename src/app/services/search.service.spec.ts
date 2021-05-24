@@ -1,4 +1,4 @@
-import {async, TestBed} from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 
 import { SearchService } from './search.service';
 import {AngularFireStorage} from "@angular/fire/storage";
@@ -27,7 +27,7 @@ const HttpClientStub = {
 };
 
 describe('SearchService', () => {
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       providers: [
         { provide: AngularFireStorage, useValue: storageMock},

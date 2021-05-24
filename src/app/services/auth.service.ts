@@ -6,11 +6,7 @@ import {of, BehaviorSubject} from 'rxjs';
 import {WorkspaceInfo} from '../models/WorkspaceInfo';
 import {User} from '../models/User';
 import * as firebase from 'firebase';
-
-interface WorkspaceUser{
-  role: string;
-  userRef: any;
-};
+import { WorkspaceUser } from '../models/WorkspaceUser';
 
 interface Workspace{
   Items: any;
@@ -41,16 +37,19 @@ export class AuthService {
     id: ''
   }
   /**User role, Admin or User */
-  role: string;
+  role: string = 'User';
 
   /**Current role behavior subject */
-  currentRole: BehaviorSubject<string> = new BehaviorSubject<string>(this.role);
+  currentRole: BehaviorSubject<string> = new BehaviorSubject<string>(this.role);;
 
   /**Workspace behaviour subject */
   currentWorkspace: BehaviorSubject<WorkspaceInfo> = new BehaviorSubject<WorkspaceInfo>(this.workspace);
 
   // TEMPORARY - Will be changed after some major refactoring for how information is looaded in memory
   usersInWorkspace = 0;
+
+  // If this user has recieve emails turned on
+  recieveEmails: boolean;
 
   constructor(private afAuth: AngularFireAuth,
               private afs: AngularFirestore,
@@ -90,6 +89,11 @@ export class AuthService {
         this.afs.collection(`Workspaces/${this.workspace.id }/WorkspaceUsers`).get().subscribe(col => {
           this.usersInWorkspace = col.size;
         })
+
+        // ALSO KINDA TEMPORARY EHH
+        this.afs.doc(`Workspaces/${this.workspace.id}/WorkspaceUsers/${user.uid}`).snapshotChanges().subscribe(wUser => {
+          this.recieveEmails = (wUser.payload.data() as WorkspaceUser).emailReports;
+        });
       });
       const userDoc = this.getUserInfo(user.uid);
       //subscribe to changes in user info
@@ -174,6 +178,10 @@ export class AuthService {
    */
   getRole(){
     return this.currentRole.asObservable();
+  }
+
+  getRecieveEmails(){
+    return of(this.recieveEmails);
   }
 
   /**

@@ -5,4 +5,5 @@ export interface DetailedReportModalData {
     reportID: string;
     toBeRemoved: boolean;
     toGoToItem: boolean;
+    location: string;
 }

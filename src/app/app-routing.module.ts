@@ -14,26 +14,24 @@ import { AdminReportComponent } from './components/admin-report/admin-report.com
 import {ModifyHierarchyComponent} from "./components/modify-hierarchy/modify-hierarchy.component";
 import { ModerateUsersComponent } from './components/moderate-users/moderate-users.component';
 import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-item.component';
-import { ItemBuilderComponent } from './components/item-builder/item-builder.component';
 
 const routes: Routes = [
   {path: 'search/:selectedHierarchy/:id', component: HomeComponent, canActivate: [AuthGuard]},
   {path: 'login', component: LoginComponent},
   {path: 'item/:id', component: ItemComponent, canActivate: [AuthGuard]},
-  {path: 'itemBuilder/:id', component: ItemBuilderComponent, canActivate: [AuthGuard]},
   {path: 'settings', component: SettingsComponent, canActivate: [AuthGuard]},
   {path: 'reports', component: AdminReportComponent, canActivate: [AuthGuard]},
   {path: 'modify/:selectedHierarchy', component: ModifyHierarchyComponent, canActivate: [AuthGuard]},
   {path: 'users', component: ModerateUsersComponent, canActivate: [AuthGuard]},
   {path: 'hierarchyItem/:selectedHierarchy/:id', component: HierarchyItemComponent, canActivate: [AuthGuard]},
-  {path: '', redirectTo:'/search/locations/root', pathMatch:'full', canActivate:[AuthGuard]},
+  { path: '', redirectTo: '/search/locations/root', pathMatch: 'full' },
   {path: '', redirectTo:'/login', pathMatch:'full'},
   {path: '**', component: NotFoundComponent}
 ];
 
 @NgModule({
   providers: [AuthGuard],
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' })],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

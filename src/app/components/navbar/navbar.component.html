@@ -1,5 +1,5 @@
-<mat-toolbar *ngIf='this.locationString !== "/login"' color="primary">
-    <mat-toolbar-row>
+<mat-toolbar *ngIf='this.locationString !== "/login"'>
+    <mat-toolbar-row class="structure-color-dark">
         <div [ngSwitch]="checkLocation()">
             <span *ngSwitchCase='"item"'>
                 <span class="nav-text">Item</span>
@@ -46,9 +46,10 @@
             <mat-icon>settings</mat-icon>
         </button>
     </mat-toolbar-row>
-    <mat-toolbar-row *ngIf="checkLocation() === '/' && parent && parent.ID !== 'root'">
+    <mat-toolbar-row class="structure-color-light" *ngIf="checkLocation() === '/' && parent && parent.ID !== 'root'">
         <!-- <button mat-flat-button color="accent" (click)="goToModify()">{{parent.name}}</button> -->
-        <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="route('modify')"><mat-icon>more_vert</mat-icon></button>
         <span class="nav-text">{{parent.name}}</span>
+        <span class="spacer"></span>
+        <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="route('modify')"><mat-icon>chevron_right</mat-icon></button>
     </mat-toolbar-row>
 </mat-toolbar>

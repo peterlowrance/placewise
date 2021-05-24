@@ -24,57 +24,6 @@ export class ImageService {
   constructor(private afsg: AngularFireStorage, private auth: AuthService, private http: HttpClient) { }
 
   async putImage(imageURL: string, itemID: string): Promise<string> {
-    // Send it to Firestorage
-    //const ref = this.afsg.ref(this.auth.workspace.id + '/' + itemID);
-    //return new Promise((resolve, reject) => {
-    //   canvas.toBlob(async function (blob) {
-    //     console.log("WAT: " + blob);
-    //     await ref.put(blob);
-    //     ref.getDownloadURL().toPromise().then(link => { 
-    //       console.log(link);
-    //       resolve(link);
-    //     })
-    //   })
-    // });
-
-    // return new Promise((resolve, reject) => {
-    //   this.auth.getAuth().subscribe(
-    //     auth => {
-    //       // if auth is null, reject
-    //       if (auth === null) { reject('Auth token could not be retrieved. Perhaps you are logged out?'); }
-    //       // logged in, get goin'
-    //       auth.getIdTokenResult().then(
-    //         idToken => {
-
-    //           let formData = new FormData();
-    //           var veri;
-    //           formData.append('Accept', 'application/json');
-    //           formData.append('idToken' , idToken.token);
-    //           formData.append('Content-Type', 'multipart/form-data');
-    //           formData.append('file', file);
-
-    //           this.http.post(`${adServe}/setImage`, formData)
-    //           .subscribe(data => {
-    //             console.log( data['_body']);
-    //             veri = data['_body'];
-    //             veri = veri.replace(/\\/g, "");
-    //             veri = JSON.parse(veri);
-    //             console.log(veri);
-    //           });
-
-    //           // // with token add user by pinging server with token and email
-    //           // this.http.post(`${adServe}/setImage`, {idToken, itemID, file}, httpOptions).toPromise().then(
-    //           //   () => console.log('YEET: '),
-    //           //   err => reject(err.error)
-    //           //   );
-    //       },
-    //       // reject getIDToken
-    //       (err) => reject(err)
-    //       );
-    //     }
-    //   );
-    // });
-
     //get blob ref
     const ref = this.afsg.ref(this.auth.workspace.id + '/' + itemID);
     //put

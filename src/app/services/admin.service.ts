@@ -15,9 +15,10 @@ import { User } from '../models/User';
 import * as firebase from 'firebase';
 import { promise } from 'protractor';
 import { Category } from '../models/Category';
-import { Location } from '../models/Location';
+import { HierarchyLocation } from '../models/Location';
 import { type } from 'os';
 import { WorkspaceUser } from '../models/WorkspaceUser';
+import { CacheService } from './cache.service';
 
 declare var require: any;
 
@@ -35,9 +36,9 @@ const adServe = 'https://placewise-d040e.appspot.com/';
 export class AdminService {
 
   private recentCategories: Category[]; // This helps the user not have to click so many buttons setting categories up
-  private recentLocations: Location[]; // This helps the user not have to click so many buttons setting categories up
+  private recentLocations: HierarchyLocation[]; // This helps the user not have to click so many buttons setting categories up
   getRecentCategories(): Category[] {return this.recentCategories};
-  getRecentLocations(): Location[] {return this.recentLocations};
+  getRecentLocations(): HierarchyLocation[] {return this.recentLocations};
 
   addToRecent(recent: HierarchyItem){
     if(recent.ID === 'root') return; // Roots should not be saved
@@ -88,17 +89,20 @@ export class AdminService {
     }));
   }
 
-  placeReport(itemID: string, text: string, reportedTo: string[]) {
+  placeReport(itemID: string, text: string, reportedTo: string[], locationID: string, type: string) {
     return new Promise((resolve, reject) => {
       this.auth.getAuth().subscribe(auth => {
         auth.getIdTokenResult().then(
           token => {
+            console.log(reportedTo);
             // with token remove user by pinging server with token and email
             this.http.post(`${adServe}/createReport`, {
               idToken: token,
               item: itemID,
+              location: locationID,
               message: text,
-              reportTo: reportedTo
+              reportTo: reportedTo,
+              type: type
             }).toPromise().then(
               () => resolve(`Report sent!`),
               (err) => reject(err.error)
@@ -125,16 +129,37 @@ export class AdminService {
     this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + userID).set({emailReports: value}, {merge: true});
   }
 
-  deleteReport(id: string) {
-    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).delete();
+  deleteReport(reportID: string, itemID: string) {
+    // Try to remove the report from an item's data
+    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + itemID).get().toPromise().then(item => {
+      let reports = (item.data() as Item).reports;
+
+      // Look through connected reports and remove the data associated with the report's ID
+      for(let index in reports){
+        if(reports[index].report === reportID){
+          reports.splice(Number(index), 1);
+          //console.log("Deleted Report: " + reportID);
+
+          this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Items/' + itemID).update({
+            reports: reports
+          });
+          break;
+        }
+      }
+    });
+
+    // Delete actual report data
+    this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Reports/' + reportID).delete();
   }
 
+  /*
   clearReports(reports: SentReport[]) {
     for (let i = 0; i < reports.length; i++) {
       this.deleteReport(reports[i].ID);
     }
     return [];
   }
+  */
 
   getListenedReportLocations(): Observable<string[]> {
     return new Observable(obs => {
@@ -193,6 +218,91 @@ export class AdminService {
     return true;
   }
 
+  updateItemDataFromCategoryAncestors(item: Item, categoryAndAncestors: Category[], oldCategory?: Category){
+    let attributeSuffix = this.searchService.buildAttributeSuffixFrom(item, categoryAndAncestors);
+    let category = categoryAndAncestors[0];
+    console.log("dum:")
+    console.log(categoryAndAncestors)
+
+    // Setup additional text for auto title builder
+    let returnData: any = this.getAdditionalTextFrom(category.prefix, attributeSuffix, item.name);
+    returnData.attributeSuffix = attributeSuffix;
+
+    // If there is no item name, build an automatic title.
+    if(!item.name){
+      item.name = (category.prefix ? category.prefix : "") + (attributeSuffix ? attributeSuffix : "");
+
+      // If this resulted in a name, toggle on the Automatic Title Builder
+      if(item.name){
+        returnData.isAutoTitle = true;
+      }
+    }
+
+    // If there is a category replacement, update item title
+    else if(oldCategory) {
+      // If this was using the auto prefix, replace it.
+      if(oldCategory.prefix && item.name.startsWith(oldCategory.prefix)){
+        item.name = item.name.substring(oldCategory.prefix.length);
+        if(category.prefix){
+          console.log("old name: " + item.name);
+          item.name = category.prefix + item.name;
+          console.log("new name: " + item.name);
+        }
+      }
+
+      // If this was using the auto suffix, replace it.
+      if (attributeSuffix && item.name.endsWith(attributeSuffix)) {
+        item.name = item.name.substring(0, item.name.length - attributeSuffix.length).trim()
+        if(category.suffixStructure){
+          item.name = item.name + this.searchService.buildAttributeSuffixFrom(item, categoryAndAncestors);
+        }
+      }
+    }
+
+    return returnData;
+  }
+
+  /** 
+  * @return The additional text between the suffix and prefix. 
+  * If it could not remove both, the auto title flag is set to false.
+  */
+   getAdditionalTextFrom(prefix: string, suffix: string, name: string): {additionalText: string, isAutoTitle: boolean} {
+    // If there is no prefix or suffix, then there's no auto title
+    if(!prefix && !suffix){
+      return {additionalText: name, isAutoTitle: false};
+    }
+
+    let result = {additionalText: name, isAutoTitle: true};
+
+    // Check for a prefix. If there is one, remove it. If that was not possible, uncheck auto title.
+    if(prefix){
+      if(name.startsWith(prefix)){
+        result.additionalText = result.additionalText.substring(prefix.length).trim();
+      }
+      else {
+        result.isAutoTitle = false;
+      }
+    }
+
+    // Check for a suffix. If there is one, remove it. If that was not possible, uncheck auto title.
+    if(suffix){
+      if(name.endsWith(suffix)){
+        result.additionalText = result.additionalText.substring(0, result.additionalText.length - suffix.length).trim();
+      }
+      else {
+        if(result.isAutoTitle){
+          result.isAutoTitle = false;
+        }
+        else {
+          // If there was no prefix either, then there is no additional text
+          result.additionalText = "";
+        }
+      }
+    }
+
+    return result;
+  }
+
   createItem(item: Item): Observable<boolean> {
     this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
       item
@@ -200,36 +310,34 @@ export class AdminService {
     return of(true);
   }
 
-  createItemAtLocation(name: string, desc: string, tags: string[], category: string, imageUrl: string, location: string): Observable<string> {
-    if (!category) {
-      category = 'root';
-    }
+  createItemAtLocation(item: Item): Observable<string> {
 
     return new Observable(obs => {
-      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({name, fullTitle: name, desc, tags, locations: location ? [location] : [], category, imageUrl
-      }).then(
+      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add(item).then(
         val => {
           obs.next(val.id);
 
-          if(location){
-            this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
-              map(doc => doc.data())
-            ).toPromise().then(
-              doc => {
-                const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
-                ary.push(val.id);
-                this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
-              }
-            );
+          if(item.locations.length > 0){
+            for(let location of item.locations){
+              this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
+                map(doc => doc.data())
+              ).toPromise().then(
+                doc => {
+                  const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+                  ary.push(val.id);
+                  this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
+                }
+              );
+            }
           }
 
-          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + category).get().pipe(
+          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).get().pipe(
             map(doc => doc.data())
           ).toPromise().then(
             doc => {
               const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
               ary.push(val.id);
-              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + category).update({items: ary});
+              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: ary});
             }
           );
 
@@ -242,6 +350,9 @@ export class AdminService {
 
   removeItem(item: Item) {
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).delete();
+    
+    this.cacheService.remove(item.ID, 'item');
+    
     if (item.category) {
       this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
     }
@@ -258,7 +369,7 @@ export class AdminService {
       for (let i = 0; i < reports.length; i++) {
         if(reports[i].item == item.ID)
         {
-          this.deleteReport(reports[i].ID);
+          this.deleteReport(reports[i].ID, item.ID);
         }
       }
     }
@@ -324,7 +435,7 @@ export class AdminService {
       map(doc => doc.data())
     ).toPromise().then(
       doc => {
-        // Update parent's children
+        // Update parent location's children to include locations within deleted location
         let newChildren: string[] = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
         newChildren = newChildren.filter(obj => obj !== remove.ID);
         if (remove.children) {
@@ -336,9 +447,9 @@ export class AdminService {
           remove.children.forEach(child => this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + child).update({parent: remove.parent}));
         }
         // Update parent's items
-        const newItems: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
+        let newItems: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
         if (remove.items) {
-          newItems.concat(remove.items);
+          newItems = newItems.concat(remove.items);
           // Update item's parents
           remove.items.forEach(item => {
             this.searchService.getItem(item).subscribe(i => {
@@ -499,48 +610,6 @@ export class AdminService {
       }
     });
 
-    // TODO: Make sure these subs close properly
-    
-
-
-    /*
-    try {
-      // get all user metadata
-      const users = this.afs.collection('/Users', ref => ref.where('workspace', '==', this.auth.workspace.id)).snapshotChanges().pipe(map(a => {
-        return a.map(g => {
-        const data = g.payload.doc.data();
-        console.log(console.log("BOOP: " + JSON.stringify(data)))
-        const id = g.payload.doc.id;
-        return {data, id};
-        });
-      }));
-      // get all static user roles from db
-      const wUsers = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().pipe(map(a => {
-        return a.map(g => {
-        const data = g.payload.doc.data();
-        console.log(console.log("BEEP: " + JSON.stringify(data)))
-        const id = g.payload.doc.id;
-        return {data, id};
-        });
-      }));
-      // filter and combine by user ID
-      return combineLatest<WorkspaceUser[]>(users, wUsers, (user, wUser) => {
-        const list: WorkspaceUser[] = [];
-        user.forEach((element, index) => {
-          if (element && element.data) {  list.push({
-            firstName: element.data.firstName, 
-            lastName: element.data.lastName, 
-            email: element.data.email,
-            workspace: element.data.workspace,
-            id: element.id,
-            role: wUser.find((elem) => elem.id === element.id && elem.data).data.role}); }
-        });
-        return list;
-      });
-    } catch (err) {
-      console.log(err);
-    }
-    */
   }
 
   /**
@@ -663,6 +732,12 @@ export class AdminService {
     this.afs.doc('/Workspaces/' + this.auth.workspace.id).update({defaultUsersForReports: userIDs})
   }
 
-  constructor(private afs: AngularFirestore, private auth: AuthService, private searchService: SearchService, private http: HttpClient) {
+  constructor(
+    private afs: AngularFirestore, 
+    private auth: AuthService, 
+    private searchService: SearchService, 
+    private http: HttpClient,
+    private cacheService: CacheService
+    ) {
   }
 }

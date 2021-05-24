@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ItemComponent } from './item.component';
 
@@ -68,7 +68,7 @@ describe('ItemComponent', () => {
   let component: ItemComponent;
   let fixture: ComponentFixture<ItemComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ ItemComponent ],
       providers: [{provide: SearchService, useClass: SearchTest.SearchMockService}, {provide: AdminService, useClass: AdminMockService}, {provide: Location, useValue: locationStub}, {provide: ActivatedRoute, useValue: activatedRouteStub}, {provide: MatDialog}, {provide: AuthService, useClass: AuthTest.AuthMockService},{provide: ImageService, useClass: ImageTest.ImageMockService}, {provide: NavService, useValue: new NavService()}, {provide: MatSnackBar, useValue: snackMock}],

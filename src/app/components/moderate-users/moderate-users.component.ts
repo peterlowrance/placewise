@@ -5,7 +5,7 @@ import { MatCheckboxChange } from '@angular/material/checkbox';
 import {MatDialog} from '@angular/material/dialog';
 import {AddUserDialogComponent} from '../add-user-dialog/add-user-dialog.component';
 import { Subscription } from 'rxjs';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 
 
@@ -60,13 +60,11 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
     this.userSub = this.authService.getUser().subscribe(val => this.signedInEmail = val.email);
 
     this.adminService.getWorkspaceUsers().subscribe(users => {
-      if(users && users.length <= this.authService.usersInWorkspace){
+      if(users && users.length === this.authService.usersInWorkspace){
         // Load admins for selection
         this.admins = users.filter(element => { return element.role === "Admin" });
         // Load selected people to report to
         this.defaults = this.admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
-
-        console.log(this.defaults);
       }
     });
   }
@@ -154,7 +152,6 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
   }
 
   updateDefaultReportedUsers(event) {
-    console.log(event.map(user => user.id));
     this.adminService.updateDefaultReportUsers(event.map(user => user.id));
   }
 }

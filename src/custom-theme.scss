@@ -13,7 +13,7 @@
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
 $primary:  mat-palette($mat-brown, 900);
-$accent: mat-palette($mat-brown, 600);
+$accent: mat-palette($mat-brown, 700);
 
 // The warn palette is optional (defaults to red).
 $warn: mat-palette($mat-red);
@@ -31,6 +31,70 @@ html {
 }
 
 .light-text {
-  color: #888;
+  color: #999;
+}
+
+.big-button {
+  min-width: 90px !important;
+  font-size: 18px;
+  height: 48px;
+  padding: 0 30px !important;
+}
+
+.structure-color-light {
+  background-color: #ebd3bf !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.structure-color {
+  background-color:  #5d4037;
+  color: white;
+}
+
+.structure-color-dark {
+  background-color:  #3e2723;
+  color: white;
+}
+
+.action-color-dark {
+  background-color:  #243e86;
+  color: white;
+  .mat-simple-snackbar-action {
+    color: white !important;
+  }
+}
+
+.successful-report {
+  background-color:  #73f78e;
+  color: rgba(0, 0, 0, 0.87);
+  .mat-simple-snackbar-action {
+    color: rgba(0, 0, 0, 0.87) !important;
+  }
+}
+
+.action-color {
+  background-color:  #bee2ff;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.action-color-light {
+  background-color:  #e7f3ff;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.radio-buttons {
+  display: flex;
+  flex-direction: column;
+  margin: 18px 0;
+}
+
+.radio-button {
+  margin: 6px;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
 }
 

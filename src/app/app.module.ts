@@ -10,7 +10,9 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatGridListModule} from '@angular/material/grid-list';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from '@angular/material/card';
-import {MatAutocompleteModule, MatButtonToggleModule, MatTableModule} from '@angular/material';
+import {MatTableModule} from '@angular/material/table';
+import {MatAutocompleteModule} from '@angular/material/autocomplete'; 
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatInputModule} from '@angular/material/input';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatTreeModule} from '@angular/material/tree';
@@ -24,6 +26,7 @@ import {MatBadgeModule} from '@angular/material/badge';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatSelectModule} from '@angular/material/select';
 import {TextFieldModule} from '@angular/cdk/text-field';
+import {DragDropModule} from '@angular/cdk/drag-drop';
 
 import {SmdFabSpeedDialModule} from 'node_modules/angular-speed-dial';
 // Imports for all Placewise modules
@@ -58,7 +61,12 @@ import { ConfirmComponent } from './components/confirm/confirm.component';
 import { AncestorViewComponent } from './components/ancestor-view/ancestor-view.component';
 import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-item.component';
 import { UserSelectComponent } from './components/user-select/user-select.component';
-import { ItemBuilderComponent } from './components/item-builder/item-builder.component';
+import { ItemBuilderModalComponent } from './components/item-builder-modal/item-builder-modal.component';
+import { AttributeOptionsEditorDialogComponent } from './components/attribute-options-editor-dialog/attribute-options-editor-dialog.component';
+import { SimpleFieldDialogComponent } from './components/simple-field-dialog/simple-field-dialog.component';
+import { QuickAddListComponent } from './components/quick-add-list/quick-add-list.component';
+import { AttributeBuilderDialogComponent } from './components/attribute-builder-dialog/attribute-builder-dialog.component';
+import { AddAttributeSuffixDialogComponent } from './components/add-attribute-suffix-dialog/add-attribute-suffix-dialog.component';
 
 @NgModule({
   declarations: [
@@ -83,7 +91,12 @@ import { ItemBuilderComponent } from './components/item-builder/item-builder.com
     AncestorViewComponent,
     HierarchyItemComponent,
     UserSelectComponent,
-    ItemBuilderComponent
+    ItemBuilderModalComponent,
+    AttributeOptionsEditorDialogComponent,
+    SimpleFieldDialogComponent,
+    QuickAddListComponent,
+    AttributeBuilderDialogComponent,
+    AddAttributeSuffixDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -122,10 +135,11 @@ import { ItemBuilderComponent } from './components/item-builder/item-builder.com
     MatRadioModule,
     MatTableModule,
     HttpClientModule,
-    TextFieldModule
+    TextFieldModule,
+    DragDropModule
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent, AddUserDialogComponent, ConfirmComponent]
+  entryComponents: [SimpleFieldDialogComponent, AttributeOptionsEditorDialogComponent, ItemBuilderModalComponent, ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent, AddUserDialogComponent, ConfirmComponent]
 })
 export class AppModule { }

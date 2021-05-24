@@ -5,7 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ImageService } from 'src/app/services/image.service';
 import { SentReport } from 'src/app/models/SentReport';
 import { DetailedReportModalData } from 'src/app/models/DetailedReportModalData';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { ReportDetailViewComponent } from '../report-detail-view/report-detail-view.component';
 import { AuthService } from 'src/app/services/auth.service';
 import { ConfirmComponent } from '../confirm/confirm.component';
@@ -89,6 +89,18 @@ export class AdminReportComponent implements OnInit {
             })
               */
           })
+
+          /*
+          // Replace local data for the item's location with it's name. Temporary.
+          if(reports[i].location){
+            let getLoc = this.searchService.getLocation(reports[i].location).subscribe(location => {
+              if(location){
+                reports[i].location = location.name;
+                getLoc.unsubscribe();
+              }
+            })
+          }
+          */
           
           // Add to the notified section if it was for the person reading it
           if(reports[i].reportedTo && reports[i].reportedTo.indexOf(user.id) > -1){
@@ -138,9 +150,10 @@ export class AdminReportComponent implements OnInit {
 
   openModal(r : SentReport )
   {
+
         // reset report data, ensure clicking out defaults to fail and no double send
         var reportData : DetailedReportModalData = {
-          itemName:r.trueItem.name,itemID: r.trueItem.ID, reportDesc : r.desc,reportID : r.ID,toBeRemoved:false, toGoToItem: false
+          itemName:r.trueItem.name,itemID: r.trueItem.ID, reportDesc : r.desc,reportID : r.ID,toBeRemoved:false, toGoToItem: false, location: r.location
         }
 
 
@@ -151,7 +164,8 @@ export class AdminReportComponent implements OnInit {
             reportDesc: reportData.reportDesc,
             reportID: reportData.reportID,
             remove: reportData.toBeRemoved,
-            itemID: reportData.itemID
+            itemID: reportData.itemID, 
+            location: r.location
           }
         });
 
@@ -159,7 +173,7 @@ export class AdminReportComponent implements OnInit {
           reportData = result;
           // if it's valid, build and isue report, else leave
           if (reportData && reportData.toBeRemoved) {
-            this.adminService.deleteReport(reportData.reportID);
+            this.adminService.deleteReport(reportData.reportID, reportData.itemID);
           }
         });
   }

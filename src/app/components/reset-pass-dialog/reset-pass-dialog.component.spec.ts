@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {MatInputModule} from '@angular/material/input'
 import {MatButtonModule} from '@angular/material/button'
 import {MatDialogModule, MatDialog} from '@angular/material/dialog'
@@ -41,7 +41,7 @@ describe('ResetPassDialogComponent', () => {
   let overlayContainerElement: HTMLElement;
   let noop: ComponentFixture<NoopComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ ResetPassDialogComponent, MatDialog ],
       imports: [DialogTestModule],

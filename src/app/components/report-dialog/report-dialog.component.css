@@ -1,13 +1,160 @@
 .report-text-full-width{
     min-width: 150px;
     width: 100%;
-    max-height: 350px;
+}
+
+.report-textarea {
+    height: 60px;
+    max-height: 240px;
 }
 
 .btn-spacer {
-flex: 1 1 auto;
+    flex: 1 1 auto;
+    min-width: 18px;
 }
 
 .mat-dialog-actions {
     margin-bottom: 0;
+}
+
+.empty-button {
+    background-color: rgb(63, 63, 63);
+    color: white;
+}
+
+.report-button {
+    display: block;
+    margin: 18px auto 6px auto;
+}
+
+.mat-dialog-title {
+    text-align: center;
+}
+
+.report-spinner ::ng-deep circle {
+    stroke: white !important;
+    display: inline-block;
+  }
+
+.report-spinner {
+    margin: 0 auto;
+}
+
+/*  Location Card Stuff  */
+
+.hierarchyCard {
+    border-radius: 8px;
+    width: 96%;
+    height: 72px;
+    padding: 0;
+    margin: 12px 0;
+}
+
+mat-card-content {
+    padding: calc(5% - 0.1rem) calc(0.2rem + 6%) ;
+}
+
+.hierarchycard-content {
+    display: flex;
+    height: 100%;
+    border-radius: inherit;
+}
+
+.hierarchy-text {
+    margin: 0 16px;
+    font-size: 16px;
+    font-weight: 500;
+    max-width: 60%;
+}
+
+.hierarchy-title-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hierarchy-desc-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 3px;
+    font-size: 14px;
+    font-weight: 400;
+    height: 36px;
+    color: #888;
+}
+
+.hierarchy-title-text-positioner {
+    display: flex;
+    height: 45%;
+    align-items: flex-end;
+}
+
+.image {
+    background: 50% 50% no-repeat;
+    background-size: cover;
+    width: 5rem;
+    height: 65%;
+    margin: auto;
+  }
+
+.hierarchy.image {
+    width: 27%;
+    height: inherit;
+    border-top-left-radius: inherit;
+    border-bottom-left-radius: inherit;
+    margin: 0;
+}
+
+.general-text {
+    margin: auto;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 500;
+    padding-top: 24px;
+}
+
+.disabled-report-text {
+    font-size: 14px;
+    color: rgb(200, 100, 100);
+    text-align: center;
+    margin-top: 6px;
+}
+
+.disabled-card {
+    background-color: #DDD;
+}
+
+.disabled-location-text {
+    color: #700;
+}
+
+.dialog-button {
+    margin-top: 18px;
+}
+
+.report-button-wrapper {
+    flex-wrap: wrap-reverse;
+}
+
+.less-padding {
+    padding-top: 0px;
+}
+
+.low-report {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+.low-send-button {
+    margin: 6px 0;
+}
+
+.action-color-dark .mat-simple-snackbar-action  {
+    color: white;
 }
