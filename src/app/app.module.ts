@@ -143,6 +143,7 @@ import { AddAttributeSuffixDialogComponent } from './components/add-attribute-su
   providers: [],
   bootstrap: [AppComponent],
   entryComponents: [
+    AttributeBuilderDialogComponent,
     AddAttributeSuffixDialogComponent, 
     SimpleFieldDialogComponent, 
     AttributeOptionsEditorDialogComponent, 

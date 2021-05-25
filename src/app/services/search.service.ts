@@ -379,20 +379,37 @@ export class SearchService implements SearchInterfaceService {
           }
           case 'parent': {
             buildingString += this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex + 1);
+            break;
           }
           case 'attribute': 
           {
             for(let attr in item.attributes){
-
+              if(item.attributes[attr].name === suffixPiece.data){
+                buildingString += item.attributes[attr].value;
+                break;
+              }
             }
+            break;
           }
           case 'attribute layer':
           {
-            let splitData: string[];
             for(let attr in item.attributes){
-              splitData = suffixPiece.data.split("\n");
-              if(item.attributes[attr].name === splitData[0]){
-                // NEXT
+
+              // Find the correct piece of data in the item
+              if(suffixPiece.data.startsWith(item.attributes[attr].name)){
+                let splitData = suffixPiece.data.split("\n");
+                let splitValues = item.attributes[attr].value.split("\n");
+
+                // Find the corresponding layer value in that item's data
+                for(let index = 0; index < (splitValues.length-1)/2; index++){
+                  // If the piece of data is that layer
+                  if(splitValues[index*2] === splitData[1]){
+                    // Add the next piece of data, which is the layer's value
+                    buildingString += splitValues[index*2+1];
+                    break;
+                  }
+                }
+                break;
               }
             }
           }
