@@ -19,6 +19,7 @@ import { AttributeOptionsEditorDialogComponent } from 'src/app/components/attrib
 import { AttributeBuilderDialogComponent } from '../attribute-builder-dialog/attribute-builder-dialog.component';
 import { AddAttributeSuffixDialogComponent } from '../add-attribute-suffix-dialog/add-attribute-suffix-dialog.component';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CategoryAttribute } from 'src/app/models/Attribute';
 
 @Component({
   selector: 'app-hierarchy-item',
@@ -52,19 +53,9 @@ export class HierarchyItemComponent implements OnInit {
     type: string,
     opened: boolean
   }[]
-  inheritedAttributes: {
-    name: string;
-    categoryName: string;
-    ID: string;
-  }[];                   // Names of unmodifyable attributes from any parent
-  attributeSuffixesForDisplay: {
-    positionID: string;
-    beforeText: string;
-    attributeID: string;
-    name: string;
-    afterText: string;
-    editingBefore: boolean;
-    editingAfter: boolean;
+  inheritedAttributes: {  // Names of unmodifyable attributes from any parent
+    categoryName: string,
+    attribute: CategoryAttribute
   }[];
   //renameBind: string[] = [];                                       // For attribute renaming inputs from the form field
   isSaving = false;
@@ -133,26 +124,25 @@ export class HierarchyItemComponent implements OnInit {
           this.searchService.getAncestorsOf(cat).subscribe(parents => {
             this.parentsToDisplay = parents;
             let buildingAttributes: {
-              name: string;
-              categoryName: string;
-              ID: string;
+              categoryName: string,
+              attribute: CategoryAttribute
             }[];
 
             for(let parent in parents[0]){
-              let attrCategory = (parents[0][parent] as Category);
-              if(attrCategory.attributes)
-              for(let attr in attrCategory.attributes){
+              let ancestorCategory = (parents[0][parent] as Category);
+              if(ancestorCategory.attributes)
+              for(let attr in ancestorCategory.attributes){
                 if(buildingAttributes){
 
                   // Have the attributes sorted as they are added
-                  let newItemNameCapped = attrCategory.attributes[attr]["name"].toUpperCase();
-                  if (buildingAttributes[buildingAttributes.length-1].name.toUpperCase() < newItemNameCapped){
-                    buildingAttributes.splice(buildingAttributes.length, 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
+                  let newItemNameCapped = ancestorCategory.attributes[attr]["name"].toUpperCase();
+                  if (buildingAttributes[buildingAttributes.length-1].attribute.name.toUpperCase() < newItemNameCapped){
+                    buildingAttributes.splice(buildingAttributes.length, 0, {categoryName: ancestorCategory.name, attribute: ancestorCategory.attributes[attr]});
                   }
                   else {
                     for(let index in buildingAttributes){
-                      if(newItemNameCapped < buildingAttributes[index].name.toUpperCase()){
-                        buildingAttributes.splice(parseInt(index), 0, {name: attrCategory.attributes[attr]["name"], categoryName: attrCategory.name, ID: attr});
+                      if(newItemNameCapped < buildingAttributes[index].attribute.name.toUpperCase()){
+                        buildingAttributes.splice(parseInt(index), 0, {categoryName: ancestorCategory.name, attribute: ancestorCategory.attributes[attr]});
                         break;
                       }
                     }
@@ -161,65 +151,14 @@ export class HierarchyItemComponent implements OnInit {
                 else {
                   buildingAttributes = [
                     {
-                      name: attrCategory.attributes[attr]["name"],
-                      categoryName: attrCategory.name,
-                      ID: attr
+                      categoryName: ancestorCategory.name,
+                      attribute: ancestorCategory.attributes[attr]
                     }
                   ]
                 }
               }
             }
             this.inheritedAttributes = buildingAttributes;
-
-            // TODO: MESSY. Might need to fully import local attributes in some way.
-            // Setup attributes for being displayed in suffixes
-            let buildingSuffixes: {
-              positionID: string;
-              beforeText: string;
-              attributeID: string;
-              name: string;
-              afterText: string;
-              editingBefore: boolean;
-              editingAfter: boolean;
-            }[] = [];
-            for(let suffix in cat.suffixStructure){
-
-              if(cat.suffixStructure[suffix].attributeID === 'parent'){ // If it's the parent's suffix
-                  let before = cat.suffixStructure[suffix].beforeText;
-                  let after = cat.suffixStructure[suffix].afterText;
-                  let attrId = cat.suffixStructure[suffix].attributeID;
-
-                  buildingSuffixes.push({
-                    beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
-                    name: "Parent Category's Suffix"
-                  })
-              }
-              else {
-                if(cat.attributes && cat.attributes[cat.suffixStructure[suffix].attributeID]){ // If the attribute is in the local category
-                  let before = cat.suffixStructure[suffix].beforeText;
-                  let after = cat.suffixStructure[suffix].afterText;
-                  let attrId = cat.suffixStructure[suffix].attributeID;
-
-                  buildingSuffixes.push({
-                    beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
-                    name: cat.attributes[cat.suffixStructure[suffix].attributeID]['name']
-                  })
-                }
-                else for(let attr in this.inheritedAttributes){
-                  if(this.inheritedAttributes[attr].ID === cat.suffixStructure[suffix].attributeID){ // If the attribute come from one of the parents
-                    let before = cat.suffixStructure[suffix].beforeText;
-                    let after = cat.suffixStructure[suffix].afterText;
-                    let attrId = cat.suffixStructure[suffix].attributeID;
-                      
-                    buildingSuffixes.push({
-                      beforeText: before, attributeID: attrId, afterText: after, positionID: suffix, editingBefore: false, editingAfter: false,
-                      name: this.inheritedAttributes[attr].name
-                    })
-                  }
-                }
-              }
-              this.attributeSuffixesForDisplay = buildingSuffixes;
-            }
 
           });
           if(!this.previousItem) // Don't overwrite if we already have something
@@ -338,64 +277,6 @@ export class HierarchyItemComponent implements OnInit {
     }
   }
 
-  bumpSuffixUp(positionID: string){
-    let num = parseInt(positionID);
-    if(num > 0){
-      let suffixToBump = this.attributeSuffixesForDisplay[num];
-      let cat = this.hierAsCategory;
-      for(let index in cat.suffixStructure){
-        if(cat.suffixStructure[index].attributeID === suffixToBump.attributeID && 
-          cat.suffixStructure[index].beforeText === suffixToBump.beforeText &&
-          cat.suffixStructure[index].afterText === suffixToBump.afterText){
-          let temp = cat.suffixStructure.splice(parseInt(index), 1)[0];
-          cat.suffixStructure.splice(parseInt(index)-1, 0, temp);
-          break;
-        }
-      }
-      this.checkDirty();
-    }
-  }
-
-  bumpSuffixDown(positionID: string){
-    let num = parseInt(positionID);
-    let cat = this.hierAsCategory;
-    if(num < cat.suffixStructure.length-1){
-      let suffixToBump = this.attributeSuffixesForDisplay[num];
-      for(let index in cat.suffixStructure){
-        if(cat.suffixStructure[index].attributeID === suffixToBump.attributeID && 
-          cat.suffixStructure[index].beforeText === suffixToBump.beforeText &&
-          cat.suffixStructure[index].afterText === suffixToBump.afterText){
-          let temp = cat.suffixStructure.splice(parseInt(index), 1)[0];
-          cat.suffixStructure.splice(parseInt(index)+1, 0, temp);
-          break;
-        }
-      }
-      this.checkDirty();
-    }
-  }
-
-  editSuffixField(positionID: string, field: string){
-    if(field === 'after'){
-      this.attributeSuffixesForDisplay[parseInt(positionID)].editingAfter = true;
-    }
-    else {
-      this.attributeSuffixesForDisplay[parseInt(positionID)].editingBefore = true;
-    }
-  }
-
-  setSuffixField(positionID: string, field: string, value: string){
-    let suffixes = this.hierAsCategory.suffixStructure;
-    if(field === 'after'){
-      this.attributeSuffixesForDisplay[parseInt(positionID)].editingAfter = false;
-      suffixes[parseInt(positionID)].afterText = value;
-    }
-    else {
-      this.attributeSuffixesForDisplay[parseInt(positionID)].editingBefore = false;
-      suffixes[parseInt(positionID)].beforeText = value;
-    }
-    this.checkDirty();
-  }
-
   /**
    * Handles logic for submitting the name
    */
@@ -490,25 +371,31 @@ export class HierarchyItemComponent implements OnInit {
     */
   }
 
-  setAttributeSuffix(idOrName: string, suffixID: string, isLocal: boolean = false){
-    if(isLocal){ // Locally we only have the name
-      let attrs = this.hierAsCategory.attributes;
-      for(let attr in attrs){
-        if(attrs[attr]['name'] === idOrName){
-          this.hierAsCategory.suffixStructure[parseInt(suffixID)].attributeID = attr;
-        }
+  addAttributeSuffix(newID: string = 'parent'){
+    // Add parent attributes before opening
+    let suffixAttributes: CategoryAttribute[];
+
+    // First add ancestor attributes
+    if(this.inheritedAttributes){
+      suffixAttributes = [];
+      this.inheritedAttributes.forEach(categoryAndAtt => {
+        suffixAttributes.push(categoryAndAtt.attribute);
+      });
+    }
+
+    // Then decide how to add the rest of the attributes
+    if(this.hierAsCategory.attributes){
+      if(suffixAttributes){
+        suffixAttributes = suffixAttributes.concat(this.hierAsCategory.attributes);
+      }
+      else {
+        suffixAttributes = this.hierAsCategory.attributes;
       }
     }
-    else { // Otherwise set the id directly
-      this.hierAsCategory.suffixStructure[parseInt(suffixID)].attributeID = idOrName;
-    }
-    this.checkDirty();
-  }
 
-  addAttributeSuffix(newID: string = 'parent'){
-    this.dialog.open(AddAttributeSuffixDialogComponent, {width: '360px', data: { attributes: this.hierAsCategory.attributes, usedAttributes: []}})
+    this.dialog.open(AddAttributeSuffixDialogComponent, {width: '360px', data: { attributes: suffixAttributes, usedAttributes: []}})
     .beforeClosed().subscribe(result => {
-      if(result.wasValid){
+      if(result && result.wasValid){
         console.log(result.data.type);
 
         if(result.data.data){
