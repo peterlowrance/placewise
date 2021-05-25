@@ -5,7 +5,7 @@ export interface Category extends HierarchyItem {
 
     attributes?: CategoryAttribute[];
     prefix?: string;
-    suffixFormat?: [{
+    titleFormat?: [{ // Soon will replace prefix
         type: string;
         data?: string;
     }];

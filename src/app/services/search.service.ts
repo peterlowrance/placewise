@@ -366,8 +366,8 @@ export class SearchService implements SearchInterfaceService {
     // Start building attribute string
     let buildingString = '';
 
-    if(categoryAndAncestors[startingIndex].suffixFormat){
-      for(let suffixPiece of categoryAndAncestors[startingIndex].suffixFormat){
+    if(categoryAndAncestors[startingIndex].titleFormat){
+      for(let suffixPiece of categoryAndAncestors[startingIndex].titleFormat){
         switch(suffixPiece.type){
           case 'space': {
             buildingString += ' ';

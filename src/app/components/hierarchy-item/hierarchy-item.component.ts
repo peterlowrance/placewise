@@ -399,19 +399,19 @@ export class HierarchyItemComponent implements OnInit {
         console.log(result.data.type);
 
         if(result.data.data){
-          if(this.hierAsCategory.suffixFormat){
-            this.hierAsCategory.suffixFormat.push({type: result.data.type, data: result.data.data});
+          if(this.hierAsCategory.titleFormat){
+            this.hierAsCategory.titleFormat.push({type: result.data.type, data: result.data.data});
           }
           else {
-            this.hierAsCategory.suffixFormat = [{type: result.data.type, data: result.data.data}];
+            this.hierAsCategory.titleFormat = [{type: result.data.type, data: result.data.data}];
           }
         }
         else {
-          if(this.hierAsCategory.suffixFormat){
-            this.hierAsCategory.suffixFormat.push({type: result.data.type});
+          if(this.hierAsCategory.titleFormat){
+            this.hierAsCategory.titleFormat.push({type: result.data.type});
           }
           else {
-            this.hierAsCategory.suffixFormat = [{type: result.data.type}];
+            this.hierAsCategory.titleFormat = [{type: result.data.type}];
           }
         }
 
@@ -432,7 +432,7 @@ export class HierarchyItemComponent implements OnInit {
 
   deleteAttributeSuffix(index: number){
     if(confirm("Are you sure you want to delete this suffix element?\nThis will not edit the current items - that's for the future.\nBut this will make the titles misaligned and may cause problems in the future.")){
-      console.log(this.hierAsCategory.suffixFormat.splice(index, 1));
+      console.log(this.hierAsCategory.titleFormat.splice(index, 1));
       this.update();
     }
   }
@@ -552,9 +552,9 @@ export class HierarchyItemComponent implements OnInit {
   }
 
   drop(event: CdkDragDrop<string[]>) {
-    console.log(this.hierAsCategory.suffixFormat);
-    moveItemInArray(this.hierAsCategory.suffixFormat, event.previousIndex, event.currentIndex);
-    console.log(this.hierAsCategory.suffixFormat);
+    console.log(this.hierAsCategory.titleFormat);
+    moveItemInArray(this.hierAsCategory.titleFormat, event.previousIndex, event.currentIndex);
+    console.log(this.hierAsCategory.titleFormat);
     this.update();
   }
 

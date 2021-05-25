@@ -253,7 +253,7 @@ export class AdminService {
       // If this was using the auto suffix, replace it.
       if (attributeSuffix && item.name.endsWith(attributeSuffix)) {
         item.name = item.name.substring(0, item.name.length - attributeSuffix.length).trim()
-        if(category.suffixFormat){
+        if(category.titleFormat){
           item.name = item.name + this.searchService.buildAttributeSuffixFrom(item, categoryAndAncestors);
         }
       }
