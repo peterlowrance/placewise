@@ -231,7 +231,7 @@
         <!-- For images -->
         <div *ngIf="step == 3" class="stacked-buttons">
             <!-- Skip button for image if there is none -->
-            <button *ngIf="!singleStep && (!item.imageUrl || item.imageUrl == '../../../assets/notFound.png')" mat-raised-button class="rect-action-button action-color" (click)="nextStep(true)">Skip</button>
+            <button *ngIf="!singleStep && (!item.imageUrl || item.imageUrl == '../../../assets/notFound.png')" mat-raised-button class="rect-action-button action-color" (click)="nextStep()">Skip</button>
             <!-- Camera button for when there is no image -->
             <button *ngIf="item.imageUrl == '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="camera.click()" color="primary"> <mat-icon>photo_camera</mat-icon> Yes </button>
             <!-- Retake button if there is an image -->
@@ -243,8 +243,8 @@
         </div>
 
         <!-- Next or confirm button depending on if this is a single step-->
-        <button *ngIf="step < MAX_STEP && step != 3" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">{{ singleStep ? "Confirm" : "Next" }}</button>
-        <button *ngIf="step == MAX_STEP && step != 3" mat-raised-button class="rect-action-button" (click)="nextStep()" color="primary">Finish</button>
+        <button *ngIf="(step < MAX_STEP) && (step != 3)" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">{{ singleStep ? "Confirm" : "Next" }}</button>
+        <button *ngIf="step == MAX_STEP" mat-raised-button class="rect-action-button" (click)="nextStep()" color="primary">Finish</button>
     </div>
 
 </div>

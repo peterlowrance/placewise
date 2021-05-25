@@ -3,6 +3,7 @@ import {NgModule} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 
 // Imports for material design modules
+import { CommonModule } from '@angular/common';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatChipsModule} from '@angular/material/chips';
@@ -99,12 +100,14 @@ import { AddAttributeSuffixDialogComponent } from './components/add-attribute-su
     AddAttributeSuffixDialogComponent
   ],
   imports: [
+    CommonModule,
     BrowserModule,
     MatToolbarModule,
     AppRoutingModule,
     FormsModule,
     ReactiveFormsModule,
     BrowserAnimationsModule,
+    SmdFabSpeedDialModule,
     MatChipsModule,
     MatIconModule,
     MatGridListModule,
@@ -130,7 +133,6 @@ import { AddAttributeSuffixDialogComponent } from './components/add-attribute-su
     MatProgressBarModule,
     MatMenuModule,
     MatProgressSpinnerModule,
-    SmdFabSpeedDialModule,
     MatCheckboxModule,
     MatRadioModule,
     MatTableModule,
@@ -140,6 +142,18 @@ import { AddAttributeSuffixDialogComponent } from './components/add-attribute-su
   ],
   providers: [],
   bootstrap: [AppComponent],
-  entryComponents: [SimpleFieldDialogComponent, AttributeOptionsEditorDialogComponent, ItemBuilderModalComponent, ReportDialogComponent, EditHierarchyDialogComponent, ResetPassDialogComponent, ChangePassDialogComponent, ModifyHierarchyDialogComponent, ReportDetailViewComponent, AddUserDialogComponent, ConfirmComponent]
+  entryComponents: [
+    AddAttributeSuffixDialogComponent, 
+    SimpleFieldDialogComponent, 
+    AttributeOptionsEditorDialogComponent, 
+    ItemBuilderModalComponent, 
+    ReportDialogComponent, 
+    EditHierarchyDialogComponent, 
+    ResetPassDialogComponent, 
+    ChangePassDialogComponent, 
+    ModifyHierarchyDialogComponent, 
+    ReportDetailViewComponent, 
+    AddUserDialogComponent, 
+    ConfirmComponent]
 })
 export class AppModule { }

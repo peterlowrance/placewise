@@ -19,13 +19,13 @@
             </div>
         </mat-card>
         -->
-        <button mat-raised-button class="big-button action-color report-button" [disabled]="loadingAdmins || reportLowDisabled || !canReport" (click)="setupLowReport()">
+        <button mat-raised-button class="big-button action-color report-button" [disabled]="reportLowDisabled || !canReport" (click)="setupLowReport()">
             <span *ngIf="!loading.low"> 
                 Low & Order More
             </span>
             <mat-spinner *ngIf="loading.low" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
         </button>
-        <div *ngIf="reportLowDisabled && !reportEmptyDisabled" class="disabled-report-text">
+        <div *ngIf="reportLowDisabled" class="disabled-report-text">
             This item has already been reported as low in the last 12 hours.
         </div>
         <!--
