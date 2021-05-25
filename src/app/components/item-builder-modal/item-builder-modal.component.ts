@@ -495,6 +495,7 @@ export class ItemBuilderModalComponent implements OnInit {
    */
   saveItemImage() {
     return this.imageService.putImage(this.item.imageUrl, this.item.ID).then(link => {
+      console.log("OOOOOO: " + link);
       this.item.imageUrl = link;
       this.placeIntoDB();
     });
@@ -669,7 +670,8 @@ export class ItemBuilderModalComponent implements OnInit {
     if(this.step === 1){
       this.rebuildTitle();
     }
-    else if(this.step === 3 && this.item.imageUrl && this.item.imageUrl !== '../../../assets/notFound.png'){
+    else if(this.step === 3 && this.singleStep && this.item.imageUrl && this.item.imageUrl !== '../../../assets/notFound.png'){
+      console.log("quack");
       this.saveItemImage();
     }
 

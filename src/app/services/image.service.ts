@@ -89,6 +89,7 @@ export class ImageService {
         }
 
         const str = canvas.toDataURL('image/jpeg', quality);
+        console.log("yeet");
         resolve(str);
       }
       img.src = imageURL;
@@ -97,6 +98,7 @@ export class ImageService {
 
   // Got off stackoverflow
   dataURLtoBlob(dataurl) {
+    console.log("Recieved at blob: " + dataurl);
     var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
         bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
     while(n--){

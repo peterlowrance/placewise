@@ -349,6 +349,7 @@ export class AdminService {
   }
 
   removeItem(item: Item) {
+    console.log("AAAAAAA: " + '/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID);
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).delete();
     
     this.cacheService.remove(item.ID, 'item');
