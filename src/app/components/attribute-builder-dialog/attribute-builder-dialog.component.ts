@@ -96,7 +96,6 @@ export class AttributeBuilderDialogComponent implements OnInit {
         this.layerNames.push(this.layerName);
       }
       this.layerName = '';
-      console.log(this.layerNames);
 
       if(this.layerNumber !== 0){
         this.step = 'options';
@@ -150,7 +149,7 @@ export class AttributeBuilderDialogComponent implements OnInit {
     let newAttribute: CategoryAttribute;
     
     if(this.type === 'options'){
-      if(this.layers.length > 1){
+      if(this.layerNames && this.layerNames.length > 1){
         newAttribute = {
           name: this.name,
           type: this.type,

@@ -633,7 +633,8 @@ export class ItemComponent implements OnInit, OnDestroy {
       for(let card in cards){
         if(cards[card].name === item.attributes[itemAttr].name){
           let values = item.attributes[itemAttr].value.split('\n');
-          if(values.length < 2){
+          console.log(values.length);
+          if(values.length < 3){ // 3 because there's an extra \n in every case
             cards[card].value = item.attributes[itemAttr].value;
           }
           else {

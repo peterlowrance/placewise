@@ -318,6 +318,47 @@ export class ItemBuilderModalComponent implements OnInit {
     // Add category attributes
     for(let parent in parents){
       for(let attr in parents[parent].attributes){
+
+        let selectors: {
+          selectedValue?: string,
+          options: AttributeOption[]
+        }[];
+
+        if(parents[parent].attributes[attr].options){
+          // Prep selectors
+          selectors = [{options: parents[parent].attributes[attr].options}];
+
+          // Load the according item's attribute value(s) into the selectors
+          for(let itemAttr in item.attributes){
+            if(item.attributes[itemAttr].name === parents[parent].attributes[attr].name){
+
+              if(parents[parent].attributes[attr].layerNames){ // If there's multiple layers
+                let splitData = item.attributes[itemAttr].value.split('\n');
+
+                // Add each value (skip layer names, they should be in order)
+                for(let index = 0; index < (splitData.length-1)/2; index++){
+                  // Select value
+                  selectors[index].selectedValue = splitData[index*2+1];
+                  for(let option of selectors[index].options){
+                    if(option.value === splitData[index*2+1]){
+                      // If there's another layer yet to be filled, add layer
+                      if(option.dependentOptions){
+                        selectors.push({options: option.dependentOptions});
+                      }
+                      break;
+                    }
+                  }
+                }
+              }
+              else {
+                // If there's not multiple layers, load the single value (and take off the \n)
+                selectors[0].selectedValue = item.attributes[itemAttr].value.split('\n')[0];
+              }
+              break;
+            }
+          }
+        }
+
         cards.push({
           name: parents[parent].attributes[attr]['name'],
           category: parents[parent].name,
@@ -325,7 +366,7 @@ export class ItemBuilderModalComponent implements OnInit {
           isValid: false, // If there's data there, it should already be valid
           type: parents[parent].attributes[attr]['type'] || 'text',
           layerNames: parents[parent].attributes[attr].layerNames,
-          selectors: [{options: parents[parent].attributes[attr].options}]
+          selectors: selectors
         })
       }
     }
@@ -421,7 +462,11 @@ export class ItemBuilderModalComponent implements OnInit {
         for(let index = 0; index < card.selectors.length; index++){
           // Sometimes we have the card loaded with a selector but no value. In this case, don't bother to add that
           if(card.selectors[index].selectedValue){
-            this.item.attributes[attr].value += card.layerNames[index] + '\n';
+            // If there's multiple layers, store the layer name followed by it's value
+            console.log(card.layerNames);
+            if(card.layerNames){
+              this.item.attributes[attr].value += card.layerNames[index] + '\n';
+            }
             this.item.attributes[attr].value += card.selectors[index].selectedValue + '\n';
           }
         }
