@@ -463,7 +463,6 @@ export class ItemBuilderModalComponent implements OnInit {
           // Sometimes we have the card loaded with a selector but no value. In this case, don't bother to add that
           if(card.selectors[index].selectedValue){
             // If there's multiple layers, store the layer name followed by it's value
-            console.log(card.layerNames);
             if(card.layerNames){
               this.item.attributes[attr].value += card.layerNames[index] + '\n';
             }
@@ -477,13 +476,13 @@ export class ItemBuilderModalComponent implements OnInit {
       if(!this.item.attributes){
         this.item.attributes = [{
           name: card.name,
-          value: card.layerNames[0] + '\n' + option + '\n'
+          value: card.layerNames ? card.layerNames[0] + '\n' + option + '\n' : option + '\n'
         }];
       }
       else{
         this.item.attributes.push({
           name: card.name,
-          value: card.layerNames[0] + '\n' + option + '\n'
+          value: card.layerNames ? card.layerNames[0] + '\n' + option + '\n' : option + '\n'
         })
       }
     }

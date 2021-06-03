@@ -322,7 +322,6 @@ export class ReportDialogComponent implements OnInit {
 
     this.adminService.getWorkspaceUsers().subscribe(users => {
       if(users && users.length === this.authService.usersInWorkspace){
-         
         // Load admins for selection
         this.admins = users.filter(element => { return element.role === "Admin" });
         // Load selected people to report to

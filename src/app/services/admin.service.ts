@@ -94,7 +94,6 @@ export class AdminService {
       this.auth.getAuth().subscribe(auth => {
         auth.getIdTokenResult().then(
           token => {
-            console.log(reportedTo);
             // with token remove user by pinging server with token and email
             this.http.post(`${adServe}/createReport`, {
               idToken: token,
@@ -221,8 +220,6 @@ export class AdminService {
   updateItemDataFromCategoryAncestors(item: Item, categoryAndAncestors: Category[], oldCategory?: Category){
     let attributeSuffix = this.searchService.buildAttributeSuffixFrom(item, categoryAndAncestors);
     let category = categoryAndAncestors[0];
-    console.log("dum:")
-    console.log(categoryAndAncestors)
 
     // Setup additional text for auto title builder
     let returnData: any = this.getAdditionalTextFrom(category.prefix, attributeSuffix, item.name);
@@ -244,9 +241,7 @@ export class AdminService {
       if(oldCategory.prefix && item.name.startsWith(oldCategory.prefix)){
         item.name = item.name.substring(oldCategory.prefix.length);
         if(category.prefix){
-          console.log("old name: " + item.name);
           item.name = category.prefix + item.name;
-          console.log("new name: " + item.name);
         }
       }
 
@@ -349,7 +344,6 @@ export class AdminService {
   }
 
   removeItem(item: Item) {
-    console.log("AAAAAAA: " + '/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID);
     this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).delete();
     
     this.cacheService.remove(item.ID, 'item');
