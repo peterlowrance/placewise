@@ -78,19 +78,36 @@ p {
 .fab {
   position: fixed;
   bottom: 8vmin;
-  right: 6vmin;
+  right: calc(50vw - 150px);
   display: flex;
   flex-direction: column-reverse;
   align-items: flex-end;
-  z-index: 1;
+  z-index: 3;
   -webkit-box-align: end;
 }
 
-.search-fab {
+.quick-search {
   position: fixed;
-  bottom: calc(8vmin + 72px);
-  right: 6vmin;
-  z-index: 1;
+  bottom: 0;
+  right: calc(50vw - 75px);
+  min-height: 60px;
+  height: calc(8vmin + 30px);
+  width: 200px;
+  z-index: 2;
+  background-color: white;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  padding: 12px;
+}
+
+.quick-search-button {
+  position: relative;
+  left: 10px;
+}
+
+.bin-form {
+  font-size: 15px;
+  max-width: 120px;
 }
 
 .allContent {
