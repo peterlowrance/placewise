@@ -75,10 +75,27 @@ p {
   }
 }
 
+.bottom-actions {
+  position: fixed;
+  padding: 0 8px;
+  width: 100%;
+  max-width: 60rem;
+  margin: 0 inherit;
+  bottom: 0;
+  display: flex;
+  justify-content: space-around;
+}
+
+@media screen and (max-width: 450px){
+  .bottom-actions {
+    justify-content: flex-start;
+  }
+}
+
 .fab {
   position: fixed;
   bottom: 8vmin;
-  right: calc(50vw - 150px);
+  right: 6vmin;
   display: flex;
   flex-direction: column-reverse;
   align-items: flex-end;
@@ -87,9 +104,9 @@ p {
 }
 
 .quick-search {
-  position: fixed;
+  position: sticky;
   bottom: 0;
-  right: calc(50vw - 75px);
+  left: 8px;
   min-height: 60px;
   height: calc(8vmin + 30px);
   width: 200px;

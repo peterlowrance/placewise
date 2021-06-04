@@ -109,12 +109,21 @@
     </smd-fab-actions>
   </smd-fab-speed-dial>
 
-  <div class="quick-search" [class.mat-elevation-z5]="true">
-    <mat-form-field class="bin-form" appearance="outline">
-      <mat-label>Bin Number</mat-label>
-      <input class="shelf-input" matInput>
-    </mat-form-field>
-
-    <button mat-raised-button class="quick-search-button action-color-light"> GO </button>
+  <div class="bottom-actions">
+    <div class="quick-search" [class.mat-elevation-z5]="true">
+      <mat-form-field class="bin-form" appearance="outline">
+        <mat-label>Bin Number</mat-label>
+        <input 
+          class="shelf-input" 
+          matInput 
+          type="tel" 
+          pattern="\d{3}-\d{3}" 
+          maxlength="5"
+          [(ngModel)]="quickSearchNumber"
+          (keyup)="updateQuickSearch($event)">
+      </mat-form-field>
+  
+      <button mat-raised-button class="quick-search-button action-color-light"> GO </button>
+    </div>
   </div>
 </div>

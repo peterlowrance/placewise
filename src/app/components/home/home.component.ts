@@ -102,6 +102,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     threshold: .4
   };
 
+  quickSearchNumber: string = '';
+
   constructor(
     private navService: NavService,
     private searchService: SearchService,
@@ -533,5 +535,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
     this.previousSearch = event;
     this.previousSearchRoot = this.root.ID;
+  }
+
+  updateQuickSearch(event){
+    console.log(event);
+    if(event.key >= "0" && event.key <= "9"){
+      if(this.quickSearchNumber.length === 3){
+        this.quickSearchNumber += '-'; 
+
+      }
+    }
   }
 }
