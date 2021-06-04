@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit, ComponentFactoryResolver} from '@angular/core';
+import {Component, OnDestroy, OnInit, ComponentFactoryResolver, ViewChild, ElementRef} from '@angular/core';
 import {Item} from '../../models/Item';
 import {ActivatedRoute, Router} from '@angular/router';
 import {HierarchyItem} from '../../models/HierarchyItem';
@@ -45,6 +45,8 @@ import { AttributeValue } from 'src/app/models/Attribute';
   ]
 })
 export class HomeComponent implements OnInit, OnDestroy {
+  @ViewChild("binInput") binInput: ElementRef;
+  @ViewChild("shelfInput") shelfInput: ElementRef;
   control = new FormControl();
   root: HierarchyItem;
   rootSub: Subscription;
@@ -102,7 +104,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     threshold: .4
   };
 
-  quickSearchNumber: string = '';
+  quickSearchShelf;
+  quickSearchBin;
+  doubleBackspace
 
   constructor(
     private navService: NavService,
@@ -537,13 +541,31 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.previousSearchRoot = this.root.ID;
   }
 
-  updateQuickSearch(event){
-    console.log(event);
-    if(event.key >= "0" && event.key <= "9"){
-      if(this.quickSearchNumber.length === 3){
-        this.quickSearchNumber += '-'; 
+  updateQuickSearchShelf(event){
+    if(event.target.value.length === 3 || event.key === "Enter"){
+      this.binInput.nativeElement.focus();
+    }
 
+    else if(event.target.value.length > 3){
+      let chopped = (event.target.value as string).substring(3);
+      this.quickSearchShelf = Number.parseInt((event.target.value as string).substring(0, 3));
+
+      if(chopped.length > 3){
+        this.quickSearchBin = Number.parseInt(chopped.substring(0, 3));
       }
+      else {
+        this.quickSearchBin = Number.parseInt(chopped);
+      }
+    }
+  }
+
+  updateQuickSearchBin(event){
+    if(event.target.value.length > 3){
+      this.quickSearchBin = Number.parseInt(event.target.value.substring(0, 3));
+      console.log(this.quickSearchBin);
+    }
+    else if(event.target.value.length === 3 || event.key === "Enter"){
+      console.log("Search!!!!!!!!!!!");
     }
   }
 }

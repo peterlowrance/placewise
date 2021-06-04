@@ -112,18 +112,32 @@
   <div class="bottom-actions">
     <div class="quick-search" [class.mat-elevation-z5]="true">
       <mat-form-field class="bin-form" appearance="outline">
-        <mat-label>Bin Number</mat-label>
+        <mat-label>Shelf</mat-label>
         <input 
           class="shelf-input" 
           matInput 
-          type="tel" 
-          pattern="\d{3}-\d{3}" 
-          maxlength="5"
-          [(ngModel)]="quickSearchNumber"
-          (keyup)="updateQuickSearch($event)">
+          #shelfInput
+          type="number" 
+          pattern="\d*" 
+          maxlength="3"
+          [(ngModel)]="quickSearchShelf"
+          (keyup)="updateQuickSearchShelf($event)">
+      </mat-form-field>
+      <span> - </span>
+      <mat-form-field class="bin-form" appearance="outline">
+        <mat-label>Bin</mat-label>
+        <input 
+          class="shelf-input" 
+          matInput 
+          #binInput
+          type="number" 
+          pattern="\d*" 
+          maxlength="3"
+          [(ngModel)]="quickSearchBin"
+          (keyup)="updateQuickSearchBin($event)">
       </mat-form-field>
   
-      <button mat-raised-button class="quick-search-button action-color-light"> GO </button>
+      <!--button mat-raised-button class="quick-search-button action-color-light"> GO </button-->
     </div>
   </div>
 </div>
