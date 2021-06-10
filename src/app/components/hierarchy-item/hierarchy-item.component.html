@@ -60,33 +60,21 @@
     </div>
 
     <br>
-    <!--
-    <mat-card>
-      <mat-card-header>
-          <mat-card-title>Description <button mat-icon-button class="editButton" *ngIf="this.role === 'Admin'" (click)="editField('desc')"><mat-icon>edit</mat-icon></button></mat-card-title>
-      </mat-card-header>
-      <mat-card-content class="form-appear">
-          <div [ngSwitch]="this.textEditFields.desc">
-              <div *ngSwitchCase=true>
-                  <form (ngSubmit)="onDescSubmit()" class="form-appear">
-                      <mat-form-field class="form-appear">
-                          <textarea matInput #desc type="text"
-                          placeholder="Desc"
-                          [(ngModel)]="hierarchyItem.desc"
-                          name="desc"
-                          (focusout)="onDescSubmit()"
-                          required
-                          ></textarea>
-                      </mat-form-field>
-                  </form>
-              </div>
-              <div *ngSwitchDefault><p>{{hierarchyItem.desc}}</p></div>
-          </div>
-      </mat-card-content>
-      <mat-card-actions>
-      </mat-card-actions>
-    </mat-card>
-    -->
+    <div *ngIf="hierarchyItem.type === 'location'">
+      <mat-error *ngIf="usedID">
+        The shelf ID {{ usedID }} is already being used.
+      </mat-error>
+      <mat-form-field class="bin-form" appearance="outline">
+        <mat-label> Shelf ID </mat-label>
+        <input 
+        matInput 
+        type="number"
+        [(ngModel)]="shelfID"
+        (change)="updateShelfID()"
+        >
+        <mat-hint>A shelf ID of zero is considered ID-less.</mat-hint>
+      </mat-form-field>
+    </div>
     <div *ngIf="hierarchyItem.type === 'category'">
       <br>
       <mat-card class="attributes-card" [class.mat-elevation-z0]="true">

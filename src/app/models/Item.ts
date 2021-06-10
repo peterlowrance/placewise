@@ -15,9 +15,22 @@ export interface Item extends HierarchyObject {
 
   tracking?: [{
     locationID: string;
+    binID?: string;
     type: string;
     amount: any;
   }];
+
+  // Uses locationID to fetch metadata data from item
+  locationMetadata?: 
+  {
+    [locationID: string] : {
+      binID?: string;
+      trackingData?: {
+        type: string;
+        amount: any;
+      }
+    }
+  }
 
   // These get added and removed as reports are resolved
   reports?: ItemReport[];

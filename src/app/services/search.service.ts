@@ -16,6 +16,7 @@ import { HierarchyLocation } from '../models/Location';
 import { ContentObserver } from '@angular/cdk/observers';
 import { CacheService } from './cache.service';
 import { time } from 'console';
+import { BinDictionary } from '../models/BinDictionary';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -417,36 +418,71 @@ export class SearchService implements SearchInterfaceService {
       }
     }
 
-    /*
-    // Go through each suffix piece in the category we're in
-    if(categoryAndAncestors[startingIndex].suffixStructure){
-      for(let suffix of categoryAndAncestors[startingIndex].suffixStructure){
-        let id = suffix.attributeID;
-  
-        // If the piece points to the parent's suffix, build that piece out
-        if(id === 'parent'){
-          buildingString += suffix.beforeText + this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex + 1) + suffix.afterText;
-        }
-  
-        // Otherwise, insert that suffix piece with the corresponding value
-        else {
-          for(let attr in item.attributes){
-            if(item.attributes[attr].name === name){
-              if(item.attributes[attr].value){ // Don't insert anything if there's no value
-                buildingString += suffix.beforeText + 
-                  item.attributes[attr].value +
-                  suffix.afterText;
-              }
-            }
-          }
-        }
-      }
-    }
-    */
-
     return buildingString;
   }
 
+  private BinData: BinDictionary;
+
+  /**
+   * @returns comma separated location and item ID's
+   */
+  getLocationAndItemFromBinID(binID: string): string {
+    if(this.BinData){
+      return this.BinData.bins[binID] ?? 'no ID';
+    }
+    else {
+      return 'err';
+    }
+  }
+
+
+  getLocationFromShelfID(shelfID: string): string {
+    if(this.BinData){
+      return this.BinData.shelves[shelfID] ?? 'no ID';
+    }
+    else {
+      return 'err';
+    }
+  }
+
+  /**
+   * Used for converting numbers to a piece in a bin ID
+   * 
+   * @param num Assumes this is a whole number
+   * @returns 
+   */
+  convertNumberToThreeDigitString(num: number): string {
+    if(!num){
+      return '000';
+    }
+    if(num > 999){
+      return (num % 1000).toString();
+    }
+    if(num < 0){
+      return 'err';
+    }
+    if(num < 10){
+      return '00' + num;
+    }
+    if(num < 100){
+      return '0' + num;
+    }
+    
+    return num.toString();
+  }
+
   constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService, private cacheService: CacheService) {
+    
+    // Keep local bin data loaded and updated at all times
+    this.auth.getWorkspace().subscribe(data => {
+      if(data.name){
+        this.afs.doc<BinDictionary>('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').snapshotChanges().subscribe(doc => {
+          let data = doc.payload.data();
+          if(data){
+            this.BinData = data;
+          }
+        })
+      }
+    })
   }
 }

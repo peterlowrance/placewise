@@ -15,6 +15,7 @@ import { ImageService } from 'src/app/services/image.service';
 import { SearchService } from 'src/app/services/search.service';
 import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 import { AttributeOption } from 'src/app/models/Attribute';
+import { ENGINE_METHOD_DIGESTS } from 'constants';
 
 interface AttributeCard {
   name: string;
@@ -39,7 +40,7 @@ export class ItemBuilderModalComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<ItemBuilderModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: {hierarchyObj: HierarchyObject, step?: number},
+    @Inject(MAT_DIALOG_DATA) public data: {hierarchyObj: HierarchyObject, step?: string},
     private searchService: SearchService,
     public dialog: MatDialog,
     private adminService: AdminService,
@@ -50,21 +51,26 @@ export class ItemBuilderModalComponent implements OnInit {
   ) { }
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
-    readonly MAX_STEP = 4;
-    readonly MIN_STEP = 0;
 
 
-    step = -1;                                // What step are we at in filling in data
-    singleStep: Boolean;                      // If we are here to edit one piece of the item
-    item: Item;                               // Item being setup
-    category: Category;                       // Category of the item
-    categoryAndAncestors: Category[];         // For attributes
-    locations: HierarchyLocation[];           // The locations and their ancestors
-    attributesForCard: AttributeCard[];       // Attributes of the item, for the UI
-    additionalText: string;                   // Helps with setting up the title
-    autoTitleBuilder: boolean;                // Switch value on UI
-    attributeSuffix: string;                  // Pre-loaded suffix
-    loadingLocations: boolean = true;         // For if it takes a while to load locations... Doesn't end up being very useful atm
+  step: string = '';                                // What step are we at in filling in data
+  singleStep: Boolean;                      // If we are here to edit one piece of the item
+  item: Item;                               // Item being setup
+  category: Category;                       // Category of the item
+  categoryAndAncestors: Category[];         // For attributes
+  locations: HierarchyLocation[];           // The locations and their ancestors
+  attributesForCard: AttributeCard[];       // Attributes of the item, for the UI
+  additionalText: string;                   // Helps with setting up the title
+  autoTitleBuilder: boolean;                // Switch value on UI
+  attributeSuffix: string;                  // Pre-loaded suffix
+  loadingLocations: boolean = true;         // For if it takes a while to load locations... Doesn't end up being very useful atm
+  binIDsToSave: { 
+    [locationID: string] : {
+      ID: string;
+      previousID: string;
+    }
+  } = {};
+  invalidBinIDErrors: {[locationID: string] : string} = {};
 
 
   ngOnInit() {
@@ -83,7 +89,7 @@ export class ItemBuilderModalComponent implements OnInit {
         category: 'root',
         imageUrl: '../../../assets/notFound.png'
       };
-      this.step = 0;
+      this.step = 'basic';
 
       // If we started with a category, fill in the data we know
       if(this.data.hierarchyObj.type === 'category'){
@@ -194,7 +200,6 @@ export class ItemBuilderModalComponent implements OnInit {
           this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => {
             this.categoryAndAncestors = categoryAncestors[0];
             this.categoryAndAncestors.unshift(newCategory);
-            console.log(newCategory);
 
             let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.item, this.categoryAndAncestors, this.category);
             this.attributeSuffix = returnData.attributeSuffix;
@@ -287,7 +292,6 @@ export class ItemBuilderModalComponent implements OnInit {
 
   loadCards(){
     // Whenever category updates, load/reload the attributes into the cards with category metadata
-    console.log(this.categoryAndAncestors);
     let rebuiltCards = this.loadAttributesForCards(this.categoryAndAncestors, this.item);
     if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
       this.attributesForCard = rebuiltCards;
@@ -539,7 +543,6 @@ export class ItemBuilderModalComponent implements OnInit {
    */
   saveItemImage() {
     return this.imageService.putImage(this.item.imageUrl, this.item.ID).then(link => {
-      console.log("OOOOOO: " + link);
       this.item.imageUrl = link;
       this.placeIntoDB();
     });
@@ -624,8 +627,8 @@ export class ItemBuilderModalComponent implements OnInit {
 
   isReadyForNextStep(): Boolean {
 
-    // Setup Category and Locaiton
-    if(this.step == 0){
+    // Setup Category and Location
+    if(this.step === 'basic'){
       // If we're still loading category
       if(!this.category){
         return false;
@@ -650,8 +653,14 @@ export class ItemBuilderModalComponent implements OnInit {
       return true;
     }
 
-    // Setup attributes
-    else if(this.step == 1){
+    else if(this.step === 'bins'){
+      for(let _ in this.invalidBinIDErrors){
+        return false;
+      }
+      return true;
+    }
+
+    else if(this.step === 'attributes'){
       // If we're still loading attributes
       if(!this.attributesForCard){
         return false;
@@ -667,8 +676,7 @@ export class ItemBuilderModalComponent implements OnInit {
       }
     }
 
-    // Setup title
-    else if(this.step == 2){
+    else if(this.step === 'title'){
       // Only disable if the title is blank
       if(!this.item.name){
         return false;
@@ -699,6 +707,82 @@ export class ItemBuilderModalComponent implements OnInit {
     }
   }
 
+  submitBinID(location: HierarchyLocation, binInput){
+
+    let previousID = null;
+    if(this.item.locationMetadata && this.item.locationMetadata[location.ID] && this.item.locationMetadata[location.ID].binID){
+      previousID = this.item.locationMetadata[location.ID].binID;
+    }
+
+    // If we have it blank, leave values as null for deleting
+    if(!binInput.value){
+      this.addBinIDToBeSaved(location.ID, null, previousID);
+    }
+
+    // If the input has gotten too long, cut off the extra added
+    if(binInput.value.length > 3){
+      binInput.value = binInput.value.substring(0, 3);
+    }
+    
+    // This is so then we're not directly messing with user input 
+    // when filling in the other zeros
+    let fullBinNumber: string = binInput.value;
+    if(fullBinNumber.length < 3){
+      for(let i = 0; i < 3-binInput.value.length; i++){
+        fullBinNumber = '0' + fullBinNumber;
+      }
+    }
+
+    // Build the new bin ID
+    let binID = (location.shelfID ?? '000') + "-" + fullBinNumber;
+    // If the ID is the same as before, just exit
+    if(previousID === binID){
+      return;
+    }
+    
+    // Check to make sure it's not being used by a different item
+    let polledID = this.searchService.getLocationAndItemFromBinID(binID);
+    if(polledID === 'no ID'){
+      // This means everything checks out
+
+      // Add it to be saved to BinDictionary later
+      this.addBinIDToBeSaved(location.ID, binID, previousID);
+
+      // Update item data with new BinID
+      if(this.item.locationMetadata){
+        this.item.locationMetadata[location.ID].binID = binID 
+      }
+      else {
+        this.item.locationMetadata = {[location.ID] : {binID: binID}};
+      }
+    }
+    else if(polledID === 'err'){
+      this.invalidBinIDErrors[location.ID] = "There was an error retrieving your data.";
+    }
+    else {
+      this.invalidBinIDErrors[location.ID] = "Bin ID " + binID + " is already in use.";
+    }
+  }
+
+  addBinIDToBeSaved(locationID: string, binID: string, previousID: string){
+    let binIDtoSave = this.binIDsToSave[locationID];
+    if(binIDtoSave){
+      binIDtoSave.ID = binID;
+    }
+    else {
+      this.binIDsToSave[locationID] = {
+        ID: binID,
+        previousID: previousID
+      }
+    }
+
+    delete this.invalidBinIDErrors[locationID];
+  }
+
+  saveBinIDs(){
+    this.adminService.setBinIDs(this.binIDsToSave, this.item.ID);
+  }
+
   isCardIncomplete(card: AttributeCard){
     if(card.value){
       return false;
@@ -711,17 +795,19 @@ export class ItemBuilderModalComponent implements OnInit {
   }
 
   nextStep(){
-    if(this.step === 1){
+    if(this.step === 'attribute'){
       this.rebuildTitle();
     }
-    else if(this.step === 3 && this.singleStep && this.item.imageUrl && this.item.imageUrl !== '../../../assets/notFound.png'){
-      console.log("quack");
+    else if(this.step === 'picture' && this.singleStep && this.item.imageUrl && this.item.imageUrl !== '../../../assets/notFound.png'){
       this.saveItemImage();
     }
 
     if(this.singleStep){
       // Note: We don't need to do corrections for category/location saving because we pull up those modals directly
-      if(this.step !== 3){
+      if(this.step === 'bins'){
+        this.saveBinIDs();
+      }
+      if(this.step !== 'picture'){
         this.placeIntoDB();
       }
       this.dialogRef.close({wasValid: true});
@@ -729,7 +815,7 @@ export class ItemBuilderModalComponent implements OnInit {
     }
 
     else {
-      if(this.step + 1 > this.MAX_STEP){
+      if(this.step === 'extras'){
         if(this.singleStep){
           this.router.navigate(['/item/' + this.item.ID]);
         }
@@ -739,9 +825,20 @@ export class ItemBuilderModalComponent implements OnInit {
       }
 
       else {
-        this.step += 1;
+        this.step = this.getNextStep(this.step);
         window.scrollTo(0, 0);
       }
+    }
+  }
+
+  getNextStep(step: string): string {
+    switch(step){
+      case 'basic': return 'bins';
+      case 'bins': return 'attributes';
+      case 'attributes': return 'title';
+      case 'title': return 'picture';
+      case 'picture': return 'extras';
+      default: return 'exit';
     }
   }
 
@@ -755,6 +852,7 @@ export class ItemBuilderModalComponent implements OnInit {
       if(this.item.imageUrl !== '../../../assets/notFound.png'){
         this.saveItemImage();
       }
+      this.saveBinIDs();
       this.router.navigate(['/item/' + id]);
       this.dialogRef.close({wasValid: true});
     });

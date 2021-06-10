@@ -159,3 +159,8 @@
   padding-right: 12px;
   border-left: 2px solid lightgray;
 }
+
+.bin-form {
+  font-size: 15px;
+  max-width: 72px;
+}

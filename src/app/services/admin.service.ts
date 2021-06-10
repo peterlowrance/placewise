@@ -19,6 +19,7 @@ import { HierarchyLocation } from '../models/Location';
 import { type } from 'os';
 import { WorkspaceUser } from '../models/WorkspaceUser';
 import { CacheService } from './cache.service';
+import { BinDictionary } from '../models/BinDictionary';
 
 declare var require: any;
 
@@ -726,6 +727,101 @@ export class AdminService {
   updateDefaultReportUsers(userIDs: string[]){
     this.afs.doc('/Workspaces/' + this.auth.workspace.id).update({defaultUsersForReports: userIDs})
   }
+
+  setShelfID(locationID: string, shelfID: string, previousShelfID?: string): Observable<string> {
+    return new Observable(obs => {
+      this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').get().subscribe(doc => {
+        if(doc.exists && doc.data().shelves){
+          let data = doc.data() as BinDictionary;
+
+          if(shelfID === '000'){
+            obs.next('Zero is allowed, but will not be able to be referenced.'); // 0 shelf not allowed
+            
+            if(previousShelfID){
+              delete data.shelves[previousShelfID];
+              this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({shelves: data.shelves});
+            }
+            obs.complete();
+            return;
+          }
+  
+          if(data.shelves[shelfID]){
+            obs.next('ID is already taken'); // ID already exists
+            obs.complete();
+            return;
+          }
+
+          if(previousShelfID){
+            delete data.shelves[previousShelfID];
+          }
+          data.shelves[shelfID] = locationID;
+  
+          this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({shelves: data.shelves});
+          obs.next('valid');
+          obs.complete();
+        }
+        else {
+          this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({shelves: {[shelfID] : locationID}});
+          obs.next('valid');
+          obs.complete();
+        }
+      })
+    })
+  }
+
+  /**
+   * This is a straight foward method of adding the bin ID to the BinDictionary
+   */
+  setBinIDs(locationsData: {[locationID: string]: { ID: string, previousID: string}}, itemID: string) {
+    this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').get().subscribe(doc => {
+      if(doc.exists && doc.data().bins){
+        let data = doc.data() as BinDictionary;
+
+        for(let locationID in locationsData){
+          let locationData = locationsData[locationID];
+
+          if(locationData.previousID){
+            delete data.bins[locationData.previousID];
+          }
+          if(locationData.ID){
+            data.bins[locationData.ID] = locationID + ',' + itemID;
+          }
+        }
+
+        this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({bins: data.bins});
+      }
+      else {
+        let newBinDict: BinDictionary = {bins: {}, shelves: {}};
+
+        for(let locationID in locationsData){
+          let locationData = locationsData[locationID];
+
+          newBinDict.bins[locationData.ID] = locationID + ',' + itemID;
+        }
+
+        this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({bins: newBinDict.bins});
+      }
+    });
+  }
+
+  /*
+  async setBinID(locationID: string, itemID: string, binID: string): boolean {
+    if(binID.startsWith('000')){
+      return false; // 0 shelf not allowed
+    }
+
+    this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').get().subscribe(doc => {
+      if(doc.exists && doc.data().shelves){
+        let data = doc.data() as BinDictionary;
+        if(data.bins[binID]){
+          return false;
+        }
+      }
+      else {
+
+      }
+    });
+  }*/
 
   constructor(
     private afs: AngularFirestore, 

@@ -221,6 +221,9 @@ export class AdvancedAlphaNumSort {
 
     }
 
+    /**
+     * @returns 1 for greater, -1 for less, 0 for same
+     */
     static compare(a: string, b: string): number {
         let maxLength = a.length > b.length  ? a.length : b.length; 
         let aOffset = 0;

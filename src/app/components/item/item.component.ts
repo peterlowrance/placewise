@@ -69,6 +69,7 @@ interface ItemLocation {
   ancestors?: HierarchyItem[];
   tracking: TrackingData;
   isPanelExtended?: Boolean;
+  binID?: string;
 }
 
 @Component({
@@ -234,6 +235,17 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
   }
 
+  TEMPSetBinID(id: string, bin: string){
+    console.log(id);
+    if(!this.item.locationMetadata){
+      this.item.locationMetadata = {[id] : {binID: bin}};
+    }
+    else {
+      this.item.locationMetadata[id] = {binID: bin};
+    }
+    
+    this.placeIntoDB();
+  }
   
   private setupCategorySubscription(item: Item): Subscription { // I could also take in Obs<Cat> if that helps in the future
     // Return it for unsubscribing
@@ -314,36 +326,40 @@ export class ItemComponent implements OnInit, OnDestroy {
     // Subscribe to the locations individually
     for(let locIndex in item.locations){
       let sub = this.searchService.getLocation(item.locations[locIndex]).subscribe(location => {
-        let tracking: TrackingData;
-        let found = false;
-        
-        // First try to find tracking data for this location that already exists on the item
-        if(item.tracking)
-        for(let tracked of item.tracking){
-          if(tracked.locationID === location.ID){
-            found = true;
-            let isNumber = tracked.type.startsWith('number');
-            let cap = isNumber ? parseInt(tracked.type.substring(7)) : 0; // If there's a cap, it will be formatted like "number,[number]" so start at 7 to read it
-
-            tracking = { type: tracked.type, isNumber, amount: tracked.amount, cap }
-            break;
-          }
+        // Init with default data
+        let locationData: ItemLocation = { 
+          location: location,
+          tracking: { type: "amount", isNumber: false, amount: "Good", cap: 0 }
         };
 
-        // Otherwise, fill in default tracking data
-        if(!found){
-          tracking = { type: "amount", isNumber: false, amount: "Good", cap: 0 }
+        // Replace default data with saved data as needed
+        if(item.locationMetadata && item.locationMetadata[location.ID]){
+          let metadata = item.locationMetadata[location.ID];
+          if(metadata.binID){
+            locationData.binID = metadata.binID;
+          }
+          if(metadata.trackingData){
+            locationData.tracking = {type: metadata.trackingData.type, 
+              isNumber: metadata.trackingData.type.startsWith('number'),
+              amount: metadata.trackingData.amount
+            }
+          }
         }
         
         // See if there's already an ItemLocation corresponding to this and update it.
-        let index = this.itemLocations.findIndex((elem) => {return elem.location.ID === location.ID});
+        let index = this.itemLocations.findIndex((elem) => {
+          console.log(item.locations[locIndex]);
+          console.log(elem.location.ID);
+          console.log(location.ID);
+          return elem.location.ID === location.ID
+        });
         if(index > -1){
           this.itemLocations[index].location = location;
-          this.itemLocations[index].tracking = tracking;
+          this.itemLocations[index].tracking = locationData.tracking;
         }
         // Otherwise, add the new location
         else {
-          this.itemLocations.push({location, tracking, isPanelExtended: item.locations.length < 2});
+          this.itemLocations.push(locationData);
         }
       })
       subs.push(sub);
@@ -504,20 +520,21 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   editField(field: string) {
     // Find and open the according modal
-    let modalStep = -1;
+    let modalStep = '';
     switch (field) {
-      case 'Attributes': modalStep = 1; break;
+      case 'Attributes': modalStep = 'attributes'; break;
+      case 'Bin IDs': modalStep = 'bins'; break;
       case 'Category': this.editCategory(); break;
-      case 'Description': modalStep = 4; break;
-      case 'Image': modalStep = 3; break;
+      case 'Description': modalStep = 'extras'; break;
+      case 'Image': modalStep = 'picture'; break;
       case 'Location': this.editLocation(); break;
-      case 'Tags': modalStep = 4; break;
-      case 'Title': modalStep = 2; break;
+      case 'Tags': modalStep = 'extras'; break;
+      case 'Title': modalStep = 'title'; break;
       default: break;
     }
 
     // Open the item builder modal if applicable
-    if(modalStep > -1){
+    if(modalStep){
       this.dialog.open(ItemBuilderModalComponent, {
         width: '480px',
         data: {hierarchyObj: this.item, step: modalStep}

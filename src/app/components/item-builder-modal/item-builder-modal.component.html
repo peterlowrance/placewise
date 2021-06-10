@@ -6,7 +6,7 @@
 
 
         <!-- Category and Location -->
-        <div *ngIf="this.step === 0" class="step-0">
+        <div *ngIf="this.step === 'basic'" class="step-basic">
             <h2 mat-dialog-title> Basic Setup </h2>
             <div class="scrollable">
                 <br>
@@ -35,9 +35,51 @@
             </div>
         </div>
 
+        <!-- Bin ID Setup -->
+        <div *ngIf="this.step == 'bins'" class="step-bins">
+            <h2 mat-dialog-title> 
+                Bin IDs 
+                <br>
+                <small class="light-text"> This step is not required. </small>
+            </h2>
+
+            <div class="scrollable">
+                <div *ngFor="let location of locations">
+                    <div class="locations-container">
+                        <img class="locationImg" src={{location.imageUrl}}>
+                        <div class="location-name">{{location.name !== 'root' ? location.name : 'Unassigned'}}
+                            <mat-icon *ngIf="location.name == 'root'" class="missing-data-icon">error_outline</mat-icon>
+                        </div>
+                    </div>
+    
+                    <span *ngIf="location.shelfID"> {{location.shelfID}} </span>
+                    <span *ngIf="!location.shelfID"> 000 </span>
+                    <span> - </span>
+                    <mat-form-field class="bin-form" appearance="outline">
+                        <mat-label>Bin #</mat-label>
+                        <input 
+                        class="shelf-input" 
+                        matInput 
+                        #binInput
+                        type="number" 
+                        pattern="\d*"
+                        (keyup)="submitBinID(location, $event.target)"
+                        >
+                    </mat-form-field>
+                    <mat-error *ngIf="invalidBinIDErrors[location.ID]">
+                        {{ invalidBinIDErrors[location.ID] }}
+                        <br>
+                        <br>
+                    </mat-error>
+
+                    <mat-divider></mat-divider>
+                    <br>
+                </div>
+            </div>
+        </div>
         
         <!-- Attributes -->
-        <div *ngIf="this.step == 1" class="step-1">
+        <div *ngIf="this.step == 'attributes'" class="step-attributes">
             <h2 mat-dialog-title> Attributes </h2>
             <div class="scrollable">
                 <div *ngIf="attributesForCard">
@@ -88,7 +130,7 @@
 
 
         <!-- Build Title -->
-        <div *ngIf="this.step == 2 && category" class="step-2">
+        <div *ngIf="this.step == 'title' && category" class="step-title">
             <h2 mat-dialog-title> Title Builder </h2>
 
             <div *ngIf="!category">
@@ -161,7 +203,7 @@
 
 
         <!-- Picture -->
-        <div *ngIf="this.step == 3" class="step-3">
+        <div *ngIf="this.step == 'picture'" class="step-picture">
             <h2 mat-dialog-title> Item Picture </h2>
             <div class="scrollable">
                 <div *ngIf="item.imageUrl == '../../../assets/notFound.png'">
@@ -180,7 +222,7 @@
 
 
         <!-- Extras -->
-        <div *ngIf="this.step == 4" class="step-4">
+        <div *ngIf="this.step == 'extras'" class="step-extras">
             <h2 mat-dialog-title> Extras </h2>
             <div class="scrollable">
                 <h4> Description <small class="light-text"> (Not required) </small> </h4>
@@ -229,7 +271,7 @@
         <button mat-raised-button class="rect-action-button" (click)="cancel()">Cancel</button>
         
         <!-- For images -->
-        <div *ngIf="step == 3" class="stacked-buttons">
+        <div *ngIf="step === 'picture'" class="stacked-buttons">
             <!-- Skip button for image if there is none -->
             <button *ngIf="!singleStep && (!item.imageUrl || item.imageUrl == '../../../assets/notFound.png')" mat-raised-button class="rect-action-button action-color" (click)="nextStep()">Skip</button>
             <!-- Camera button for when there is no image -->
@@ -243,8 +285,8 @@
         </div>
 
         <!-- Next or confirm button depending on if this is a single step-->
-        <button *ngIf="(step < MAX_STEP) && (step != 3)" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">{{ singleStep ? "Confirm" : "Next" }}</button>
-        <button *ngIf="step == MAX_STEP" mat-raised-button class="rect-action-button" (click)="nextStep()" color="primary">Finish</button>
+        <button *ngIf="(step !== 'extras') && (step !== 'picture')" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">{{ singleStep ? "Confirm" : "Next" }}</button>
+        <button *ngIf="step === 'extras'" mat-raised-button class="rect-action-button" (click)="nextStep()" color="primary">Finish</button>
     </div>
 
 </div>

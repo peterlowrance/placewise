@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, ElementRef, ViewChild, SystemJsNgModuleLoader } from '@angular/core';
 import {HierarchyItem} from '../../models/HierarchyItem';
-import {FormControl, Validators} from "@angular/forms";
+import {FormControl, FormGroupDirective, NgForm, Validators} from "@angular/forms";
 import {ActivatedRoute} from '@angular/router';
 import {AuthService} from "../../services/auth.service";
 import { SearchService } from '../../services/search.service';
@@ -20,6 +20,8 @@ import { AttributeBuilderDialogComponent } from '../attribute-builder-dialog/att
 import { AddAttributeSuffixDialogComponent } from '../add-attribute-suffix-dialog/add-attribute-suffix-dialog.component';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { CategoryAttribute } from 'src/app/models/Attribute';
+import { HierarchyLocation } from 'src/app/models/Location';
+import { ErrorStateMatcher } from '@angular/material/core';
 
 @Component({
   selector: 'app-hierarchy-item',
@@ -61,6 +63,7 @@ export class HierarchyItemComponent implements OnInit {
   isSaving = false;
   dirty = false; // Needed for HTML
   previousName: string; // Needed for automatically making the prefix the name with checking what it was previously: to make sure it's not custom
+  shelfID: number;
 
   // edit fields for name and description
   @ViewChild('name') nameField: ElementRef;
@@ -72,6 +75,10 @@ export class HierarchyItemComponent implements OnInit {
     prefix: boolean;
     // tags: boolean;
   } = {name: false, desc: false,/* tags: false,*/ prefix: false};
+
+
+  usedID: string; // BAD: A bit hacky
+  //matcher = new MyErrorStateMatcher();
 
   constructor(
     private searchService: SearchService, 
@@ -173,6 +180,10 @@ export class HierarchyItemComponent implements OnInit {
           this.hierarchyItem = loc;
           this.searchService.getAncestorsOf(loc).subscribe(parents => this.parentsToDisplay = parents);
           
+          if(loc.shelfID){
+            this.shelfID = Number.parseInt(loc.shelfID);
+          }
+
           if(!this.previousItem) // Don't overwrite if we already have something
           this.previousItem = JSON.parse(JSON.stringify(this.hierarchyItem)); // deep copy
         }
@@ -241,7 +252,8 @@ export class HierarchyItemComponent implements OnInit {
   }
 
   update() {
-    this.adminService.updateHierarchy(this.hierarchyItem, this.isCategory).then(confirmation => {
+    // BAD: We should pass around a wrapper so that we don't have to hard duplicate when messing with some metadata
+    this.adminService.updateHierarchy(JSON.parse(JSON.stringify(this.hierarchyItem)), this.isCategory).then(confirmation => {
       if (confirmation !== true) {
         this.snack.open('Save Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
       }
@@ -556,6 +568,22 @@ export class HierarchyItemComponent implements OnInit {
     moveItemInArray(this.hierAsCategory.titleFormat, event.previousIndex, event.currentIndex);
     console.log(this.hierAsCategory.titleFormat);
     this.update();
+  }
+
+  updateShelfID(){
+    let previousShelfID = (this.hierarchyItem as HierarchyLocation).shelfID;
+    (this.hierarchyItem as HierarchyLocation).shelfID = this.searchService.convertNumberToThreeDigitString(this.shelfID);
+    this.adminService.setShelfID(this.hierarchyItem.ID, (this.hierarchyItem as HierarchyLocation).shelfID, previousShelfID).subscribe(result => {
+      if(result === 'valid' || result.startsWith("Zero")){
+        this.usedID = null;
+        this.update();
+      }
+      else {
+        this.usedID = (this.hierarchyItem as HierarchyLocation).shelfID;
+        (this.hierarchyItem as HierarchyLocation).shelfID = previousShelfID;
+        this.shelfID = Number.parseInt(previousShelfID);
+      }
+    });
   }
 
   // /**

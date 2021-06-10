@@ -72,6 +72,30 @@
   </div>
 
   <!--Items-->
+  <div *ngIf="binItems && binItems.length > 0">
+    <div class="header">Items in Bins</div>
+    <mat-grid-list class="row" [cols]="columns * 2" rowHeight="3:4.5">
+      <mat-grid-tile class="holder" *ngFor="let item of binItems">
+        <mat-card class="binCard structure-color-light" [class.mat-elevation-z3]="true">
+          <mat-card class="itemCard binItemCard" (click)="goToItem(item)">
+            <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
+            <mat-card-content>
+              <div class='item-text'>
+                <p *ngIf="item.name"> {{ item.name }} </p>
+                <h4 *ngIf="!item.name" class="light-text"> ( No title ) </h4>
+              </div>
+            </mat-card-content>
+          </mat-card>
+          
+          <p class='bin-text'>
+            {{ item.locationMetadata[root.ID].binID }}
+          </p>
+        </mat-card>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </div>
+
+  <!--Items-->
   <div *ngIf="items && items.length > 0">
     <div class="header">Items</div>
     <mat-grid-list class="row" [cols]="columns * 2" rowHeight="3:4">
@@ -89,6 +113,7 @@
     </mat-grid-list>
   </div>
 
+  <br>
   <br>
   <br>
   <br>

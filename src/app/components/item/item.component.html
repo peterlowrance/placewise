@@ -22,6 +22,7 @@
             </button>
             <mat-menu #editMenu="matMenu">
                 <button class="edit-item" (click)="editField('Attributes')" mat-menu-item>Attributes</button>
+                <button class="edit-item" (click)="editField('Bin IDs')" mat-menu-item>Bin IDs</button>
                 <button class="edit-item" (click)="editField('Category')" mat-menu-item>Category</button>
                 <button class="edit-item" (click)="editField('Description')" mat-menu-item>Description</button>
                 <button class="edit-item" (click)="editField('Image')" mat-menu-item>Image</button>
@@ -32,6 +33,10 @@
         </div>
 
         <div class="small-spacer"></div>
+
+        <mat-card *ngIf="item.binID" class="structure-color-light">
+            Bin ID: {{item.binID}}
+        </mat-card>
 
         <h3> Attributes </h3>
 
@@ -61,6 +66,11 @@
                     <img class="clickable-image location-img" [class.mat-elevation-z4]="true" (click)="linkTo(locationData.location.ID, 'location')" src={{locationData.location.imageUrl}}>
                     <div class="location-name"> {{locationData.location.name}} </div>
                 </mat-expansion-panel-header>
+
+                <mat-card *ngIf="locationData.binID" class="structure-color-light">
+                    <h3>Bin {{ locationData.binID }}</h3>
+                </mat-card>
+
                 <h3>
                     Tracking:
                 </h3>
@@ -147,6 +157,7 @@
             <span *ngIf="!item.name" class="light-text"> ( No Title ) </span>
         </h1>
         <div *ngIf="item.desc" class="item-description">{{item.desc}}</div>
+
         <button class="big-button report-button action-color" mat-raised-button (click)="createReport()" [class.mat-elevation-z3]="true">
             <mat-icon>assignment_late</mat-icon>
             Report
@@ -159,6 +170,7 @@
             </button>
             <mat-menu #editMenu="matMenu">
                 <button class="edit-item" (click)="editField('Attributes')" mat-menu-item>Attributes</button>
+                <button class="edit-item" (click)="editField('Bin IDs')" mat-menu-item>Bin IDs</button>
                 <button class="edit-item" (click)="editField('Category')" mat-menu-item>Category</button>
                 <button class="edit-item" (click)="editField('Description')" mat-menu-item>Description</button>
                 <button class="edit-item" (click)="editField('Image')" mat-menu-item>Image</button>
@@ -172,6 +184,11 @@
     <div class="item-content">
 
         <div class="item-content-block">
+            <div class="small-spacer"></div>
+            <mat-card *ngIf="item.binID" class="structure-color-light">
+                Bin ID: {{item.binID}}
+            </mat-card>
+
             <div class="small-spacer"></div>
             <img class="desktop-image container-img" src={{item.imageUrl}} layout-fit>
             <!--button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="editField('photo')"><mat-icon>photo_camera</mat-icon></button-->

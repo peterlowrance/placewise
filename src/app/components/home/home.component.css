@@ -144,6 +144,18 @@ mat-card {
   border-radius: 8px;
 }
 
+.binItemCard {
+  height: 88%;
+  width: 100%;
+}
+
+.binCard {
+  width: 92%;
+  height: 92%;
+  padding: 0;
+  border-radius: 8px;
+}
+
 .hierarchyCard {
   border-radius: 8px;
   width: 96%;
@@ -223,6 +235,15 @@ mat-form-field {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 15px;
+}
+
+.bin-text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 12%;
+  font-size: 15px;
 }
 
 .hierarchy-text {
