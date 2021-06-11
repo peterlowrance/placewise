@@ -426,7 +426,7 @@ export class SearchService implements SearchInterfaceService {
   /**
    * @returns comma separated location and item ID's
    */
-  getLocationAndItemFromBinID(binID: string): string {
+  getItemIDFromBinID(binID: string): string {
     if(this.BinData){
       return this.BinData.bins[binID] ?? 'no ID';
     }
@@ -436,7 +436,7 @@ export class SearchService implements SearchInterfaceService {
   }
 
 
-  getLocationFromShelfID(shelfID: string): string {
+  getLocationIDFromShelfID(shelfID: string): string {
     if(this.BinData){
       return this.BinData.shelves[shelfID] ?? 'no ID';
     }

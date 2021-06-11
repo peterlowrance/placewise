@@ -741,7 +741,7 @@ export class ItemBuilderModalComponent implements OnInit {
     }
     
     // Check to make sure it's not being used by a different item
-    let polledID = this.searchService.getLocationAndItemFromBinID(binID);
+    let polledID = this.searchService.getItemIDFromBinID(binID);
     if(polledID === 'no ID'){
       // This means everything checks out
 

@@ -784,7 +784,7 @@ export class AdminService {
             delete data.bins[locationData.previousID];
           }
           if(locationData.ID){
-            data.bins[locationData.ID] = locationID + ',' + itemID;
+            data.bins[locationData.ID] = itemID;
           }
         }
 
@@ -796,7 +796,7 @@ export class AdminService {
         for(let locationID in locationsData){
           let locationData = locationsData[locationID];
 
-          newBinDict.bins[locationData.ID] = locationID + ',' + itemID;
+          newBinDict.bins[locationData.ID] = itemID;
         }
 
         this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({bins: newBinDict.bins});

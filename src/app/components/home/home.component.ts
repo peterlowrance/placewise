@@ -34,13 +34,13 @@ import { AdvancedAlphaNumSort } from 'src/app/utils/AdvancedAlphaNumSort';
   styleUrls: ['./home.component.css'],
   animations:[
     trigger('button-extention-item', [
-      state('shrunk', style({width: '50px', visibility: 'hidden', pointerEvents: 'none'})),
-      state('extended', style({width: '80px', visibility: 'visible', pointerEvents: 'auto'})),
+      state('shrunk', style({width: '50px', visibility: 'hidden', pointerEvents: 'none', display: 'none'})),
+      state('extended', style({width: '80px', visibility: 'visible', pointerEvents: 'auto', display: 'block'})),
       transition('shrunk <=> extended', animate('250ms'))
     ]),
     trigger('button-extention-hierarchy', [
-      state('shrunk', style({width: '90px', visibility: 'hidden', pointerEvents: 'none'})),
-      state('extended', style({width: '140px', visibility: 'visible', pointerEvents: 'auto'})),
+      state('shrunk', style({width: '90px', visibility: 'hidden', pointerEvents: 'none', display: 'none'})),
+      state('extended', style({width: '140px', visibility: 'visible', pointerEvents: 'auto', display: 'block'})),
       transition('shrunk <=> extended', animate('250ms'))
     ])
   ]
@@ -108,7 +108,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   quickSearchShelf;
   quickSearchBin;
-  doubleBackspace
+  doubleBackspace;
+
+  binSearchItem: Item = null;
 
   constructor(
     private navService: NavService,
@@ -606,7 +608,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     if(event.target.value.length === 3 || event.key === "Enter"){
       this.binInput.nativeElement.focus();
 
-      let locationID = this.searchService.getLocationFromShelfID(this.searchService.convertNumberToThreeDigitString(this.quickSearchShelf));
+      let locationID = this.searchService.getLocationIDFromShelfID(this.searchService.convertNumberToThreeDigitString(this.quickSearchShelf));
       console.log(locationID);
       if(locationID && locationID !== 'err' && locationID !== 'no ID' && locationID !== this.root.ID){
         this.searchService.getLocation(locationID).subscribe(loc => {
@@ -631,19 +633,47 @@ export class HomeComponent implements OnInit, OnDestroy {
   updateQuickSearchBin(event){
     if(event.target.value.length > 3){
       this.quickSearchBin = Number.parseInt(event.target.value.substring(0, 3));
-      console.log(this.quickSearchBin);
     }
     else if(event.target.value.length === 3 || event.key === "Enter"){
-      if(this.quickSearchShelf || this.quickSearchShelf === 0){
-        let locationID = this.searchService.getLocationAndItemFromBinID(this.searchService.convertNumberToThreeDigitString(this.quickSearchShelf) + '-' 
-        + this.searchService.convertNumberToThreeDigitString(this.quickSearchBin)).split(',')[0];
+      if(this.quickSearchShelf){
+        if(this.quickSearchShelf === 0){
+          /* DO LATER
+          let locationID = this.searchService.getItemIDFromBinID(this.searchService.convertNumberToThreeDigitString(this.quickSearchShelf) + '-' 
+          + this.searchService.convertNumberToThreeDigitString(this.quickSearchBin));
+  
+          if(locationID && locationID !== 'err' && locationID !== 'no ID' && locationID !== this.root.ID){
+            this.searchService.getLocation(locationID).subscribe(loc => {
+              this.goToHierarchy(loc);
+            });
+          }
+          */
+        }
+        else {
+          let itemID = this.searchService.getItemIDFromBinID(this.searchService.convertNumberToThreeDigitString(this.quickSearchShelf) + '-' 
+          + this.searchService.convertNumberToThreeDigitString(this.quickSearchBin));
 
-        if(locationID && locationID !== 'err' && locationID !== 'no ID' && locationID !== this.root.ID){
-          this.searchService.getLocation(locationID).subscribe(loc => {
-            this.goToHierarchy(loc);
-          });
+          for(let item of this.items){
+            if(item.ID === itemID){
+              this.binSearchItem = item;
+              this.binInput.nativeElement.blur();
+              this.shelfInput.nativeElement.blur();
+              break;
+            }
+          }
+          if(!this.binSearchItem){
+            for(let item of this.binItems){
+              if(item.ID === itemID){
+                this.binSearchItem = item;
+                this.binInput.nativeElement.blur();
+                this.shelfInput.nativeElement.blur();
+              }
+            }
+          }
         }
       }
+    }
+    else {
+      this.binSearchItem = null;
     }
   }
 }

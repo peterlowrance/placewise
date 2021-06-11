@@ -1,83 +1,107 @@
 <!--Search Bar-->
 <div class="allContent">
-  <div class="top-components">
-    <mat-button-toggle-group class="hierarchySelector" *ngIf="(!root || root?.name === 'root')" [(value)]="typeForSelectionButtons" name="hierarchySelector" (change)="toggleHierarchy($event)">
-      <mat-button-toggle value="category" >Category</mat-button-toggle>
-      <mat-button-toggle value="location">Location</mat-button-toggle>
-    </mat-button-toggle-group>
-    <div class ="tool-spacer"></div>
-    <div class="search-tools">
-      <form class="search-bar" (submit)="null">
-        <mat-form-field class="full-width">
-          <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : (typeForSelectionButtons === 'category' ? 'all Categories' : 'all Locations')}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null"> <!--[matAutocomplete]="auto"-->
-          <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearchBar()">
-            <mat-icon>close</mat-icon>
-          </button>
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
-        <mat-progress-bar *ngIf="isLoading" class="search-progress-bar" mode="query"></mat-progress-bar>
-      </form>
-      <div>
-        <button mat-stroked-button *ngIf="typeForSelectionButtons === 'category'" [matMenuTriggerFor]="beforeMenu" class="filter-menu">Filter by <mat-icon>arrow_drop_down</mat-icon></button>
-        <mat-progress-bar *ngIf="isLoadingAttributes" class="search-progress-bar" mode="determinate" value="percentLoadedAttributes"></mat-progress-bar>
-        <mat-menu #beforeMenu="matMenu" xPosition="before">
-          <button mat-menu-item *ngFor="let attribute of filterableAttributes" (click)="gatherAttributeValues(attribute)">{{attribute.name}}</button>
-        </mat-menu>
+  <div *ngIf="!binSearchItem">
+    <div class="top-components">
+      <mat-button-toggle-group class="hierarchySelector" *ngIf="(!root || root?.name === 'root')" [(value)]="typeForSelectionButtons" name="hierarchySelector" (change)="toggleHierarchy($event)">
+        <mat-button-toggle value="category" >Category</mat-button-toggle>
+        <mat-button-toggle value="location">Location</mat-button-toggle>
+      </mat-button-toggle-group>
+      <div class ="tool-spacer"></div>
+      <div class="search-tools">
+        <form class="search-bar" (submit)="null">
+          <mat-form-field class="full-width">
+            <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : (typeForSelectionButtons === 'category' ? 'all Categories' : 'all Locations')}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null"> <!--[matAutocomplete]="auto"-->
+            <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearchBar()">
+              <mat-icon>close</mat-icon>
+            </button>
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+          <mat-progress-bar *ngIf="isLoading" class="search-progress-bar" mode="query"></mat-progress-bar>
+        </form>
+        <div>
+          <button mat-stroked-button *ngIf="typeForSelectionButtons === 'category'" [matMenuTriggerFor]="beforeMenu" class="filter-menu">Filter by <mat-icon>arrow_drop_down</mat-icon></button>
+          <mat-progress-bar *ngIf="isLoadingAttributes" class="search-progress-bar" mode="determinate" value="percentLoadedAttributes"></mat-progress-bar>
+          <mat-menu #beforeMenu="matMenu" xPosition="before">
+            <button mat-menu-item *ngFor="let attribute of filterableAttributes" (click)="gatherAttributeValues(attribute)">{{attribute.name}}</button>
+          </mat-menu>
+        </div>
       </div>
     </div>
-  </div>
+    
+    <!-- Attribute filters -->
+    <mat-chip-list #chipList>
+      <mat-chip *ngFor="let attr of filteredAttributes" color="primary" [selected]="true"
+        [removable]="true" (removed)="removeAttributeFromFilter(attr.name)">
+        {{attr.name + ": " + attr.value}}
+        <mat-icon matChipRemove>cancel</mat-icon>
+      </mat-chip>
+    </mat-chip-list>
   
-  <!-- Attribute filters -->
-  <mat-chip-list #chipList>
-    <mat-chip *ngFor="let attr of filteredAttributes" color="primary" [selected]="true"
-      [removable]="true" (removed)="removeAttributeFromFilter(attr.name)">
-      {{attr.name + ": " + attr.value}}
-      <mat-icon matChipRemove>cancel</mat-icon>
-    </mat-chip>
-  </mat-chip-list>
-
-  <!--Attribute values, if we're searching for that-->
-  <div *ngIf="attributeValues && attributeValues.length > 0">
-    <div class="header">{{"Found for " + currentAttribute.name + ":"}}</div>
-    <mat-grid-list class="row" [cols]="columns * 2" rowHeight="50px">
-      <mat-grid-tile class="holder" *ngFor="let attribute of attributeValues">
-        <mat-card class="itemCard" [class.mat-elevation-z3]="true" (click)="selectAttribute(attribute)">
-          <div class="material-bypass"><div class='attribute-text'>{{attribute}}</div></div>
-        </mat-card>
-      </mat-grid-tile>
-    </mat-grid-list>
-    <br>
-  </div>
-
-  <!--Hierarchy Items-->
-  <div *ngIf="hierarchyItems && hierarchyItems.length > 0 && !filteredAttributes" (window:resize)="onResize($event)">
-    <!--Show header if there are both items and hierarchies or if there is no toggle-->
-    <div class="header">{{typeForSelectionButtons === 'category' ? 'Categories' : 'Locations'}}</div>
-    <mat-grid-list class="row" [cols]="columns" rowHeight="4:1.2">
-      <mat-grid-tile class="holder" *ngFor="let hierarchyItem of hierarchyItems">
-        <mat-card class="hierarchyCard {{typeForSelectionButtons === 'category' ? 'category-card' : 'location-card'}}" (click)="goToHierarchy(hierarchyItem)" [class.mat-elevation-z2]="true">
-          <div class="hierarchycard-content">
-            <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
-            <div class='hierarchy-text'>
-              <div class="hierarchy-title-text-positioner">
-                <div class="hierarchy-title-text"><p>{{hierarchyItem.name}}</p></div>
+    <!--Attribute values, if we're searching for that-->
+    <div *ngIf="attributeValues && attributeValues.length > 0">
+      <div class="header">{{"Found for " + currentAttribute.name + ":"}}</div>
+      <mat-grid-list class="row" [cols]="columns * 2" rowHeight="50px">
+        <mat-grid-tile class="holder" *ngFor="let attribute of attributeValues">
+          <mat-card class="itemCard" [class.mat-elevation-z3]="true" (click)="selectAttribute(attribute)">
+            <div class="material-bypass"><div class='attribute-text'>{{attribute}}</div></div>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+      <br>
+    </div>
+  
+    <!--Hierarchy Items-->
+    <div *ngIf="hierarchyItems && hierarchyItems.length > 0 && !filteredAttributes" (window:resize)="onResize($event)">
+      <!--Show header if there are both items and hierarchies or if there is no toggle-->
+      <div class="header">{{typeForSelectionButtons === 'category' ? 'Categories' : 'Locations'}}</div>
+      <mat-grid-list class="row" [cols]="columns" rowHeight="4:1.2">
+        <mat-grid-tile class="holder" *ngFor="let hierarchyItem of hierarchyItems">
+          <mat-card class="hierarchyCard {{typeForSelectionButtons === 'category' ? 'category-card' : 'location-card'}}" (click)="goToHierarchy(hierarchyItem)" [class.mat-elevation-z2]="true">
+            <div class="hierarchycard-content">
+              <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
+              <div class='hierarchy-text'>
+                <div class="hierarchy-title-text-positioner">
+                  <div class="hierarchy-title-text"><p>{{hierarchyItem.name}}</p></div>
+                </div>
+                <div class="hierarchy-desc-text"><p>{{hierarchyItem.desc ? hierarchyItem.desc : ' '}}</p></div>
               </div>
-              <div class="hierarchy-desc-text"><p>{{hierarchyItem.desc ? hierarchyItem.desc : ' '}}</p></div>
             </div>
-          </div>
-        </mat-card>
-      </mat-grid-tile>
-    </mat-grid-list>
-    <br>
-  </div>
-
-  <!--Items-->
-  <div *ngIf="binItems && binItems.length > 0">
-    <div class="header">Items in Bins</div>
-    <mat-grid-list class="row" [cols]="columns * 2" rowHeight="3:4.5">
-      <mat-grid-tile class="holder" *ngFor="let item of binItems">
-        <mat-card class="binCard structure-color-light" [class.mat-elevation-z3]="true">
-          <mat-card class="itemCard binItemCard" (click)="goToItem(item)">
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+      <br>
+    </div>
+  
+    <!--Items in bins-->
+    <div *ngIf="binItems && binItems.length > 0">
+      <div class="header">Items in Bins</div>
+      <mat-grid-list class="row" [cols]="columns * 2" rowHeight="3:4.5">
+        <mat-grid-tile class="holder" *ngFor="let item of binItems">
+          <mat-card class="binCard structure-color-light" [class.mat-elevation-z3]="true">
+            <mat-card class="itemCard binItemCard" (click)="goToItem(item)">
+              <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
+              <mat-card-content>
+                <div class='item-text'>
+                  <p *ngIf="item.name"> {{ item.name }} </p>
+                  <h4 *ngIf="!item.name" class="light-text"> ( No title ) </h4>
+                </div>
+              </mat-card-content>
+            </mat-card>
+            
+            <p class='bin-text'>
+              {{ item.locationMetadata[root.ID].binID }}
+            </p>
+          </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+  
+    <!--Items-->
+    <div *ngIf="items && items.length > 0">
+      <div class="header">Items</div>
+      <mat-grid-list class="row" [cols]="columns * 2" rowHeight="3:4">
+        <mat-grid-tile class="holder" *ngFor="let item of items">
+          <mat-card class="itemCard" (click)="goToItem(item)" [class.mat-elevation-z3]="true">
             <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
             <mat-card-content>
               <div class='item-text'>
@@ -86,32 +110,34 @@
               </div>
             </mat-card-content>
           </mat-card>
+        </mat-grid-tile>
+      </mat-grid-list>
+    </div>
+  </div>
+
+  <!-- Single result if we're searching by bin -->
+  <div *ngIf="binSearchItem">
+    <mat-grid-list class="row" [cols]="columns * 2" rowHeight="3:4.5">
+      <mat-grid-tile class="holder">
+        <mat-card class="binCard structure-color-light" [class.mat-elevation-z3]="true">
+          <mat-card class="itemCard binItemCard" (click)="goToItem(binSearchItem)">
+            <div class="item image" [ngStyle]="{'background-image': 'url(' + binSearchItem.imageUrl + ')'}"></div>
+            <mat-card-content>
+              <div class='item-text'>
+                <p *ngIf="binSearchItem.name"> {{ binSearchItem.name }} </p>
+                <h4 *ngIf="!binSearchItem.name" class="light-text"> ( No title ) </h4>
+              </div>
+            </mat-card-content>
+          </mat-card>
           
           <p class='bin-text'>
-            {{ item.locationMetadata[root.ID].binID }}
+            {{ binSearchItem.locationMetadata[root.ID].binID }}
           </p>
         </mat-card>
       </mat-grid-tile>
     </mat-grid-list>
   </div>
-
-  <!--Items-->
-  <div *ngIf="items && items.length > 0">
-    <div class="header">Items</div>
-    <mat-grid-list class="row" [cols]="columns * 2" rowHeight="3:4">
-      <mat-grid-tile class="holder" *ngFor="let item of items">
-        <mat-card class="itemCard" (click)="goToItem(item)" [class.mat-elevation-z3]="true">
-          <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
-          <mat-card-content>
-            <div class='item-text'>
-              <p *ngIf="item.name"> {{ item.name }} </p>
-              <h4 *ngIf="!item.name" class="light-text"> ( No title ) </h4>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </mat-grid-tile>
-    </mat-grid-list>
-  </div>
+  
 
   <br>
   <br>
