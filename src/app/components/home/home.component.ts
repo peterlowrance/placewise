@@ -20,6 +20,7 @@ import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-mo
 import { Attribute } from 'src/app/models/Attribute';
 import { AttributeValue } from 'src/app/models/Attribute';
 import { AdvancedAlphaNumSort } from 'src/app/utils/AdvancedAlphaNumSort';
+import { HierarchyLocation } from 'src/app/models/Location';
 
 /**
  *
@@ -106,8 +107,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     threshold: .4
   };
 
-  quickSearchShelf;
-  quickSearchBin;
+  quickSearchShelf: number;
+  quickSearchBin: number;
   doubleBackspace;
 
   binSearchItem: Item = null;
@@ -135,6 +136,20 @@ export class HomeComponent implements OnInit, OnDestroy {
         if(val){
           this.root = val;
           this.typeForSelectionButtons = this.root.type;
+
+          // Clear or update the quick search
+          if(this.root.type === 'location' && (this.root as HierarchyLocation).shelfID){
+            let shelfID = (this.root as HierarchyLocation).shelfID;
+            if(this.shelfInput && shelfID !== this.shelfInput.nativeElement.value){
+              this.shelfInput.nativeElement.value = shelfID;
+              this.quickSearchBin = null;
+            }
+          }
+          else {
+            this.quickSearchShelf = null;
+            this.quickSearchBin = null;
+          }
+
           this.loadLevel();
         }
       }
@@ -197,6 +212,7 @@ export class HomeComponent implements OnInit, OnDestroy {
    * @param selectedSearch category or location
    */
   loadLevel() {
+    this.binSearchItem = null;
     this.resetAttributeData();
     this.displayDescendants(this.root);
     this.loadAttributes();
@@ -336,7 +352,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             for(let item in this.items){
               if(this.items[item].ID === returnedItem.ID){
                 // If the item was found in binless items but now has a bin, switch its array
-                if(this.items[item].locationMetadata && this.items[item].locationMetadata[this.root.ID]
+                if(this.root.type === 'location' && this.items[item].locationMetadata && this.items[item].locationMetadata[this.root.ID]
                 && this.items[item].locationMetadata[this.root.ID].binID){
                   this.items.splice(parseInt(item));
                   this.binItems = this.addItemToSortedArray(returnedItem, this.binItems, "binID");
@@ -354,7 +370,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             for(let item in this.binItems){
               if(this.binItems[item].ID === returnedItem.ID){
                 // If the item was found in binless items but no longer has a bin, switch its array
-                if(this.items[item].locationMetadata && this.items[item].locationMetadata[this.root.ID]
+                if(this.root.type === 'location' && this.items[item].locationMetadata && this.items[item].locationMetadata[this.root.ID]
                   && this.items[item].locationMetadata[this.root.ID].binID){
                   this.items.splice(parseInt(item));
                   this.items = this.addItemToSortedArray(returnedItem, this.items, "name");
@@ -370,7 +386,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
             // Add it if not found, and keep it in sorted order
             if(!itemFound){
-              if(returnedItem.locationMetadata && returnedItem.locationMetadata[this.root.ID]
+              if(this.root.type === 'location' && returnedItem.locationMetadata && returnedItem.locationMetadata[this.root.ID]
                   && returnedItem.locationMetadata[this.root.ID].binID){
                 this.binItems = this.addItemToSortedArray(returnedItem, this.binItems, "binID");
               }
@@ -380,12 +396,13 @@ export class HomeComponent implements OnInit, OnDestroy {
             }
             
           }
+          
         });
       }
     }
   }
 
-  addItemToSortedArray(item: Item, itemList: Item[], elementToCompare: string){
+  addItemToSortedArray(item: Item, itemList: Item[], elementToCompare: string): Item[] {
     // If the list has nothing in it, initialize it with the item
     if(!itemList || itemList.length < 1){
       itemList = [item];
@@ -400,7 +417,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       // Otherwise search for where to add it earlier in the list
       for(let itemIndex in itemList){
-        if(AdvancedAlphaNumSort.compare(item.locationMetadata[this.root.ID].binID, itemList[itemList.length-1].locationMetadata[this.root.ID].binID) < 0){
+        if(AdvancedAlphaNumSort.compare(item.locationMetadata[this.root.ID].binID, itemList[itemList.length-1].locationMetadata[this.root.ID].binID) <= 0){
           itemList.splice(parseInt(itemIndex), 0, item);
           return itemList;
         }
@@ -415,12 +432,14 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       // Otherwise search for where to add it earlier in the list
       for(let itemIndex in itemList){
-        if(AdvancedAlphaNumSort.compare(item[elementToCompare].toUpperCase(), itemList[itemIndex][elementToCompare].toUpperCase()) < 0){
+        if(AdvancedAlphaNumSort.compare(item[elementToCompare].toUpperCase(), itemList[itemIndex][elementToCompare].toUpperCase()) <= 0){
           itemList.splice(parseInt(itemIndex), 0, item);
           return itemList;
         }
       }
     }
+
+    return itemList;
   }
 
   onResize(event) {
@@ -609,7 +628,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.binInput.nativeElement.focus();
 
       let locationID = this.searchService.getLocationIDFromShelfID(this.searchService.convertNumberToThreeDigitString(this.quickSearchShelf));
-      console.log(locationID);
       if(locationID && locationID !== 'err' && locationID !== 'no ID' && locationID !== this.root.ID){
         this.searchService.getLocation(locationID).subscribe(loc => {
           this.goToHierarchy(loc);

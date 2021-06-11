@@ -44,16 +44,16 @@
             </h2>
 
             <div class="scrollable">
-                <div *ngFor="let location of locations">
+                <div *ngFor="let binData of binIDData">
                     <div class="locations-container">
-                        <img class="locationImg" src={{location.imageUrl}}>
-                        <div class="location-name">{{location.name !== 'root' ? location.name : 'Unassigned'}}
-                            <mat-icon *ngIf="location.name == 'root'" class="missing-data-icon">error_outline</mat-icon>
+                        <img class="locationImg" src={{binData.location.imageUrl}}>
+                        <div class="location-name">{{binData.location.name !== 'root' ? binData.location.name : 'Unassigned'}}
+                            <mat-icon *ngIf="binData.location.name == 'root'" class="missing-data-icon">error_outline</mat-icon>
                         </div>
                     </div>
     
-                    <span *ngIf="location.shelfID"> {{location.shelfID}} </span>
-                    <span *ngIf="!location.shelfID"> 000 </span>
+                    <span *ngIf="binData.location.shelfID"> {{binData.location.shelfID}} </span>
+                    <span *ngIf="!binData.location.shelfID"> 000 </span>
                     <span> - </span>
                     <mat-form-field class="bin-form" appearance="outline">
                         <mat-label>Bin #</mat-label>
@@ -63,11 +63,12 @@
                         #binInput
                         type="number" 
                         pattern="\d*"
-                        (keyup)="submitBinID(location, $event.target)"
+                        [value]="binData.loadedID"
+                        (keyup)="submitBinID(binData.location, $event.target)"
                         >
                     </mat-form-field>
-                    <mat-error *ngIf="invalidBinIDErrors[location.ID]">
-                        {{ invalidBinIDErrors[location.ID] }}
+                    <mat-error *ngIf="invalidBinIDErrors[binData.location.ID]">
+                        {{ invalidBinIDErrors[binData.location.ID] }}
                         <br>
                         <br>
                     </mat-error>

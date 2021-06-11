@@ -34,10 +34,6 @@
 
         <div class="small-spacer"></div>
 
-        <mat-card *ngIf="item.binID" class="structure-color-light">
-            Bin ID: {{item.binID}}
-        </mat-card>
-
         <h3> Attributes </h3>
 
         <p *ngIf="!attributesForCard || attributesForCard.length < 1" class="light-text">
@@ -184,10 +180,6 @@
     <div class="item-content">
 
         <div class="item-content-block">
-            <div class="small-spacer"></div>
-            <mat-card *ngIf="item.binID" class="structure-color-light">
-                Bin ID: {{item.binID}}
-            </mat-card>
 
             <div class="small-spacer"></div>
             <img class="desktop-image container-img" src={{item.imageUrl}} layout-fit>

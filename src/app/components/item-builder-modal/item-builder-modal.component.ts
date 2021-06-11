@@ -71,7 +71,10 @@ export class ItemBuilderModalComponent implements OnInit {
     }
   } = {};
   invalidBinIDErrors: {[locationID: string] : string} = {};
-
+  binIDData: {
+    location: HierarchyLocation;
+    loadedID: string;
+  }[] = [];
 
   ngOnInit() {
     // Setup if this is just for editing one piece of an item
@@ -163,6 +166,14 @@ export class ItemBuilderModalComponent implements OnInit {
         if(needToBeLoaded < 1){
           this.loadingLocations = false;
           this.locations = loadedLocations;
+        }
+
+        // Load bin data
+        if(this.item.locationMetadata && this.item.locationMetadata[locationData.ID] && this.item.locationMetadata[locationData.ID].binID){
+          this.binIDData.push({location: locationData, loadedID: this.item.locationMetadata[locationData.ID].binID.split('-')[1]})
+        }
+        else {
+          this.binIDData.push({location: locationData, loadedID: ''});
         }
 
         // Only get the data once
@@ -758,6 +769,9 @@ export class ItemBuilderModalComponent implements OnInit {
     }
     else if(polledID === 'err'){
       this.invalidBinIDErrors[location.ID] = "There was an error retrieving your data.";
+    }
+    else if(polledID === this.item.ID){
+      delete this.invalidBinIDErrors[location.ID];
     }
     else {
       this.invalidBinIDErrors[location.ID] = "Bin ID " + binID + " is already in use.";
