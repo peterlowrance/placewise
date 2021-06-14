@@ -152,6 +152,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
           this.loadLevel();
         }
+        else {
+          console.log("Error: unable to get home root");
+        }
       }
     );
   }
@@ -200,6 +203,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   updateSubscribedParent(id: string, type: string){
     if(type === 'category'){
+      console.log(id);
       this.navService.setSubscribedParent(this.searchService.getCategory(id));
     } else {
       this.navService.setSubscribedParent(this.searchService.getLocation(id));
@@ -322,7 +326,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   displayDescendants(root: HierarchyItem = this.root) {
     this.hierarchyItems = [];
-    this.searchService.getDescendantsOfRoot(root ? root.ID : 'root', root.type === 'category').subscribe(descendants => {
+    this.searchService.getDescendantsOfRoot(root ? root.ID : 'root', root ? root.type === 'category' : false).subscribe(descendants => {
       this.hierarchyItems = descendants;
     });
     // Load items that descend from root
@@ -370,10 +374,10 @@ export class HomeComponent implements OnInit, OnDestroy {
             for(let item in this.binItems){
               if(this.binItems[item].ID === returnedItem.ID){
                 // If the item was found in binless items but no longer has a bin, switch its array
-                if(this.root.type === 'location' && this.items[item].locationMetadata && this.items[item].locationMetadata[this.root.ID]
-                  && this.items[item].locationMetadata[this.root.ID].binID){
-                  this.items.splice(parseInt(item));
-                  this.items = this.addItemToSortedArray(returnedItem, this.items, "name");
+                if(this.root.type === 'location' && this.binItems[item].locationMetadata && this.binItems[item].locationMetadata[this.root.ID]
+                  && this.binItems[item].locationMetadata[this.root.ID].binID){
+                  this.binItems.splice(parseInt(item));
+                  this.binItems = this.addItemToSortedArray(returnedItem, this.binItems, "name");
                 }
                 // Otherwise just update the item
                 else {
@@ -473,8 +477,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   toggleHierarchy(event) {
     this.control.setValue('');
     this.searchTextChange('');
-    window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/' + (this.root ? this.root.ID : 'root'));
-    this.updateSubscribedParent('root', this.root.type === 'category' ? 'location' : 'category');
+    window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/root');
+    this.updateSubscribedParent('root', this.root? (this.root.type === 'category' ? 'location' : 'category') : 'location');
   }
 
   resetAttributeData(){

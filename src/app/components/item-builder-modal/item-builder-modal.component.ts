@@ -719,6 +719,7 @@ export class ItemBuilderModalComponent implements OnInit {
   }
 
   submitBinID(location: HierarchyLocation, binInput){
+    console.log("actually dead"); // NEXT: So it works, but don't press arrows....
 
     let previousID = null;
     if(this.item.locationMetadata && this.item.locationMetadata[location.ID] && this.item.locationMetadata[location.ID].binID){
@@ -753,6 +754,7 @@ export class ItemBuilderModalComponent implements OnInit {
     
     // Check to make sure it's not being used by a different item
     let polledID = this.searchService.getItemIDFromBinID(binID);
+    console.log(polledID);
     if(polledID === 'no ID'){
       // This means everything checks out
 
@@ -761,7 +763,12 @@ export class ItemBuilderModalComponent implements OnInit {
 
       // Update item data with new BinID
       if(this.item.locationMetadata){
-        this.item.locationMetadata[location.ID].binID = binID 
+        if(this.item.locationMetadata[location.ID]){
+          this.item.locationMetadata[location.ID].binID = binID;
+        }
+        else {
+          this.item.locationMetadata[location.ID] = {binID: binID};
+        }
       }
       else {
         this.item.locationMetadata = {[location.ID] : {binID: binID}};
@@ -789,6 +796,7 @@ export class ItemBuilderModalComponent implements OnInit {
         previousID: previousID
       }
     }
+    console.log("oh lawdy");
 
     delete this.invalidBinIDErrors[locationID];
   }

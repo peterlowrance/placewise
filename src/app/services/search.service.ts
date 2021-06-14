@@ -475,7 +475,8 @@ export class SearchService implements SearchInterfaceService {
     
     // Keep local bin data loaded and updated at all times
     this.auth.getWorkspace().subscribe(data => {
-      if(data.name){
+      if(data && data.name){
+        console.log("Workspace Loaded.");
         this.afs.doc<BinDictionary>('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').snapshotChanges().subscribe(doc => {
           let data = doc.payload.data();
           if(data){

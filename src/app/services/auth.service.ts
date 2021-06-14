@@ -119,7 +119,9 @@ export class AuthService {
     return new Promise((resolve, reject) => {
       //try to log in
       this.afAuth.auth.signInWithEmailAndPassword(email,password)
-      .then(userData => resolve(),
+      .then(userData => {
+        resolve(true);
+      },
       //error occured in sign-in, reject attempt
       err => reject(err)
       );
