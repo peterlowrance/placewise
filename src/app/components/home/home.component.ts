@@ -55,8 +55,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   hierarchyItems: HierarchyItem[];
   originalHierarchyItems: HierarchyItem[];
-  items: Item[] = [];
-  binItems: Item[] = [];
+  items: Item[];
+  binItems: Item[];
   originalItems: Item[];
   obsItems: {[itemId: string] : Observable<Item>} = {}; // For cache
   subItems: {[itemId: string] : Subscription} = {}; // For cache
@@ -336,6 +336,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // This is called every time the carrently viewed root is updated
   displayItems(root: HierarchyItem) {
+    this.items = [];
+    this.binItems = [];
+
     if(this.subItems){
       Object.values(this.subItems).forEach(sub => sub.unsubscribe());
     }
@@ -367,20 +370,25 @@ export class HomeComponent implements OnInit, OnDestroy {
             }
 
             // If the item hasn't been found yet, try looking in the binned items
-            for(let item in this.binItems){
-              if(this.binItems[item].ID === returnedItem.ID){
-                // If the item was found in binless items but no longer has a bin, switch its array
-                if(this.root.type === 'location' && this.binItems[item].locationMetadata && this.binItems[item].locationMetadata[this.root.ID]
-                  && this.binItems[item].locationMetadata[this.root.ID].binID){
-                  this.binItems.splice(parseInt(item));
-                  this.binItems = this.addItemToSortedArray(returnedItem, this.binItems, "name");
+            if(!itemFound){
+              console.log("BINNED: " + returnedItem.name);
+              for(let item in this.binItems){
+                if(this.binItems[item].ID === returnedItem.ID){
+                  // If the item was found in binned items but no longer has a bin, switch its array
+                  if(this.root.type === 'location' && (!this.binItems[item].locationMetadata || !this.binItems[item].locationMetadata[this.root.ID]
+                    || !this.binItems[item].locationMetadata[this.root.ID].binID)){
+                      console.log("BAD: " + returnedItem.name);
+                    this.binItems.splice(parseInt(item));
+                    this.items = this.addItemToSortedArray(returnedItem, this.items, "name");
+                  }
+                  // Otherwise just update the item
+                  else {
+                    console.log("UPDATE: " + returnedItem.name);
+                    this.binItems[item] = returnedItem;
+                  }
+                  itemFound = true;
+                  break;
                 }
-                // Otherwise just update the item
-                else {
-                  this.binItems[item] = returnedItem;
-                }
-                itemFound = true;
-                break;
               }
             }
 
@@ -388,6 +396,7 @@ export class HomeComponent implements OnInit, OnDestroy {
             if(!itemFound){
               if(this.root.type === 'location' && returnedItem.locationMetadata && returnedItem.locationMetadata[this.root.ID]
                   && returnedItem.locationMetadata[this.root.ID].binID){
+                console.log("NEW: " + returnedItem.name);
                 this.binItems = this.addItemToSortedArray(returnedItem, this.binItems, "binID");
               }
               else {
@@ -417,7 +426,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       // Otherwise search for where to add it earlier in the list
       for(let itemIndex in itemList){
-        if(AdvancedAlphaNumSort.compare(item.locationMetadata[this.root.ID].binID, itemList[itemList.length-1].locationMetadata[this.root.ID].binID) <= 0){
+        if(AdvancedAlphaNumSort.compare(item.locationMetadata[this.root.ID].binID, itemList[itemIndex].locationMetadata[this.root.ID].binID) <= 0){
           itemList.splice(parseInt(itemIndex), 0, item);
           return itemList;
         }
