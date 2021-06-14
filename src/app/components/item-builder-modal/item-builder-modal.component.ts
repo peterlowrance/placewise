@@ -708,7 +708,7 @@ export class ItemBuilderModalComponent implements OnInit {
     // If we just turned it on, replace old manual title
     if(event.checked){
 
-      this.additionalText = this.adminService.getAdditionalTextFrom(this.category.prefix, this.attributeSuffix, this.item.name).additionalText;
+      this.additionalText = '';
 
       // Build title, if additionalText exists put a space between it and the prefix
       this.item.name = 
@@ -719,8 +719,6 @@ export class ItemBuilderModalComponent implements OnInit {
   }
 
   submitBinID(location: HierarchyLocation, binInput){
-    console.log("actually dead"); // NEXT: So it works, but don't press arrows....
-
     let previousID = null;
     if(this.item.locationMetadata && this.item.locationMetadata[location.ID] && this.item.locationMetadata[location.ID].binID){
       previousID = this.item.locationMetadata[location.ID].binID;
@@ -754,7 +752,6 @@ export class ItemBuilderModalComponent implements OnInit {
     
     // Check to make sure it's not being used by a different item
     let polledID = this.searchService.getItemIDFromBinID(binID);
-    console.log(polledID);
     if(polledID === 'no ID'){
       // This means everything checks out
 
@@ -796,7 +793,6 @@ export class ItemBuilderModalComponent implements OnInit {
         previousID: previousID
       }
     }
-    console.log("oh lawdy");
 
     delete this.invalidBinIDErrors[locationID];
   }

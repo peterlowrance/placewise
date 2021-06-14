@@ -326,40 +326,39 @@ export class ItemComponent implements OnInit, OnDestroy {
     // Subscribe to the locations individually
     for(let locIndex in item.locations){
       let sub = this.searchService.getLocation(item.locations[locIndex]).subscribe(location => {
-        // Init with default data
-        let locationData: ItemLocation = { 
-          location: location,
-          tracking: { type: "amount", isNumber: false, amount: "Good", cap: 0 }
-        };
+        if(location){
+          // Init with default data
+          let locationData: ItemLocation = { 
+            location: location,
+            tracking: { type: "amount", isNumber: false, amount: "Good", cap: 0 }
+          };
 
-        // Replace default data with saved data as needed
-        if(item.locationMetadata && item.locationMetadata[location.ID]){
-          let metadata = item.locationMetadata[location.ID];
-          if(metadata.binID){
-            locationData.binID = metadata.binID;
-          }
-          if(metadata.trackingData){
-            locationData.tracking = {type: metadata.trackingData.type, 
-              isNumber: metadata.trackingData.type.startsWith('number'),
-              amount: metadata.trackingData.amount
+          // Replace default data with saved data as needed
+          if(item.locationMetadata && item.locationMetadata[location.ID]){
+            let metadata = item.locationMetadata[location.ID];
+            if(metadata.binID){
+              locationData.binID = metadata.binID;
+            }
+            if(metadata.trackingData){
+              locationData.tracking = {type: metadata.trackingData.type, 
+                isNumber: metadata.trackingData.type.startsWith('number'),
+                amount: metadata.trackingData.amount
+              }
             }
           }
-        }
-        
-        // See if there's already an ItemLocation corresponding to this and update it.
-        let index = this.itemLocations.findIndex((elem) => {
-          console.log(item.locations[locIndex]);
-          console.log(elem.location.ID);
-          console.log(location.ID);
-          return elem.location.ID === location.ID
-        });
-        if(index > -1){
-          this.itemLocations[index].location = location;
-          this.itemLocations[index].tracking = locationData.tracking;
-        }
-        // Otherwise, add the new location
-        else {
-          this.itemLocations.push(locationData);
+          
+          // See if there's already an ItemLocation corresponding to this and update it.
+          let index = this.itemLocations.findIndex((elem) => {
+            return elem.location.ID === location.ID
+          });
+          if(index > -1){
+            this.itemLocations[index].location = location;
+            this.itemLocations[index].tracking = locationData.tracking;
+          }
+          // Otherwise, add the new location
+          else {
+            this.itemLocations.push(locationData);
+          }
         }
       })
       subs.push(sub);

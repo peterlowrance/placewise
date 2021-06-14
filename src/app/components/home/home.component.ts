@@ -55,8 +55,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   hierarchyItems: HierarchyItem[];
   originalHierarchyItems: HierarchyItem[];
-  items: Item[];
-  binItems: Item[];
+  items: Item[] = [];
+  binItems: Item[] = [];
   originalItems: Item[];
   obsItems: {[itemId: string] : Observable<Item>} = {}; // For cache
   subItems: {[itemId: string] : Subscription} = {}; // For cache
@@ -203,7 +203,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   updateSubscribedParent(id: string, type: string){
     if(type === 'category'){
-      console.log(id);
       this.navService.setSubscribedParent(this.searchService.getCategory(id));
     } else {
       this.navService.setSubscribedParent(this.searchService.getLocation(id));
@@ -337,9 +336,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // This is called every time the carrently viewed root is updated
   displayItems(root: HierarchyItem) {
-    this.items = [];
-    this.binItems = [];
-
     if(this.subItems){
       Object.values(this.subItems).forEach(sub => sub.unsubscribe());
     }
