@@ -371,19 +371,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
             // If the item hasn't been found yet, try looking in the binned items
             if(!itemFound){
-              console.log("BINNED: " + returnedItem.name);
               for(let item in this.binItems){
                 if(this.binItems[item].ID === returnedItem.ID){
                   // If the item was found in binned items but no longer has a bin, switch its array
                   if(this.root.type === 'location' && (!this.binItems[item].locationMetadata || !this.binItems[item].locationMetadata[this.root.ID]
                     || !this.binItems[item].locationMetadata[this.root.ID].binID)){
-                      console.log("BAD: " + returnedItem.name);
                     this.binItems.splice(parseInt(item));
                     this.items = this.addItemToSortedArray(returnedItem, this.items, "name");
                   }
                   // Otherwise just update the item
                   else {
-                    console.log("UPDATE: " + returnedItem.name);
                     this.binItems[item] = returnedItem;
                   }
                   itemFound = true;
@@ -396,7 +393,6 @@ export class HomeComponent implements OnInit, OnDestroy {
             if(!itemFound){
               if(this.root.type === 'location' && returnedItem.locationMetadata && returnedItem.locationMetadata[this.root.ID]
                   && returnedItem.locationMetadata[this.root.ID].binID){
-                console.log("NEW: " + returnedItem.name);
                 this.binItems = this.addItemToSortedArray(returnedItem, this.binItems, "binID");
               }
               else {
