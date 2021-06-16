@@ -52,8 +52,7 @@
                         </div>
                     </div>
     
-                    <span *ngIf="binData.location.shelfID"> {{binData.location.shelfID}} </span>
-                    <span *ngIf="!binData.location.shelfID"> 000 </span>
+                    <span> {{binData.shelfID}} </span>
                     <span> - </span>
                     <mat-form-field class="bin-form" appearance="outline">
                         <mat-label>Bin #</mat-label>
@@ -64,7 +63,7 @@
                         type="number" 
                         pattern="\d*"
                         [value]="binData.loadedID"
-                        (keyup)="submitBinID(binData.location, $event.target)"
+                        (keyup)="submitBinID(binData.location, $event.target, binData.shelfID)"
                         >
                     </mat-form-field>
                     <mat-error *ngIf="invalidBinIDErrors[binData.location.ID]">

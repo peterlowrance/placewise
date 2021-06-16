@@ -234,18 +234,6 @@ export class ItemComponent implements OnInit, OnDestroy {
       this.router.navigate(['/search/locations/' + objID]);
     }
   }
-
-  TEMPSetBinID(id: string, bin: string){
-    console.log(id);
-    if(!this.item.locationMetadata){
-      this.item.locationMetadata = {[id] : {binID: bin}};
-    }
-    else {
-      this.item.locationMetadata[id] = {binID: bin};
-    }
-    
-    this.placeIntoDB();
-  }
   
   private setupCategorySubscription(item: Item): Subscription { // I could also take in Obs<Cat> if that helps in the future
     // Return it for unsubscribing
@@ -338,6 +326,7 @@ export class ItemComponent implements OnInit, OnDestroy {
             let metadata = item.locationMetadata[location.ID];
             if(metadata.binID){
               locationData.binID = metadata.binID;
+              console.log(locationData);
             }
             if(metadata.trackingData){
               locationData.tracking = {type: metadata.trackingData.type, 

@@ -107,9 +107,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     threshold: .4
   };
 
-  quickSearchShelf: number;
-  quickSearchBin: number;
-  doubleBackspace;
+  doubleBackspace = false;
 
   binSearchItem: Item = null;
 
@@ -137,20 +135,34 @@ export class HomeComponent implements OnInit, OnDestroy {
           this.root = val;
           this.typeForSelectionButtons = this.root.type;
 
-          // Clear or update the quick search
-          if(this.root.type === 'location' && (this.root as HierarchyLocation).shelfID){
-            let shelfID = (this.root as HierarchyLocation).shelfID;
-            if(this.shelfInput && shelfID !== this.shelfInput.nativeElement.value){
-              this.shelfInput.nativeElement.value = shelfID;
-              this.quickSearchBin = null;
-            }
+          // Clear or update the quick search (kinda messy)
+          if(this.binSearchItem && this.binSearchItem.locations.indexOf(this.root.ID) > -1){
+
+          }
+          else if(this.root.type === 'location' && this.shelfInput){
+            this.searchService.getShelfIDFromAncestors(this.root.ID).then(result => {
+              if(result !== this.shelfInput.nativeElement.value){
+                if(result === '000'){
+                  this.shelfInput.nativeElement.value = null;
+                  this.binInput.nativeElement.value = null;
+                }
+                else {
+                  this.shelfInput.nativeElement.value = result;
+                  this.binInput.nativeElement.value = null;
+                }
+              }
+            });
+
+            this.loadLevel();
           }
           else {
-            this.quickSearchShelf = null;
-            this.quickSearchBin = null;
-          }
+            if(this.shelfInput){
+              this.shelfInput.nativeElement.value = null;
+              this.binInput.nativeElement.value = null;
+            }
 
-          this.loadLevel();
+            this.loadLevel();
+          }
         }
         else {
           console.log("Error: unable to get home root");
@@ -629,74 +641,95 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   updateQuickSearchShelf(event){
-    if(event.target.value.length === 3 || event.key === "Enter"){
-      this.binInput.nativeElement.focus();
+    if(this.shelfInput.nativeElement.value.length > 3){
+      let start = (this.shelfInput.nativeElement.value as string).substring(0, 3);
+      let chopped = (this.shelfInput.nativeElement.value as string).substring(3);
+      this.shelfInput.nativeElement.value = start;
 
-      let locationID = this.searchService.getLocationIDFromShelfID(this.searchService.convertNumberToThreeDigitString(this.quickSearchShelf));
+      if(chopped.length > 3){
+        this.binInput.nativeElement.value = chopped.substring(0, 3);
+      }
+      else {
+        this.binInput.nativeElement.value = chopped;
+      }
+
+      this.binInput.nativeElement.focus();
+    }
+    else if(event.key === 'Enter'){
+      if(this.shelfInput.nativeElement.value.length < 3){
+        for(let i = this.shelfInput.nativeElement.value.length; i < 3; i++){
+          this.shelfInput.nativeElement.value = "0" + this.shelfInput.nativeElement.value;
+        }
+      }
+      let locationID = this.searchService.getLocationIDFromShelfID(this.shelfInput.nativeElement.value);
       if(locationID && locationID !== 'err' && locationID !== 'no ID' && locationID !== this.root.ID){
         this.searchService.getLocation(locationID).subscribe(loc => {
+          this.binInput.nativeElement.value = '';
           this.goToHierarchy(loc);
         });
       }
     }
-
-    else if(event.target.value.length > 3){
-      let chopped = (event.target.value as string).substring(3);
-      this.quickSearchShelf = Number.parseInt((event.target.value as string).substring(0, 3));
-
-      if(chopped.length > 3){
-        this.quickSearchBin = Number.parseInt(chopped.substring(0, 3));
-      }
-      else {
-        this.quickSearchBin = Number.parseInt(chopped);
-      }
-    }
+    
   }
 
   updateQuickSearchBin(event){
-    if(event.target.value.length > 3){
-      this.quickSearchBin = Number.parseInt(event.target.value.substring(0, 3));
+    // Wait until the user hits backspace twice before returning to the shelf number
+    if(this.binInput.nativeElement.value.length < 1 && event.key === 'Backspace'){
+      if(this.doubleBackspace){
+        this.shelfInput.nativeElement.focus();
+        this.doubleBackspace = false;
+      }
+      else {
+        this.doubleBackspace = true;
+      }
     }
-    else if(event.target.value.length === 3 || event.key === "Enter"){
-      if(this.quickSearchShelf){
-        if(this.quickSearchShelf === 0){
-          /* DO LATER
-          let locationID = this.searchService.getItemIDFromBinID(this.searchService.convertNumberToThreeDigitString(this.quickSearchShelf) + '-' 
-          + this.searchService.convertNumberToThreeDigitString(this.quickSearchBin));
-  
-          if(locationID && locationID !== 'err' && locationID !== 'no ID' && locationID !== this.root.ID){
-            this.searchService.getLocation(locationID).subscribe(loc => {
-              this.goToHierarchy(loc);
-            });
-          }
-          */
-        }
-        else {
-          let itemID = this.searchService.getItemIDFromBinID(this.searchService.convertNumberToThreeDigitString(this.quickSearchShelf) + '-' 
-          + this.searchService.convertNumberToThreeDigitString(this.quickSearchBin));
+    // If they had not hit backspace or have no characters in the input, reset the backspace counter
+    else {
+      this.doubleBackspace = false;
+    }
 
-          for(let item of this.items){
-            if(item.ID === itemID){
-              this.binSearchItem = item;
-              this.binInput.nativeElement.blur();
-              this.shelfInput.nativeElement.blur();
-              break;
-            }
-          }
-          if(!this.binSearchItem){
-            for(let item of this.binItems){
-              if(item.ID === itemID){
-                this.binSearchItem = item;
-                this.binInput.nativeElement.blur();
-                this.shelfInput.nativeElement.blur();
+    // If there was too much text entered, chop off the extra text
+    if(this.binInput.nativeElement.value.length > 3){
+      this.binInput.nativeElement.value = this.binInput.nativeElement.value.substring(0, 3);
+    }
+
+    // If the user entered to search or hit a full bin ID, attempt to search and go to it
+    else if(this.binInput.nativeElement.value.length === 3 || event.key === "Enter"){
+      // If enter was hit but the number isn't big enough (as a string) add zeros until sufficient
+      if(this.binInput.nativeElement.value.length < 3){
+        for(let i = this.binInput.nativeElement.value.length; i < 3; i++){
+          this.binInput.nativeElement.value = "0" + this.binInput.nativeElement.value;
+        }
+      }
+
+      if(this.shelfInput.nativeElement.value){
+        let binID = this.shelfInput.nativeElement.value + '-' + this.binInput.nativeElement.value;
+        let itemID = this.searchService.getItemIDFromBinID(binID);
+
+        this.searchService.getItem(itemID).subscribe(item => {
+          if(item){
+            for(let loc in item.locationMetadata){
+              if(item.locationMetadata[loc].binID === binID){
+                this.searchService.getLocation(loc).subscribe(locationData => {
+
+                  // If we got a result, go to the item's location and deselect the input so
+                  // we can fully see the result on mobile
+                  this.goToHierarchy(locationData);
+                  this.binSearchItem = item;
+                  this.binInput.nativeElement.blur();
+                });
               }
             }
           }
-        }
+        });
       }
     }
     else {
-      this.binSearchItem = null;
+      // If there was no search but there is a search result, clear it and return the location to normal
+      if(this.binSearchItem){
+        this.binSearchItem = null;
+        this.loadLevel();
+      }
     }
   }
 }

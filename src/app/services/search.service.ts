@@ -118,6 +118,7 @@ export class SearchService implements SearchInterfaceService {
         } else {
           this.getAllLocations().subscribe(locations =>
             {
+              console.log("RECV ALL LOCS");
               obs.next(this.getAncestors([hierItem.parent], locations));
               
               if(locations.length > 1){  // Finish when we have all the data (It always has at least a length of one ??)
@@ -153,6 +154,31 @@ export class SearchService implements SearchInterfaceService {
 
       resolve(results);
     })
+  }
+
+  getShelfIDFromAncestors(locationID: string): Promise<string>{
+    return new Promise<string>( async resolve => {
+      let shelfID: string;
+      let nextID = locationID;
+
+      while(!shelfID){
+        let location = (await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Locations/' + nextID).get().toPromise()).data() as HierarchyLocation;
+        if(location.shelfID){
+          shelfID = location.shelfID;
+          break;
+        }
+        
+        if(location.parent){
+          nextID = location.parent;
+        }
+        else {
+          shelfID = '000';
+          break;
+        }
+      }
+
+      resolve(shelfID);
+    });
   }
 
   /**

@@ -1,17 +1,12 @@
-mat-button-toggle-group {
-  width: 500px;
-  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.20);
-  border: 0;
-}
 
-mat-button-toggle {
-  width: 100%;
-}
+/* Cards - Images */
 
-.mat-button-toggle-checked {
-  background-color: #ebd3bf;
-  box-shadow: inset 0 0 12px rgba(56, 56, 56, 0.25);
-  border: 0;
+.hierarchy.image {
+  width: 27%;
+  height: inherit;
+  border-top-left-radius: inherit;
+  border-bottom-left-radius: inherit;
+  margin: 0;
 }
 
 .image {
@@ -28,18 +23,9 @@ mat-button-toggle {
   border-top-right-radius: inherit;
 }
 
-.hierarchy.image {
-  width: 27%;
-  height: inherit;
-  border-top-left-radius: inherit;
-  border-bottom-left-radius: inherit;
-  margin: 0;
-}
 
-.element {
-  width: 95%;
-  height: 95%;
-}
+
+/* HTML Text */
 
 p {
   text-align: inherit;
@@ -48,6 +34,62 @@ p {
   text-overflow: inherit;
   font-size: inherit;
   margin-block-end: 0;
+}
+
+
+
+/* Quick Search */
+
+.bin-form {
+  font-size: 16px;
+  max-width: 90px;
+}
+
+.quick-search {
+  max-height: 84px;
+  max-width: 300px;
+  background-color: white;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  padding: 18px 30px 0 30px;
+  margin-bottom: 24px;
+  margin-top: -2px;
+}
+
+.quick-search-button {
+  position: relative;
+  left: 10px;
+}
+
+
+
+/* Toggle */
+
+.hierarchySelector {
+  margin: 0px 0% 24px 0%;
+}
+
+mat-button-toggle {
+  width: 100%;
+}
+
+.mat-button-toggle-checked {
+  background-color: #ebd3bf;
+  box-shadow: inset 0 0 12px rgba(56, 56, 56, 0.25);
+  border: 0;
+}
+
+mat-button-toggle-group {
+  width: 500px;
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.20);
+  border: 0;
+}
+
+
+
+.element {
+  width: 95%;
+  height: 95%;
 }
 
 .header {
@@ -61,18 +103,8 @@ p {
   flex-wrap: wrap;
   justify-content: space-between;
   align-content: flex-end;
-  align-items: flex-start;
+  align-items: flex-end;
   margin: 0 8px;
-}
-
-.hierarchySelector {
-  margin: 10px 0% 4px 0%;
-}
-
-@media screen and (max-width: 599px){
-  .hierarchySelector {
-    margin: 0 0% 0 0%;
-  }
 }
 
 .bottom-actions {
@@ -103,35 +135,11 @@ p {
   -webkit-box-align: end;
 }
 
-.quick-search {
-  position: sticky;
-  bottom: 0;
-  left: 8px;
-  min-height: 60px;
-  height: calc(8vmin + 30px);
-  width: 162px;
-  z-index: 50;
-  background-color: white;
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  padding: 12px 18px;
-}
-
-.quick-search-button {
-  position: relative;
-  left: 10px;
-}
-
-.bin-form {
-  font-size: 15px;
-  max-width: 72px;
-}
-
 .allContent {
   padding: 0 8px;
   max-width: 60rem;
   position: center;
-  margin: 0.5rem auto auto auto;
+  margin: 0 auto auto auto;
 }
 
 mat-card {
@@ -266,7 +274,7 @@ mat-form-field {
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 1%;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   height: 28px;
   color: #888;

@@ -1,33 +1,64 @@
 <!--Search Bar-->
 <div class="allContent">
-  <div *ngIf="!binSearchItem">
-    <div class="top-components">
-      <mat-button-toggle-group class="hierarchySelector" *ngIf="(!root || root?.name === 'root')" [(value)]="typeForSelectionButtons" name="hierarchySelector" (change)="toggleHierarchy($event)">
-        <mat-button-toggle value="category" >Category</mat-button-toggle>
-        <mat-button-toggle value="location">Location</mat-button-toggle>
-      </mat-button-toggle-group>
-      <div class ="tool-spacer"></div>
-      <div class="search-tools">
-        <form class="search-bar" (submit)="null">
-          <mat-form-field class="full-width">
-            <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : (typeForSelectionButtons === 'category' ? 'all Categories' : 'all Locations')}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null"> <!--[matAutocomplete]="auto"-->
-            <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearchBar()">
-              <mat-icon>close</mat-icon>
-            </button>
-            <mat-icon matSuffix>search</mat-icon>
-          </mat-form-field>
-          <mat-progress-bar *ngIf="isLoading" class="search-progress-bar" mode="query"></mat-progress-bar>
-        </form>
-        <div>
-          <button mat-stroked-button *ngIf="typeForSelectionButtons === 'category'" [matMenuTriggerFor]="beforeMenu" class="filter-menu">Filter by <mat-icon>arrow_drop_down</mat-icon></button>
-          <mat-progress-bar *ngIf="isLoadingAttributes" class="search-progress-bar" mode="determinate" value="percentLoadedAttributes"></mat-progress-bar>
-          <mat-menu #beforeMenu="matMenu" xPosition="before">
-            <button mat-menu-item *ngFor="let attribute of filterableAttributes" (click)="gatherAttributeValues(attribute)">{{attribute.name}}</button>
-          </mat-menu>
-        </div>
-      </div>
+  <div class="top-components">
+    <div class="quick-search" [class.mat-elevation-z5]="true">
+      <mat-form-field class="bin-form" appearance="outline">
+        <mat-label>Shelf</mat-label>
+        <input 
+          class="shelf-input" 
+          matInput 
+          #shelfInput
+          type="number" 
+          pattern="\d*" 
+          maxlength="3"
+          (keyup)="updateQuickSearchShelf($event)">
+      </mat-form-field>
+      <span> - </span>
+      <mat-form-field class="bin-form" appearance="outline">
+        <mat-label>Bin</mat-label>
+        <input 
+          class="shelf-input" 
+          matInput 
+          #binInput
+          type="number" 
+          pattern="\d*" 
+          maxlength="3"
+          (keyup)="updateQuickSearchBin($event)">
+      </mat-form-field>
+  
+      <!--button mat-raised-button class="quick-search-button action-color-light"> GO </button-->
     </div>
+
+    <mat-button-toggle-group class="hierarchySelector" *ngIf="(!root || root?.name === 'root')" [(value)]="typeForSelectionButtons" name="hierarchySelector" (change)="toggleHierarchy($event)">
+      <mat-button-toggle value="category" >Category</mat-button-toggle>
+      <mat-button-toggle value="location">Location</mat-button-toggle>
+    </mat-button-toggle-group>
+    <!--div class ="tool-spacer"></div-->
     
+
+    <!--div class="search-tools">
+      <form class="search-bar" (submit)="null">
+        <mat-form-field class="full-width">
+          <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : (typeForSelectionButtons === 'category' ? 'all Categories' : 'all Locations')}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null">
+          <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearchBar()">
+            <mat-icon>close</mat-icon>
+          </button>
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        <mat-progress-bar *ngIf="isLoading" class="search-progress-bar" mode="query"></mat-progress-bar>
+      </form>
+      <div>
+        <button mat-stroked-button *ngIf="typeForSelectionButtons === 'category'" [matMenuTriggerFor]="beforeMenu" class="filter-menu">Filter by <mat-icon>arrow_drop_down</mat-icon></button>
+        <mat-progress-bar *ngIf="isLoadingAttributes" class="search-progress-bar" mode="determinate" value="percentLoadedAttributes"></mat-progress-bar>
+        <mat-menu #beforeMenu="matMenu" xPosition="before">
+          <button mat-menu-item *ngFor="let attribute of filterableAttributes" (click)="gatherAttributeValues(attribute)">{{attribute.name}}</button>
+        </mat-menu>
+      </div>
+    </div-->
+
+  </div>
+
+  <div *ngIf="!binSearchItem">
     <!-- Attribute filters -->
     <mat-chip-list #chipList>
       <mat-chip *ngFor="let attr of filteredAttributes" color="primary" [selected]="true"
@@ -130,7 +161,7 @@
             </mat-card-content>
           </mat-card>
           
-          <p class='bin-text'>
+          <p *ngIf="binSearchItem.locationMetadata[root.ID]" class='bin-text'>
             {{ binSearchItem.locationMetadata[root.ID].binID }}
           </p>
         </mat-card>
@@ -159,36 +190,4 @@
       <!-- <button mat-mini-fab matTooltip="Add hierarchy level" color="primary" (click)="addHierarchy()"><mat-icon>account_tree</mat-icon></button> -->
     </smd-fab-actions>
   </smd-fab-speed-dial>
-
-  <div class="bottom-actions">
-    <div class="quick-search" [class.mat-elevation-z5]="true">
-      <mat-form-field class="bin-form" appearance="outline">
-        <mat-label>Shelf</mat-label>
-        <input 
-          class="shelf-input" 
-          matInput 
-          #shelfInput
-          type="number" 
-          pattern="\d*" 
-          maxlength="3"
-          [(ngModel)]="quickSearchShelf"
-          (keyup)="updateQuickSearchShelf($event)">
-      </mat-form-field>
-      <span> - </span>
-      <mat-form-field class="bin-form" appearance="outline">
-        <mat-label>Bin</mat-label>
-        <input 
-          class="shelf-input" 
-          matInput 
-          #binInput
-          type="number" 
-          pattern="\d*" 
-          maxlength="3"
-          [(ngModel)]="quickSearchBin"
-          (keyup)="updateQuickSearchBin($event)">
-      </mat-form-field>
-  
-      <!--button mat-raised-button class="quick-search-button action-color-light"> GO </button-->
-    </div>
-  </div>
 </div>

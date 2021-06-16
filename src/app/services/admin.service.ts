@@ -194,11 +194,14 @@ export class AdminService {
         if (item.locations.indexOf(oldLocationsID[i]) === -1) {
           await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + oldLocationsID[i]).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
           
-          for(let index in item.tracking){ // Remove tracking data
-            if(item.tracking[index].locationID === oldLocationsID[i]){
-              item.tracking.splice(parseInt(index), 1);
+          let binIDsToRemove: string[] = [];
+          for(let locID in item.locationMetadata){ // Remove tracking data
+            if(locID === oldLocationsID[i]){
+              binIDsToRemove.push(item.locationMetadata[locID].binID);
+              delete item.locationMetadata[locID];
             }
           }
+          this.removeBinIDs(binIDsToRemove);
         }
       };
       // Add to new locations
@@ -354,6 +357,15 @@ export class AdminService {
     }
     if (item.locations && item.locations.length > 0) {
       item.locations.forEach(location => {
+        // Remove bin IDs
+        let binIDsToRemove: string[] = [];
+        for(let locID in item.locationMetadata){
+          if(locID === location){
+            binIDsToRemove.push(item.locationMetadata[locID].binID);
+          }
+        }
+        this.removeBinIDs(binIDsToRemove);
+
         this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
       });
     }
@@ -425,7 +437,7 @@ export class AdminService {
     });
   }
 
-  removeLocation(remove: HierarchyItem): Promise<void> {
+  removeLocation(remove: HierarchyLocation): Promise<void> {
     // Remove from parent and promote children and items to parent
     this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).get().pipe(
       map(doc => doc.data())
@@ -460,6 +472,10 @@ export class AdminService {
           });
         }
         this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({children: newChildren, items: newItems});
+
+        if(remove.shelfID){
+          this.setShelfID(remove.ID, '000', remove.shelfID).subscribe(); // Delete shelf ID
+        }
       }
     );
     return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.ID).delete();
@@ -736,7 +752,7 @@ export class AdminService {
 
           if(shelfID === '000'){
             obs.next('Zero is allowed, but will not be able to be referenced.'); // 0 shelf not allowed
-            
+           
             if(previousShelfID){
               delete data.shelves[previousShelfID];
               this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({shelves: data.shelves});
@@ -772,7 +788,7 @@ export class AdminService {
   /**
    * This is a straight foward method of adding the bin ID to the BinDictionary
    */
-  setBinIDs(locationsData: {[locationID: string]: { ID: string, previousID: string}}, itemID: string) {
+  addBinIDs(locationsData: {[locationID: string]: { ID: string, previousID: string}}, itemID: string) {
     this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').get().subscribe(doc => {
       if(doc.exists && doc.data().bins){
         let data = doc.data() as BinDictionary;
@@ -800,6 +816,20 @@ export class AdminService {
         }
 
         this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({bins: newBinDict.bins});
+      }
+    });
+  }
+
+  removeBinIDs(binIDs: string[]){
+    this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').get().subscribe(doc => {
+      if(doc.exists && doc.data().bins){
+        let data = doc.data() as BinDictionary;
+
+        for(let binID of binIDs){
+          delete data.bins[binID];
+        }
+
+        this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({bins: data.bins});
       }
     });
   }

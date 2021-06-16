@@ -74,6 +74,7 @@ export class ItemBuilderModalComponent implements OnInit {
   binIDData: {
     location: HierarchyLocation;
     loadedID: string;
+    shelfID: string;
   }[] = [];
 
   ngOnInit() {
@@ -159,21 +160,48 @@ export class ItemBuilderModalComponent implements OnInit {
     for(let location in locationIDs){
       // Manual single get. Maybe we should add this functionaly in search service
       let localSub = this.searchService.getLocation(locationIDs[location]).subscribe(locationData => {
-        loadedLocations[location] = locationData;
+        if(locationData){
+          loadedLocations[location] = locationData;
 
-        // For tracking how many we've loaded so far. If we have all loaded, update the loading flag
-        needToBeLoaded -= 1;
-        if(needToBeLoaded < 1){
-          this.loadingLocations = false;
-          this.locations = loadedLocations;
-        }
+          let shelfID = '000';
+          if(locationData.shelfID){
+            shelfID = locationData.shelfID;
 
-        // Load bin data
-        if(this.item.locationMetadata && this.item.locationMetadata[locationData.ID] && this.item.locationMetadata[locationData.ID].binID){
-          this.binIDData.push({location: locationData, loadedID: this.item.locationMetadata[locationData.ID].binID.split('-')[1]})
-        }
-        else {
-          this.binIDData.push({location: locationData, loadedID: ''});
+            // For tracking how many we've loaded so far. If we have all loaded, update the loading flag
+            needToBeLoaded -= 1;
+            if(needToBeLoaded < 1){
+              this.loadingLocations = false;
+              this.locations = loadedLocations;
+            }
+
+            // Load bin data
+            if(this.item.locationMetadata && this.item.locationMetadata[locationData.ID] && this.item.locationMetadata[locationData.ID].binID){
+              this.binIDData.push({location: locationData, loadedID: this.item.locationMetadata[locationData.ID].binID.split('-')[1], shelfID})
+            }
+            else {
+              this.binIDData.push({location: locationData, loadedID: '', shelfID});
+            }
+          }
+          else if(locationData.parent) {
+            this.searchService.getShelfIDFromAncestors(locationData.parent).then(result => {
+              shelfID = result;
+
+              // Repeated code scream
+              needToBeLoaded -= 1;
+              if(needToBeLoaded < 1){
+                this.loadingLocations = false;
+                this.locations = loadedLocations;
+              }
+
+              // Load bin data
+              if(this.item.locationMetadata && this.item.locationMetadata[locationData.ID] && this.item.locationMetadata[locationData.ID].binID){
+                this.binIDData.push({location: locationData, loadedID: this.item.locationMetadata[locationData.ID].binID.split('-')[1], shelfID})
+              }
+              else {
+                this.binIDData.push({location: locationData, loadedID: '', shelfID});
+              }
+            });
+          }
         }
 
         // Only get the data once
@@ -718,7 +746,7 @@ export class ItemBuilderModalComponent implements OnInit {
     }
   }
 
-  submitBinID(location: HierarchyLocation, binInput){
+  submitBinID(location: HierarchyLocation, binInput, shelfID){
     let previousID = null;
     if(this.item.locationMetadata && this.item.locationMetadata[location.ID] && this.item.locationMetadata[location.ID].binID){
       previousID = this.item.locationMetadata[location.ID].binID;
@@ -744,7 +772,7 @@ export class ItemBuilderModalComponent implements OnInit {
     }
 
     // Build the new bin ID
-    let binID = (location.shelfID ?? '000') + "-" + fullBinNumber;
+    let binID = shelfID + "-" + fullBinNumber;
     // If the ID is the same as before, just exit
     if(previousID === binID){
       return;
@@ -798,7 +826,7 @@ export class ItemBuilderModalComponent implements OnInit {
   }
 
   saveBinIDs(){
-    this.adminService.setBinIDs(this.binIDsToSave, this.item.ID);
+    this.adminService.addBinIDs(this.binIDsToSave, this.item.ID);
   }
 
   isCardIncomplete(card: AttributeCard){
