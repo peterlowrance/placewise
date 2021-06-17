@@ -2,6 +2,7 @@
 export class AdvancedAlphaNumSort {
     // Also accounts for fractions - ASSUMES CORRECTLY FORMATTED
     private static translateToNumber(str: string): number {
+        console.log("translate: " + str);
         let index = 0;
         let detectedSlash = -1;
         let detectedSpace = -1;
@@ -28,7 +29,7 @@ export class AdvancedAlphaNumSort {
                 (Number.parseInt(str.substring(detectedSpace+1, detectedSlash)) / Number.parseInt(str.substring(detectedSlash+1)));
             }
             else {
-                return Number.parseInt(str.substring(0, index+1)) / Number.parseInt(str.substring(index+2));
+                return Number.parseInt(str.substring(0, detectedSlash)) / Number.parseInt(str.substring(detectedSlash+1));
             }
         }
 
@@ -179,6 +180,7 @@ export class AdvancedAlphaNumSort {
                     else {
                         // A number followed by a space. Keep on scanning as we may have a fraction following it.
                         firstNumberLength = index;
+                        console.log("length: " + firstNumberLength);
                         seenSlash = true;
                         lastWasNumber = false;
                     }
@@ -284,9 +286,12 @@ export class AdvancedAlphaNumSort {
                 }
                 else {
                     bValue = this.translateToNumber(b.substring(index + bOffset, index + bOffset + numberScanDataB.length));
+                    console.log(bValue);
                     bHangingDecimal = numberScanDataB.hangingDecimal ? true : false; // Because it may not exist
                 }
                 bOffset += numberScanDataB.length-1;
+
+                console.log(numberScanDataB);
 
                 if(aValue === bValue){
                     if(aValue === 0 && numberScanDataA.length !== numberScanDataB.length){
