@@ -737,12 +737,7 @@ export class ItemBuilderModalComponent implements OnInit {
     if(event.checked){
 
       this.additionalText = '';
-
-      // Build title, if additionalText exists put a space between it and the prefix
-      this.item.name = 
-        (this.category.prefix ? this.category.prefix : "") + 
-        (this.additionalText ? " " + this.additionalText : "") +
-        (this.attributeSuffix ? this.attributeSuffix : "");
+      this.rebuildTitle();
     }
   }
 
@@ -841,7 +836,7 @@ export class ItemBuilderModalComponent implements OnInit {
   }
 
   nextStep(){
-    if(this.step === 'attribute'){
+    if(this.step === 'attributes'){
       this.rebuildTitle();
     }
     else if(this.step === 'picture' && this.singleStep && this.item.imageUrl && this.item.imageUrl !== '../../../assets/notFound.png'){
