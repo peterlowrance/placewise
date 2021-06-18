@@ -666,6 +666,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.searchService.getLocation(locationID).subscribe(loc => {
           this.binInput.nativeElement.value = '';
           this.goToHierarchy(loc);
+          this.shelfInput.nativeElement.blur();
         });
       }
     }

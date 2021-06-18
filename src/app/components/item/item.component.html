@@ -226,8 +226,6 @@
             </p>
             <div *ngIf="attributesForCard">
                 <br>
-                <br>
-                <br>
                 <div *ngFor="let attrCard of attributesForCard" class="attribute-data">
                     <span class="attribute-name"> {{attrCard.name}} </span>
                     <span *ngIf="attrCard.value" class="attribute-value"> {{attrCard.value}} </span>
