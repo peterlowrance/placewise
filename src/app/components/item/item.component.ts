@@ -326,7 +326,6 @@ export class ItemComponent implements OnInit, OnDestroy {
             let metadata = item.locationMetadata[location.ID];
             if(metadata.binID){
               locationData.binID = metadata.binID;
-              console.log(locationData);
             }
             if(metadata.trackingData){
               locationData.tracking = {type: metadata.trackingData.type, 

@@ -68,6 +68,8 @@ import { SimpleFieldDialogComponent } from './components/simple-field-dialog/sim
 import { QuickAddListComponent } from './components/quick-add-list/quick-add-list.component';
 import { AttributeBuilderDialogComponent } from './components/attribute-builder-dialog/attribute-builder-dialog.component';
 import { AddAttributeSuffixDialogComponent } from './components/add-attribute-suffix-dialog/add-attribute-suffix-dialog.component';
+import { HierarchyItemGridComponent } from './components/hierarchy-item-grid/hierarchy-item-grid.component';
+import { TextSearchComponent } from './components/text-search/text-search.component';
 
 @NgModule({
   declarations: [
@@ -97,7 +99,9 @@ import { AddAttributeSuffixDialogComponent } from './components/add-attribute-su
     SimpleFieldDialogComponent,
     QuickAddListComponent,
     AttributeBuilderDialogComponent,
-    AddAttributeSuffixDialogComponent
+    AddAttributeSuffixDialogComponent,
+    HierarchyItemGridComponent,
+    TextSearchComponent
   ],
   imports: [
     CommonModule,

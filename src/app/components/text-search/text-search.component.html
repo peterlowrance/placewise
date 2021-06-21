@@ -1,0 +1,39 @@
+
+<div class="all-content">
+    <form class="search-bar" (submit)="null">
+        <mat-form-field class="full-width">
+            <input type="text" placeholder="Search names, attributes, and tags" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null">
+            <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearchBar()">
+                <mat-icon>close</mat-icon>
+            </button>
+            <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+        <mat-progress-bar *ngIf="isLoading" class="search-progress-bar" mode="query"></mat-progress-bar>
+    </form>
+
+    <mat-button-toggle-group class="search-selector" (change)="toggleSearchType($event)" value="items">
+        <mat-button-toggle value="items">Items</mat-button-toggle>
+        <mat-button-toggle value="categories" >Categories</mat-button-toggle>
+        <mat-button-toggle value="locations">Locations</mat-button-toggle>
+    </mat-button-toggle-group>
+    
+    <p *ngIf="notEnoughChars">
+        You need at least 3 letters/numbers to search.
+    </p>
+
+    <div *ngIf="categories">
+        <h3> Category Results </h3>
+        <app-hierarchy-item-grid [hierarchyItemList]="categories" (clickedHierarchy)="goTo($event)"></app-hierarchy-item-grid>    
+    </div>
+
+    <div *ngIf="locations">
+        <h3> Location Results </h3>
+        <app-hierarchy-item-grid [hierarchyItemList]="locations" (clickedHierarchy)="goTo($event)"></app-hierarchy-item-grid>    
+    </div>
+
+    <div *ngIf="items">
+        <h3> Item Results </h3>
+        <app-hierarchy-item-grid [hierarchyItemList]="items" (clickedHierarchy)="goTo($event)"></app-hierarchy-item-grid>    
+    </div>
+</div>
+

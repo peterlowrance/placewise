@@ -1,0 +1,23 @@
+
+
+.all-content {
+    padding: 18px 3vw;
+    max-width: 60rem;
+    position: center;
+    margin: 0 auto auto auto;
+}
+
+.full-width {
+    width: 96%;
+}
+
+.search-bar {
+    margin: 5px 0 0 0;
+    width: 100%;
+    max-width: 360px;
+}
+
+.search-progress-bar {
+    margin-top: -24px;
+    margin-bottom: 20px;
+}

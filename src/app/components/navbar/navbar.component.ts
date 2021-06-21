@@ -159,6 +159,8 @@ export class NavbarComponent implements OnInit {
       return 'moderateUsers';
     } else if (this.locationString === '/reports') {
       return 'reports';
+    } else if (this.locationString.startsWith('/textSearch')) {
+      return 'textSearch';
     }
     else if(this.locationString.startsWith('/search/') && this.locationString.split('/').length === 4) {
       return '/';

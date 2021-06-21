@@ -14,9 +14,11 @@ import { AdminReportComponent } from './components/admin-report/admin-report.com
 import {ModifyHierarchyComponent} from "./components/modify-hierarchy/modify-hierarchy.component";
 import { ModerateUsersComponent } from './components/moderate-users/moderate-users.component';
 import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-item.component';
+import { TextSearchComponent } from './components/text-search/text-search.component';
 
 const routes: Routes = [
   {path: 'search/:selectedHierarchy/:id', component: HomeComponent, canActivate: [AuthGuard]},
+  {path: 'textSearch', component: TextSearchComponent, canActivate: [AuthGuard]},
   {path: 'login', component: LoginComponent},
   {path: 'item/:id', component: ItemComponent, canActivate: [AuthGuard]},
   {path: 'settings', component: SettingsComponent, canActivate: [AuthGuard]},

@@ -1,0 +1,57 @@
+
+<div #fullGrid class="full-grid">
+    <div *ngIf="type" (window:resize)="onResize($event)">
+        <!-- Binned Items -->
+        <mat-grid-list *ngIf="type === 'item' && insideLocation" class="row" [cols]="columns * 2" rowHeight="3:4.5">
+            <mat-grid-tile class="holder" *ngFor="let item of hierarchyItemList">
+                <mat-card class="binCard structure-color-light" [class.mat-elevation-z3]="true">
+                    <mat-card class="itemCard binItemCard" (click)="goToHierarchyItem(item)">
+                        <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
+                        <mat-card-content>
+                            <div class='item-text'>
+                                <p *ngIf="item.name"> {{ item.name }} </p>
+                                <h4 *ngIf="!item.name" class="light-text"> ( No title ) </h4>
+                            </div>
+                        </mat-card-content>
+                    </mat-card>
+                  
+                    <p class='bin-text'>
+                        {{ item.locationMetadata[insideLocation.ID].binID }}
+                    </p>
+                </mat-card>
+            </mat-grid-tile>
+        </mat-grid-list>
+
+        <!-- Items -->
+        <mat-grid-list *ngIf="type === 'item' && !insideLocation" class="row" [cols]="columns * 2" rowHeight="3:4">
+            <mat-grid-tile class="holder" *ngFor="let item of hierarchyItemList">
+                <mat-card class="itemCard" (click)="goToHierarchyItem(item)" [class.mat-elevation-z3]="true">
+                    <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
+                    <mat-card-content>
+                        <div class='item-text'>
+                            <p *ngIf="item.name"> {{ item.name }} </p>
+                            <h4 *ngIf="!item.name" class="light-text"> ( No title ) </h4>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </mat-grid-tile>
+        </mat-grid-list>
+
+        <!-- Categories and Locations -->
+        <mat-grid-list *ngIf="type !== 'item'" class="row" [cols]="columns" rowHeight="4:1.2">
+            <mat-grid-tile class="holder" *ngFor="let hierarchyItem of hierarchyItemList">
+                <mat-card class="hierarchyCard {{type === 'category' ? 'category-card' : 'location-card'}}" (click)="goToHierarchyItem(hierarchyItem)" [class.mat-elevation-z2]="true">
+                    <div class="hierarchycard-content">
+                        <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + hierarchyItem.imageUrl + ')'}"></div>
+                        <div class='hierarchy-text'>
+                            <div class="hierarchy-title-text-positioner">
+                                <div class="hierarchy-title-text"><p>{{hierarchyItem.name}}</p></div>
+                            </div>
+                            <div class="hierarchy-desc-text"><p>{{hierarchyItem.desc ? hierarchyItem.desc : ' '}}</p></div>
+                        </div>
+                    </div>
+                </mat-card>
+            </mat-grid-tile>
+        </mat-grid-list>
+    </div>
+</div>
