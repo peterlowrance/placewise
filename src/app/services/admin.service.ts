@@ -20,6 +20,8 @@ import { type } from 'os';
 import { WorkspaceUser } from '../models/WorkspaceUser';
 import { CacheService } from './cache.service';
 import { BinDictionary } from '../models/BinDictionary';
+import { Report } from '../models/Report';
+import { ReportService } from './report.service';
 
 declare var require: any;
 
@@ -76,53 +78,6 @@ export class AdminService {
     if(recentList.length > 8){ // Only have 5
       recentList.pop();
     }
-  }
-
-
-  getReport(id: string) {
-    return this.afs.doc<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).snapshotChanges().pipe(map(a => {
-      const data = a.payload.data() as SentReport;
-      if (!data) {
-        return;
-      }
-      data.ID = a.payload.id;
-      return data;
-    }));
-  }
-
-  placeReport(itemID: string, text: string, reportedTo: string[], locationID: string, type: string) {
-    return new Promise((resolve, reject) => {
-      this.auth.getAuth().subscribe(auth => {
-        auth.getIdTokenResult().then(
-          token => {
-            // with token remove user by pinging server with token and email
-            this.http.post(`${adServe}/createReport`, {
-              idToken: token,
-              item: itemID,
-              location: locationID,
-              message: text,
-              reportTo: reportedTo,
-              type: type
-            }).toPromise().then(
-              () => resolve(`Report sent!`),
-              (err) => reject(err.error)
-            );
-          }
-        );
-      });
-    });
-  }
-
-  getReports(): Observable<SentReport[]> {
-    return this.afs.collection<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports').snapshotChanges().pipe(
-      map(a => {
-        return a.map(g => {
-            const data = g.payload.doc.data() as SentReport;
-            data.ID = g.payload.doc.id;
-            return data;
-          }
-        );
-      }));
   }
 
   setEmailReportsForUser(userID: string, value: boolean){
@@ -372,7 +327,7 @@ export class AdminService {
     
     var reports;
 
-    this.getReports().subscribe(x => {
+    this.reportService.getReports().subscribe(x => {
       reports = x;     
       for (let i = 0; i < reports.length; i++) {
         if(reports[i].item == item.ID)
@@ -858,7 +813,8 @@ export class AdminService {
     private auth: AuthService, 
     private searchService: SearchService, 
     private http: HttpClient,
-    private cacheService: CacheService
+    private cacheService: CacheService,
+    private reportService: ReportService
     ) {
   }
 }

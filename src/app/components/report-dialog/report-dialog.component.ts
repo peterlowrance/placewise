@@ -11,6 +11,7 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import { HierarchyLocation } from 'src/app/models/Location';
 import { ItemReport } from 'src/app/models/ItemReport';
 import { ItemTypeReportTimestamp } from 'src/app/models/ItemTypeReportTimestamp';
+import { ReportService } from 'src/app/services/report.service';
 
 interface LocationWithReportMeta {
   location?: HierarchyLocation, 
@@ -32,6 +33,7 @@ export class ReportDialogComponent implements OnInit {
     public dialogRef: MatDialogRef<ReportDialogComponent>,
     private adminService: AdminService,
     private authService: AuthService,
+    private reportService: ReportService,
     private snack: MatSnackBar,
     @Inject(MAT_DIALOG_DATA) public data: {item: Item, locations: HierarchyLocation[]}
   ) { }
@@ -53,6 +55,7 @@ export class ReportDialogComponent implements OnInit {
   isAutoReport = false;
 
   reportLowDisabled = false;
+  reportLowUnavailable = false;
   //reportEmptyDisabled = false;
   canReport = true;
   timestamp = Date.now();
@@ -66,16 +69,25 @@ export class ReportDialogComponent implements OnInit {
     this.locationData = this.countRecentReports(this.data.locations, this.data.item.reports, this.timestamp);
     this.canReport = this.isAbleToReport(this.locationData);
 
-    //this.reportEmptyDisabled = !this.isAbleToAutoReportFor("Empty", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
-    
-    // If it's empty, then it's low
-    //if(this.reportEmptyDisabled) {
-    //  this.reportLowDisabled = true;
-    //}
-    //else {
-      this.reportLowDisabled = !this.isAbleToAutoReportFor("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
-    //}
-    
+    this.reportLowDisabled = !this.isAbleToAutoReportFor("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
+
+
+    console.log(this.data.item);
+    this.reportService.getReportsAvailableHere(this.data.item).then(result => {
+      let found = false;
+      
+      for(let report of result){
+        if(report.abbreviation === 'Low'){
+          found = true;
+
+          // if(report.reportStructure.) We'll get specific reports in a moment
+        }
+      }
+
+      if(!found){
+        this.reportLowUnavailable = true;
+      }
+    })
   }
 
   // Based on the reports and thier timestamps, return data if certain reports can be made
@@ -386,7 +398,7 @@ export class ReportDialogComponent implements OnInit {
     this.dialogRef.close({wasValid: true});
     this.snack.open("Sending Report...", '', {duration: 2000, panelClass: ['mat-toolbar']});
 
-    this.adminService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type).then(
+    this.reportService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type).then(
       () => this.snack.open("Report Sent!", "OK", {duration: 4000, panelClass: ['successful-report']}),
       (err) => {
         this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})

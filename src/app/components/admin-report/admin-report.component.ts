@@ -12,6 +12,7 @@ import { ConfirmComponent } from '../confirm/confirm.component';
 import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 import { Subscription } from 'rxjs';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
+import { ReportService } from 'src/app/services/report.service';
 
 @Component({
   selector: 'app-admin-report',
@@ -30,6 +31,7 @@ export class AdminReportComponent implements OnInit {
   constructor(
     private searchService: SearchService,
     private adminService: AdminService,
+    private reportService: ReportService,
     private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
@@ -38,7 +40,7 @@ export class AdminReportComponent implements OnInit {
     public dialog: MatDialog) { }
 
   ngOnInit() {
-    this.adminService.getReports().subscribe(reports => {
+    this.reportService.getReports().subscribe(reports => {
       this.numberOfAllReports = reports.length;
       this.notifiedReports = [];
       this.externalReports = [];

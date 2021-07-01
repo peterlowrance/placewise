@@ -2,7 +2,7 @@
 
     <!-- Select which type of report -->
     <div *ngIf="step === 'start'">
-        <h1 mat-dialog-title>What kind of Report?</h1>
+        <h1 mat-dialog-title>What kind of report?</h1>
         <!--
         <mat-card style="max-width: 330px; margin: auto;" [class.mat-elevation-z6]="true">
             <h3> Low and need to order: </h3>
@@ -19,15 +19,20 @@
             </div>
         </mat-card>
         -->
-        <button mat-raised-button class="big-button action-color report-button" [disabled]="reportLowDisabled || !canReport" (click)="setupLowReport()">
-            <span *ngIf="!loading.low"> 
-                Low & Order More
-            </span>
-            <mat-spinner *ngIf="loading.low" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
-        </button>
-        <div *ngIf="reportLowDisabled" class="disabled-report-text">
-            This item has already been reported as low in the last 12 hours.
+        <div *ngIf="!reportLowUnavailable">
+            <button mat-raised-button class="big-button action-color report-button" [disabled]="reportLowDisabled || !canReport" (click)="setupLowReport()">
+                <span *ngIf="!loading.low"> 
+                    Low & Order More
+                </span>
+                <mat-spinner *ngIf="loading.low" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
+            </button>
+            <div *ngIf="reportLowDisabled" class="disabled-report-text">
+                This item has already been reported as low in the last 12 hours.
+            </div>
         </div>
+        <p *ngIf="reportLowUnavailable" class="disabled-report-text light-text">
+            You cannot report low here.
+        </p>
         <!--
         <button mat-raised-button class="big-button report-button empty-button" [disabled]="loadingAdmins || reportEmptyDisabled || !canReport" (click)="setupAutoReport('empty')">
             <mat-icon *ngIf="!loading.empty"> report_problem </mat-icon>

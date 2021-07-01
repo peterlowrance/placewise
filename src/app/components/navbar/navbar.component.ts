@@ -9,6 +9,7 @@ import { SearchService } from 'src/app/services/search.service';
 import { HostListener } from '@angular/core';
 import { AdminService } from 'src/app/services/admin.service';
 import { Subscription } from 'rxjs';
+import { ReportService } from 'src/app/services/report.service';
 
 
 @Component({
@@ -65,7 +66,14 @@ export class NavbarComponent implements OnInit {
     }
   }
 
-  constructor(private routeLocation: Location, private router: Router, private navService: NavService, private authService: AuthService, private searchService: SearchService, private adminService: AdminService) {
+  constructor(
+    private routeLocation: Location, 
+    private router: Router, 
+    private navService: NavService, 
+    private authService: AuthService, 
+    private searchService: SearchService, 
+    private adminService: AdminService,
+    private reportService: ReportService) {
 
     router.events.subscribe(val => {
       this.navService.setDirty(false); //Clear dirtyness anytime we leave a page
@@ -94,7 +102,7 @@ export class NavbarComponent implements OnInit {
         if(reportLocationsSub) reportLocationsSub.unsubscribe();
             
             if(reportsSub) reportsSub.unsubscribe();
-            reportsSub = this.adminService.getReports().subscribe(reports => {
+            reportsSub = this.reportService.getReports().subscribe(reports => {
               if(reports){
                 this.numberOfReports = 0;
 
