@@ -9,7 +9,8 @@ import { ReportStructure, ReportStructureFirebaseCollection, ReportStructureWrap
 import { SentReport } from '../models/SentReport';
 import { AuthService } from './auth.service';
 
-const adServe = 'https://placewise-d040e.appspot.com/';
+// Not the best place to put this, but don't want the circular dependency with admin service
+export const adServe = 'https://placewise-d040e.appspot.com/';
 
 @Injectable({
   providedIn: 'root'

@@ -21,7 +21,7 @@ import { WorkspaceUser } from '../models/WorkspaceUser';
 import { CacheService } from './cache.service';
 import { BinDictionary } from '../models/BinDictionary';
 import { Report } from '../models/Report';
-import { ReportService } from './report.service';
+import { ReportService, adServe } from './report.service';
 
 declare var require: any;
 
@@ -31,7 +31,6 @@ const httpOptions = {
   })
 };
 
-const adServe = 'https://placewise-d040e.appspot.com/';
 
 @Injectable({
   providedIn: 'root'
