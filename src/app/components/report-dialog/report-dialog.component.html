@@ -19,20 +19,64 @@
             </div>
         </mat-card>
         -->
-        <div *ngIf="!reportLowUnavailable">
-            <button mat-raised-button class="big-button action-color report-button" [disabled]="reportLowDisabled || !canReport" (click)="setupLowReport()">
-                <span *ngIf="!loading.low"> 
-                    Low & Order More
-                </span>
-                <mat-spinner *ngIf="loading.low" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
-            </button>
-            <div *ngIf="reportLowDisabled" class="disabled-report-text">
-                This item has already been reported as low in the last 12 hours.
+        <div *ngFor="let report of reportTypes" class="valid-report">
+            <!-- Report available -->
+            <div *ngIf="!report.alreadyReportedLocations || report.alreadyReportedLocations.length !== data.item.locations.length">
+                <div class="report-top">
+                    <button mat-icon-button [style.background-color]="report.reportStructure.color" class="action-color" (click)="setupReport(report.type)">
+                        <mat-icon>post_add</mat-icon>
+                    </button>
+                    <div class="report-title"><b>
+                        {{ report.reportStructure.name }}
+                    </b></div>
+                </div>
+                <mat-divider></mat-divider>
+                <div class="report-desc">
+                    {{ report.reportStructure.description }}
+                </div>
+            </div>
+
+            <!-- If the report is disabled because of too many reports -->
+            <div *ngIf="report.alreadyReportedLocations && report.alreadyReportedLocations.length === data.item.locations.length">
+                <div class="report-top">
+                    <button mat-icon-button disabled="true">
+                        <mat-icon>post_add</mat-icon>
+                    </button>
+                    <div class="report-title"><b>
+                        {{ report.reportStructure.name }}
+                    </b></div>
+                </div>
+                <mat-divider></mat-divider>
+                <div class="report-desc report-disabled-text">
+                    This item has had too many {{report.type}} reports in the last {{report.reportStructure.maximumReportTimeframe}} hours.
+                </div>
             </div>
         </div>
+
+        <!-- Removing to get report structure from DB only
         <p *ngIf="reportLowUnavailable" class="disabled-report-text light-text">
             You cannot report low here.
         </p>
+
+        <div class="valid-report">
+            <div class="report-top">
+                <button mat-icon-button class="action-color-light" [disabled]="!canReport" (click)="onNextClick()">
+                    <mat-icon>post_add</mat-icon>
+                </button>
+                <div class="report-title"><b>
+                    Custom Report
+                </b></div>
+            </div>
+            <mat-divider></mat-divider>
+            <div class="report-desc">
+                Give a message to any admin that you'd like.
+            </div>
+        </div>
+        <div *ngIf="!canReport" class="disabled-report-text">
+            All locations have had 3 reports in the last 12h.
+        </div>
+        -->
+
         <!--
         <button mat-raised-button class="big-button report-button empty-button" [disabled]="loadingAdmins || reportEmptyDisabled || !canReport" (click)="setupAutoReport('empty')">
             <mat-icon *ngIf="!loading.empty"> report_problem </mat-icon>
@@ -44,15 +88,11 @@
         <div *ngIf="reportEmptyDisabled" class="disabled-report-text">
             This item has already been reported as empty in the last 12 hours.
         </div>-->
-        <br>
-        <br>
-        <button mat-raised-button class="big-button action-color-light report-button" (click)="onNextClick()" [disabled]="!canReport">
+
+        <!--button mat-raised-button class="big-button action-color-light report-button" (click)="onNextClick()" [disabled]="!canReport">
             <mat-spinner *ngIf="loading.custom" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
             <div *ngIf="!loading.custom"> Custom... </div>
-        </button>
-        <div *ngIf="!canReport" class="disabled-report-text">
-            All locations have had 3 reports in the last 12h.
-        </div>
+        </button-->
     </div>
 
     <!-- Where to report to -->

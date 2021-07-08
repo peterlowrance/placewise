@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Item } from '../models/Item';
@@ -91,17 +92,19 @@ export class ReportService {
   async getReportsAvailableHere(item: Item): Promise<ReportStructureWrapper[]> {
     let availableReports: ReportStructureWrapper[] = [];
 
+    // 1: Go through and see what valid reports there are
+
     for(let report in this.reportStructure){
       // If the report has no speific locations, it's available everywhere, so add
       if(!this.reportStructure[report].locations){
-        availableReports.push({abbreviation: report, reportStructure: this.reportStructure[report]});
+        availableReports.push({type: report, reportStructure: this.reportStructure[report], validLocationIDs: item.locations});
         continue;
       }
 
       // Look through the hierarchy of this location and its ancestors to see if we can find a hit
       for(let locationID of item.locations){
         // First build out the basic structure
-        let reportWithValidLocations: ReportStructureWrapper = {abbreviation: report, reportStructure: this.reportStructure[report], validLocationIDs: []};
+        let reportWithValidLocations: ReportStructureWrapper = {type: report, reportStructure: this.reportStructure[report], validLocationIDs: []};
 
         // Then add valid locations we find
         for(let loopLocationID = locationID; loopLocationID;){
@@ -136,6 +139,64 @@ export class ReportService {
         }
       }
     }
+
+    // Include custom report at all times
+    availableReports.push({
+      type: 'custom',
+      validLocationIDs: item.locations,
+      reportStructure: {
+        name: "Custom Report",
+        description: "Give a message to any admin that you'd like.",
+        color: "#E8EFFF",
+        maximumReportAmount: 3,
+        maximumReportTimeframe: 24
+      }
+    })
+
+    // 2: Of those valid reports, which have too many reports recently?
+
+    let currentTimestamp = Date.now();
+
+    for(let report of availableReports){
+      if(report.reportStructure.maximumReportAmount){  // Quick check on if it has a limit
+
+        // Check for each location in a report type. If there is none per location, that means it's valid for all the item's locations
+        for(let locationID of report.validLocationIDs){
+          let amount = 0;
+
+          for(let itemReport of item.reports ?? []){
+            // We can assume these are sorted correctly with the most recent at the front,
+            // so if the time is older we don't need to check farther
+            if(currentTimestamp - itemReport.timestamp > (report.reportStructure.maximumReportTimeframe * 3600000)){
+              break;
+            }
+            else {
+              if(itemReport.type === report.type && itemReport.location === locationID){
+                // It's a match, and the report is within our time limit
+                amount++;
+
+                // To make it a little faster, stop the loop when we know we've already hit the limit
+                if(amount >= report.reportStructure.maximumReportAmount){
+                  break;
+                }
+              }
+            }
+          }
+
+          // If the limit is reached, add the location as one we can't report to for this type of report
+          if(amount >= report.reportStructure.maximumReportAmount){
+            if(report.alreadyReportedLocations){
+              report.alreadyReportedLocations.push(locationID);
+            }
+            else {
+              report.alreadyReportedLocations = [locationID];
+            }
+          }
+        }
+      }
+    }
+
+    console.log(availableReports);
 
     return availableReports;
   }

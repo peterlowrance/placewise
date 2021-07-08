@@ -12,6 +12,8 @@ import { HierarchyLocation } from 'src/app/models/Location';
 import { ItemReport } from 'src/app/models/ItemReport';
 import { ItemTypeReportTimestamp } from 'src/app/models/ItemTypeReportTimestamp';
 import { ReportService } from 'src/app/services/report.service';
+import { ReportStructureWrapper } from 'src/app/models/ReportStructure';
+import { identifierModuleUrl } from '@angular/compiler';
 
 interface LocationWithReportMeta {
   location?: HierarchyLocation, 
@@ -45,6 +47,7 @@ export class ReportDialogComponent implements OnInit {
   }
 
   locationData: LocationWithReportMeta[] = [];
+  reportTypes: ReportStructureWrapper[];
 
   step: string;
   admins: WorkspaceUser[];
@@ -71,9 +74,11 @@ export class ReportDialogComponent implements OnInit {
 
     this.reportLowDisabled = !this.isAbleToAutoReportFor("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
 
-
     console.log(this.data.item);
     this.reportService.getReportsAvailableHere(this.data.item).then(result => {
+      this.reportTypes = result;
+
+      /*
       let found = false;
       
       for(let report of result){
@@ -87,6 +92,7 @@ export class ReportDialogComponent implements OnInit {
       if(!found){
         this.reportLowUnavailable = true;
       }
+      */
     })
   }
 
@@ -303,6 +309,14 @@ export class ReportDialogComponent implements OnInit {
 
   onCancelClick(){
     this.dialogRef.close({wasValid: false});
+  }
+
+  setupReport(type: string){
+    if(type === 'Low'){
+      this.setupLowReport();
+    } else {
+      this.onNextClick();
+    }
   }
 
   // Initial setup when the low button is pressed. Brings up location selection if need be.
