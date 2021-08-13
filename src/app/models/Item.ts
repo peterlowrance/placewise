@@ -13,6 +13,7 @@ export interface Item extends HierarchyObject {
 
   attributes?: AttributeValue[];
 
+  // OLD
   tracking?: [{
     locationID: string;
     binID?: string;

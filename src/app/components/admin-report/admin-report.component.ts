@@ -149,6 +149,10 @@ export class AdminReportComponent implements OnInit {
     
   }
 
+  goToTemplates(){
+    this.router.navigateByUrl("reports/templates");
+  }
+
 
   openModal(r : SentReport )
   {

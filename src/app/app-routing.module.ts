@@ -15,6 +15,8 @@ import {ModifyHierarchyComponent} from "./components/modify-hierarchy/modify-hie
 import { ModerateUsersComponent } from './components/moderate-users/moderate-users.component';
 import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-item.component';
 import { TextSearchComponent } from './components/text-search/text-search.component';
+import { ReportTemplatesComponent } from './components/report-templates/report-templates.component';
+import { ReportTemplateEditComponent } from './components/report-template-edit/report-template-edit.component';
 
 const routes: Routes = [
   {path: 'search/:selectedHierarchy/:id', component: HomeComponent, canActivate: [AuthGuard]},
@@ -23,7 +25,9 @@ const routes: Routes = [
   {path: 'item/:id', component: ItemComponent, canActivate: [AuthGuard]},
   {path: 'settings', component: SettingsComponent, canActivate: [AuthGuard]},
   {path: 'reports', component: AdminReportComponent, canActivate: [AuthGuard]},
-  {path: 'modify/:selectedHierarchy', component: ModifyHierarchyComponent, canActivate: [AuthGuard]},
+  {path: 'reports/templates', component: ReportTemplatesComponent, canActivate: [AuthGuard]},
+  {path: 'reports/templates/:type', component: ReportTemplateEditComponent, canActivate: [AuthGuard]},
+  {path: 'modify/:selectedHierarchy', component: ReportTemplateEditComponent, canActivate: [AuthGuard]},
   {path: 'users', component: ModerateUsersComponent, canActivate: [AuthGuard]},
   {path: 'hierarchyItem/:selectedHierarchy/:id', component: HierarchyItemComponent, canActivate: [AuthGuard]},
   { path: '', redirectTo: '/search/locations/root', pathMatch: 'full' },

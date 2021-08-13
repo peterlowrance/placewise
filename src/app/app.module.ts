@@ -70,6 +70,10 @@ import { AttributeBuilderDialogComponent } from './components/attribute-builder-
 import { AddAttributeSuffixDialogComponent } from './components/add-attribute-suffix-dialog/add-attribute-suffix-dialog.component';
 import { HierarchyItemGridComponent } from './components/hierarchy-item-grid/hierarchy-item-grid.component';
 import { TextSearchComponent } from './components/text-search/text-search.component';
+import { ReportTemplatesComponent } from './components/report-templates/report-templates.component';
+import { ReportSelectComponent } from './components/report-select/report-select.component';
+import { ReportTemplateEditComponent } from './components/report-template-edit/report-template-edit.component';
+import { ReportTemplateUserInputDialogComponent } from './components/report-template-user-input-dialog/report-template-user-input-dialog.component';
 
 @NgModule({
   declarations: [
@@ -101,7 +105,11 @@ import { TextSearchComponent } from './components/text-search/text-search.compon
     AttributeBuilderDialogComponent,
     AddAttributeSuffixDialogComponent,
     HierarchyItemGridComponent,
-    TextSearchComponent
+    TextSearchComponent,
+    ReportTemplatesComponent,
+    ReportSelectComponent,
+    ReportTemplateEditComponent,
+    ReportTemplateUserInputDialogComponent
   ],
   imports: [
     CommonModule,

@@ -120,7 +120,7 @@
             <h3> Category </h3>
             <div class="category-container">
                 <div class="category-picture"> <img class="clickable-image categoryImg" [class.mat-elevation-z4]="true" src={{category?.imageUrl}} (click)="linkTo(category?.ID, 'category')"></div>
-                <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
+                <div class="category-name">{{category?.ID !== 'root' ? category?.name : 'Unassigned'}}</div>
             </div>
         </div>
 
@@ -192,7 +192,7 @@
                 <h3> Category </h3>
                 <div class="category-container">
                     <div class="category-picture"> <img class="clickable-image categoryImg" [class.mat-elevation-z4]="true" (click)="linkTo(category?.ID, 'category')" src={{category?.imageUrl}}></div>
-                    <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}</div>
+                    <div class="category-name">{{category?.ID !== 'root' ? category?.name : 'Unassigned'}}</div>
                 </div>
             </div>
     

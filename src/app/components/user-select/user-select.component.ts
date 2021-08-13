@@ -9,6 +9,7 @@ import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 export class UserSelectComponent implements OnInit {
   @Input() selectedUsers: WorkspaceUser[];
   @Input() allUsers: WorkspaceUser[];
+  @Input() minimumUsers: number = 1;
   @Output() userUpdate = new EventEmitter<WorkspaceUser[]>();
 
   usersForUI: WorkspaceUser[][]; // First element of the inner array is the selected user, the rest are options that haven't been selected yet

@@ -1,0 +1,33 @@
+<!-- Report available -->
+<div *ngIf="!disabled" class="valid-report">
+    <div class="report-top">
+        <button mat-icon-button [style.background-color]="template.color" class="action-color" (click)="click()">
+            <mat-icon *ngIf="!editing">post_add</mat-icon>
+            <mat-icon *ngIf="editing">tune</mat-icon>
+        </button>
+        <div class="report-title"><b>
+            {{ template.name }}
+        </b></div>
+    </div>
+    <mat-divider></mat-divider>
+    <div class="report-desc">
+        {{ template.description }}
+    </div>
+</div>
+
+<!-- If the report is disabled because of too many reports -->
+<div *ngIf="disabled" class="valid-report">
+    <div class="report-top">
+        <button mat-icon-button disabled="true">
+            <mat-icon *ngIf="!editing">post_add</mat-icon>
+            <mat-icon *ngIf="editing">tune</mat-icon>
+        </button>
+        <div class="report-title"><b>
+            {{ template.name }}
+        </b></div>
+    </div>
+    <mat-divider></mat-divider>
+    <div class="report-desc report-disabled-text">
+        This item has had too many {{type}} reports in the last {{template.maximumReportTimeframe}} hours.
+    </div>
+</div>

@@ -31,18 +31,19 @@
     "firebase": "^7.24.0",
     "firebase-admin": "^8.13.0",
     "fuse.js": "^3.6.1",
+    "node": "^16.5.0",
     "rxjs": "~6.6.7",
     "tslib": "^1.14.1",
     "xmlhttprequest-ssl": "^1.6.3",
     "zone.js": "~0.10.3"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^0.1102.13",
-    "@angular/cli": "^11.2.13",
+    "@angular-devkit/build-angular": "^0.1102.14",
+    "@angular/cli": "^11.2.14",
     "@angular/compiler-cli": "^11.2.14",
     "@angular/language-service": "^11.2.14",
     "@types/jasmine": "~3.3.8",
-    "@types/jasminewd2": "^2.0.9",
+    "@types/jasminewd2": "^2.0.10",
     "@types/node": "^8.10.66",
     "codelyzer": "^5.2.2",
     "jasmine-core": "~3.4.0",
@@ -53,11 +54,11 @@
     "karma-chrome-launcher": "~2.2.0",
     "karma-coverage-istanbul-reporter": "~2.0.1",
     "karma-jasmine": "~2.0.1",
-    "karma-jasmine-html-reporter": "^1.6.0",
+    "karma-jasmine-html-reporter": "^1.7.0",
     "protractor": "^5.4.4",
     "ts-node": "~7.0.0",
     "tslint": "~5.15.0",
-    "typescript": "~4.0.7"
+    "typescript": "^4.1.5"
   },
   "jest": {
     "preset": "jest-preset-angular",

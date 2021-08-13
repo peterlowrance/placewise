@@ -540,30 +540,33 @@ export class AdminService {
 
         // Then get the added WorkspaceUsers data
         workspaceUsersSub = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().subscribe(rawWorkspaceUsers => {
-          let workspaceUsers: WorkspaceUser[] = []; // To emit
+          // Correct for cache immediately loading only one user: Us.
+          if(rawWorkspaceUsers.length === rawUsers.length){
+            let workspaceUsers: WorkspaceUser[] = []; // To emit
 
-          // Build the WorkspaceUsers using both sets of data
-          rawWorkspaceUsers.forEach(wUser => {
-            let workspaceUserDoc = wUser.payload.doc;
-            for(let i = 0; i < rawUsers.length; i++){
-              if(rawUsers[i].payload.doc.id === workspaceUserDoc.id){
-                let userData = rawUsers[i].payload.doc.data() as User;
-                let workspaceData = workspaceUserDoc.data() as {role: string, emailReports?: boolean}
-                workspaceUsers.push({
-                  id: workspaceUserDoc.id,
-                  firstName: userData.firstName,
-                  lastName: userData.lastName,
-                  email: userData.email,
-                  workspace: userData.workspace,
-                  role: workspaceData.role,
-                  emailReports: workspaceData.emailReports ? workspaceData.emailReports : false
-                })
+            // Build the WorkspaceUsers using both sets of data
+            rawWorkspaceUsers.forEach(wUser => {
+              let workspaceUserDoc = wUser.payload.doc;
+              for(let i = 0; i < rawUsers.length; i++){
+                if(rawUsers[i].payload.doc.id === workspaceUserDoc.id){
+                  let userData = rawUsers[i].payload.doc.data() as User;
+                  let workspaceData = workspaceUserDoc.data() as {role: string, emailReports?: boolean}
+                  workspaceUsers.push({
+                    id: workspaceUserDoc.id,
+                    firstName: userData.firstName,
+                    lastName: userData.lastName,
+                    email: userData.email,
+                    workspace: userData.workspace,
+                    role: workspaceData.role,
+                    emailReports: workspaceData.emailReports ? workspaceData.emailReports : false
+                  })
+                }
               }
-            }
-          })
+            })
 
-          // Emit completed data
-          obs.next(workspaceUsers);
+            // Emit completed data
+            obs.next(workspaceUsers);
+          }
         })
       })
 

@@ -375,6 +375,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     for(let locationData of this.itemLocations){
       if(locationData.location.ID === locationID){
         if(locationData.tracking.isNumber){ // New value hasn't been set yet so this is reversed
+          /*
           locationData.tracking.amount = 'Good';
 
           for(let trackingData of this.item.tracking){
@@ -385,27 +386,11 @@ export class ItemComponent implements OnInit, OnDestroy {
               break;
             }
           }
+          */
         }
         else {
-          locationData.tracking.amount = 0;
-
-          let found = false;
-          for(let trackingData of this.item.tracking){
-            if(trackingData.locationID === locationID){
-              found = true;
-              trackingData.type = 'number,0';
-              trackingData.amount = 0;
-              break;
-            }
-          }
-          if(!found){
-            if(this.item.tracking){
-              this.item.tracking.push({locationID: locationID, type: 'number,0', amount: 0});
-            }
-            else {
-              this.item.tracking = [{locationID: locationID, type: 'number,0', amount: 0}];
-            }
-          }
+          this.item.locationMetadata[locationID].trackingData = {type: 'number,0', amount: 0};
+          // Update the ItemLocation data here?
         }
       }
     }
@@ -460,22 +445,7 @@ export class ItemComponent implements OnInit, OnDestroy {
       })
     }
     else {
-      let found = false;
-      for(let dataCard in this.item.tracking){
-        if(this.item.tracking[dataCard].locationID === locationID){
-          this.item.tracking[dataCard].amount = value;
-          found = true;
-          break;
-        }
-      }
-      if(!found){
-        if(this.item.tracking){
-          this.item.tracking.push({locationID: locationID, type, amount: value});
-        }
-        else {
-          this.item.tracking = [{locationID: locationID, type, amount: value}];
-        }
-      }
+      this.item.locationMetadata[locationID].trackingData.amount = value;
 
       this.updateUITrackingData(locationID, value)
       this.checkDirty();

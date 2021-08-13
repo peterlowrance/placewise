@@ -1,11 +1,11 @@
 
-export interface ReportStructureFirebaseCollection {
+export interface ReportStructureTemplates {
     [type: string] : ReportStructure;  // Shortened name for tables, like "Low", also used to identify it's type
 }
 
-export interface ReportStructureWrapper {  // Makes it easier if I need to keep its abbreviation attached
+export interface ReportStructureWrapper {  // Makes it easier if I need to keep its type attached
     type: string; 
-    validLocationIDs: string[];  // Locations that are allowed to be reported to
+    validLocationIDs?: string[];  // Locations that are allowed to be reported to
     alreadyReportedLocations?: string[];  // Locations we're allowed to report to have hit report limits
 
     reportStructure: ReportStructure;
@@ -24,5 +24,19 @@ export interface ReportStructure {
         };
     };
 
-    // categories?
+    // New stuff
+
+    userInput: {  // All input listed out in the order it will be asked in
+        name: string;
+        description: string;
+        type: string; // Possible values: text, number, date, user, image, selection\n[values separated by \n]
+    }[];
+
+    reportToUsers: string[];  // User ID's
+    canChangeReportTo?: boolean;  // Doesn't exist = assumes false
+
+    reportTextFormat: {  // This is what builds the report sent to people
+        type: string;  // Possible values: text, input, date, user, itemData, itemCategoryData, itemLocationData
+        data?: string; // Input name, Cat/Loc/Item element, or text
+    }[];
 }

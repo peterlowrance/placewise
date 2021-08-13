@@ -1,12 +1,13 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { ComponentFactoryResolver, Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
+import { BehaviorSubject, Observer, of } from 'rxjs';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Item } from '../models/Item';
 import { HierarchyLocation } from '../models/Location';
-import { ReportStructure, ReportStructureFirebaseCollection, ReportStructureWrapper } from '../models/ReportStructure';
+import { ReportStructure, ReportStructureTemplates, ReportStructureWrapper } from '../models/ReportStructure';
 import { SentReport } from '../models/SentReport';
 import { AuthService } from './auth.service';
 
@@ -18,8 +19,8 @@ export const adServe = 'https://placewise-d040e.appspot.com/';
 })
 export class ReportService {
 
-  reportSubscription: Subscription;
-  reportStructure: ReportStructureFirebaseCollection;
+  private reportSubscription: Subscription;
+  private reportStructure: BehaviorSubject<ReportStructureTemplates> = new BehaviorSubject(null);
 
   constructor(
     private auth: AuthService,
@@ -35,8 +36,8 @@ export class ReportService {
           }
 
           // Get the report data now that we have the workspace ID
-          this.reportSubscription = this.afs.doc<ReportStructureFirebaseCollection>('/Workspaces/' + this.auth.workspace.id + '/StructureData/ReportStructure').snapshotChanges().subscribe(structure => {
-            this.reportStructure = structure.payload.data();
+          this.reportSubscription = this.afs.doc<ReportStructureTemplates>('/Workspaces/' + this.auth.workspace.id + '/StructureData/ReportStructure').snapshotChanges().subscribe(structure => {
+            this.reportStructure.next(structure.payload.data());
           });
         }
       })
@@ -48,6 +49,15 @@ export class ReportService {
       this.auth.getAuth().subscribe(auth => {
         auth.getIdTokenResult().then(
           token => {
+            console.log({
+              idToken: token,
+              item: itemID,
+              location: locationID,
+              message: text,
+              reportTo: reportedTo,
+              type: type
+            });
+
             // with token remove user by pinging server with token and email
             this.http.post(`${adServe}/createReport`, {
               idToken: token,
@@ -89,36 +99,43 @@ export class ReportService {
       }));
   }
 
+  getReportTemplates(): Observable<ReportStructureTemplates> {
+    return this.reportStructure.asObservable();
+  }
+
   async getReportsAvailableHere(item: Item): Promise<ReportStructureWrapper[]> {
     let availableReports: ReportStructureWrapper[] = [];
+    let reportStructure = this.reportStructure.value;
 
     // 1: Go through and see what valid reports there are
 
-    for(let report in this.reportStructure){
+    for(let report in reportStructure){
+      console.log(report);
+
       // If the report has no speific locations, it's available everywhere, so add
-      if(!this.reportStructure[report].locations){
-        availableReports.push({type: report, reportStructure: this.reportStructure[report], validLocationIDs: item.locations});
+      if(!reportStructure[report].locations){
+        availableReports.push({type: report, reportStructure: reportStructure[report], validLocationIDs: item.locations});
         continue;
       }
 
       // Look through the hierarchy of this location and its ancestors to see if we can find a hit
       for(let locationID of item.locations){
         // First build out the basic structure
-        let reportWithValidLocations: ReportStructureWrapper = {type: report, reportStructure: this.reportStructure[report], validLocationIDs: []};
+        let reportWithValidLocations: ReportStructureWrapper = {type: report, reportStructure: reportStructure[report], validLocationIDs: []};
 
         // Then add valid locations we find
         for(let loopLocationID = locationID; loopLocationID;){
-          if(this.reportStructure[report].locations[loopLocationID]){
+          if(reportStructure[report].locations[loopLocationID]){
   
             // If there are no users for this location, add it
-            if(!this.reportStructure[report].locations[loopLocationID].users){
+            if(!reportStructure[report].locations[loopLocationID].users){
               // Push original location because that's the valid (child) location for that report
               reportWithValidLocations.validLocationIDs.push(locationID); 
               break;
             }
   
             // If we're in the user list, add it
-            else if(this.reportStructure[report].locations[loopLocationID].users.indexOf(this.auth.userInfo.id) > -1){
+            else if(reportStructure[report].locations[loopLocationID].users.indexOf(this.auth.userInfo.id) > -1){
               reportWithValidLocations.validLocationIDs.push(locationID);
               break;
             }
@@ -147,9 +164,19 @@ export class ReportService {
       reportStructure: {
         name: "Custom Report",
         description: "Give a message to any admin that you'd like.",
-        color: "#E8EFFF",
+        color: '#E8EFFF',
         maximumReportAmount: 3,
-        maximumReportTimeframe: 24
+        maximumReportTimeframe: 24,
+        userInput: [{
+          name: "Report Details",
+          description: "What is the problem?",
+          type: 'text'
+        }],
+        reportToUsers: this.auth.workspace.defaultUsersForReports,
+        reportTextFormat: [
+          { type: 'input', data: 'Report Details' },
+          { type: 'text', data: "\n\nThis was made with a custom report."}
+        ]
       }
     })
 
@@ -199,6 +226,10 @@ export class ReportService {
     console.log(availableReports);
 
     return availableReports;
+  }
+
+  updateTemplate(template: ReportStructure, type: string){
+    this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/ReportStructure').update({[type] : template});
   }
 
 }
