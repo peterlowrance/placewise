@@ -49,27 +49,54 @@ export class ReportService {
       this.auth.getAuth().subscribe(auth => {
         auth.getIdTokenResult().then(
           token => {
-            console.log({
-              idToken: token,
-              item: itemID,
-              location: locationID,
-              message: text,
-              reportTo: reportedTo,
-              type: type
-            });
-
-            // with token remove user by pinging server with token and email
-            this.http.post(`${adServe}/createReport`, {
-              idToken: token,
-              item: itemID,
-              location: locationID,
-              message: text,
-              reportTo: reportedTo,
-              type: type
-            }).toPromise().then(
-              () => resolve(`Report sent!`),
-              (err) => reject(err.error)
-            );
+            if(type === 'LowUrg'){
+              console.log({
+                idToken: token,
+                item: itemID,
+                location: locationID,
+                message: text,
+                reportTo: reportedTo,
+                type: type,
+                urgentSubject: "Placebin: Urgently Low Item"
+              });
+  
+              // with token remove user by pinging server with token and email
+              this.http.post(`${adServe}/createReport`, {
+                idToken: token,
+                item: itemID,
+                location: locationID,
+                message: text,
+                reportTo: reportedTo,
+                type: type,
+                urgentSubject: "Placebin: Urgently Low Item"
+              }).toPromise().then(
+                () => resolve(`Report sent!`),
+                (err) => reject(err.error)
+              );
+            }
+            else {
+              console.log({
+                idToken: token,
+                item: itemID,
+                location: locationID,
+                message: text,
+                reportTo: reportedTo,
+                type: type,
+              });
+  
+              // with token remove user by pinging server with token and email
+              this.http.post(`${adServe}/createReport`, {
+                idToken: token,
+                item: itemID,
+                location: locationID,
+                message: text,
+                reportTo: reportedTo,
+                type: type,
+              }).toPromise().then(
+                () => resolve(`Report sent!`),
+                (err) => reject(err.error)
+              );
+            }
           }
         );
       });
@@ -128,7 +155,7 @@ export class ReportService {
           if(reportStructure[report].locations[loopLocationID]){
   
             // If there are no users for this location, add it
-            if(!reportStructure[report].locations[loopLocationID].users){
+            if(!reportStructure[report].locations[loopLocationID].users || reportStructure[report].locations[loopLocationID].users.length === 0){
               // Push original location because that's the valid (child) location for that report
               reportWithValidLocations.validLocationIDs.push(locationID); 
               break;

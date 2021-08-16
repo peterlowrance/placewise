@@ -312,20 +312,20 @@ export class ReportDialogComponent implements OnInit {
   }
 
   setupReport(type: string){
-    if(type === 'Low'){
-      this.setupLowReport();
+    if(type === 'Low' || type === 'LowUrg'){
+      this.setupLowReport(type);
     } else {
       this.onNextClick();
     }
   }
 
   // Initial setup when the low button is pressed. Brings up location selection if need be.
-  setupLowReport(){
-    this.type = "Low";
+  setupLowReport(type: string){
+    this.type = type;
     this.loading.low = true;
     this.isAutoReport = true;
 
-    this.updateLocationDataForAutoReport("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
+    this.updateLocationDataForAutoReport(type, this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
     
     if(!this.data.locations || this.data.locations.length < 2){
       if(this.data.locations.length === 1){
@@ -350,8 +350,17 @@ export class ReportDialogComponent implements OnInit {
       if(users && users.length === this.authService.usersInWorkspace){
         // Load admins for selection
         this.admins = users.filter(element => { return element.role === "Admin" });
+        
         // Load selected people to report to
-        this.selectedAdmins = this.admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
+        for(let reportStruct of this.reportTypes){
+          if(this.type === reportStruct.type){
+            this.selectedAdmins = this.admins.filter(admin => 
+              reportStruct.reportStructure.reportToUsers.indexOf(admin.id) > -1
+            );
+          }
+        }
+
+        console.log(this.selectedAdmins);
 
         this.sendReport();
       }
