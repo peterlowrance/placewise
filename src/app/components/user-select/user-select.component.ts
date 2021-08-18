@@ -44,8 +44,6 @@ export class UserSelectComponent implements OnInit {
 
     // Update array
     this.usersForUI = usersForUI;
-
-    console.log(usersForUI);
   }
 
   onClickUser(newUser: WorkspaceUser, oldUser: WorkspaceUser){
@@ -53,6 +51,7 @@ export class UserSelectComponent implements OnInit {
     if(newUser === oldUser){
       return;
     }
+
     this.selectedUsers[this.selectedUsers.indexOf(oldUser)] = newUser;
     this.updateUIandDB();
   }
