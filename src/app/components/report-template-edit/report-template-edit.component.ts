@@ -1,7 +1,7 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HierarchyLocation } from 'src/app/models/Location';
 import { ReportStructure } from 'src/app/models/ReportStructure';
 import { User } from 'src/app/models/User';
@@ -25,6 +25,7 @@ export class ReportTemplateEditComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private reportService: ReportService,
     private adminService: AdminService,
     public dialog: MatDialog,
@@ -57,15 +58,17 @@ export class ReportTemplateEditComponent implements OnInit {
       this.reportService.getReportTemplates().subscribe(templates => {
         if(templates){
           this.template = templates[this.type];
-          this.locationIDs = [];
-          this.isUrgent = this.template.urgentReportSubject ? true : false;
+          if(this.template){
+            this.locationIDs = [];
+            this.isUrgent = this.template.urgentReportSubject ? true : false;
 
-          if(this.template.locations){
-            for(let locationID in this.template.locations){
-              this.locationIDs.push(locationID);
-              this.searchService.getLocation(locationID).subscribe(loc => {
-                this.locationsLoadedMap[locationID] = loc;
-              })
+            if(this.template.locations){
+              for(let locationID in this.template.locations){
+                this.locationIDs.push(locationID);
+                this.searchService.getLocation(locationID).subscribe(loc => {
+                  this.locationsLoadedMap[locationID] = loc;
+                })
+              }
             }
           }
         }
@@ -246,6 +249,16 @@ export class ReportTemplateEditComponent implements OnInit {
 
   save(){
     this.reportService.updateTemplate(this.template, this.type);
+  }
+
+  deleteTemplate(){
+    if(confirm("Are you sure you want to delete this template? Reports that have used this template will stay, but you will no longer be able to use this report type.")){
+      this.reportService.deleteTemplate(this.type).then(result => {
+        if(result){
+          this.router.navigate(['/reports/templates']);
+        }
+      });
+    }
   }
 
 }

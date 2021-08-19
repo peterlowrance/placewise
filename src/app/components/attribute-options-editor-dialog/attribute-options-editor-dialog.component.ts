@@ -28,7 +28,7 @@ export class AttributeOptionsEditorDialogComponent implements OnInit {
       data: {fieldName: 'Enter new option:'}
     });
     dialogRef.afterClosed().subscribe(result => {
-      if(result.valid && result.changed){
+      if(result.wasValid && result.changed){
         // Keep it sorted
         let added = false;
         for(let index in this.localValues){

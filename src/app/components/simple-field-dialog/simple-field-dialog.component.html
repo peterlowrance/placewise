@@ -6,9 +6,16 @@
     (keyup.enter)="submit()">
 </mat-form-field>
 
+<div *ngIf="data.description">
+    <br>
+    <small>
+        {{data.description}}
+    </small>
+</div>
+
 <br>
 
 <div class="action-buttons">
     <button mat-raised-button class="rect-action-button" (click)="cancel()">Cancel</button>
-    <button mat-raised-button class="rect-action-button structure-color" (click)="submit()"> Submit </button>
+    <button mat-raised-button class="rect-action-button structure-color" (click)="submit()"> Confirm </button>
 </div>

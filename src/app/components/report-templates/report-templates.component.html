@@ -5,7 +5,9 @@
         <app-report-select [template]="template.reportStructure" [type]="template.type" [editing]="true" (buttonClick)="editTemplate($event)"></app-report-select>
     </div>
 
-    <!--button mat-raised-button color="accent" class="add-button" (click)="addAttributeSuffix()">
-        <mat-icon class="plus-icon">add</mat-icon> Add New Report Template
-    </button-->
+    <br>
+
+    <button mat-raised-button color="accent" class="add-button" (click)="addTemplate()">
+        <mat-icon>add</mat-icon> Add New Report Template
+    </button>
 </div>

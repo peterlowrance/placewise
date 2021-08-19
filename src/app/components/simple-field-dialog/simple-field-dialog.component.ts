@@ -10,7 +10,7 @@ import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dial
 export class SimpleFieldDialogComponent implements OnInit {
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: {fieldName: string, value: string},
+    @Inject(MAT_DIALOG_DATA) public data: {fieldName: string, value: string, description?: string},
     public dialogRef: MatDialogRef<SimpleFieldDialogComponent>,
     public dialog: MatDialog
   ) {}
@@ -26,11 +26,11 @@ export class SimpleFieldDialogComponent implements OnInit {
   }
 
   submit(){
-    this.dialogRef.close({value: this.newValue, changed: this.newValue !== this.data.value, valid: true});
+    this.dialogRef.close({value: this.newValue, changed: this.newValue !== this.data.value, wasValid: true});
   }
 
   cancel(){
-    this.dialogRef.close({valid: false});
+    this.dialogRef.close({wasValid: false});
   }
 
 }

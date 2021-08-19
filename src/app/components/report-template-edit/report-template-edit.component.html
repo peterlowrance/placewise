@@ -115,6 +115,11 @@
             <button mat-raised-button color="accent" class="addButton" (click)="addFormatPiece()"><mat-icon class="plus-icon">add</mat-icon>Add Report Piece</button>
         </mat-card>
 
+        <br>
+        <br>
+        <br>
+        <button mat-button color="warn" (click)="deleteTemplate()">Delete</button>
+
     </div>
 
     <div *ngIf="!template" class="loading">

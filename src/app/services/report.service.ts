@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { ComponentFactoryResolver, Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
+import { firestore } from 'firebase';
 import { BehaviorSubject, Observer, of } from 'rxjs';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -257,6 +258,37 @@ export class ReportService {
 
   updateTemplate(template: ReportStructure, type: string){
     this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/ReportStructure').update({[type] : template});
+  }
+
+  async addTemplate(id: string): Promise<boolean> {
+    await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/ReportStructure').update({
+      [id] : {
+        name: id,
+        description: "Default Description",
+        color: "#c8c8c8",
+        maximumReportTimeframe: 24,
+        maximumReportAmount: 1,
+        userInput: [{
+          description: "Describe the problem briefly.",
+          name: "What is the problem?",
+          type: "text"
+        }],
+        reportTextFormat: [{
+          data: "What is the problem?",
+          type: "input"
+        }]
+      }
+    });
+
+    return true;
+  }
+
+  async deleteTemplate(id: string): Promise<boolean> {
+    await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/ReportStructure').update({
+      [id]: firestore.FieldValue.delete()
+    });
+
+    return true;
   }
 
 }

@@ -15,8 +15,8 @@ export interface ReportStructure {
     name: string;  // Full name of report, like "Low and Order More"
     description: string;  // Displayed with seeing all the reports you can do
     color: string;  // Enum that translates to a hex client-side
-    maximumReportTimeframe?: number;  // In hours
-    maximumReportAmount?: number;  // Maximum reports allowed in a timeframe
+    maximumReportTimeframe: number;  // In hours
+    maximumReportAmount: number;  // Maximum reports allowed in a timeframe
     urgentReportSubject?: string;  // Sends the email immediately with this as the subject
     
     locations?: { // Empty = all locations, everyone
