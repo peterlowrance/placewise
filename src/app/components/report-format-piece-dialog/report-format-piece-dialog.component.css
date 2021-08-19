@@ -1,0 +1,11 @@
+
+mat-radio-button {
+    display: block;
+    margin: 16px 8px;
+}
+
+.user-input-option {
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: white;
+}

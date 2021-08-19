@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ReportStructure, ReportStructureWrapper } from 'src/app/models/ReportStructure';
 import { ReportService } from 'src/app/services/report.service';
+import { AttributeBuilderDialogComponent } from '../attribute-builder-dialog/attribute-builder-dialog.component';
 
 @Component({
   selector: 'app-report-templates',

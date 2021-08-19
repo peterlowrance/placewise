@@ -1,15 +1,20 @@
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import { HierarchyLocation } from 'src/app/models/Location';
 import { ReportStructure } from 'src/app/models/ReportStructure';
 import { User } from 'src/app/models/User';
+import { UserInput } from 'src/app/models/UserInput';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 import { AdminService } from 'src/app/services/admin.service';
 import { ReportService } from 'src/app/services/report.service';
 import { SearchService } from 'src/app/services/search.service';
+import { AttributeBuilderDialogComponent } from '../attribute-builder-dialog/attribute-builder-dialog.component';
+import { ColorPaletteDialogComponent } from '../color-palette-dialog/color-palette-dialog.component';
 import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
-import { ReportTemplateUserInputDialogComponent } from '../report-template-user-input-dialog/report-template-user-input-dialog.component';
+import { ReportFormatPieceDialogComponent } from '../report-format-piece-dialog/report-format-piece-dialog.component';
+import { UserInputDialogComponent } from '../user-input-dialog/user-input-dialog.component';
 
 @Component({
   selector: 'app-report-template-edit',
@@ -29,7 +34,7 @@ export class ReportTemplateEditComponent implements OnInit {
   type: string;
   template: ReportStructure;
   locationIDs: string[] = [];
-
+  isUrgent: boolean;
   usersLoaded: WorkspaceUser[];
 
   locationsLoadedMap: {
@@ -53,6 +58,7 @@ export class ReportTemplateEditComponent implements OnInit {
         if(templates){
           this.template = templates[this.type];
           this.locationIDs = [];
+          this.isUrgent = this.template.urgentReportSubject ? true : false;
 
           if(this.template.locations){
             for(let locationID in this.template.locations){
@@ -143,26 +149,99 @@ export class ReportTemplateEditComponent implements OnInit {
     this.save();
   }
 
-  editUserInput(input : {name: string, description: string, type: string}){
-    /*
-    const dialogRef = this.dialog.open(ReportTemplateUserInputDialogComponent, {
-      width: '45rem',
-      data: {hierarchy: 'locations', singleSelection: true, id: '', parents: ['root']}
-    });
-    dialogRef.afterClosed().subscribe(result => {
-      if(result && result[0]){
-        // First make sure this isn't already a location. If it is, we'll just do nothing.
-        for(let locationID in this.template.locations){
-          if(result[0] === locationID){
-            return;
+  editUserInput(input : UserInput){
+    this.dialog.open(UserInputDialogComponent, {width: '360px', 
+      data: {
+        name: input.name, 
+        description: input.description,
+        type: input.type
+      }
+    }).beforeClosed().subscribe(result => {
+
+      if(result && result.wasValid){
+        // Find the input we're editing and update it
+        for(let index in this.template.userInput){
+          if(this.template.userInput[index].name === input.name){
+
+            // If we made changes to the name, update those references in the formatter
+            if(result.data.name !== input.name){
+              for(let index in this.template.reportTextFormat){
+                if(this.template.reportTextFormat[index].type === 'input' && this.template.reportTextFormat[index].data === input.name){
+                  this.template.reportTextFormat[index].data = result.data.name;
+                }
+              }
+            }
+
+            this.template.userInput[index] = result.data;
+            this.save();
           }
         }
-        
-        this.template.locations[result[0]] = {users: []};
+      }
+    });
+  }
+
+  addUserInput(){
+    this.dialog.open(UserInputDialogComponent, {width: '360px', 
+      data: {
+        name: "", 
+        description: "",
+        type: 'text'
+      }
+    }).beforeClosed().subscribe(result => {
+      if(result && result.wasValid){
+        // Find the input we're editing and update it
+        this.template.userInput.push(result.data);
         this.save();
       }
-    })
-    */
+    });
+  }
+
+  deleteUserInput(deleteInput: UserInput){
+    if(confirm("Are you sure you want to delete this input? It will also be removed anywhere it is used in the Report Formatter.")){
+      this.template.userInput = this.template.userInput.filter(input => deleteInput.name !== input.name);
+      this.save();
+    }
+  }
+
+  setIsUrgent(event){
+    if(event.checked){
+      this.template.urgentReportSubject = "Urgent Placebin Report";
+      this.isUrgent = true;
+    }
+    else {
+      delete this.template.urgentReportSubject;
+      this.isUrgent = false;
+    }
+  }
+
+  changeColor(){
+    this.dialog.open(ColorPaletteDialogComponent, {width: '45rem'})
+    .beforeClosed().subscribe(result => {
+      if(result && result.wasValid){
+        this.template.color = result.data;
+        this.save();
+      }
+    });
+  }
+
+  drop(event: CdkDragDrop<string[]>){
+    moveItemInArray(this.template.reportTextFormat, event.previousIndex, event.currentIndex);
+    this.save();
+  }
+
+  deleteFormatPiece(index: number){
+    this.template.reportTextFormat.splice(index, 1);
+    this.save();
+  }
+
+  addFormatPiece(){
+    this.dialog.open(ReportFormatPieceDialogComponent, {width: '45rem', data: {inputs: this.template.userInput}})
+    .beforeClosed().subscribe(result => {
+      if(result && result.wasValid){
+        this.template.reportTextFormat.push(result.data);
+        this.save();
+      }
+    });
   }
 
   save(){

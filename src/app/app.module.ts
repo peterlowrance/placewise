@@ -73,7 +73,9 @@ import { TextSearchComponent } from './components/text-search/text-search.compon
 import { ReportTemplatesComponent } from './components/report-templates/report-templates.component';
 import { ReportSelectComponent } from './components/report-select/report-select.component';
 import { ReportTemplateEditComponent } from './components/report-template-edit/report-template-edit.component';
-import { ReportTemplateUserInputDialogComponent } from './components/report-template-user-input-dialog/report-template-user-input-dialog.component';
+import { UserInputDialogComponent } from './components/user-input-dialog/user-input-dialog.component';
+import { ColorPaletteDialogComponent } from './components/color-palette-dialog/color-palette-dialog.component';
+import { ReportFormatPieceDialogComponent } from './components/report-format-piece-dialog/report-format-piece-dialog.component';
 
 @NgModule({
   declarations: [
@@ -109,7 +111,9 @@ import { ReportTemplateUserInputDialogComponent } from './components/report-temp
     ReportTemplatesComponent,
     ReportSelectComponent,
     ReportTemplateEditComponent,
-    ReportTemplateUserInputDialogComponent
+    UserInputDialogComponent,
+    ColorPaletteDialogComponent,
+    ReportFormatPieceDialogComponent
   ],
   imports: [
     CommonModule,

@@ -1,0 +1,9 @@
+
+<span *ngFor="let color of colorOptions">
+    <button mat-icon-button class="color-circle" [class.mat-elevation-z4]="true" [style.background-color]="color" (click)="pickColor(color)"></button>
+</span>
+
+<br>
+<br>
+
+<button mat-raised-button class="rect-action-button" (click)="cancel()">Cancel</button>

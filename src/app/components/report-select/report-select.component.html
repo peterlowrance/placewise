@@ -1,7 +1,7 @@
 <!-- Report available -->
 <div *ngIf="!disabled" class="valid-report">
     <div class="report-top">
-        <button mat-icon-button [style.background-color]="template.color" class="action-color" (click)="click()">
+        <button mat-icon-button [class.mat-elevation-z4]="true" [style.background-color]="template.color" class="action-color" (click)="click()">
             <mat-icon *ngIf="!editing">post_add</mat-icon>
             <mat-icon *ngIf="editing">tune</mat-icon>
         </button>

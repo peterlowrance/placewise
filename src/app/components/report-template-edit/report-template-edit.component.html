@@ -8,9 +8,9 @@
                 <input matInput [(ngModel)]="template.name" (change)="save()">
             </mat-form-field>
 
-            <div class="color-circle" [style.background-color]="template.color">
-
-            </div>
+            <button mat-icon-button class="color-circle" [class.mat-elevation-z4]="true" [style.background-color]="template.color" (click)="changeColor()">
+                <mat-icon>palette</mat-icon>
+            </button>
 
             <br>
         </div>
@@ -18,6 +18,33 @@
             <mat-label>Description</mat-label>
             <textarea matInput [(ngModel)]="template.description" (change)="save()"></textarea>
         </mat-form-field>
+
+        <br>
+        <br>
+        <mat-slide-toggle #urgent [checked]="isUrgent" (change)="setIsUrgent($event)"> This is an urgent report. </mat-slide-toggle>
+        <br>
+        <small> This means emails will be sent right away instead of collected into one email sent once a day. </small>
+        <br>
+        <br>
+        <mat-form-field *ngIf="isUrgent" class="title" appearance="outline">
+            <mat-label>Email Title</mat-label>
+            <input matInput [(ngModel)]="template.urgentReportSubject" required>
+        </mat-form-field>
+
+        <h3> Report Time Frame </h3>
+        <div>
+            In the time frame of
+            <mat-form-field class="title" appearance="outline">
+                <input matInput [(ngModel)]="template.maximumReportTimeframe" (change)="save()" type="number">
+            </mat-form-field>
+            <br>
+            hours, only a total of
+            <mat-form-field class="title" appearance="outline">
+                <input matInput [(ngModel)]="template.maximumReportAmount" (change)="save()" type="number">
+            </mat-form-field>
+            <br>
+            of this type of report can be sent.
+        </div>
 
         <h3> Who can report where </h3>
         <small> Note: Rules for who can report at an item are determined by the most specific location's rules for that item. <br><br> </small>
@@ -58,20 +85,34 @@
             <br>
             <div class="button-group">
                 <span class="format format-manual-input" [style.background-color]="getFormatColor(input.type)"> {{input.type}} </span>
-                <button mat-raised-button class="big-button structure-color" click="editUserInput(input)"> Edit </button>
+                <button mat-icon-button (click)="deleteUserInput(input)"><mat-icon>delete</mat-icon></button>
+                <button mat-raised-button class="big-button structure-color" (click)="editUserInput(input)"> Edit </button>
             </div>
         </mat-card>
         <br>
-        <button mat-raised-button class="big-button structure-color"><mat-icon>add</mat-icon> Add User Input </button>
+        <button mat-raised-button class="big-button structure-color" (click)="addUserInput()"><mat-icon>add</mat-icon> Add User Input </button>
 
         <h3> Report Formatter </h3>
         <small> Note: The item, user reporting, and the time of the report will already be attached. </small>
         <mat-card>
-            <span *ngFor="let format of template.reportTextFormat">
-                <span *ngIf="format.type === 'text'" class="format">{{format.data}}</span>
-                <span *ngIf="format.type === 'input'" class="format format-manual-input" [style.background-color]="getFormatColorFromInputName(format.data)">{{format.data}}</span>
-                <span *ngIf="format.type !== 'text' && format.type !== 'input'" class="format format-auto-input">{{format.type}}</span>
-            </span>
+            <div cdkDropList (cdkDropListDropped)="drop($event)">
+                <div *ngFor="let format of template.reportTextFormat; index as i" cdkDrag>
+                    <div *ngIf="format.type === 'text'" class="format">
+                        {{format.data}} <small>({{format.type}})</small>
+                        <button mat-icon-button (click)="deleteFormatPiece(i)"><mat-icon>delete</mat-icon></button>
+                    </div>
+                    <div *ngIf="format.type === 'input'" class="format format-manual-input" [style.background-color]="getFormatColorFromInputName(format.data)">
+                        {{format.data}} <small>({{format.type}})</small>
+                        <button mat-icon-button (click)="deleteFormatPiece(i)"><mat-icon>delete</mat-icon></button>
+                    </div>
+                    <div *ngIf="format.type !== 'text' && format.type !== 'input'" class="format format-auto-input">
+                        {{format.type}} <small>({{format.type}})</small>
+                        <button mat-icon-button (click)="deleteFormatPiece(i)"><mat-icon>delete</mat-icon></button>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <button mat-raised-button color="accent" class="addButton" (click)="addFormatPiece()"><mat-icon class="plus-icon">add</mat-icon>Add Report Piece</button>
         </mat-card>
 
     </div>
