@@ -28,7 +28,7 @@
         <br>
         <mat-form-field *ngIf="isUrgent" class="title" appearance="outline">
             <mat-label>Email Title</mat-label>
-            <input matInput [(ngModel)]="template.urgentReportSubject" required>
+            <input matInput [(ngModel)]="template.urgentReportSubject" (change)="save()" required>
         </mat-form-field>
 
         <h3> Report Time Frame </h3>

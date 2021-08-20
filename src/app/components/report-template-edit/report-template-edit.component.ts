@@ -129,7 +129,12 @@ export class ReportTemplateEditComponent implements OnInit {
           }
         }
         
-        this.template.locations[result[0]] = {users: []};
+        if(this.template.locations){
+          this.template.locations[result[0]] = {users: []};
+        }
+        else {
+          this.template.locations = {[result[0]]: {users: []}};
+        }
         this.save();
       }
     })
@@ -215,6 +220,8 @@ export class ReportTemplateEditComponent implements OnInit {
       delete this.template.urgentReportSubject;
       this.isUrgent = false;
     }
+
+    this.save();
   }
 
   changeColor(){

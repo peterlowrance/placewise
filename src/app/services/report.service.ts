@@ -45,12 +45,12 @@ export class ReportService {
     }
 
 
-  placeReport(itemID: string, text: string, reportedTo: string[], locationID: string, type: string) {
+  placeReport(itemID: string, text: string, reportedTo: string[], locationID: string, type: string, urgentTitle?: string) {
     return new Promise((resolve, reject) => {
       this.auth.getAuth().subscribe(auth => {
         auth.getIdTokenResult().then(
           token => {
-            if(type === 'LowUrg'){
+            if(urgentTitle){
               console.log({
                 idToken: token,
                 item: itemID,
@@ -58,7 +58,7 @@ export class ReportService {
                 message: text,
                 reportTo: reportedTo,
                 type: type,
-                urgentSubject: "Placebin: Urgently Low Item"
+                urgentSubject: urgentTitle
               });
   
               // with token remove user by pinging server with token and email
@@ -69,7 +69,7 @@ export class ReportService {
                 message: text,
                 reportTo: reportedTo,
                 type: type,
-                urgentSubject: "Placebin: Urgently Low Item"
+                urgentSubject: urgentTitle
               }).toPromise().then(
                 () => resolve(`Report sent!`),
                 (err) => reject(err.error)

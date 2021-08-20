@@ -16,7 +16,9 @@
                     </mat-card>
                   
                     <p class='bin-text'>
-                        {{ item.locationMetadata[insideLocation.ID].binID }}
+                        {{ item.locationMetadata[insideLocation.ID] ? 
+                            item.locationMetadata[insideLocation.ID].binID :
+                            "Loading" }} <!-- This tends to take a moment/cause undefined errors, so we'll give it some slack -->
                     </p>
                 </mat-card>
             </mat-grid-tile>

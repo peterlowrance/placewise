@@ -67,17 +67,40 @@
     </div>
 
     <!-- For low report -->
-    <div *ngIf="step === 'low'">
-        <h1 mat-dialog-title> Amount to be ordered: </h1>
+    <div *ngIf="input && step === 'template'">
+        <h1 mat-dialog-title> {{input.name}} </h1>
+        <div>  {{input.description}} </div>
+
+        <br>
 
         <div class="low-report">
-            <mat-form-field>
-                <mat-label> Amount </mat-label>
-                <input matInput type="number" pattern="\d*" (keyup)="updateReportNumber($event)"/>
+            <mat-form-field *ngIf="input.type === 'number'">
+                <mat-label> Enter Number </mat-label>
+                <input matInput type="number" pattern="\d*" [(ngModel)]="userFormFieldInput"/>
             </mat-form-field>
-            <button mat-raised-button class="big-button action-color-dark low-send-button" (click)="sendLowReport()" [disabled]="!lowAmount || lowAmount < 0">
+
+            <mat-form-field *ngIf="input.type === 'text'">
+                <mat-label> Enter Text </mat-label>
+                <input matInput [(ngModel)]="userFormFieldInput"/>
+            </mat-form-field>
+
+            <!--button mat-raised-button class="big-button action-color-dark low-send-button" (click)="sendLowReport()" [disabled]="!lowAmount || lowAmount < 0">
                 <mat-spinner *ngIf="loading.custom" [diameter]="24" class="report-spinner" color="white"></mat-spinner>
                 <div *ngIf="!loading.custom"> Send </div>
+            </button-->
+        </div>
+
+        <div mat-dialog-actions class="report-button-wrapper">
+            <button mat-raised-button class="big-button dialog-button" (click)="onCancelClick()">
+                Cancel
+            </button>
+            <span class="btn-spacer"></span>
+
+            <button mat-raised-button *ngIf="reportTemplate.userInput.length <= (inputIndex+1)" class="big-button action-color-dark dialog-button" (click)="sendTemplateReport()">
+                Send
+            </button>
+            <button mat-raised-button *ngIf="reportTemplate.userInput.length > (inputIndex+1)" class="big-button action-color dialog-button" (click)="nextInput()">
+                Next
             </button>
         </div>
     </div>
