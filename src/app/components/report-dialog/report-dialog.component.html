@@ -2,10 +2,17 @@
 
     <!-- Select which type of report -->
     <div *ngIf="step === 'start'">
-        <h1 mat-dialog-title>What kind of report?</h1>
+        <div *ngIf="!reportTypes">
+            <h1>Loading....</h1>
+            <mat-spinner></mat-spinner>
+        </div>
+
+        <div *ngIf="reportTypes">
+            <h1 mat-dialog-title>What kind of report?</h1>
         
-        <div *ngFor="let report of reportTypes">
-            <app-report-select [template]="report.reportStructure" [type]="report.type" [disabled]="report.alreadyReportedLocations && report.alreadyReportedLocations.length === data.item.locations.length" (buttonClick)="setupReport($event)"></app-report-select>
+            <div *ngFor="let report of reportTypes">
+                <app-report-select [template]="report.reportStructure" [type]="report.type" [disabled]="report.alreadyReportedLocations && report.alreadyReportedLocations.length === data.item.locations.length" (buttonClick)="setupReport($event)"></app-report-select>
+            </div>
         </div>
     </div>
 
