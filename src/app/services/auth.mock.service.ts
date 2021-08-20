@@ -123,7 +123,7 @@ export class AuthMockService {
    * Sends a reset password email with the given email
    */
   sendPasswordResetEmail(email: string){
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       if(email == MOCK_USER.email) return resolve();
       else return reject('failure');
     })
@@ -133,7 +133,7 @@ export class AuthMockService {
    * Sends a change password request to firebase
    */
   changePassword(curPass: string, newPass: string){
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       if(curPass === EXPECTED_TEST_CREDENTIALS.password){
         updatedPass = newPass;
         return resolve();

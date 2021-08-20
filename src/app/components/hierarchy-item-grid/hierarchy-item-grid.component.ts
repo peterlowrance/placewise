@@ -36,9 +36,9 @@ export class HierarchyItemGridComponent implements OnInit {
   }
 
   determineCols(width = document.body.clientWidth) {
-    const fontLine = this.fontSize * 15; // Sets max characters (but not directly) on a line
-    const calcWidth = width > (this.fontSize*60) ? this.fontSize*60 : width;
-    this.columns = Math.floor(calcWidth / fontLine * 0.96);
+    const fontLine = this.fontSize * 20; // Sets max characters (but not directly) on a line
+    const calcColumns = Math.floor(width / fontLine * 0.96);
+    this.columns = calcColumns > 3 ? 3 : calcColumns;
   }
 
 }

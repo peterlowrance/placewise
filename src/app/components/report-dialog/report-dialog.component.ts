@@ -11,6 +11,10 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import { HierarchyLocation } from 'src/app/models/Location';
 import { ItemReport } from 'src/app/models/ItemReport';
 import { ItemTypeReportTimestamp } from 'src/app/models/ItemTypeReportTimestamp';
+import { ReportService } from 'src/app/services/report.service';
+import { ReportStructure, ReportStructureWrapper } from 'src/app/models/ReportStructure';
+import { identifierModuleUrl } from '@angular/compiler';
+import { UserInput } from 'src/app/models/UserInput';
 
 interface LocationWithReportMeta {
   location?: HierarchyLocation, 
@@ -32,6 +36,7 @@ export class ReportDialogComponent implements OnInit {
     public dialogRef: MatDialogRef<ReportDialogComponent>,
     private adminService: AdminService,
     private authService: AuthService,
+    private reportService: ReportService,
     private snack: MatSnackBar,
     @Inject(MAT_DIALOG_DATA) public data: {item: Item, locations: HierarchyLocation[]}
   ) { }
@@ -43,6 +48,7 @@ export class ReportDialogComponent implements OnInit {
   }
 
   locationData: LocationWithReportMeta[] = [];
+  reportTypes: ReportStructureWrapper[];
 
   step: string;
   admins: WorkspaceUser[];
@@ -50,13 +56,18 @@ export class ReportDialogComponent implements OnInit {
   description: string = '';
   type: string = 'custom';
   locationID = 'none';
-  isAutoReport = false;
+  isTemplateReport = false;
 
-  reportLowDisabled = false;
   //reportEmptyDisabled = false;
   canReport = true;
   timestamp = Date.now();
   lowAmount;
+
+  reportTemplate: ReportStructure;
+  inputIndex: number = 0;
+  input: UserInput;
+  userInput: {[name: string]: any} = {};
+  userFormFieldInput: any;
 
   reportsInLast12HPerLocation: Map<string, number>;
 
@@ -66,16 +77,26 @@ export class ReportDialogComponent implements OnInit {
     this.locationData = this.countRecentReports(this.data.locations, this.data.item.reports, this.timestamp);
     this.canReport = this.isAbleToReport(this.locationData);
 
-    //this.reportEmptyDisabled = !this.isAbleToAutoReportFor("Empty", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
-    
-    // If it's empty, then it's low
-    //if(this.reportEmptyDisabled) {
-    //  this.reportLowDisabled = true;
-    //}
-    //else {
-      this.reportLowDisabled = !this.isAbleToAutoReportFor("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
-    //}
-    
+    console.log(this.data.item);
+    this.reportService.getReportsAvailableHere(this.data.item).then(result => {
+      this.reportTypes = result;
+
+      /*
+      let found = false;
+      
+      for(let report of result){
+        if(report.abbreviation === 'Low'){
+          found = true;
+
+          // if(report.reportStructure.) We'll get specific reports in a moment
+        }
+      }
+
+      if(!found){
+        this.reportLowUnavailable = true;
+      }
+      */
+    })
   }
 
   // Based on the reports and thier timestamps, return data if certain reports can be made
@@ -149,54 +170,6 @@ export class ReportDialogComponent implements OnInit {
     }
 
     return result;
-  }
-
-  // This sees if we are able to create any report for this type of report
-  isAbleToAutoReportFor(type: string, locationData: LocationWithReportMeta[], typeReportTimestmaps: ItemTypeReportTimestamp[], timestamp: number): boolean {
-    // If there is no time stamps, immediately return good
-    if(!typeReportTimestmaps){
-      return true;
-    }
-
-    // NEXT: This is not working right for full locations
-
-    // Go through each location to see if there's an open spot for this type of auto report
-    for(let locationWithReportData of locationData){
-      // If we can't report for this location, then go to the next location
-      if(locationWithReportData.canReport){
-        let found = false;
-        let noLocation = locationWithReportData.location ? false : true;
-
-        for(let timestampData of typeReportTimestmaps){
-          if(noLocation){
-            if(timestampData.location === 'none' && timestampData.type === type){
-              // If this report timestamp is old, return good
-              if(timestampData.timestamp + 43200000 < timestamp){
-                return true;
-              }
-              found = true;
-            }
-          }
-          else {
-            if(timestampData.location === locationWithReportData.location.ID && timestampData.type === type){
-              // If this report timestamp is old, return good
-              if(timestampData.timestamp + 43200000 < timestamp){
-                return true;
-              }
-              found = true;
-            }
-          }
-        }
-
-        // If there's no previous data for a location, then we're good to report here
-        if(!found){
-          return true;
-        }
-      }
-    }
-
-    // If no open slots were found, return bad
-    return false;
   }
 
   // Update location data to match what type of auto report we are looking for
@@ -276,8 +249,8 @@ export class ReportDialogComponent implements OnInit {
   setLocation(locationID: string){
     this.locationID = locationID;
 
-    if(this.isAutoReport){
-      this.step = 'low';
+    if(this.isTemplateReport){
+      this.step = 'template';
     }
     else {
       this.step = 'who';
@@ -293,23 +266,48 @@ export class ReportDialogComponent implements OnInit {
     this.dialogRef.close({wasValid: false});
   }
 
-  // Initial setup when the low button is pressed. Brings up location selection if need be.
-  setupLowReport(){
-    this.type = "Low";
-    this.loading.low = true;
-    this.isAutoReport = true;
+  setupReport(type: string){
+    if(type !== 'custom'){
+      this.setupTemplateReport(type);
+    } else {
+      this.onNextClick();
+    }
+  }
 
-    this.updateLocationDataForAutoReport("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
-    
-    if(!this.data.locations || this.data.locations.length < 2){
-      if(this.data.locations.length === 1){
-        this.locationID = this.data.locations[0].ID;
+  // Initial setup when the low button is pressed. Brings up location selection if need be.
+  setupTemplateReport(type: string){
+    this.type = type;
+    this.loading.low = true;
+    this.isTemplateReport = true;
+
+    this.updateLocationDataForAutoReport(type, this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
+
+    this.reportService.getReportTemplates().subscribe(templates => {
+      this.reportTemplate = templates[type];
+      this.input = this.reportTemplate.userInput[0];
+
+      if(!this.data.locations || this.data.locations.length < 2){
+        if(this.data.locations.length === 1){
+          this.locationID = this.data.locations[0].ID;
+        }
+        this.step = 'template';
       }
-      this.step = 'low';
-    }
-    else {
-      this.step = 'where';
-    }
+      else {
+        this.step = 'where';
+      }
+    })
+  }
+
+  logInputData(){
+    this.userInput[this.reportTemplate.userInput[this.inputIndex].name] = this.userFormFieldInput;
+  }
+
+  nextInput(){
+    this.logInputData();
+    this.userFormFieldInput = "";
+    
+    this.inputIndex += 1;
+    this.input = this.reportTemplate.userInput[this.inputIndex];
   }
 
   // Save inputed number from UI each stroke
@@ -317,15 +315,37 @@ export class ReportDialogComponent implements OnInit {
     this.lowAmount = event.target.value;
   }
 
-  sendLowReport(){
-    this.description = "This item is low, " + this.lowAmount + " more is requested."
+  sendTemplateReport(){
+    this.logInputData(); // To get the last bit of input
+
+    let reportText = "";
+    for(let format of this.reportTemplate.reportTextFormat){
+      if(format.type === 'input'){
+        reportText += this.userInput[format.data];
+      }
+      else {
+        reportText += format.data;
+      }
+
+      reportText += " ";
+    }
+    this.description = reportText;
 
     this.adminService.getWorkspaceUsers().subscribe(users => {
       if(users && users.length === this.authService.usersInWorkspace){
         // Load admins for selection
         this.admins = users.filter(element => { return element.role === "Admin" });
+        
         // Load selected people to report to
-        this.selectedAdmins = this.admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
+        for(let reportStruct of this.reportTypes){
+          if(this.type === reportStruct.type){
+            this.selectedAdmins = this.admins.filter(admin => 
+              reportStruct.reportStructure.reportToUsers.indexOf(admin.id) > -1
+            );
+          }
+        }
+
+        console.log(this.selectedAdmins);
 
         this.sendReport();
       }
@@ -378,16 +398,24 @@ export class ReportDialogComponent implements OnInit {
     // Append which location it was from
     for(let location of this.data.locations){
       if(location.ID === this.locationID){
-        this.description += " - Located in " + location.name + ".";
+        if(this.data.item.locationMetadata && 
+          this.data.item.locationMetadata[this.locationID] &&
+          this.data.item.locationMetadata[this.locationID].binID)
+          {
+          this.description += " - Located in bin " + this.data.item.locationMetadata[this.locationID].binID + " of " + location.name + ".";
+        }
+        else {
+          this.description += " - Located in " + location.name + ".";
+        }
         break;
       }
     }
 
     this.dialogRef.close({wasValid: true});
-    this.snack.open("Sending Report...", '', {duration: 2000, panelClass: ['mat-toolbar']});
+    this.snack.open("Sending Report...", '', {duration: 3000, panelClass: ['mat-toolbar']});
 
-    this.adminService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type).then(
-      () => this.snack.open("Report Sent!", "OK", {duration: 4000, panelClass: ['successful-report']}),
+    this.reportService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type, this.reportTemplate.urgentReportSubject).then(
+      () => this.snack.open("Report Sent!", "OK", {duration: 5000, panelClass: ['successful-report']}),
       (err) => {
         this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
         console.log(JSON.stringify(err));

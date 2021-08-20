@@ -13,8 +13,8 @@
                 <h3> Category <button *ngIf="category" mat-icon-button class="editButton" (click)="editCategory()"><mat-icon>edit</mat-icon></button></h3>
                 <div *ngIf="category" class="category-container">
                     <img class="categoryImg" src={{category?.imageUrl}}>
-                    <div class="category-name">{{category?.name !== 'root' ? category?.name : 'Unassigned'}}
-                        <mat-icon *ngIf="category?.name == 'root'" class="missing-data-icon">error_outline</mat-icon>
+                    <div class="category-name">{{category?.ID !== 'root' ? category?.name : 'Unassigned'}}
+                        <mat-icon *ngIf="category?.ID == 'root'" class="missing-data-icon">error_outline</mat-icon>
                     </div>
                 </div>
                 <p *ngIf="!category"> Loading category... </p>
@@ -22,8 +22,8 @@
                 <h3> Locations <button mat-icon-button class="editButton" (click)="editLocation()"><mat-icon>edit</mat-icon></button></h3>
                 <div *ngFor="let location of locations" class="locations-container">
                     <img class="locationImg" src={{location.imageUrl}}>
-                    <div class="location-name">{{location.name !== 'root' ? location.name : 'Unassigned'}}
-                        <mat-icon *ngIf="location.name == 'root'" class="missing-data-icon">error_outline</mat-icon>
+                    <div class="location-name">{{location.ID !== 'root' ? location.name : 'Unassigned'}}
+                        <mat-icon *ngIf="location.ID == 'root'" class="missing-data-icon">error_outline</mat-icon>
                     </div>
                 </div>
                 <div *ngIf="!loadingLocations && locations && locations.length === 0">
@@ -47,8 +47,8 @@
                 <div *ngFor="let binData of binIDData">
                     <div class="locations-container">
                         <img class="locationImg" src={{binData.location.imageUrl}}>
-                        <div class="location-name">{{binData.location.name !== 'root' ? binData.location.name : 'Unassigned'}}
-                            <mat-icon *ngIf="binData.location.name == 'root'" class="missing-data-icon">error_outline</mat-icon>
+                        <div class="location-name">{{binData.location.ID !== 'root' ? binData.location.name : 'Unassigned'}}
+                            <mat-icon *ngIf="binData.location.ID == 'root'" class="missing-data-icon">error_outline</mat-icon>
                         </div>
                     </div>
     
@@ -137,7 +137,7 @@
                 Loading category information...
             </div>
 
-            <div *ngIf="(category && categoryAndAncestors) || (category && category.name === 'root')">
+            <div *ngIf="(category && categoryAndAncestors) || (category && category.ID === 'root')">
                 <br>
                 <mat-slide-toggle [(ngModel)]="autoTitleBuilder" (change)="onToggleAutoTitle($event)"> <b> Automatic Title</b> <div class="light-text"> from {{ category.name }} </div> </mat-slide-toggle>
                 <br>

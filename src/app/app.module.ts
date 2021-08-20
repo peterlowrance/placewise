@@ -70,6 +70,12 @@ import { AttributeBuilderDialogComponent } from './components/attribute-builder-
 import { AddAttributeSuffixDialogComponent } from './components/add-attribute-suffix-dialog/add-attribute-suffix-dialog.component';
 import { HierarchyItemGridComponent } from './components/hierarchy-item-grid/hierarchy-item-grid.component';
 import { TextSearchComponent } from './components/text-search/text-search.component';
+import { ReportTemplatesComponent } from './components/report-templates/report-templates.component';
+import { ReportSelectComponent } from './components/report-select/report-select.component';
+import { ReportTemplateEditComponent } from './components/report-template-edit/report-template-edit.component';
+import { UserInputDialogComponent } from './components/user-input-dialog/user-input-dialog.component';
+import { ColorPaletteDialogComponent } from './components/color-palette-dialog/color-palette-dialog.component';
+import { ReportFormatPieceDialogComponent } from './components/report-format-piece-dialog/report-format-piece-dialog.component';
 
 @NgModule({
   declarations: [
@@ -101,7 +107,13 @@ import { TextSearchComponent } from './components/text-search/text-search.compon
     AttributeBuilderDialogComponent,
     AddAttributeSuffixDialogComponent,
     HierarchyItemGridComponent,
-    TextSearchComponent
+    TextSearchComponent,
+    ReportTemplatesComponent,
+    ReportSelectComponent,
+    ReportTemplateEditComponent,
+    UserInputDialogComponent,
+    ColorPaletteDialogComponent,
+    ReportFormatPieceDialogComponent
   ],
   imports: [
     CommonModule,

@@ -1,0 +1,13 @@
+<div class="all-content">
+    <h2> Templates </h2>
+
+    <div *ngFor="let template of reportTemplates">
+        <app-report-select [template]="template.reportStructure" [type]="template.type" [editing]="true" (buttonClick)="editTemplate($event)"></app-report-select>
+    </div>
+
+    <br>
+
+    <button mat-raised-button color="accent" class="add-button" (click)="addTemplate()">
+        <mat-icon>add</mat-icon> Add New Report Template
+    </button>
+</div>

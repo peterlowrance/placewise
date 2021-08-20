@@ -464,9 +464,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   determineCols(fontSize: number = this.getFontSize(), width = document.body.clientWidth) {
+    // BAD: OUTDATED
     const fontLine = fontSize * 15; // Sets max characters (but not directly) on a line
-    const calcWidth = width > (fontSize*60) ? fontSize*60 : width;
-    this.columns = Math.floor(calcWidth / fontLine * 0.96);
+    this.columns = Math.floor(width / fontLine * 0.96);
+    if(this.columns > 3){
+      this.columns = 3;
+    }
   }
 
   getFontSize() {

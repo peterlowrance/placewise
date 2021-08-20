@@ -20,6 +20,8 @@ import { type } from 'os';
 import { WorkspaceUser } from '../models/WorkspaceUser';
 import { CacheService } from './cache.service';
 import { BinDictionary } from '../models/BinDictionary';
+import { Report } from '../models/Report';
+import { ReportService, adServe } from './report.service';
 
 declare var require: any;
 
@@ -29,7 +31,6 @@ const httpOptions = {
   })
 };
 
-const adServe = 'https://placewise-d040e.appspot.com/';
 
 @Injectable({
   providedIn: 'root'
@@ -76,53 +77,6 @@ export class AdminService {
     if(recentList.length > 8){ // Only have 5
       recentList.pop();
     }
-  }
-
-
-  getReport(id: string) {
-    return this.afs.doc<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).snapshotChanges().pipe(map(a => {
-      const data = a.payload.data() as SentReport;
-      if (!data) {
-        return;
-      }
-      data.ID = a.payload.id;
-      return data;
-    }));
-  }
-
-  placeReport(itemID: string, text: string, reportedTo: string[], locationID: string, type: string) {
-    return new Promise((resolve, reject) => {
-      this.auth.getAuth().subscribe(auth => {
-        auth.getIdTokenResult().then(
-          token => {
-            // with token remove user by pinging server with token and email
-            this.http.post(`${adServe}/createReport`, {
-              idToken: token,
-              item: itemID,
-              location: locationID,
-              message: text,
-              reportTo: reportedTo,
-              type: type
-            }).toPromise().then(
-              () => resolve(`Report sent!`),
-              (err) => reject(err.error)
-            );
-          }
-        );
-      });
-    });
-  }
-
-  getReports(): Observable<SentReport[]> {
-    return this.afs.collection<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports').snapshotChanges().pipe(
-      map(a => {
-        return a.map(g => {
-            const data = g.payload.doc.data() as SentReport;
-            data.ID = g.payload.doc.id;
-            return data;
-          }
-        );
-      }));
   }
 
   setEmailReportsForUser(userID: string, value: boolean){
@@ -372,7 +326,7 @@ export class AdminService {
     
     var reports;
 
-    this.getReports().subscribe(x => {
+    this.reportService.getReports().subscribe(x => {
       reports = x;     
       for (let i = 0; i < reports.length; i++) {
         if(reports[i].item == item.ID)
@@ -586,30 +540,33 @@ export class AdminService {
 
         // Then get the added WorkspaceUsers data
         workspaceUsersSub = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().subscribe(rawWorkspaceUsers => {
-          let workspaceUsers: WorkspaceUser[] = []; // To emit
+          // Correct for cache immediately loading only one user: Us.
+          if(rawWorkspaceUsers.length === rawUsers.length){
+            let workspaceUsers: WorkspaceUser[] = []; // To emit
 
-          // Build the WorkspaceUsers using both sets of data
-          rawWorkspaceUsers.forEach(wUser => {
-            let workspaceUserDoc = wUser.payload.doc;
-            for(let i = 0; i < rawUsers.length; i++){
-              if(rawUsers[i].payload.doc.id === workspaceUserDoc.id){
-                let userData = rawUsers[i].payload.doc.data() as User;
-                let workspaceData = workspaceUserDoc.data() as {role: string, emailReports?: boolean}
-                workspaceUsers.push({
-                  id: workspaceUserDoc.id,
-                  firstName: userData.firstName,
-                  lastName: userData.lastName,
-                  email: userData.email,
-                  workspace: userData.workspace,
-                  role: workspaceData.role,
-                  emailReports: workspaceData.emailReports ? workspaceData.emailReports : false
-                })
+            // Build the WorkspaceUsers using both sets of data
+            rawWorkspaceUsers.forEach(wUser => {
+              let workspaceUserDoc = wUser.payload.doc;
+              for(let i = 0; i < rawUsers.length; i++){
+                if(rawUsers[i].payload.doc.id === workspaceUserDoc.id){
+                  let userData = rawUsers[i].payload.doc.data() as User;
+                  let workspaceData = workspaceUserDoc.data() as {role: string, emailReports?: boolean}
+                  workspaceUsers.push({
+                    id: workspaceUserDoc.id,
+                    firstName: userData.firstName,
+                    lastName: userData.lastName,
+                    email: userData.email,
+                    workspace: userData.workspace,
+                    role: workspaceData.role,
+                    emailReports: workspaceData.emailReports ? workspaceData.emailReports : false
+                  })
+                }
               }
-            }
-          })
+            })
 
-          // Emit completed data
-          obs.next(workspaceUsers);
+            // Emit completed data
+            obs.next(workspaceUsers);
+          }
         })
       })
 
@@ -858,7 +815,8 @@ export class AdminService {
     private auth: AuthService, 
     private searchService: SearchService, 
     private http: HttpClient,
-    private cacheService: CacheService
+    private cacheService: CacheService,
+    private reportService: ReportService
     ) {
   }
 }

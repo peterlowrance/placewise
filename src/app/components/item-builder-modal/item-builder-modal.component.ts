@@ -673,7 +673,7 @@ export class ItemBuilderModalComponent implements OnInit {
         return false;
       }
       // If category is not assigned
-      else if(this.category.name == 'root'){
+      else if(this.category.ID == 'root'){
         return false;
       }
       // If we're still loading locations
@@ -685,7 +685,7 @@ export class ItemBuilderModalComponent implements OnInit {
         return false;
       }
       // If it is the unassigned location
-      else if(this.locations[0].name === 'root'){
+      else if(this.locations[0].ID === 'root'){
         return false;
       }
       // No problems, we're set to go

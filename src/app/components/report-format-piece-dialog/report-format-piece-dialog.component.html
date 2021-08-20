@@ -1,0 +1,40 @@
+
+<div *ngIf="step === 'type'">
+    <h3> What kind of piece? </h3>
+
+    <mat-radio-group [(ngModel)]="type">
+        <mat-radio-button value="text"> Text </mat-radio-button>
+        <mat-radio-button value="input"> User Input </mat-radio-button>
+    </mat-radio-group>
+</div>
+
+
+<div *ngIf="step === 'input'">
+    <mat-radio-group [(ngModel)]="setupData">
+        <mat-radio-button *ngFor="let input of data.inputs" [value]="input.name"> 
+            <span class="user-input-option" [style.background-color]="getFormatColor(input.type)"> 
+                {{input.name}}
+            </span>
+        </mat-radio-button>
+    </mat-radio-group>
+</div>
+
+
+<div *ngIf="step === 'text'">
+    <mat-form-field class="description" appearance="outline">
+        <mat-label>Unchanging text</mat-label>
+        <textarea matInput [(ngModel)]="setupData"></textarea>
+    </mat-form-field>
+</div>
+
+<br>
+
+<!-- Buttons -->
+<div class="action-buttons">
+    <!-- Cancel button is always here -->
+    <button mat-raised-button class="rect-action-button" (click)="cancel()">Cancel</button>
+
+    <!-- Next or confirm button depending on if this is a single step-->
+    <button *ngIf="step === 'type'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary"> Next </button>
+    <button *ngIf="step !== 'type'" mat-raised-button class="rect-action-button" (click)="finish()" [disabled]="!isReadyForNextStep()" color="primary">Finish</button>
+</div>

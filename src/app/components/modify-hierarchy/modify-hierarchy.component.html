@@ -5,7 +5,7 @@
       <div class="recent-container">
         <div *ngFor="let currentlyIn of currentlyInForUI">
           <div class="recent-names">
-            {{currentlyIn.name === 'root' ? workspace : currentlyIn.name}}
+            {{currentlyIn.ID === 'root' ? workspace : currentlyIn.name}}
             <mat-checkbox [checked]="selectedParents.indexOf(currentlyIn.ID) > -1" (change)="selectedParentsToggle(currentlyIn)" [value]="currentlyIn.name"></mat-checkbox>
           </div>
         </div>
@@ -65,9 +65,9 @@
                 {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
               </mat-icon>
             </button>
-            <button *ngIf="changeParentNode" mat-raised-button [disabled]="isDescendantOf(node, changeParentNode)" (click)="move(changeParentNode, node)">{{node.name !== 'root' ? node.name : (isCategory ? 'Unassigned' : workspace)}}</button>
+            <button *ngIf="changeParentNode" mat-raised-button [disabled]="isDescendantOf(node, changeParentNode)" (click)="move(changeParentNode, node)">{{node.ID !== 'root' ? node.name : (isCategory ? 'Unassigned' : workspace)}}</button>
             <div *ngIf="!changeParentNode">
-              {{node.name !== 'root' ? node.name : (isCategory ? 'Unassigned' : workspace)}}
+              {{node.ID !== 'root' ? node.name : (isCategory ? 'Unassigned' : workspace)}}
               <button *ngIf="!selectMode" mat-icon-button (click)="openEditModal(node)"><mat-icon>edit</mat-icon></button>
               <mat-checkbox *ngIf="selectMode && !singleSelection" [checked]="selectedParents.indexOf(node.ID) > -1" (change)="selectedParentsToggle(node)"></mat-checkbox>
               <mat-radio-button *ngIf="selectMode && singleSelection" [checked]="selectedParents.indexOf(node.ID) > -1" (change)="setParent(node)"></mat-radio-button>

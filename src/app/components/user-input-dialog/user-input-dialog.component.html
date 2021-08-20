@@ -1,0 +1,43 @@
+<div class="user-input-content">
+    
+    <div *ngIf="step === 'type'">
+        <h3> Select the type of input </h3>
+
+        <mat-radio-group [(ngModel)]="data.type">
+            <mat-radio-button value="number"> Number </mat-radio-button>
+            <mat-radio-button value="text"> Text </mat-radio-button>
+            <mat-radio-button value="date" disabled="true"> Date (Future Addition) </mat-radio-button>
+            <mat-radio-button value="user" disabled="true"> User (Future Addition) </mat-radio-button>
+            <mat-radio-button value="image" disabled="true"> Image (Future Addition) </mat-radio-button>
+            <mat-radio-button value="selection" disabled="true"> Selection (Future Addition) </mat-radio-button>
+        </mat-radio-group>
+
+    </div>
+
+    <!--div *ngIf="step === 'numConditions'">
+        For the future when we can change the accepted range of number inputs
+    </div-->
+
+    <div *ngIf="step === 'name'">
+        <mat-form-field class="name" appearance="outline">
+            <mat-label>Input Name</mat-label>
+            <input matInput [(ngModel)]="data.name">
+        </mat-form-field>
+
+        <mat-form-field class="name" appearance="outline">
+            <mat-label>Input Prompt</mat-label>
+            <textarea matInput [(ngModel)]="data.description"></textarea>
+        </mat-form-field>
+    </div>
+
+    <!-- Buttons -->
+    <div class="action-buttons">
+        <!-- Cancel button is always here -->
+        <button mat-raised-button class="rect-action-button" (click)="cancel()">Cancel</button>
+
+        <!-- Next or confirm button depending on if this is a single step-->
+        <button *ngIf="step !== 'name'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary"> Next </button>
+        <button *ngIf="step === 'name'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Finish</button>
+    </div>
+
+</div>
