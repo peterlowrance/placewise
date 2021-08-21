@@ -7,6 +7,7 @@ import {ImageService} from "../../services/image.service";
 import {ActivatedRoute} from "@angular/router";
 import {FormControl, Validators} from "@angular/forms";
 import {AdminService} from '../../services/admin.service';
+import { SearchService } from 'src/app/services/search.service';
 
 interface TreeHierarchyItem extends HierarchyItem {
   realChildren?: TreeHierarchyItem[];
@@ -23,6 +24,7 @@ export class EditHierarchyDialogComponent implements OnInit {
 
   imageToSave: File;
   workspace: string;
+  workspaceID: string;
   isCategory: boolean;
 
   constructor(
@@ -30,13 +32,15 @@ export class EditHierarchyDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: TreeHierarchyItem,
     public imageService: ImageService,
     private authService: AuthService,
+    private searchService: SearchService,
     public adminService: AdminService,
     private route: ActivatedRoute
   ) {
   }
 
   ngOnInit() {
-    this.authService.getWorkspace().subscribe(
+    this.workspace = this.route.snapshot.paramMap.get('workspaceID');
+    this.searchService.getWorkspaceInfo(this.workspace).subscribe(
       val => this.workspace = val.name
     );
     this.isCategory = window.location.href.indexOf('categories') > -1;
@@ -48,7 +52,7 @@ export class EditHierarchyDialogComponent implements OnInit {
 
   onSaveClick() {
     if (this.imageToSave) {
-      this.imageService.putImage(this.data.imageUrl, this.data.ID).then(link => {
+      this.imageService.putImage(this.workspace, this.data.imageUrl, this.data.ID).then(link => {
         this.data.imageUrl = link;
         this.dialogRef.close({data: this.data, action: 'save'});
       });
@@ -76,7 +80,7 @@ export class EditHierarchyDialogComponent implements OnInit {
 
   onDeleteClick() {
     if (confirm('Are you sure you want to delete the ' + (this.isCategory ? 'category?\nCategories and items within ' : 'location?\nLocations and items within ') + this.data.name + ' will not be deleted.\nThis cannot be undone.')) {
-      this.imageService.removeImage(this.data.imageUrl);
+      this.imageService.removeImage(this.workspace, this.data.imageUrl);
       this.dialogRef.close({data: this.data, action: 'delete'});
     }
   }

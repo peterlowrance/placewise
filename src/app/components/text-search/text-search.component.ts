@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import * as Fuse from 'fuse.js';
 import { Category } from 'src/app/models/Category';
 import { HierarchyItem } from 'src/app/models/HierarchyItem';
@@ -19,6 +19,7 @@ export class TextSearchComponent implements OnInit {
   isLoading: Boolean = false;
   searchType: string = 'items';
 
+  workspaceID: string;
   items: Item[];
   categories: Category[];
   locations: HierarchyLocation[];
@@ -43,11 +44,12 @@ export class TextSearchComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private searchService: SearchService
     ) { }
 
   ngOnInit(): void {
-
+    this.workspaceID = this.route.snapshot.paramMap.get('workspaceID');
   }
 
   clearSearchBar(){
@@ -56,13 +58,13 @@ export class TextSearchComponent implements OnInit {
 
   goTo(event: HierarchyItem){
     if(event.type === 'item'){
-      this.router.navigate(['/item/', event.ID]);
+      this.router.navigate(['/w/' + this.workspaceID + '/item/', event.ID]);
     }
     else if (event.type === 'location'){
-      this.router.navigate(['/search/locations/', event.ID]);
+      this.router.navigate(['/w/' + this.workspaceID + '/search/locations/', event.ID]);
     }
     else if(event.type === 'category'){
-      this.router.navigate(['/search/categories/', event.ID]);
+      this.router.navigate(['/w/' + this.workspaceID + '/search/categories/', event.ID]);
     }
   }
 
@@ -90,21 +92,21 @@ export class TextSearchComponent implements OnInit {
       this.notEnoughChars = false;
 
       if(this.searchType === 'categories'){
-        this.searchService.getAllCategories().subscribe(categories => {
+        this.searchService.getAllCategories(this.workspaceID).subscribe(categories => {
           const categorySearcher = new Fuse(categories, this.hierarchySearchOptions);
           this.categories = categorySearcher.search(event);
           this.isLoading = false;
         })
       }
       else if(this.searchType === 'locations'){
-        this.searchService.getAllLocations().subscribe(locations => {
+        this.searchService.getAllLocations(this.workspaceID).subscribe(locations => {
           const locationSearcher = new Fuse(locations, this.hierarchySearchOptions);
           this.locations = locationSearcher.search(event);
           this.isLoading = false;
         })
       }
       else {
-        this.searchService.getAllItems().subscribe(items => {
+        this.searchService.getAllItems(this.workspaceID).subscribe(items => {
           const itemSearcher = new Fuse(items, this.itemSearchOptions);
           this.items = itemSearcher.search(event);
           this.isLoading = false;

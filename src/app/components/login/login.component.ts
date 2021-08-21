@@ -6,6 +6,8 @@ import {MatDialog} from '@angular/material/dialog';
 import {ResetPassDialogComponent} from '../reset-pass-dialog/reset-pass-dialog.component';
 
 import {AuthService} from '../../services/auth.service';
+import { firestore } from 'firebase';
+import * as firebase from 'firebase';
 
 @Component({
   selector: 'app-login',
@@ -40,9 +42,9 @@ export class LoginComponent implements OnInit {
    * Redirects to the home page if auth is valid
    * @param auth Auth state
    */
-  redirect(auth: any){
+  redirect(auth: firebase.User){
     if (auth) {
-      this.router.navigate(['/search/categories/root']);
+      this.router.navigate(['/w/Apex Fab/search/categories/root']); // SCREAM
     }
   }
 
@@ -61,7 +63,7 @@ export class LoginComponent implements OnInit {
     return this.authService.login(
       this.loginForm.value.email,
       this.loginForm.value.password).then(res => {
-      this.router.navigate(['/search/locations/root']);
+      //this.router.navigate(['/search/locations/root']);
     }).catch(err => {
       this.snack.open('Login Failed: ' + err, "OK", {duration: 3000});
     });

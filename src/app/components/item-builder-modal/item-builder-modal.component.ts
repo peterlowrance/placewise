@@ -52,7 +52,7 @@ export class ItemBuilderModalComponent implements OnInit {
 
   readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
 
-
+  workspaceID: string;
   step: string = '';                                // What step are we at in filling in data
   singleStep: Boolean;                      // If we are here to edit one piece of the item
   item: Item;                               // Item being setup
@@ -78,6 +78,8 @@ export class ItemBuilderModalComponent implements OnInit {
   }[] = [];
 
   ngOnInit() {
+    this.workspaceID = this.route.snapshot.paramMap.get("workspaceID");
+
     // Setup if this is just for editing one piece of an item
     if(this.data.step){
       this.singleStep = true;
@@ -108,10 +110,10 @@ export class ItemBuilderModalComponent implements OnInit {
     }
 
     // Load category info plus category's parents for attributes
-    this.searchService.getCategory(this.item.category).subscribe(category => {
+    this.searchService.getCategory(this.workspaceID, this.item.category).subscribe(category => {
       this.category = category;
 
-      this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
+      this.searchService.getAncestorsOf(this.workspaceID, category).subscribe(categoryAncestors => {
         if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
           this.categoryAndAncestors = categoryAncestors[0];
           this.categoryAndAncestors.unshift(this.category);
@@ -159,7 +161,7 @@ export class ItemBuilderModalComponent implements OnInit {
     // Assign data to slots in locations and subs as they load in
     for(let location in locationIDs){
       // Manual single get. Maybe we should add this functionaly in search service
-      let localSub = this.searchService.getLocation(locationIDs[location]).subscribe(locationData => {
+      let localSub = this.searchService.getLocation(this.workspaceID, locationIDs[location]).subscribe(locationData => {
         if(locationData){
           loadedLocations[location] = locationData;
 
@@ -183,7 +185,7 @@ export class ItemBuilderModalComponent implements OnInit {
             }
           }
           else if(locationData.parent) {
-            this.searchService.getShelfIDFromAncestors(locationData.parent).then(result => {
+            this.searchService.getShelfIDFromAncestors(this.workspaceID, locationData.parent).then(result => {
               shelfID = result;
 
               // Repeated code scream
@@ -232,11 +234,11 @@ export class ItemBuilderModalComponent implements OnInit {
     if (result && result.length > 0 && this.item.category !== result[0]) { 
 
       // Get category data
-      let localSub = this.searchService.getCategory(result[0]).subscribe(newCategory => {
+      let localSub = this.searchService.getCategory(this.workspaceID, result[0]).subscribe(newCategory => {
         if(newCategory){ // For for the actual data to come in
 
           // Load new category ancestors before continuing
-          this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => {
+          this.searchService.getAncestorsOf(this.workspaceID, newCategory).subscribe(categoryAncestors => {
             this.categoryAndAncestors = categoryAncestors[0];
             this.categoryAndAncestors.unshift(newCategory);
 
@@ -321,7 +323,7 @@ export class ItemBuilderModalComponent implements OnInit {
 
       // Update recent locations
       for(let index in newLocations){
-        let localSub = this.searchService.getLocation(newLocations[index]).subscribe(loc => {
+        let localSub = this.searchService.getLocation(this.workspaceID, newLocations[index]).subscribe(loc => {
           this.adminService.addToRecent(loc);
           localSub.unsubscribe(); // Don't want this screwing with us later
         })
@@ -581,7 +583,7 @@ export class ItemBuilderModalComponent implements OnInit {
    * Saves the item's image and updates the database
    */
   saveItemImage() {
-    return this.imageService.putImage(this.item.imageUrl, this.item.ID).then(link => {
+    return this.imageService.putImage(this.workspaceID, this.item.imageUrl, this.item.ID).then(link => {
       this.item.imageUrl = link;
       this.placeIntoDB();
     });
@@ -617,7 +619,7 @@ export class ItemBuilderModalComponent implements OnInit {
    * Places the item into the database
    */
   async placeIntoDB() {
-    return this.adminService.updateItem(this.item, null, null).then(val => {
+    return this.adminService.updateItem(this.workspaceID, this.item, null, null).then(val => {
     },
     reject => {
       this.snack.open('Item Save Failed: ' + reject, "OK", {duration: 3000, panelClass: ['mat-warn']});
@@ -821,7 +823,7 @@ export class ItemBuilderModalComponent implements OnInit {
   }
 
   saveBinIDs(){
-    this.adminService.addBinIDs(this.binIDsToSave, this.item.ID);
+    this.adminService.addBinIDs(this.workspaceID, this.binIDsToSave, this.item.ID);
   }
 
   isCardIncomplete(card: AttributeCard){
@@ -858,7 +860,7 @@ export class ItemBuilderModalComponent implements OnInit {
     else {
       if(this.step === 'extras'){
         if(this.singleStep){
-          this.router.navigate(['/item/' + this.item.ID]);
+          this.router.navigate(['/w/' + this.workspaceID + '/item/' + this.item.ID]);
         }
         else {
           this.finish();
@@ -888,13 +890,13 @@ export class ItemBuilderModalComponent implements OnInit {
   }
 
   finish(){
-    this.adminService.createItemAtLocation(this.item).subscribe(id => {
+    this.adminService.createItemAtLocation(this.workspaceID, this.item).subscribe(id => {
       this.item.ID = id;
       if(this.item.imageUrl !== '../../../assets/notFound.png'){
         this.saveItemImage();
       }
       this.saveBinIDs();
-      this.router.navigate(['/item/' + id]);
+      this.router.navigate(['/w/' + this.workspaceID + '/item/' + id]);
       this.dialogRef.close({wasValid: true});
     });
   }

@@ -7,6 +7,7 @@ import {WorkspaceInfo} from '../../models/WorkspaceInfo';
 import {MatDialog} from '@angular/material/dialog';
 import {ChangePassDialogComponent} from '../change-pass-dialog/change-pass-dialog.component';
 import { AdminService } from 'src/app/services/admin.service';
+import { SearchService } from 'src/app/services/search.service';
 
 @Component({
   selector: 'app-settings',
@@ -31,6 +32,7 @@ export class SettingsComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private searchService: SearchService,
     private diag: MatDialog,
     private router: Router,
     private adminService: AdminService
@@ -43,9 +45,9 @@ export class SettingsComponent implements OnInit {
       }
     );
 
-    this.authService.getWorkspace().subscribe(
-      val => this.workspace = val
-    );
+    this.searchService.getWorkspaceInfo('Apex Fab').subscribe(workspaceInfo => {
+      this.workspace = workspaceInfo;
+    })
 
     this.authService.getRole().subscribe(
       val => {
@@ -96,11 +98,13 @@ export class SettingsComponent implements OnInit {
     this.authService.logout();
   }
 
+  /*
   goToModify(isCategory: boolean) {
     this.router.navigate(['modify/' + (isCategory ? 'categories' : 'locations')]);
   }
+  */
 
   setEmailReports(event){
-    this.adminService.setEmailReportsForUser(this.user.id, event.checked);
+    this.adminService.setEmailReportsForUser(this.workspace.id, this.user.id, event.checked);
   }
 }
