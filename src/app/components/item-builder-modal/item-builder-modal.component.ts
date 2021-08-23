@@ -40,7 +40,7 @@ export class ItemBuilderModalComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<ItemBuilderModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: {hierarchyObj: HierarchyObject, step?: string},
+    @Inject(MAT_DIALOG_DATA) public data: {workspaceID: string, hierarchyObj: HierarchyObject, step?: string},
     private searchService: SearchService,
     public dialog: MatDialog,
     private adminService: AdminService,
@@ -78,7 +78,7 @@ export class ItemBuilderModalComponent implements OnInit {
   }[] = [];
 
   ngOnInit() {
-    this.workspaceID = this.route.snapshot.paramMap.get("workspaceID");
+    this.workspaceID = this.data.workspaceID;
 
     // Setup if this is just for editing one piece of an item
     if(this.data.step){
@@ -219,7 +219,7 @@ export class ItemBuilderModalComponent implements OnInit {
     const oldCategory = this.item.category ? this.item.category : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
-      data: {hierarchy: 'categories', singleSelection: true, parents: [this.item.category]}
+      data: {workspaceID: this.workspaceID, hierarchy: 'categories', singleSelection: true, parents: [this.item.category]}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemCategory(result, oldCategory));
   }
@@ -272,7 +272,7 @@ export class ItemBuilderModalComponent implements OnInit {
     const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
-      data: {hierarchy: 'locations', singleSelection: false, parents: this.item.locations}
+      data: {workspaceID: this.workspaceID, hierarchy: 'locations', singleSelection: false, parents: this.item.locations}
     });
     dialogRef.beforeClosed().subscribe(result => this.updateItemLocations(result, oldLocations));
   }

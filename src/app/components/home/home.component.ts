@@ -215,7 +215,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         if(URLbinID){
           console.log(URLbinID);
           this.shelfInput.nativeElement.value = URLbinID.substring(0, 3);
-          this.binInput.nativeElement.value = URLbinID.substring(3);
+          this.binInput.nativeElement.value = URLbinID.substring(4);
           this.updateQuickSearchShelf({});
           this.updateQuickSearchBin({});
         }
@@ -546,6 +546,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(ItemBuilderModalComponent, {
       width: '480px',
       data: {
+        workspaceID: this.workspaceID,
         hierarchyObj: this.root
       }
     });

@@ -31,11 +31,12 @@ export class ModifyHierarchyComponent implements OnInit {
   @Input() isCategory = true;
   @Input() singleSelection = true;
   @Input() id: string = null; // Use if we are viewing this from a hierarchy item to remove it from being selected
+  @Input() workspaceID: string;
   changeParentNode: TreeHierarchyItem;
   treeControl = new NestedTreeControl<TreeHierarchyItem>(node => node.realChildren);
   dataSource = new MatTreeNestedDataSource<TreeHierarchyItem>();
   dataChange = new BehaviorSubject<TreeHierarchyItem[]>([]);
-  workspaceID: string;
+  workspaceName: string;
 
   currentlyInForUI: HierarchyItem[] = [];
   recentCatsOrLocs: HierarchyItem[];
@@ -54,7 +55,12 @@ export class ModifyHierarchyComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.workspaceID = this.route.snapshot.paramMap.get('workspaceID');
+
+    if(this.workspaceID){
+      this.searchService.getWorkspaceInfo(this.workspaceID).subscribe(workspaceInfo => {
+        this.workspaceName = workspaceInfo.name;
+      })
+    }
 
     if(this.isCategory){
       this.recentCatsOrLocs = this.adminService.getRecentCategories();

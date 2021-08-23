@@ -10,7 +10,7 @@ export class ModifyHierarchyDialogComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<ModifyHierarchyDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: {hierarchy: string, singleSelection: boolean, id: string, parents: string[]}
+    @Inject(MAT_DIALOG_DATA) public data: {workspaceID: string, hierarchy: string, singleSelection: boolean, id: string, parents: string[]}
   ) {
   }
 

@@ -14,8 +14,10 @@
 </div>
 
 <div *ngIf="step === 'QR'">
-    <qrcode [qrdata]="urlToString" [width]="200" [errorCorrectionLevel]="'Q'"></qrcode>
+    <qrcode [qrdata]="urlToString" [width]="256" [errorCorrectionLevel]="'Q'"></qrcode>
 </div>
+
+<br>
 
 <!-- Buttons -->
 <div class="action-buttons">

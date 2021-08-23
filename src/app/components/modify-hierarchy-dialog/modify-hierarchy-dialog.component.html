@@ -1,6 +1,6 @@
 <mat-dialog-content>
   <h1 mat-dialog-title>{{data.hierarchy === 'categories' ? 'Select item\'s catagory' : 'Select all item locations'}}</h1>
-  <app-modify-hierarchy [id]="data.id" [singleSelection]="data.singleSelection" selectMode="true" [isCategory]="data.hierarchy === 'categories'" [selectedParents]="data.parents" (selectedParentsOutput)="updateParents($event)"></app-modify-hierarchy>
+  <app-modify-hierarchy [workspaceID]="data.workspaceID" [id]="data.id" [singleSelection]="data.singleSelection" selectMode="true" [isCategory]="data.hierarchy === 'categories'" [selectedParents]="data.parents" (selectedParentsOutput)="updateParents($event)"></app-modify-hierarchy>
 </mat-dialog-content>
 <div mat-dialog-actions>
   <button mat-raised-button (click)="onCancelClick()">Cancel</button>
