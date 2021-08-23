@@ -209,7 +209,18 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.searchService.loadBinData(this.workspaceID);
+    this.searchService.loadBinData(this.workspaceID).then(resolved => {
+      if(resolved){
+        let URLbinID = this.route.snapshot.queryParamMap.get('bin');
+        if(URLbinID){
+          console.log(URLbinID);
+          this.shelfInput.nativeElement.value = URLbinID.substring(0, 3);
+          this.binInput.nativeElement.value = URLbinID.substring(3);
+          this.updateQuickSearchShelf({});
+          this.updateQuickSearchBin({});
+        }
+      }
+    });
   }
 
   navigateUpHierarchy() { // Yikes, repeated code from init
@@ -489,7 +500,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   goToHierarchy(hierItem: HierarchyItem) {
     this.control.setValue('');
-    window.history.pushState(null, null, '/w/' + this.workspaceID + '/search/' + (this.root.type === 'category' ? 'categories' : 'locations') + '/' + hierItem.ID);
+    window.history.pushState(null, null, '/w/' + this.workspaceID + '/search/' + (hierItem.type === 'category' ? 'categories' : 'locations') + '/' + hierItem.ID);
     this.updateSubscribedParent(hierItem.ID, hierItem.type);
   }
 

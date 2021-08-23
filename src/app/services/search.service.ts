@@ -503,19 +503,25 @@ export class SearchService implements SearchInterfaceService {
 
   binSub: Subscription;
   lastWorkspaceID: string = '';
-  loadBinData(workspaceID: string){
-    if(workspaceID !== this.lastWorkspaceID){
-      if(this.binSub){
-        this.binSub.unsubscribe();
-      }
-
-      this.binSub = this.afs.doc<BinDictionary>('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').snapshotChanges().subscribe(doc => {
-        let data = doc.payload.data();
-        if(data){
-          this.BinData = data;
+   loadBinData(workspaceID: string): Promise<boolean> {
+    return new Promise<boolean>(resolve => {
+      if(workspaceID !== this.lastWorkspaceID){
+        if(this.binSub){
+          this.binSub.unsubscribe();
         }
-      })
-    }
+  
+        this.binSub = this.afs.doc<BinDictionary>('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').snapshotChanges().subscribe(doc => {
+          let data = doc.payload.data();
+          if(data){
+            this.BinData = data;
+            resolve(true);
+          }
+          else {
+            resolve(false);
+          }
+        })
+      }
+    })
   }
 
   getWorkspaceInfo(id: string): Observable<WorkspaceInfo> {

@@ -140,7 +140,7 @@ export class ReportService {
     return this.reportStructure.asObservable(); //needs different approach, maybe loading it here for the first time?
   }
 
-  async getReportsAvailableHere(worskpaceID: string, item: Item): Promise<ReportStructureWrapper[]> {
+  async getReportsAvailableHere(workspaceID: string, item: Item): Promise<ReportStructureWrapper[]> {
     let availableReports: ReportStructureWrapper[] = [];
     let reportStructure = this.reportStructure.value;
 
@@ -183,7 +183,7 @@ export class ReportService {
           }
   
           // Cycle to the next parent
-          let location = (await this.afs.doc('/Workspaces/' + worskpaceID + '/Locations/' + loopLocationID).get().toPromise()).data() as HierarchyLocation;
+          let location = (await this.afs.doc('/Workspaces/' + workspaceID + '/Locations/' + loopLocationID).get().toPromise()).data() as HierarchyLocation;
           loopLocationID = location.parent;
         }
 
@@ -194,7 +194,7 @@ export class ReportService {
       }
     }
 
-    this.searchService.getWorkspaceInfo(worskpaceID).subscribe(workspaceInfo => {
+    this.searchService.getWorkspaceInfo(workspaceID).subscribe(workspaceInfo => {
       // Include custom report at all times
       availableReports.push({
         type: 'custom',

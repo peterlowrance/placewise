@@ -28,6 +28,7 @@ import { CacheService } from 'src/app/services/cache.service';
 import {HierarchyLocation} from 'src/app/models/Location';
 import { stringify } from '@angular/compiler/src/util';
 import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
+import { QRCodeDialogComponent } from '../qrcode-dialog/qrcode-dialog.component';
 
 
 interface TreeNode {
@@ -463,11 +464,23 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
   }
 
+  openQRCodeGenerator(){
+    const dialogRef = this.dialog.open(QRCodeDialogComponent, {
+      width: '30rem',
+      data: {
+        item: this.item,
+        workspaceID: this.workspaceID,
+        locations: this.itemLocations.map(data => { return data.location})
+      }
+    });
+  }
+
   createReport() {
     const dialogRef = this.dialog.open(ReportDialogComponent, {
       width: '30rem',
       data: {
         item: this.item,
+        workspaceID: this.workspaceID,
         locations: this.itemLocations.map(data => { return data.location})
       }
     });

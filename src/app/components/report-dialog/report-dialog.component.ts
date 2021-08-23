@@ -41,7 +41,7 @@ export class ReportDialogComponent implements OnInit {
     private authService: AuthService,
     private reportService: ReportService,
     private snack: MatSnackBar,
-    @Inject(MAT_DIALOG_DATA) public data: {item: Item, locations: HierarchyLocation[]}
+    @Inject(MAT_DIALOG_DATA) public data: {workspaceID: string, item: Item, locations: HierarchyLocation[]}
   ) { }
 
   loading = {
@@ -77,7 +77,7 @@ export class ReportDialogComponent implements OnInit {
 
   ngOnInit() {
     this.step = 'start';
-    this.workspaceID = this.route.snapshot.paramMap.get("workspaceID");
+    this.workspaceID = this.data.workspaceID;
 
     this.locationData = this.countRecentReports(this.data.locations, this.data.item.reports, this.timestamp);
     this.canReport = this.isAbleToReport(this.locationData);
