@@ -509,7 +509,10 @@ export class ItemComponent implements OnInit, OnDestroy {
     if(modalStep){
       this.dialog.open(ItemBuilderModalComponent, {
         width: '480px',
-        data: {hierarchyObj: this.item, step: modalStep}
+        data: {
+          workspaceID: this.workspaceID,
+          hierarchyObj: this.item, 
+          step: modalStep}
       });
     }
   }
@@ -522,7 +525,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
-      data: {hierarchy: 'locations', singleSelection: false, parents: this.item.locations}
+      data: {workspaceID: this.workspaceID, hierarchy: 'locations', singleSelection: false, parents: this.item.locations}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemLocations(result, oldLocations));
   }
@@ -573,7 +576,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     const oldCategory = this.item.category ? this.item.category : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
-      data: {hierarchy: 'categories', singleSelection: true, parents: [this.item.category]}
+      data: {workspaceID: this.workspaceID, hierarchy: 'categories', singleSelection: true, parents: [this.item.category]}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemCategory(result, oldCategory));
   }
