@@ -10,6 +10,8 @@ import { HostListener } from '@angular/core';
 import { AdminService } from 'src/app/services/admin.service';
 import { Subscription } from 'rxjs';
 import { ReportService } from 'src/app/services/report.service';
+import { MatDialog } from '@angular/material/dialog';
+import { QRCodeLocationDialogComponent } from '../qrcode-location-dialog/qrcode-location-dialog.component';
 
 
 @Component({
@@ -53,6 +55,7 @@ export class NavbarComponent implements OnInit {
   constructor(
     private routeLocation: Location, 
     private router: Router, 
+    public dialog: MatDialog,
     private activatedRoute: ActivatedRoute,
     private navService: NavService, 
     private authService: AuthService, 
@@ -264,6 +267,13 @@ export class NavbarComponent implements OnInit {
 
   goToModify() {
     this.router.navigate(['w/' + this.workspaceID + '/hierarchyItem/' + (this.parent.type === 'category' ? 'categories' : 'locations') + '/' + this.parent.ID]);
+  }
+
+  openQRDialog() {
+    this.dialog.open(QRCodeLocationDialogComponent, {
+      width: '45rem',
+      data: {workspaceID: this.workspaceID, location: this.parent}
+    });
   }
 
 }

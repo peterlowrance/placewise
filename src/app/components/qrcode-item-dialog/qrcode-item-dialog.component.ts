@@ -4,15 +4,15 @@ import { Item } from 'src/app/models/Item';
 import { HierarchyLocation } from 'src/app/models/Location';
 
 @Component({
-  selector: 'app-qrcode-dialog',
-  templateUrl: './qrcode-dialog.component.html',
-  styleUrls: ['./qrcode-dialog.component.css']
+  selector: 'app-qrcode-item-dialog',
+  templateUrl: './qrcode-item-dialog.component.html',
+  styleUrls: ['./qrcode-item-dialog.component.css']
 })
-export class QRCodeDialogComponent implements OnInit {
+export class QRCodeItemDialogComponent implements OnInit {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: {workspaceID: string, item: Item, locations: HierarchyLocation[]},
-    public dialogRef: MatDialogRef<QRCodeDialogComponent>,
+    public dialogRef: MatDialogRef<QRCodeItemDialogComponent>,
   ) { }
 
   urlToString = '';

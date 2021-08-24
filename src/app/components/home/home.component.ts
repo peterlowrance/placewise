@@ -213,11 +213,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       if(resolved){
         let URLbinID = this.route.snapshot.queryParamMap.get('bin');
         if(URLbinID){
-          console.log(URLbinID);
-          this.shelfInput.nativeElement.value = URLbinID.substring(0, 3);
-          this.binInput.nativeElement.value = URLbinID.substring(4);
-          this.updateQuickSearchShelf({});
-          this.updateQuickSearchBin({});
+          let itemID = this.searchService.getItemIDFromBinID(URLbinID);
+          if(itemID){
+            this.router.navigate(['/w/' + this.workspaceID +  '/item/', itemID]);
+          }
         }
       }
     });
