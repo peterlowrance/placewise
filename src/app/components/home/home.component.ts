@@ -21,6 +21,7 @@ import { Attribute } from 'src/app/models/Attribute';
 import { AttributeValue } from 'src/app/models/Attribute';
 import { AdvancedAlphaNumSort } from 'src/app/utils/AdvancedAlphaNumSort';
 import { HierarchyLocation } from 'src/app/models/Location';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 /**
  *
@@ -120,6 +121,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private adminService: AdminService,
     private cacheService: CacheService,
+    private snack: MatSnackBar,
     public dialog: MatDialog) {
     // subscribe to nav state
     this.returnSub = this.navService.getReturnState().subscribe(
@@ -214,8 +216,12 @@ export class HomeComponent implements OnInit, OnDestroy {
         let URLbinID = this.route.snapshot.queryParamMap.get('bin');
         if(URLbinID){
           let itemID = this.searchService.getItemIDFromBinID(URLbinID);
-          if(itemID){
+          if(itemID && itemID !== 'no ID'){
             this.router.navigate(['/w/' + this.workspaceID +  '/item/', itemID]);
+            this.snack.open("Routed from bin " + URLbinID, "OK", {duration: 4000});
+          }
+          else {
+            this.snack.open("No item was found for " + URLbinID, "OK", {duration: 4000});
           }
         }
       }
@@ -724,22 +730,27 @@ export class HomeComponent implements OnInit, OnDestroy {
         let binID = this.shelfInput.nativeElement.value + '-' + this.binInput.nativeElement.value;
         let itemID = this.searchService.getItemIDFromBinID(binID);
 
-        this.searchService.getItem(this.workspaceID, itemID).subscribe(item => {
-          if(item){
-            for(let loc in item.locationMetadata){
-              if(item.locationMetadata[loc].binID === binID){
-                this.searchService.getLocation(this.workspaceID, loc).subscribe(locationData => {
-
-                  // If we got a result, go to the item's location and deselect the input so
-                  // we can fully see the result on mobile
-                  this.goToHierarchy(locationData);
-                  this.binSearchItem = item;
-                  this.binInput.nativeElement.blur();
-                });
+        if(!itemID || itemID === 'no ID'){
+          this.snack.open("No item was found for " + binID, "OK", {duration: 4000});
+        }
+        else {
+          this.searchService.getItem(this.workspaceID, itemID).subscribe(item => {
+            if(item){
+              for(let loc in item.locationMetadata){
+                if(item.locationMetadata[loc].binID === binID){
+                  this.searchService.getLocation(this.workspaceID, loc).subscribe(locationData => {
+  
+                    // If we got a result, go to the item's location and deselect the input so
+                    // we can fully see the result on mobile
+                    this.goToHierarchy(locationData);
+                    this.binSearchItem = item;
+                    this.binInput.nativeElement.blur();
+                  });
+                }
               }
             }
-          }
-        });
+          });
+        }
       }
     }
     else {

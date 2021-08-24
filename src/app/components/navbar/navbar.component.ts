@@ -106,16 +106,33 @@ export class NavbarComponent implements OnInit {
         if(this.locationString.includes('/search/')){ // Catch back button in the searching, router does not pickup on the changes
           let splitURL = this.locationString.split('/');
           console.log(splitURL);
+
           if(splitURL[4] === 'categories'){
-            let sub = this.searchService.getCategory(this.workspaceID, splitURL[5].replace('%20', ' ')).subscribe(cat => { // %20 replace for the conversion from the URL's spaces to string spaces
+            // Remove any parameters at the end of the URL
+            let catID = splitURL[5].replace('%20', ' ');
+            let foundParamsIndex = catID.indexOf('?');
+            if(foundParamsIndex > -1){
+              catID = catID.substring(0, foundParamsIndex);
+            }
+
+            let sub = this.searchService.getCategory(this.workspaceID, catID).subscribe(cat => { // %20 replace for the conversion from the URL's spaces to string spaces
               console.log(cat);
               this.navService.setSearchType('Categories');
               this.navService.setParent(cat)
               sub.unsubscribe();
             });
           }
+
           else if (splitURL[4] === 'locations'){
-            let sub = this.searchService.getLocation(this.workspaceID, splitURL[5].replace('%20', ' ')).subscribe(loc => {
+            // Remove any parameters at the end of the URL
+            let locID = splitURL[5].replace('%20', ' ');
+            let foundParamsIndex = locID.indexOf('?');
+            if(foundParamsIndex > -1){
+              locID = locID.substring(0, foundParamsIndex);
+              console.log(locID);
+            }
+
+            let sub = this.searchService.getLocation(this.workspaceID, locID).subscribe(loc => {
               console.log(loc);
               this.navService.setSearchType('Locations');
               this.navService.setParent(loc)
