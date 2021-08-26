@@ -28,6 +28,7 @@ import { CacheService } from 'src/app/services/cache.service';
 import {HierarchyLocation} from 'src/app/models/Location';
 import { stringify } from '@angular/compiler/src/util';
 import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
+import { QRCodeItemDialogComponent } from '../qrcode-item-dialog/qrcode-item-dialog.component';
 
 
 interface TreeNode {
@@ -112,6 +113,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   @ViewChild('tags') tagsField: ElementRef;
 
   loaded: boolean = false;  // To tell if the item doesn't exist or just hasn't loaded
+  workspaceID: string;
   id: string;  // item id
   item: Item;  // item returned by id
   previousItem: Item;  // records short term edits for saving
@@ -168,6 +170,7 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     // retrieve id
     this.id = this.route.snapshot.paramMap.get('id');
+    this.workspaceID = this.route.snapshot.paramMap.get('workspaceID');
 
     let cache = this.cacheService.get(this.id, "item");
 
@@ -184,7 +187,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
 
     // Start live subscription
-    this.itemSub = this.searchService.getItem(this.id).subscribe(item => {
+    this.itemSub = this.searchService.getItem(this.workspaceID, this.id).subscribe(item => {
       this.loaded = true;
       if (!item) {
         return;
@@ -228,16 +231,16 @@ export class ItemComponent implements OnInit, OnDestroy {
 
   linkTo(objID: string, type: string){
     if(type === "category"){
-      this.router.navigate(['/search/categories/' + objID]);
+      this.router.navigate(['/w/' + this.workspaceID + '/search/categories/' + objID]);
     }
     else if(type === "location") {
-      this.router.navigate(['/search/locations/' + objID]);
+      this.router.navigate(['/w/' + this.workspaceID + '/search/locations/' + objID]);
     }
   }
   
   private setupCategorySubscription(item: Item): Subscription { // I could also take in Obs<Cat> if that helps in the future
     // Return it for unsubscribing
-    return this.searchService.getCategory(item.category).subscribe(category => {
+    return this.searchService.getCategory(this.workspaceID, item.category).subscribe(category => {
       this.category = category;
 
       if(this.categoryAncestorSub){
@@ -245,7 +248,7 @@ export class ItemComponent implements OnInit, OnDestroy {
       }
 
       // Load category ancestors for attributes
-      this.categoryAncestorSub = this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
+      this.categoryAncestorSub = this.searchService.getAncestorsOf(this.workspaceID, category).subscribe(categoryAncestors => {
 
         // Make sure it exists, and also make sure it's not just an empty array
         if(categoryAncestors[0]){
@@ -313,7 +316,7 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     // Subscribe to the locations individually
     for(let locIndex in item.locations){
-      let sub = this.searchService.getLocation(item.locations[locIndex]).subscribe(location => {
+      let sub = this.searchService.getLocation(this.workspaceID, item.locations[locIndex]).subscribe(location => {
         if(location){
           // Init with default data
           let locationData: ItemLocation = { 
@@ -461,11 +464,23 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
   }
 
+  openQRCodeGenerator(){
+    const dialogRef = this.dialog.open(QRCodeItemDialogComponent, {
+      width: '30rem',
+      data: {
+        item: this.item,
+        workspaceID: this.workspaceID,
+        locations: this.itemLocations.map(data => { return data.location})
+      }
+    });
+  }
+
   createReport() {
     const dialogRef = this.dialog.open(ReportDialogComponent, {
       width: '30rem',
       data: {
         item: this.item,
+        workspaceID: this.workspaceID,
         locations: this.itemLocations.map(data => { return data.location})
       }
     });
@@ -494,7 +509,10 @@ export class ItemComponent implements OnInit, OnDestroy {
     if(modalStep){
       this.dialog.open(ItemBuilderModalComponent, {
         width: '480px',
-        data: {hierarchyObj: this.item, step: modalStep}
+        data: {
+          workspaceID: this.workspaceID,
+          hierarchyObj: this.item, 
+          step: modalStep}
       });
     }
   }
@@ -507,7 +525,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
-      data: {hierarchy: 'locations', singleSelection: false, parents: this.item.locations}
+      data: {workspaceID: this.workspaceID, hierarchy: 'locations', singleSelection: false, parents: this.item.locations}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemLocations(result, oldLocations));
   }
@@ -538,12 +556,12 @@ export class ItemComponent implements OnInit, OnDestroy {
       // Update the item locations
       this.item.locations = result;
 
-      this.adminService.updateItem(this.item, null, oldLocations); // TODO: Not good placement, seperate from main saving mechanism
+      this.adminService.updateItem(this.workspaceID, this.item, null, oldLocations); // TODO: Not good placement, seperate from main saving mechanism
       this.setDirty(true);
 
       // Update recent locations
       for(let index in newLocations){
-        let localSub = this.searchService.getLocation(newLocations[index]).subscribe(loc => {
+        let localSub = this.searchService.getLocation(this.workspaceID, newLocations[index]).subscribe(loc => {
           this.adminService.addToRecent(loc);
           localSub.unsubscribe(); // Don't want this screwing with us later
         })
@@ -558,7 +576,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     const oldCategory = this.item.category ? this.item.category : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
-      data: {hierarchy: 'categories', singleSelection: true, parents: [this.item.category]}
+      data: {workspaceID: this.workspaceID, hierarchy: 'categories', singleSelection: true, parents: [this.item.category]}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemCategory(result, oldCategory));
   }
@@ -570,16 +588,16 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   updateItemCategory(result: string[], oldCategory: string) {
     if (result && result.length > 0 && this.item.category !== result[0]) {
-      let localSub = this.searchService.getCategory(result[0]).subscribe(newCategory => {
+      let localSub = this.searchService.getCategory(this.workspaceID, result[0]).subscribe(newCategory => {
         if(newCategory){
           this.adminService.addToRecent(newCategory);
   
-          this.searchService.getAncestorsOf(newCategory).subscribe(categoryAncestors => {
+          this.searchService.getAncestorsOf(this.workspaceID, newCategory).subscribe(categoryAncestors => {
             this.categoryAncestors = categoryAncestors[0];
             this.adminService.updateItemDataFromCategoryAncestors(this.item, [newCategory].concat(this.categoryAncestors), this.category);
 
             this.item.category = result[0];
-            this.adminService.updateItem(this.item, oldCategory, null);
+            this.adminService.updateItem(this.workspaceID, this.item, oldCategory, null);
           });
           localSub.unsubscribe(); // Don't want this screwing with us later
         }
@@ -693,7 +711,7 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     // first, upload the image if edited, upload when we get the new ID
     if (this.previousItem.imageUrl !== this.item.imageUrl) {
-      return this.imageService.putImage(this.item.imageUrl, this.item.ID).then(link => {
+      return this.imageService.putImage(this.workspaceID, this.item.imageUrl, this.item.ID).then(link => {
         this.item.imageUrl = link;
         this.placeIntoDB();
       });
@@ -708,7 +726,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    * Places the item into the database
    */
   async placeIntoDB() {
-    return this.adminService.updateItem(this.item, null, null).then(val => {
+    return this.adminService.updateItem(this.workspaceID, this.item, null, null).then(val => {
       this.isSaving = false;
       this.previousItem = JSON.parse(JSON.stringify(this.item)); // Update short term changes
     },
@@ -723,7 +741,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         //remove image if exists, else just remove item
         if (this.item.imageUrl !== null && typeof this.item.imageUrl !== 'undefined'
           && this.item.imageUrl !== '../../../assets/notFound.png') {
-          return this.imageService.removeImage(this.item.ID).then(() => {
+          return this.imageService.removeImage(this.workspaceID, this.item.ID).then(() => {
             this.removeFromDB();
           });
         } else { // else just delete from the DB
@@ -737,7 +755,7 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   async removeFromDB() {
     //remove image
-    return this.adminService.removeItem(this.item).toPromise().then(val => {
+    return this.adminService.removeItem(this.workspaceID, this.item).toPromise().then(val => {
       if (val) {
         this.snack.open('Item Successfully Deleted', "OK", {duration: 2000, panelClass: ['mat-toolbar']});
         this.navService.returnState();

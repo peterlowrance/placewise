@@ -2,7 +2,7 @@ import {SearchInterfaceService} from './search-interface.service';
 
 import {Injectable} from '@angular/core';
 import {HttpHeaders} from '@angular/common/http';
-import {Observable, of, observable} from 'rxjs';
+import {Observable, of, observable, Subscription} from 'rxjs';
 
 import {Item} from '../models/Item';
 import {HierarchyItem} from '../models/HierarchyItem';
@@ -17,6 +17,7 @@ import { ContentObserver } from '@angular/cdk/observers';
 import { CacheService } from './cache.service';
 import { time } from 'console';
 import { BinDictionary } from '../models/BinDictionary';
+import { WorkspaceInfo } from '../models/WorkspaceInfo';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -94,11 +95,11 @@ export class SearchService implements SearchInterfaceService {
    * The second dimension is each individual ancestor.
    * @param id item to find ancestors of
    */
-  getAncestorsOf(item: HierarchyObject): Observable<HierarchyItem[][]> {
+  getAncestorsOf(workspaceID: string, item: HierarchyObject): Observable<HierarchyItem[][]> {
     
     return new Observable(obs => {
     if(item.type === "item"){
-        this.getAllLocations().subscribe(locs => {
+        this.getAllLocations(workspaceID).subscribe(locs => {
           obs.next(this.getAncestors((item as Item).locations, locs));
           obs.complete();
         });
@@ -106,7 +107,7 @@ export class SearchService implements SearchInterfaceService {
     else {
         let hierItem = item as HierarchyItem;
         if(hierItem.type === 'category'){
-          this.getAllCategories().subscribe(categories =>
+          this.getAllCategories(workspaceID).subscribe(categories =>
             {
               console.log("RECV ALL CATS");
               obs.next(this.getAncestors([hierItem.parent], categories));
@@ -116,7 +117,7 @@ export class SearchService implements SearchInterfaceService {
               }
             })
         } else {
-          this.getAllLocations().subscribe(locations =>
+          this.getAllLocations(workspaceID).subscribe(locations =>
             {
               console.log("RECV ALL LOCS");
               obs.next(this.getAncestors([hierItem.parent], locations));
@@ -132,7 +133,7 @@ export class SearchService implements SearchInterfaceService {
 
   // TESTING METHOD
   // INCLUDES PARENT
-  getAncestorsByChain(ID: string, type: string): Promise<HierarchyItem[]> {
+  getAncestorsByChain(workspaceID: string, ID: string, type: string): Promise<HierarchyItem[]> {
     return new Promise<HierarchyItem[]>( async resolve => {
       let results: HierarchyItem[] = [];
       let nextID = ID;
@@ -140,7 +141,7 @@ export class SearchService implements SearchInterfaceService {
       let typeURL = type === 'category' ? 'Category' : 'Locations';
 
       while(!finished){
-        let location = (await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/' + typeURL + '/' + nextID).get().toPromise()).data() as HierarchyLocation;
+        let location = (await this.afs.doc('/Workspaces/' + workspaceID + '/' + typeURL + '/' + nextID).get().toPromise()).data() as HierarchyLocation;
         location.ID = nextID;
         results.push(location);
         
@@ -156,13 +157,13 @@ export class SearchService implements SearchInterfaceService {
     })
   }
 
-  getShelfIDFromAncestors(locationID: string): Promise<string>{
+  getShelfIDFromAncestors(workspaceID: string, locationID: string): Promise<string>{
     return new Promise<string>( async resolve => {
       let shelfID: string;
       let nextID = locationID;
 
       while(!shelfID){
-        let location = (await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Locations/' + nextID).get().toPromise()).data() as HierarchyLocation;
+        let location = (await this.afs.doc('/Workspaces/' + workspaceID + '/Locations/' + nextID).get().toPromise()).data() as HierarchyLocation;
         if(location.shelfID){
           shelfID = location.shelfID;
           break;
@@ -186,9 +187,9 @@ export class SearchService implements SearchInterfaceService {
    * @param rootID the node to find the descendants of
    * @param isCategory category or location
    */
-  getDescendantsOfRoot(rootID: string, isCategory: boolean): Observable<HierarchyItem[]> {
+  getDescendantsOfRoot(workspaceID: string, rootID: string, isCategory: boolean): Observable<HierarchyItem[]> {
     const result: HierarchyItem[] = [];
-    const appropriateHierarchyItems: Observable<HierarchyItem[]> = isCategory ? this.getAllCategories() : this.getAllLocations();
+    const appropriateHierarchyItems: Observable<HierarchyItem[]> = isCategory ? this.getAllCategories(workspaceID) : this.getAllLocations(workspaceID);
     return new Observable(obs => {
       appropriateHierarchyItems.subscribe(hierarchyItems => {
         hierarchyItems.forEach(cat => {
@@ -215,9 +216,10 @@ export class SearchService implements SearchInterfaceService {
     });
   }
 
-  getItem(id: string): Observable<Item> {
-    return this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + id).snapshotChanges().pipe(map(a => {
+  getItem(workspaceID: string, id: string): Observable<Item> {
+    return this.afs.doc<Item>('/Workspaces/' + workspaceID + '/Items/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as Item;
+      console.log(data);
       if (!data) {
         return;
       }
@@ -227,11 +229,11 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getLocation(id: string, confirm: string = "normal human"): Observable<HierarchyLocation> {
+  getLocation(workspaceID: string, id: string): Observable<HierarchyLocation> {
     if (!id || id === 'none') {
       return of(null);
     }
-    return this.afs.doc<HierarchyLocation>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + id).snapshotChanges().pipe(map(a => {
+    return this.afs.doc<HierarchyLocation>('/Workspaces/' + workspaceID + '/Locations/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as HierarchyLocation;
       if(data){
         data.ID = a.payload.id;
@@ -247,13 +249,15 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getCategory(id: string): Observable<Category> {
+  getCategory(workspaceID: string, id: string): Observable<Category> {
     if (!id) {
       return of(null);
     }
-    return this.afs.doc<Category>('/Workspaces/' + this.auth.workspace.id + '/Category/' + id).snapshotChanges().pipe(map(a => {
+    
+    return this.afs.doc<Category>('/Workspaces/' + workspaceID + '/Category/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as Category;
       if(data){
+        console.log(data);
         data.ID = a.payload.id;
         if (data.imageUrl == null) {
           data.imageUrl = '../../../assets/notFound.png';
@@ -267,8 +271,8 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getAllItems(): Observable<Item[]> {
-    return this.afs.collection<Item>('/Workspaces/' + this.auth.workspace.id + '/Items').snapshotChanges().pipe(map(a => {
+  getAllItems(workspaceID: string): Observable<Item[]> {
+    return this.afs.collection<Item>('/Workspaces/' + workspaceID + '/Items').snapshotChanges().pipe(map(a => {
       return a.map(g => {
           const data = g.payload.doc.data();
           data.ID = g.payload.doc.id;
@@ -284,9 +288,9 @@ export class SearchService implements SearchInterfaceService {
    * @param root the hierarchy item to find descendants of
    * @param allParents all the appropriate hierarchy items
    */
-  getAllDescendantItems(root: HierarchyItem, allParents: HierarchyItem[]): Observable<Item[]> {
+  getAllDescendantItems(workspaceID: string, root: HierarchyItem, allParents: HierarchyItem[]): Observable<Item[]> {
     if (root.ID === 'root') {
-      return this.getAllItems();
+      return this.getAllItems(workspaceID);
     }
     // Make list of all children items
     const childrenItems: string[] = root.items ? JSON.parse(JSON.stringify(root.items)) : [];
@@ -302,7 +306,7 @@ export class SearchService implements SearchInterfaceService {
     const result: Item[] = [];
     return new Observable(obs => {
       // Find all items whose ID's are in the list of children items
-      let honk = this.getAllItems().subscribe(items => {
+      let honk = this.getAllItems(workspaceID).subscribe(items => {
         items.forEach(i => {
           if (childrenItems.includes(i.ID)) {
             result.push(i);
@@ -322,10 +326,10 @@ export class SearchService implements SearchInterfaceService {
    * @param rootID hierarchy item to search for descendants of
    * @param isCategory category or location
    */
-  getAllDescendantHierarchyItems(rootID: string, isCategory: boolean): Observable<HierarchyItem[]> {
+  getAllDescendantHierarchyItems(workspaceID: string, rootID: string, isCategory: boolean): Observable<HierarchyItem[]> {
     const result: HierarchyItem[] = [];
     const parents: string[] = [rootID];
-    const appropriateHierarchyItems: Observable<HierarchyItem[]> = isCategory ? this.getAllCategories(true) : this.getAllLocations(true);
+    const appropriateHierarchyItems: Observable<HierarchyItem[]> = isCategory ? this.getAllCategories(workspaceID, true) : this.getAllLocations(workspaceID, true);
     if (rootID === 'root') {
       return appropriateHierarchyItems;
     }
@@ -351,15 +355,15 @@ export class SearchService implements SearchInterfaceService {
     });
   }
 
-  getAllCategories(excludeRoot: boolean = false): Observable<Category[]> {
-    return this.getAllHierarchy(excludeRoot, true);
+  getAllCategories(workspaceID: string, excludeRoot: boolean = false): Observable<Category[]> {
+    return this.getAllHierarchy(workspaceID, excludeRoot, true);
   }
 
-  getAllLocations(excludeRoot: boolean = false): Observable<HierarchyLocation[]> {
-    return this.getAllHierarchy(excludeRoot, false);
+  getAllLocations(workspaceID: string, excludeRoot: boolean = false): Observable<HierarchyLocation[]> {
+    return this.getAllHierarchy(workspaceID, excludeRoot, false);
   }
 
-  private getAllHierarchy(excludeRoot: boolean, isCategory: boolean): Observable<HierarchyItem[]> {
+  private getAllHierarchy(workspaceID: string, excludeRoot: boolean, isCategory: boolean): Observable<HierarchyItem[]> {
     // TODO: proper caching and checking for updated version?
     const appropriateCache = isCategory ? this.categories : this.locations;
     // If the data is cached, return it
@@ -367,7 +371,7 @@ export class SearchService implements SearchInterfaceService {
       return of(excludeRoot ? appropriateCache.filter(c => c.ID !== 'root') : appropriateCache);
     }
 
-    return this.afs.collection<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + (isCategory ? '/Category' : '/Locations'))
+    return this.afs.collection<HierarchyItem>('/Workspaces/' + workspaceID + (isCategory ? '/Category' : '/Locations'))
       .snapshotChanges().pipe(map(a => {
         const returnedHierarchy = a.map(g => {
           const data = isCategory ? (g.payload.doc.data() as Category) : (g.payload.doc.data() as HierarchyLocation);
@@ -497,19 +501,40 @@ export class SearchService implements SearchInterfaceService {
     return num.toString();
   }
 
-  constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService, private cacheService: CacheService) {
-    
-    // Keep local bin data loaded and updated at all times
-    this.auth.getWorkspace().subscribe(data => {
-      if(data && data.name){
-        console.log("Workspace Loaded.");
-        this.afs.doc<BinDictionary>('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').snapshotChanges().subscribe(doc => {
+  binSub: Subscription;
+  lastWorkspaceID: string = '';
+   loadBinData(workspaceID: string): Promise<boolean> {
+    return new Promise<boolean>(resolve => {
+      if(workspaceID !== this.lastWorkspaceID){
+        if(this.binSub){
+          this.binSub.unsubscribe();
+        }
+  
+        this.binSub = this.afs.doc<BinDictionary>('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').snapshotChanges().subscribe(doc => {
           let data = doc.payload.data();
           if(data){
             this.BinData = data;
+            resolve(true);
+          }
+          else {
+            resolve(false);
           }
         })
       }
     })
+  }
+
+  getWorkspaceInfo(id: string): Observable<WorkspaceInfo> {
+    return this.afs.doc<WorkspaceInfo>(`Workspaces/${id}`).snapshotChanges().pipe(map(a => {
+      const data = a.payload.data() as WorkspaceInfo;
+      console.log(data);
+      if (!data) {
+        return;
+      }
+      return data;
+    }));;
+  }
+
+  constructor(private afs: AngularFirestore, private auth: AuthService, private imageService: ImageService, private cacheService: CacheService) {
   }
 }

@@ -9,10 +9,10 @@ import { Category } from '../models/Category';
   providedIn: 'root'
 })
 export abstract class SearchInterfaceService {
-  abstract getItem(ID: string): Observable<Item>
-  abstract getCategory(id: string): Observable<HierarchyItem>
-  abstract getLocation(id: string): Observable<HierarchyItem>
-  abstract getAllItems(): Observable<Item[]>
-  abstract getAllCategories(): Observable<HierarchyItem[]>
-  abstract getAllLocations(): Observable<HierarchyItem[]>
+  abstract getItem(workspaceID: string, ID: string): Observable<Item>
+  abstract getCategory(workspaceID: string, id: string): Observable<HierarchyItem>
+  abstract getLocation(workspaceID: string, id: string): Observable<HierarchyItem>
+  abstract getAllItems(workspaceID: string): Observable<Item[]>
+  abstract getAllCategories(workspaceID: string): Observable<HierarchyItem[]>
+  abstract getAllLocations(workspaceID: string): Observable<HierarchyItem[]>
 }

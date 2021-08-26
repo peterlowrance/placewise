@@ -20,6 +20,11 @@
             Report
         </button>
 
+        <button class="big-button report-button action-color-light" mat-raised-button (click)="openQRCodeGenerator()" [class.mat-elevation-z3]="true">
+            <mat-icon>qr_code_2</mat-icon> 
+            Create QR Code
+        </button>
+
         <div *ngIf="role === 'Admin'">
             <button class="big-button report-button structure-color-dark" mat-raised-button [matMenuTriggerFor]="editMenu" [class.mat-elevation-z3]="true">
                 <mat-icon>edit</mat-icon> 

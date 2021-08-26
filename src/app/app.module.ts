@@ -163,7 +163,8 @@ import { MoveStockDialogComponent } from './components/move-stock-dialog/move-st
     MatTableModule,
     HttpClientModule,
     TextFieldModule,
-    DragDropModule
+    DragDropModule,
+    QRCodeModule
   ],
   providers: [],
   bootstrap: [AppComponent],

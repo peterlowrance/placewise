@@ -31,11 +31,12 @@ export class ModifyHierarchyComponent implements OnInit {
   @Input() isCategory = true;
   @Input() singleSelection = true;
   @Input() id: string = null; // Use if we are viewing this from a hierarchy item to remove it from being selected
+  @Input() workspaceID: string;
   changeParentNode: TreeHierarchyItem;
   treeControl = new NestedTreeControl<TreeHierarchyItem>(node => node.realChildren);
   dataSource = new MatTreeNestedDataSource<TreeHierarchyItem>();
   dataChange = new BehaviorSubject<TreeHierarchyItem[]>([]);
-  workspace: string;
+  workspaceName: string;
 
   currentlyInForUI: HierarchyItem[] = [];
   recentCatsOrLocs: HierarchyItem[];
@@ -55,9 +56,11 @@ export class ModifyHierarchyComponent implements OnInit {
 
   ngOnInit() {
 
-    this.authService.getWorkspace().subscribe(
-      val => this.workspace = val.name
-    );
+    if(this.workspaceID){
+      this.searchService.getWorkspaceInfo(this.workspaceID).subscribe(workspaceInfo => {
+        this.workspaceName = workspaceInfo.name;
+      })
+    }
 
     if(this.isCategory){
       this.recentCatsOrLocs = this.adminService.getRecentCategories();
@@ -70,10 +73,10 @@ export class ModifyHierarchyComponent implements OnInit {
       this.dataSource.data = null;
       this.dataSource.data = changedData; // NOTE: This line causes minor freezes
     });
-    const appropriateHierarchy: Observable<HierarchyItem[]> = this.isCategory ? this.searchService.getAllCategories() : this.searchService.getAllLocations();
+    const appropriateHierarchy: Observable<HierarchyItem[]> = this.isCategory ? this.searchService.getAllCategories(this.workspaceID) : this.searchService.getAllLocations(this.workspaceID);
     appropriateHierarchy.subscribe(hierarchy => {
       if (!this.selectMode) {
-        this.searchService.getDescendantsOfRoot('root', this.isCategory).subscribe(descOfRoot => {
+        this.searchService.getDescendantsOfRoot(this.workspaceID, 'root', this.isCategory).subscribe(descOfRoot => {
           // Build the tree starting with each root node
           descOfRoot.forEach(d => this.buildTree(d, hierarchy));
           this.dataChange.next(descOfRoot);
@@ -86,7 +89,7 @@ export class ModifyHierarchyComponent implements OnInit {
           this.updateCurrentlyIn();
         });
       } else { // If you are selecting new locations or categories, include the root
-        const appropriateRoot: Observable<HierarchyItem> = this.isCategory ? this.searchService.getCategory('root') : this.searchService.getLocation('root');
+        const appropriateRoot: Observable<HierarchyItem> = this.isCategory ? this.searchService.getCategory(this.workspaceID, 'root') : this.searchService.getLocation(this.workspaceID, 'root');
         appropriateRoot.subscribe(root => {
           this.buildTree(root, hierarchy);
           this.dataChange.next([root]);
@@ -226,9 +229,9 @@ export class ModifyHierarchyComponent implements OnInit {
       const parentID = parent ? parent.ID : 'root';
       newNode.parent = parentID;
       if (this.isCategory) {
-        this.adminService.setCategory(newNode, parentID);
+        this.adminService.setCategory(this.workspaceID, newNode, parentID);
       } else {
-        this.adminService.setLocation(newNode, parentID);
+        this.adminService.setLocation(this.workspaceID, newNode, parentID);
       }
     }
     // Add new node to parent
@@ -268,7 +271,7 @@ export class ModifyHierarchyComponent implements OnInit {
   }
 
   update(node: TreeHierarchyItem) {
-    this.adminService.updateHierarchy(this.toHierarchyItem(node), this.isCategory);
+    this.adminService.updateHierarchy(this.workspaceID, this.toHierarchyItem(node), this.isCategory);
   }
 
   /**
@@ -280,9 +283,9 @@ export class ModifyHierarchyComponent implements OnInit {
   delete(node: TreeHierarchyItem, promoteChildren: boolean = true, updateDB: boolean = true) {
     if (updateDB) {
       if (this.isCategory) {
-        this.adminService.removeCategory(this.toHierarchyItem(node));
+        this.adminService.removeCategory(this.workspaceID, this.toHierarchyItem(node));
       } else {
-        this.adminService.removeLocation(this.toHierarchyItem(node));
+        this.adminService.removeLocation(this.workspaceID, this.toHierarchyItem(node));
       }
     }
     // If you have a parent, remove yourself
@@ -319,9 +322,9 @@ export class ModifyHierarchyComponent implements OnInit {
       this.delete(node, false, false);
       this.add(node, newParent, false);
       if (this.isCategory) {
-        this.adminService.updateCategoryPosition(newParentID, node.ID, node.parent);
+        this.adminService.updateCategoryPosition(this.workspaceID, newParentID, node.ID, node.parent);
       } else {
-        this.adminService.updateLocationPosition(newParentID, node.ID, node.parent);
+        this.adminService.updateLocationPosition(this.workspaceID, newParentID, node.ID, node.parent);
       }
     }
     this.changeParentNode = null;

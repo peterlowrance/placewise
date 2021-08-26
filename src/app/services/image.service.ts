@@ -23,21 +23,21 @@ export class ImageService {
 
   constructor(private afsg: AngularFireStorage, private auth: AuthService, private http: HttpClient) { }
 
-  async putImage(imageURL: string, itemID: string): Promise<string> {
+  async putImage(workspaceID: string, imageURL: string, itemID: string): Promise<string> {
     //get blob ref
-    const ref = this.afsg.ref(this.auth.workspace.id + '/' + itemID);
+    const ref = this.afsg.ref(workspaceID + '/' + itemID);
     //put
     await ref.put(this.dataURLtoBlob(imageURL));
     //return new link
     return ref.getDownloadURL().toPromise();
   }
 
-  removeImage(itemID: string): Promise<any> {
+  removeImage(workspaceID: string, itemID: string): Promise<any> {
     if (itemID === '../../../assets/notFound.png') {
       return;
     }
     //get ref
-    const ref = this.afsg.ref(this.auth.workspace.id + '/' + itemID);
+    const ref = this.afsg.ref(workspaceID + '/' + itemID);
     //erase
     return ref.delete().toPromise();
   }

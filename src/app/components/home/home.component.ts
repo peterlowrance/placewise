@@ -21,6 +21,7 @@ import { Attribute } from 'src/app/models/Attribute';
 import { AttributeValue } from 'src/app/models/Attribute';
 import { AdvancedAlphaNumSort } from 'src/app/utils/AdvancedAlphaNumSort';
 import { HierarchyLocation } from 'src/app/models/Location';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 /**
  *
@@ -53,6 +54,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   root: HierarchyItem;
   rootSub: Subscription;
 
+  workspaceID: string;
   hierarchyItems: HierarchyItem[];
   originalHierarchyItems: HierarchyItem[];
   items: Item[];
@@ -119,53 +121,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private adminService: AdminService,
     private cacheService: CacheService,
+    private snack: MatSnackBar,
     public dialog: MatDialog) {
     // subscribe to nav state
     this.returnSub = this.navService.getReturnState().subscribe(
       val => {
         if (val && this.root) { // if we returned
           this.navigateUpHierarchy();
-        }
-      }
-    );
-
-    // change if parent is different
-    this.parentSub = this.navService.getParent().subscribe(val => {
-        if(val){
-          this.root = val;
-          this.typeForSelectionButtons = this.root.type;
-
-          // Clear or update the quick search (kinda messy)
-          if(this.binSearchItem && this.binSearchItem.locations.indexOf(this.root.ID) > -1){
-
-          }
-          else if(this.root.type === 'location' && this.shelfInput){
-            this.searchService.getShelfIDFromAncestors(this.root.ID).then(result => {
-              if(result !== this.shelfInput.nativeElement.value){
-                if(result === '000'){
-                  this.shelfInput.nativeElement.value = null;
-                  this.binInput.nativeElement.value = null;
-                }
-                else {
-                  this.shelfInput.nativeElement.value = result;
-                  this.binInput.nativeElement.value = null;
-                }
-              }
-            });
-
-            this.loadLevel();
-          }
-          else {
-            if(this.shelfInput){
-              this.shelfInput.nativeElement.value = null;
-              this.binInput.nativeElement.value = null;
-            }
-
-            this.loadLevel();
-          }
-        }
-        else {
-          console.log("Error: unable to get home root");
         }
       }
     );
@@ -181,6 +143,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Naviagte to the location/category everytime the url is updated
     const urlID = this.route.snapshot.paramMap.get('id');
     const selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'category' : 'location';
+    this.workspaceID = this.route.snapshot.paramMap.get('workspaceID');
     this.typeForSelectionButtons = selectedSearch;
 
     // Load root from cache if possible
@@ -207,6 +170,62 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.authService.getRole().subscribe(
       val => this.role = val
     );
+
+    // change if parent is different
+    this.parentSub = this.navService.getParent().subscribe(val => {
+      if(val){
+        this.root = val;
+        this.typeForSelectionButtons = this.root.type;
+
+        // Clear or update the quick search (kinda messy)
+        if(this.binSearchItem && this.binSearchItem.locations.indexOf(this.root.ID) > -1){
+
+        }
+        else if(this.root.type === 'location' && this.shelfInput){
+          this.searchService.getShelfIDFromAncestors(this.workspaceID, this.root.ID).then(result => {
+            if(result !== this.shelfInput.nativeElement.value){
+              if(result === '000'){
+                this.shelfInput.nativeElement.value = null;
+                this.binInput.nativeElement.value = null;
+              }
+              else {
+                this.shelfInput.nativeElement.value = result;
+                this.binInput.nativeElement.value = null;
+              }
+            }
+          });
+
+          this.loadLevel();
+        }
+        else {
+          if(this.shelfInput){
+            this.shelfInput.nativeElement.value = null;
+            this.binInput.nativeElement.value = null;
+          }
+
+          this.loadLevel();
+        }
+      }
+      else {
+        console.log("Error: unable to get home root");
+      }
+    });
+
+    this.searchService.loadBinData(this.workspaceID).then(resolved => {
+      if(resolved){
+        let URLbinID = this.route.snapshot.queryParamMap.get('bin');
+        if(URLbinID){
+          let itemID = this.searchService.getItemIDFromBinID(URLbinID);
+          if(itemID && itemID !== 'no ID'){
+            this.router.navigate(['/w/' + this.workspaceID +  '/item/', itemID]);
+            this.snack.open("Routed from bin " + URLbinID, "OK", {duration: 4000});
+          }
+          else {
+            this.snack.open("No item was found for " + URLbinID, "OK", {duration: 4000});
+          }
+        }
+      }
+    });
   }
 
   navigateUpHierarchy() { // Yikes, repeated code from init
@@ -215,9 +234,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   updateSubscribedParent(id: string, type: string){
     if(type === 'category'){
-      this.navService.setSubscribedParent(this.searchService.getCategory(id));
+      this.navService.setSubscribedParent(this.searchService.getCategory(this.workspaceID, id));
     } else {
-      this.navService.setSubscribedParent(this.searchService.getLocation(id));
+      this.navService.setSubscribedParent(this.searchService.getLocation(this.workspaceID, id));
     }
   }
 
@@ -264,7 +283,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     if(this.root.type === 'category'){
       let category = this.root as Category;
       let attributes: Attribute[];
-      this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
+      this.searchService.getAncestorsOf(this.workspaceID, category).subscribe(categoryAncestors => {
 
         if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
           let allParents = [category].concat(categoryAncestors[0]);
@@ -291,9 +310,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.currentAttribute = attribute;
     this.attributeValues = [];
 
-    this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
+    this.searchService.getAllDescendantHierarchyItems(this.workspaceID, this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
       this.percentLoadedAttributes = 6;
-      this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
+      this.searchService.getAllDescendantItems(this.workspaceID, this.root, hierarchyItems).subscribe(items => {
 
         let slice = 94/items.length;
         for(let item in items) {
@@ -337,7 +356,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   displayDescendants(root: HierarchyItem = this.root) {
     this.hierarchyItems = [];
-    this.searchService.getDescendantsOfRoot(root ? root.ID : 'root', root ? root.type === 'category' : false).subscribe(descendants => {
+    this.searchService.getDescendantsOfRoot(this.workspaceID, root ? root.ID : 'root', root ? root.type === 'category' : false).subscribe(descendants => {
       this.hierarchyItems = descendants;
     });
     // Load items that descend from root
@@ -358,7 +377,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (root.items) {
       // For each itemID descending from root, get the item from the data and added to the global items array
       for (let itemID of root.items) {
-        this.obsItems[itemID] = this.searchService.getItem(itemID);
+        this.obsItems[itemID] = this.searchService.getItem(this.workspaceID, itemID);
         this.subItems[itemID] = this.obsItems[itemID].subscribe(returnedItem => {
           if (returnedItem !== null && typeof returnedItem !== 'undefined') {
             let itemFound = false;
@@ -481,19 +500,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   goToItem(item: Item) {
     this.cacheService.store(item);
     this.cacheService.store(this.root); // Currently this only helps if you go back to this page, but that still happens often
-    this.router.navigate(['/item/', item.ID]);
+    this.router.navigate(['/w/' + this.workspaceID +  '/item/', item.ID]);
   }
 
   goToHierarchy(hierItem: HierarchyItem) {
     this.control.setValue('');
-    window.history.pushState(null, null, 'search/' + (this.root.type === 'category' ? 'categories' : 'locations') + '/' + hierItem.ID);
+    window.history.pushState(null, null, '/w/' + this.workspaceID + '/search/' + (hierItem.type === 'category' ? 'categories' : 'locations') + '/' + hierItem.ID);
     this.updateSubscribedParent(hierItem.ID, hierItem.type);
   }
 
   toggleHierarchy(event) {
     this.control.setValue('');
     this.searchTextChange('');
-    window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/root');
+    window.history.pushState(null, null, '/w/' + this.workspaceID + '/search/' + event.value.toLowerCase() + '/root');
     this.updateSubscribedParent('root', this.root? (this.root.type === 'category' ? 'location' : 'category') : 'location');
   }
 
@@ -532,6 +551,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(ItemBuilderModalComponent, {
       width: '480px',
       data: {
+        workspaceID: this.workspaceID,
         hierarchyObj: this.root
       }
     });
@@ -563,19 +583,19 @@ export class HomeComponent implements OnInit, OnDestroy {
         titleFormat: [{type: "parent"}]
       }
 
-      this.adminService.addCategory(categoryData, this.root.ID).subscribe(id => {
-        this.router.navigate(['/hierarchyItem/categories/' + id]);
+      this.adminService.addCategory(this.workspaceID, categoryData, this.root.ID).subscribe(id => {
+        this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/categories/' + id]);
       });
     }
     else {
 
-      this.adminService.addLocation({
+      this.adminService.addLocation(this.workspaceID, {
         name: 'NEW LOCATION',
         parent: this.root.ID,
         children: [],
         items: []
       } as HierarchyItem, this.root.ID).subscribe(id => {
-        this.router.navigate(['/hierarchyItem/locations/' + id]);
+        this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/locations/' + id]);
       });
     }
   }
@@ -585,8 +605,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   filterResults(){
-    this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
-      this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
+    this.searchService.getAllDescendantHierarchyItems(this.workspaceID, this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
+      this.searchService.getAllDescendantItems(this.workspaceID, this.root, hierarchyItems).subscribe(items => {
         let newItemResults: Item[] = [];
         for(let item in items){
           if(items[item].attributes){
@@ -622,8 +642,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       return;
     } else { // Otherwise, get all descendant hierarchy items and items and fuzzy match them
       this.isLoading = true;
-      this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
-        this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
+      this.searchService.getAllDescendantHierarchyItems(this.workspaceID, this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
+        this.searchService.getAllDescendantItems(this.workspaceID, this.root, hierarchyItems).subscribe(items => {
           // Search items
           const itemSearcher = new Fuse(items, this.itemSearchOptions);
           this.items = itemSearcher.search(event);
@@ -666,7 +686,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
       let locationID = this.searchService.getLocationIDFromShelfID(this.shelfInput.nativeElement.value);
       if(locationID && locationID !== 'err' && locationID !== 'no ID' && locationID !== this.root.ID){
-        this.searchService.getLocation(locationID).subscribe(loc => {
+        this.searchService.getLocation(this.workspaceID, locationID).subscribe(loc => {
           this.binInput.nativeElement.value = '';
           this.goToHierarchy(loc);
           this.shelfInput.nativeElement.blur();
@@ -710,22 +730,27 @@ export class HomeComponent implements OnInit, OnDestroy {
         let binID = this.shelfInput.nativeElement.value + '-' + this.binInput.nativeElement.value;
         let itemID = this.searchService.getItemIDFromBinID(binID);
 
-        this.searchService.getItem(itemID).subscribe(item => {
-          if(item){
-            for(let loc in item.locationMetadata){
-              if(item.locationMetadata[loc].binID === binID){
-                this.searchService.getLocation(loc).subscribe(locationData => {
-
-                  // If we got a result, go to the item's location and deselect the input so
-                  // we can fully see the result on mobile
-                  this.goToHierarchy(locationData);
-                  this.binSearchItem = item;
-                  this.binInput.nativeElement.blur();
-                });
+        if(!itemID || itemID === 'no ID'){
+          this.snack.open("No item was found for " + binID, "OK", {duration: 4000});
+        }
+        else {
+          this.searchService.getItem(this.workspaceID, itemID).subscribe(item => {
+            if(item){
+              for(let loc in item.locationMetadata){
+                if(item.locationMetadata[loc].binID === binID){
+                  this.searchService.getLocation(this.workspaceID, loc).subscribe(locationData => {
+  
+                    // If we got a result, go to the item's location and deselect the input so
+                    // we can fully see the result on mobile
+                    this.goToHierarchy(locationData);
+                    this.binSearchItem = item;
+                    this.binInput.nativeElement.blur();
+                  });
+                }
               }
             }
-          }
-        });
+          });
+        }
       }
     }
     else {

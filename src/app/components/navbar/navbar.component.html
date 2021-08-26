@@ -51,6 +51,7 @@
         <!-- <button mat-flat-button color="accent" (click)="goToModify()">{{parent.name}}</button> -->
         <span class="nav-text">{{parent.name}}</span>
         <span class="spacer"></span>
-        <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="route('modify')"><mat-icon>chevron_right</mat-icon></button>
+        <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="openQRDialog()"><mat-icon>qr_code_2</mat-icon></button>
+        <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="route('modify')"><mat-icon>read_more</mat-icon></button>
     </mat-toolbar-row>
 </mat-toolbar>

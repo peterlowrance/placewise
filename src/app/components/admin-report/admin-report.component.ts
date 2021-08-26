@@ -27,6 +27,7 @@ export class AdminReportComponent implements OnInit {
   //listeningToLocationNames: string[];
   numberOfAllReports = 0; // Little bit of a hack, this teels the tables when we're ready to build
   userSub: Subscription;
+  workspaceID: string;
 
   constructor(
     private searchService: SearchService,
@@ -40,7 +41,9 @@ export class AdminReportComponent implements OnInit {
     public dialog: MatDialog) { }
 
   ngOnInit() {
-    this.reportService.getReports().subscribe(reports => {
+    this.workspaceID = this.route.snapshot.paramMap.get('workspaceID');
+
+    this.reportService.getReports(this.workspaceID).subscribe(reports => {
       this.numberOfAllReports = reports.length;
       this.notifiedReports = [];
       this.externalReports = [];
@@ -51,7 +54,7 @@ export class AdminReportComponent implements OnInit {
         // Setup the item and if it is notified for each report
         for(let i = 0; i < reports.length; i++)
         {
-          this.searchService.getItem(reports[i].item).subscribe(z => {
+          this.searchService.getItem(this.workspaceID, reports[i].item).subscribe(z => {
             reports[i].trueItem = z;
 
             /*
@@ -150,7 +153,7 @@ export class AdminReportComponent implements OnInit {
   }
 
   goToTemplates(){
-    this.router.navigateByUrl("reports/templates");
+    this.router.navigateByUrl("/w/" + this.workspaceID + "/reports/templates");
   }
 
 
@@ -179,7 +182,7 @@ export class AdminReportComponent implements OnInit {
           reportData = result;
           // if it's valid, build and isue report, else leave
           if (reportData && reportData.toBeRemoved) {
-            this.adminService.deleteReport(reportData.reportID, reportData.itemID);
+            this.adminService.deleteReport(this.workspaceID, reportData.reportID, reportData.itemID);
           }
         });
   }

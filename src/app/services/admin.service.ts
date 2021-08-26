@@ -79,13 +79,13 @@ export class AdminService {
     }
   }
 
-  setEmailReportsForUser(userID: string, value: boolean){
-    this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + userID).set({emailReports: value}, {merge: true});
+  setEmailReportsForUser(workspaceID: string, userID: string, value: boolean){
+    this.afs.doc('Workspaces/' + workspaceID + '/WorkspaceUsers/' + userID).set({emailReports: value}, {merge: true});
   }
 
-  deleteReport(reportID: string, itemID: string) {
+  deleteReport(workspaceID: string, reportID: string, itemID: string) {
     // Try to remove the report from an item's data
-    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + itemID).get().toPromise().then(item => {
+    this.afs.doc<Item>('/Workspaces/' + workspaceID + '/Items/' + itemID).get().toPromise().then(item => {
       let reports = (item.data() as Item).reports;
 
       // Look through connected reports and remove the data associated with the report's ID
@@ -94,7 +94,7 @@ export class AdminService {
           reports.splice(Number(index), 1);
           //console.log("Deleted Report: " + reportID);
 
-          this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Items/' + itemID).update({
+          this.afs.doc('/Workspaces/' + workspaceID + '/Items/' + itemID).update({
             reports: reports
           });
           break;
@@ -103,7 +103,7 @@ export class AdminService {
     });
 
     // Delete actual report data
-    this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Reports/' + reportID).delete();
+    this.afs.doc('/Workspaces/' + workspaceID + '/Reports/' + reportID).delete();
   }
 
   /*
@@ -115,10 +115,10 @@ export class AdminService {
   }
   */
 
-  getListenedReportLocations(): Observable<string[]> {
+  getListenedReportLocations(workspaceID: string): Observable<string[]> {
     return new Observable(obs => {
       this.auth.getAuth().subscribe(authInfo => {
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + authInfo.uid).snapshotChanges().pipe(
+        this.afs.doc('Workspaces/' + workspaceID + '/WorkspaceUsers/' + authInfo.uid).snapshotChanges().pipe(
           map(doc => {
             let data = doc.payload.data() as {role: string, listenedReportLocations: string[]}
             if(data.listenedReportLocations)
@@ -131,14 +131,14 @@ export class AdminService {
     }); 
   }
 
-  async setListenedReportLocations(locationIDs: string[]){
+  async setListenedReportLocations(workspaceID: string, locationIDs: string[]){
     this.auth.getAuth().subscribe(authInfo => {
-      this.afs.doc('Workspaces/' + this.auth.workspace.id + '/WorkspaceUsers/' + authInfo.uid).update({listenedReportLocations: locationIDs});
+      this.afs.doc('Workspaces/' + workspaceID + '/WorkspaceUsers/' + authInfo.uid).update({listenedReportLocations: locationIDs});
     });
   }
 
 
-  async updateItem(item: Item, oldCategoryID: string, oldLocationsID: string[]): Promise<boolean> {
+  async updateItem(workspaceID: string, item: Item, oldCategoryID: string, oldLocationsID: string[]): Promise<boolean> {
     if(item.type) delete item.type;
 
     if (oldLocationsID) {
@@ -146,7 +146,7 @@ export class AdminService {
       for(let i in oldLocationsID){
         // If this location is no longer present
         if (item.locations.indexOf(oldLocationsID[i]) === -1) {
-          await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + oldLocationsID[i]).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+          await this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + oldLocationsID[i]).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
           
           let binIDsToRemove: string[] = [];
           for(let locID in item.locationMetadata){ // Remove tracking data
@@ -155,22 +155,22 @@ export class AdminService {
               delete item.locationMetadata[locID];
             }
           }
-          this.removeBinIDs(binIDsToRemove);
+          this.removeBinIDs(workspaceID, binIDsToRemove);
         }
       };
       // Add to new locations
       item.locations.forEach(async location => {
-        await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
+        await this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
       });
     }
 
-    await this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).set(item);
+    await this.afs.doc<Item>('/Workspaces/' + workspaceID + '/Items/' + item.ID).set(item);
 
     if (oldCategoryID) {
       // Remove from old category
-      await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldCategoryID).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+      await this.afs.doc('Workspaces/' + workspaceID + '/Category/' + oldCategoryID).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
       // Add to new category
-      await this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
+      await this.afs.doc('Workspaces/' + workspaceID + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
     }
     return true;
   }
@@ -256,41 +256,41 @@ export class AdminService {
     return result;
   }
 
-  createItem(item: Item): Observable<boolean> {
-    this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add({
+  createItem(workspaceID: string, item: Item): Observable<boolean> {
+    this.afs.collection('/Workspaces/' + workspaceID + '/Items').add({
       item
     });
     return of(true);
   }
 
-  createItemAtLocation(item: Item): Observable<string> {
+  createItemAtLocation(workspaceID: string, item: Item): Observable<string> {
 
     return new Observable(obs => {
-      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Items').add(item).then(
+      this.afs.collection('/Workspaces/' + workspaceID + '/Items').add(item).then(
         val => {
           obs.next(val.id);
 
           if(item.locations.length > 0){
             for(let location of item.locations){
-              this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + location).get().pipe(
+              this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Locations/' + location).get().pipe(
                 map(doc => doc.data())
               ).toPromise().then(
                 doc => {
                   const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
                   ary.push(val.id);
-                  this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: ary});
+                  this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + location).update({items: ary});
                 }
               );
             }
           }
 
-          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).get().pipe(
+          this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Category/' + item.category).get().pipe(
             map(doc => doc.data())
           ).toPromise().then(
             doc => {
               const ary = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
               ary.push(val.id);
-              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: ary});
+              this.afs.doc('Workspaces/' + workspaceID + '/Category/' + item.category).update({items: ary});
             }
           );
 
@@ -301,13 +301,13 @@ export class AdminService {
     // return of(true);
   }
 
-  removeItem(item: Item) {
-    this.afs.doc<Item>('/Workspaces/' + this.auth.workspace.id + '/Items/' + item.ID).delete();
+  removeItem(workspaceID: string, item: Item) {
+    this.afs.doc<Item>('/Workspaces/' + workspaceID + '/Items/' + item.ID).delete();
     
     this.cacheService.remove(item.ID, 'item');
     
     if (item.category) {
-      this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+      this.afs.doc('Workspaces/' + workspaceID + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
     }
     if (item.locations && item.locations.length > 0) {
       item.locations.forEach(location => {
@@ -318,20 +318,20 @@ export class AdminService {
             binIDsToRemove.push(item.locationMetadata[locID].binID);
           }
         }
-        this.removeBinIDs(binIDsToRemove);
+        this.removeBinIDs(workspaceID, binIDsToRemove);
 
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
+        this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
       });
     }
     
     var reports;
 
-    this.reportService.getReports().subscribe(x => {
+    this.reportService.getReports(workspaceID).subscribe(x => {
       reports = x;     
       for (let i = 0; i < reports.length; i++) {
         if(reports[i].item == item.ID)
         {
-          this.deleteReport(reports[i].ID, item.ID);
+          this.deleteReport(workspaceID, reports[i].ID, item.ID);
         }
       }
     }
@@ -348,42 +348,42 @@ export class AdminService {
     throw new Error('Method not implemented.');
   }
 
-  updateLocationPosition(parentID: string, moveID: string, oldParentID: string) {
+  updateLocationPosition(workspaceID: string, parentID: string, moveID: string, oldParentID: string) {
     // update new parent id
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + moveID).update({parent: parentID});
+    this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Locations/' + moveID).update({parent: parentID});
     // remove from old parent's child list
-    this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + oldParentID).update({children: firebase.firestore.FieldValue.arrayRemove(moveID)});
+    this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + oldParentID).update({children: firebase.firestore.FieldValue.arrayRemove(moveID)});
     // Add to new parent's list
-    this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + parentID).update({children: firebase.firestore.FieldValue.arrayUnion(moveID)});
+    this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + parentID).update({children: firebase.firestore.FieldValue.arrayUnion(moveID)});
   }
 
   // Originally "Add Location"
-  setLocation(newItem: HierarchyItem, newParentID: string) {
+  setLocation(workspaceID: string, newItem: HierarchyItem, newParentID: string) {
     newItem.ID = newItem.name + Math.round((Math.random() * 1000000));
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + newItem.ID).set(newItem);
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + newParentID).get().pipe(
+    this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Locations/' + newItem.ID).set(newItem);
+    this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Locations/' + newParentID).get().pipe(
       map(doc => doc.data())
     ).toPromise().then(
       doc => {
         const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
         ary.push(newItem.ID);
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + newParentID).update({children: ary});
+        this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + newParentID).update({children: ary});
       }
     );
   }
 
   // New method for adding without generating our own ID and returning the new ID from firebase
-  addLocation(newItem: HierarchyItem, newParentID: string): Observable<string> {
+  addLocation(workspaceID: string, newItem: HierarchyItem, newParentID: string): Observable<string> {
     return new Observable(obs => {
-      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Locations').add(newItem).then(
+      this.afs.collection('/Workspaces/' + workspaceID + '/Locations').add(newItem).then(
         val => {
-          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + newParentID).get().pipe(
+          this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Locations/' + newParentID).get().pipe(
             map(doc => doc.data())
           ).toPromise().then(
             doc => {
               const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
               ary.push(val.id);
-              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + newParentID).update({children: ary});
+              this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + newParentID).update({children: ary});
               obs.next(val.id);
               obs.complete();
         });
@@ -391,9 +391,9 @@ export class AdminService {
     });
   }
 
-  removeLocation(remove: HierarchyLocation): Promise<void> {
+  removeLocation(workspaceID: string, remove: HierarchyLocation): Promise<void> {
     // Remove from parent and promote children and items to parent
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).get().pipe(
+    this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Locations/' + remove.parent).get().pipe(
       map(doc => doc.data())
     ).toPromise().then(
       doc => {
@@ -404,9 +404,9 @@ export class AdminService {
           newChildren = newChildren.concat(remove.children);
           // Update children's parents
           if (remove.parent) {
-            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({children: newChildren});
+            this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + remove.parent).update({children: newChildren});
           }
-          remove.children.forEach(child => this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + child).update({parent: remove.parent}));
+          remove.children.forEach(child => this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + child).update({parent: remove.parent}));
         }
         // Update parent's items
         let newItems: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
@@ -414,30 +414,30 @@ export class AdminService {
           newItems = newItems.concat(remove.items);
           // Update item's parents
           remove.items.forEach(item => {
-            this.searchService.getItem(item).subscribe(i => {
+            this.searchService.getItem(workspaceID, item).subscribe(i => {
               // Remove the location from the items locations
               i.locations = i.locations.filter(id => id !== remove.ID);
               // Add the new parent to the items locations
               if (i.locations.indexOf(remove.parent) === -1) {
                 i.locations.push(remove.parent);
               }
-              this.updateItem(i, null, null);
+              this.updateItem(workspaceID, i, null, null);
             });
           });
         }
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.parent).update({children: newChildren, items: newItems});
+        this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + remove.parent).update({children: newChildren, items: newItems});
 
         if(remove.shelfID){
           this.setShelfID(remove.ID, '000', remove.shelfID).subscribe(); // Delete shelf ID
         }
       }
     );
-    return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Locations/' + remove.ID).delete();
+    return this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Locations/' + remove.ID).delete();
   }
 
-  removeCategory(toRemove: HierarchyItem): Promise<void> {
+  removeCategory(workspaceID: string, toRemove: HierarchyItem): Promise<void> {
     // Remove from parent and promote children and items to parent
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).get().pipe(
+    this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Category/' + toRemove.parent).get().pipe(
       map(doc => doc.data())
     ).toPromise().then(
       doc => {
@@ -448,10 +448,10 @@ export class AdminService {
           newChildren = newChildren.concat(toRemove.children);
           // Update parent's children
           if (toRemove.parent) {
-            this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({children: newChildren});
+            this.afs.doc('Workspaces/' + workspaceID + '/Category/' + toRemove.parent).update({children: newChildren});
           }
           // Update children's parents
-          toRemove.children.forEach(child => this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + child).update({parent: toRemove.parent}));
+          toRemove.children.forEach(child => this.afs.doc('Workspaces/' + workspaceID + '/Category/' + child).update({parent: toRemove.parent}));
         }
         // Update parent's items
         const newItems: string[] = (typeof doc.items === 'undefined' || doc.items === null) ? [] : doc.items;
@@ -459,46 +459,46 @@ export class AdminService {
           toRemove.items.forEach(i => newItems.push(i));
           // Update item's parents
           toRemove.items.forEach(item => {
-            this.searchService.getItem(item).subscribe(i => {
+            this.searchService.getItem(workspaceID, item).subscribe(i => {
               // Set the category
               i.category = toRemove.parent;
-              this.updateItem(i, null, null);
+              this.updateItem(workspaceID, i, null, null);
             });
           });
         }
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.parent).update({children: newChildren, items: newItems});
+        this.afs.doc('Workspaces/' + workspaceID + '/Category/' + toRemove.parent).update({children: newChildren, items: newItems});
       }
     );
-    return this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + toRemove.ID).delete();
+    return this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Category/' + toRemove.ID).delete();
   }
 
   // Originally "Add Category"
-  setCategory(newItem: HierarchyItem, newParentID: string) {
+  setCategory(workspaceID: string, newItem: HierarchyItem, newParentID: string) {
     newItem.ID = newItem.name + Math.round((Math.random() * 1000000));
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + newItem.ID).set(newItem);
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + newParentID).get().pipe(
+    this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Category/' + newItem.ID).set(newItem);
+    this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Category/' + newParentID).get().pipe(
       map(doc => doc.data())
     ).toPromise().then(
       doc => {
         const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
         ary.push(newItem.ID);
-        this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + newParentID).update({children: ary});
+        this.afs.doc('Workspaces/' + workspaceID + '/Category/' + newParentID).update({children: ary});
       }
     );
   }
 
   // New method for adding without generating our own ID and returning the new ID from firebase
-  addCategory(newItem: HierarchyItem, newParentID: string): Observable<string> {
+  addCategory(workspaceID: string, newItem: HierarchyItem, newParentID: string): Observable<string> {
     return new Observable(obs => {
-      this.afs.collection('/Workspaces/' + this.auth.workspace.id + '/Category').add(newItem).then(
+      this.afs.collection('/Workspaces/' + workspaceID + '/Category').add(newItem).then(
         val => {
-          this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + newParentID).get().pipe(
+          this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Category/' + newParentID).get().pipe(
             map(doc => doc.data())
           ).toPromise().then(
             doc => {
               const ary = (typeof doc.children === 'undefined' || doc.children === null) ? [] : doc.children;
               ary.push(val.id);
-              this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + newParentID).update({children: ary});
+              this.afs.doc('Workspaces/' + workspaceID + '/Category/' + newParentID).update({children: ary});
               obs.next(val.id);
               obs.complete();
         });
@@ -506,26 +506,26 @@ export class AdminService {
     });
   }
 
-  updateCategoryPosition(parentID: string, moveID: string, oldParentID: string) {
+  updateCategoryPosition(workspaceID: string, parentID: string, moveID: string, oldParentID: string) {
     // update new parent id
-    this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + '/Category/' + moveID).update({parent: parentID});
+    this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Category/' + moveID).update({parent: parentID});
     // remove from old parent's child list
-    this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + oldParentID).update({children: firebase.firestore.FieldValue.arrayRemove(moveID)});
+    this.afs.doc('Workspaces/' + workspaceID + '/Category/' + oldParentID).update({children: firebase.firestore.FieldValue.arrayRemove(moveID)});
     // Add to new parent's list
-    this.afs.doc('Workspaces/' + this.auth.workspace.id + '/Category/' + parentID).update({children: firebase.firestore.FieldValue.arrayUnion(moveID)});
+    this.afs.doc('Workspaces/' + workspaceID + '/Category/' + parentID).update({children: firebase.firestore.FieldValue.arrayUnion(moveID)});
   }
 
-  async updateHierarchy(node: HierarchyItem, isCategory: boolean): Promise<boolean> {
+  async updateHierarchy(workspaceID: string, node: HierarchyItem, isCategory: boolean): Promise<boolean> {
     if(node.type) delete node.type;
     const appropriateHierarchy = isCategory ? '/Category/' : '/Locations/';
-    await this.afs.doc<HierarchyItem>('/Workspaces/' + this.auth.workspace.id + appropriateHierarchy + node.ID).update(node);
+    await this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + appropriateHierarchy + node.ID).update(node);
     return true;
   }
 
   /**
    * Gets all users from the current signed-in user's workspace
    */
-  getWorkspaceUsers(): Observable<WorkspaceUser[]> {
+  getWorkspaceUsers(workspaceID: string): Observable<WorkspaceUser[]> {
     
     return new Observable(obs => {
 
@@ -533,13 +533,13 @@ export class AdminService {
       var usersSub: Subscription;
 
       // First get the users within the User collection
-      usersSub = this.afs.collection('/Users', ref => ref.where('workspace', '==', this.auth.workspace.id)).snapshotChanges().subscribe(rawUsers => {
+      usersSub = this.afs.collection('/Users', ref => ref.where('workspace', '==', workspaceID)).snapshotChanges().subscribe(rawUsers => {
         if(workspaceUsersSub){ // If there's already a subscription, reset it so that we don't make another
           workspaceUsersSub.unsubscribe();
         }
 
         // Then get the added WorkspaceUsers data
-        workspaceUsersSub = this.afs.collection(`/Workspaces/${this.auth.workspace.id}/WorkspaceUsers/`).snapshotChanges().subscribe(rawWorkspaceUsers => {
+        workspaceUsersSub = this.afs.collection(`/Workspaces/${workspaceID}/WorkspaceUsers/`).snapshotChanges().subscribe(rawWorkspaceUsers => {
           // Correct for cache immediately loading only one user: Us.
           if(rawWorkspaceUsers.length === rawUsers.length){
             let workspaceUsers: WorkspaceUser[] = []; // To emit
@@ -697,13 +697,13 @@ export class AdminService {
     })
   }
 
-  updateDefaultReportUsers(userIDs: string[]){
-    this.afs.doc('/Workspaces/' + this.auth.workspace.id).update({defaultUsersForReports: userIDs})
+  updateDefaultReportUsers(workspaceID: string, userIDs: string[]){
+    this.afs.doc('/Workspaces/' + workspaceID).update({defaultUsersForReports: userIDs})
   }
 
-  setShelfID(locationID: string, shelfID: string, previousShelfID?: string): Observable<string> {
+  setShelfID(workspaceID: string, locationID: string, shelfID: string, previousShelfID?: string): Observable<string> {
     return new Observable(obs => {
-      this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').get().subscribe(doc => {
+      this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').get().subscribe(doc => {
         if(doc.exists && doc.data().shelves){
           let data = doc.data() as BinDictionary;
 
@@ -712,7 +712,7 @@ export class AdminService {
            
             if(previousShelfID){
               delete data.shelves[previousShelfID];
-              this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({shelves: data.shelves});
+              this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').update({shelves: data.shelves});
             }
             obs.complete();
             return;
@@ -729,12 +729,12 @@ export class AdminService {
           }
           data.shelves[shelfID] = locationID;
   
-          this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({shelves: data.shelves});
+          this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').update({shelves: data.shelves});
           obs.next('valid');
           obs.complete();
         }
         else {
-          this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({shelves: {[shelfID] : locationID}});
+          this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').update({shelves: {[shelfID] : locationID}});
           obs.next('valid');
           obs.complete();
         }
@@ -745,8 +745,8 @@ export class AdminService {
   /**
    * This is a straight foward method of adding the bin ID to the BinDictionary
    */
-  addBinIDs(locationsData: {[locationID: string]: { ID: string, previousID: string}}, itemID: string) {
-    this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').get().subscribe(doc => {
+  addBinIDs(workspaceID: string, locationsData: {[locationID: string]: { ID: string, previousID: string}}, itemID: string) {
+    this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').get().subscribe(doc => {
       if(doc.exists && doc.data().bins){
         let data = doc.data() as BinDictionary;
 
@@ -761,7 +761,7 @@ export class AdminService {
           }
         }
 
-        this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({bins: data.bins});
+        this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').update({bins: data.bins});
       }
       else {
         let newBinDict: BinDictionary = {bins: {}, shelves: {}};
@@ -772,13 +772,13 @@ export class AdminService {
           newBinDict.bins[locationData.ID] = itemID;
         }
 
-        this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({bins: newBinDict.bins});
+        this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').update({bins: newBinDict.bins});
       }
     });
   }
 
-  removeBinIDs(binIDs: string[]){
-    this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').get().subscribe(doc => {
+  removeBinIDs(workspaceID: string, binIDs: string[]){
+    this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').get().subscribe(doc => {
       if(doc.exists && doc.data().bins){
         let data = doc.data() as BinDictionary;
 
@@ -786,7 +786,7 @@ export class AdminService {
           delete data.bins[binID];
         }
 
-        this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').update({bins: data.bins});
+        this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').update({bins: data.bins});
       }
     });
   }

@@ -22,12 +22,12 @@ interface Workspace{
   providedIn: 'root'
 })
 export class AuthService {
-  /** User workspace information */
+  /** User workspace information 
   workspace: WorkspaceInfo = {
     name: '',
     id: '',
     defaultUsersForReports: []
-  };
+  };*/
   /** User information */
   userInfo: User = {
     firstName: '',
@@ -42,8 +42,12 @@ export class AuthService {
   /**Current role behavior subject */
   currentRole: BehaviorSubject<string> = new BehaviorSubject<string>(this.role);;
 
-  /**Workspace behaviour subject */
-  currentWorkspace: BehaviorSubject<WorkspaceInfo> = new BehaviorSubject<WorkspaceInfo>(this.workspace);
+  /**Workspace behaviour subject 
+  currentWorkspace: BehaviorSubject<WorkspaceInfo> = new BehaviorSubject<WorkspaceInfo>({
+    name: '',
+    id: '',
+    defaultUsersForReports: []
+  });*/
 
   // TEMPORARY - Will be changed after some major refactoring for how information is looaded in memory
   usersInWorkspace = 0;
@@ -67,31 +71,17 @@ export class AuthService {
     if(user){
       user.getIdTokenResult().then(token => {
         //set raw workspace and role
-        this.workspace.id = token.claims.workspace;
+        //this.setupWorkspaceInfo(token.claims.workspace);
         this.role = token.claims.role;
 
         //set behavior subject workspace and role
-        this.currentWorkspace.next(this.workspace);
         this.currentRole.next(this.role);
-        
-        //get info
-        const workDoc = this.getWorkspaceInfo(this.workspace.id);
-        //subscribe to changes in workspace name, re-ping current workspace
-        workDoc.subscribe(
-          val => {
-            this.workspace.name = val.name; 
-            this.workspace.defaultUsersForReports = val.defaultUsersForReports
-            this.currentWorkspace.next(this.workspace);
-          }
-        );
 
-        // TEMPORARY - Will be changed or removed when refactoring
-        this.afs.collection(`Workspaces/${this.workspace.id }/WorkspaceUsers`).get().subscribe(col => {
+        // These two were labeled as temporary, I changed the way they got the ID, maybe they're good now?
+        this.afs.collection(`Workspaces/${token.claims.workspace}/WorkspaceUsers`).get().subscribe(col => {
           this.usersInWorkspace = col.size;
         })
-
-        // ALSO KINDA TEMPORARY EHH
-        this.afs.doc(`Workspaces/${this.workspace.id}/WorkspaceUsers/${user.uid}`).snapshotChanges().subscribe(wUser => {
+        this.afs.doc(`Workspaces/${token.claims.workspace}/WorkspaceUsers/${user.uid}`).snapshotChanges().subscribe(wUser => {
           this.recieveEmails = (wUser.payload.data() as WorkspaceUser).emailReports;
         });
       });
@@ -103,7 +93,6 @@ export class AuthService {
     }
     else{ //user not defined, set behavior subjects to null
       this.currentRole.next(null);
-      this.currentWorkspace.next(null);
     }
   }
   
@@ -120,6 +109,7 @@ export class AuthService {
       //try to log in
       this.afAuth.auth.signInWithEmailAndPassword(email,password)
       .then(userData => {
+        console.log(userData);
         resolve(true);
       },
       //error occured in sign-in, reject attempt
@@ -131,10 +121,21 @@ export class AuthService {
   /**
    * Gets the workspace information from firebase
    * @param workspace the workspace id
-   */
-  private getWorkspaceInfo(workspace: string){
-    return this.afs.doc<Workspace>(`Workspaces/${workspace}`).valueChanges();
+  getWorkspaceInfo(): WorkspaceInfo {
+    this.currentWorkspace.value
+    console.log("LOAD: " + this.workspace.id);
+    return this.workspace;
   }
+
+  setupWorkspaceInfo(id: string){
+    this.workspace.id = id; // Immediate ID setup
+    console.log("WORKSPACE: " + id);
+    this.afs.doc<WorkspaceInfo>(`Workspaces/${id}`).snapshotChanges().subscribe(workspaceInfo => {
+      //this.workspace = workspaceInfo.payload.data() as WorkspaceInfo;
+      console.log("SETUP: " + this.workspace.id);
+    })
+  }
+   */
 
   /**
    * Gets user information from firebase
@@ -166,13 +167,6 @@ export class AuthService {
    */
   getUser(){
     return of(this.userInfo);
-  }
-
-  /**
-   * Gets the workspace information
-   */
-  getWorkspace(){
-    return this.currentWorkspace.asObservable();
   }
 
   /**
