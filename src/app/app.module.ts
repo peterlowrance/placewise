@@ -76,6 +76,11 @@ import { ReportTemplateEditComponent } from './components/report-template-edit/r
 import { UserInputDialogComponent } from './components/user-input-dialog/user-input-dialog.component';
 import { ColorPaletteDialogComponent } from './components/color-palette-dialog/color-palette-dialog.component';
 import { ReportFormatPieceDialogComponent } from './components/report-format-piece-dialog/report-format-piece-dialog.component';
+import { QRCodeItemDialogComponent } from './components/qrcode-item-dialog/qrcode-item-dialog.component';
+import { QRCodeModule } from 'angularx-qrcode';
+import { QRCodeLocationDialogComponent } from './components/qrcode-location-dialog/qrcode-location-dialog.component';
+import { QRCodeCategoryDialogComponent } from './components/qrcode-category-dialog/qrcode-category-dialog.component';
+import { MoveStockDialogComponent } from './components/move-stock-dialog/move-stock-dialog.component';
 
 @NgModule({
   declarations: [
@@ -113,7 +118,11 @@ import { ReportFormatPieceDialogComponent } from './components/report-format-pie
     ReportTemplateEditComponent,
     UserInputDialogComponent,
     ColorPaletteDialogComponent,
-    ReportFormatPieceDialogComponent
+    ReportFormatPieceDialogComponent,
+    QRCodeItemDialogComponent,
+    QRCodeLocationDialogComponent,
+    QRCodeCategoryDialogComponent,
+    MoveStockDialogComponent
   ],
   imports: [
     CommonModule,

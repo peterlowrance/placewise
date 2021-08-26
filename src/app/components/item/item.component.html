@@ -9,6 +9,11 @@
             <span *ngIf="!item.name" class="light-text"> ( No Title ) </span>
         </h2>
         <div *ngIf="item.desc" class="item-description">{{item.desc}}</div>
+
+        <button class="big-button report-button action-color" mat-raised-button [class.mat-elevation-z3]="true">
+            <mat-icon>swap_horiz</mat-icon> 
+            Transfer Stock
+        </button>
         
         <button class="big-button report-button action-color" mat-raised-button (click)="createReport()" [class.mat-elevation-z3]="true">
             <mat-icon>assignment_late</mat-icon> 
@@ -154,12 +159,22 @@
         </h1>
         <div *ngIf="item.desc" class="item-description">{{item.desc}}</div>
 
+        <button class="big-button report-button action-color" mat-raised-button [class.mat-elevation-z3]="true">
+            <mat-icon>arrow_circle_right</mat-icon> 
+            Move Stock
+        </button>
+
         <button class="big-button report-button action-color" mat-raised-button (click)="createReport()" [class.mat-elevation-z3]="true">
             <mat-icon>assignment_late</mat-icon>
             Report
         </button>
 
-        <div *ngIf="role === 'Admin'">
+        <button class="big-button report-button action-color-light" mat-raised-button (click)="openQRCodeGenerator()" [class.mat-elevation-z3]="true">
+            <mat-icon>qr_code_2</mat-icon> 
+            Create QR Code
+        </button>
+
+        <span *ngIf="role === 'Admin'">
             <button class="big-button report-button structure-color-dark" mat-raised-button [matMenuTriggerFor]="editMenu" [class.mat-elevation-z3]="true">
                 <mat-icon>edit</mat-icon> 
                 Edit
@@ -174,7 +189,7 @@
                 <button class="edit-item" (click)="editField('Tags')" mat-menu-item>Tags</button>
                 <button class="edit-item" (click)="editField('Title')" mat-menu-item>Title</button>
             </mat-menu>
-        </div>
+        </span>
     </div>
 
     <div class="item-content">
