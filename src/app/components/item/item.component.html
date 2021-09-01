@@ -1,9 +1,8 @@
 
-<div class="mobile-content" *ngIf="item">
-    <img class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
+<!--div class="mobile-content" *ngIf="item">
     <div class="item-content" >
         <br>
-        <!--button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="editField('photo')"><mat-icon>photo_camera</mat-icon></button-->
+        <!--button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="editField('photo')"><mat-icon>photo_camera</mat-icon></button>
         <h2 class="title">
             <span *ngIf="item.name"> {{item.name}} </span>
             <span *ngIf="!item.name" class="light-text"> ( No Title ) </span>
@@ -63,7 +62,7 @@
 
         <div class="small-spacer"></div>
 
-        <!-- Locations -->
+        <!-- Locations>
         <h3 class="bottom-space"> Located In: </h3>
         <p *ngIf="!itemLocations || itemLocations.length < 1" class="light-text"> ( None ) </p>
         <div *ngFor="let locationData of itemLocations">
@@ -117,7 +116,7 @@
                     <!-- REPLACE <h4>Last reported as: <span class="amount-reported">{{locationData.tracking.amount}}</span></h4>
                     button mat-raised-button class="approx-button approx-good" (click)="setTrackingAmount(card.locationID, 'Good')">Good</button>
                     <button mat-raised-button class="approx-button approx-low" (click)="setTrackingAmount(locationData.location.ID, 'Low')">Low</button>
-                    <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(locationData.location.ID, 'Empty')">Empty</button-->
+                    <button mat-raised-button class="approx-button approx-empty" (click)="setTrackingAmount(locationData.location.ID, 'Empty')">Empty</button>
                 </div>
                 <app-ancestor-view [parentsOf]="locationData.location"></app-ancestor-view>
             </mat-expansion-panel>
@@ -125,7 +124,7 @@
 
         <div class="small-spacer"></div>
 
-        <!-- Category -->
+        <!-- Category>
         <div class="category-info">
             <h3> Category </h3>
             <div class="category-container">
@@ -136,7 +135,7 @@
 
         <div class="small-spacer"></div>
 
-        <!-- tags -->
+        <!-- tags>
         <div *ngIf="item.tags && item.tags.length > 0">
             <h3 class="bottom-space"> Tags </h3>
             <mat-chip-list selectable="false">
@@ -150,11 +149,10 @@
         <br>
         <br>
     </div>
-</div>
+</div-->
 
-
-<div class="desktop-content" *ngIf="item">
-
+<img *ngIf="item" class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
+<div class="all-content" *ngIf="item">
     <div class="small-spacer"></div>
 
     <div class="title">
@@ -166,7 +164,7 @@
 
         <button class="big-button report-button action-color" mat-raised-button [class.mat-elevation-z3]="true">
             <mat-icon>arrow_circle_right</mat-icon> 
-            Move Stock
+            Transfer Stock
         </button>
 
         <button class="big-button report-button action-color" mat-raised-button (click)="createReport()" [class.mat-elevation-z3]="true">
@@ -198,46 +196,11 @@
     </div>
 
     <div class="item-content">
-
-        <div class="item-content-block">
-
-            <div class="small-spacer"></div>
+        <div class="item-content-block block-1">
             <img class="desktop-image container-img" src={{item.imageUrl}} layout-fit>
             <!--button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="editField('photo')"><mat-icon>photo_camera</mat-icon></button-->
 
-            <div class="small-spacer"></div>
-
-            <!-- Category -->
-            <div class="category-info">
-                <h3> Category </h3>
-                <div class="category-container">
-                    <div class="category-picture"> <img class="clickable-image categoryImg" [class.mat-elevation-z4]="true" (click)="linkTo(category?.ID, 'category')" src={{category?.imageUrl}}></div>
-                    <div class="category-name">{{category?.ID !== 'root' ? category?.name : 'Unassigned'}}</div>
-                </div>
-            </div>
-    
-            <div class="small-spacer"></div>
-    
-            <!-- tags -->
-            <div *ngIf="item.tags && item.tags.length > 0">
-                <br>
-                <h3 class="bottom-space"> Tags </h3>
-                <mat-chip-list selectable="false">
-                    <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
-                </mat-chip-list>
-                <div class="small-spacer"></div>
-            </div>
-
-            
-            <div class="small-spacer"></div>
-    
-            <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete Item</button>
-            <br>
-            <br>
-        </div>
-    
-        <div class="item-content-block">
-            <h3 class="attribute-header"> 
+            <h3 class="attribute-header bottom-space"> 
                 Attributes 
             </h3>
 
@@ -256,12 +219,11 @@
                     <div class="attribute-break"></div>
                 </div>
             </div>
-            
-    
-            <div class="small-spacer"></div>
-    
+        </div>
+
+        <div class="item-content-block block-2">
             <!-- Locations -->
-            <h3 class="bottom-space">
+            <h3 class="bottom-space desktop-no-top-space">
                 Located In: 
             </h3>
             <p *ngIf="!itemLocations || itemLocations.length < 1" class="light-text">
@@ -323,6 +285,33 @@
                     <app-ancestor-view [parentsOf]="locationData.location"></app-ancestor-view>
                 </mat-expansion-panel>
             </div>
+
+            <!-- Category -->
+            <div class="category-info">
+                <h3> Category </h3>
+                <div class="category-container">
+                    <div class="category-picture"> <img class="clickable-image categoryImg" [class.mat-elevation-z4]="true" (click)="linkTo(category?.ID, 'category')" src={{category?.imageUrl}}></div>
+                    <div class="category-name">{{category?.ID !== 'root' ? category?.name : 'Unassigned'}}</div>
+                </div>
+            </div>
+    
+            <div class="small-spacer"></div>
+    
+            <!-- tags -->
+            <div *ngIf="item.tags && item.tags.length > 0">
+                <br>
+                <h3 class="bottom-space"> Tags </h3>
+                <mat-chip-list selectable="false">
+                    <mat-chip *ngFor="let tag of item.tags">{{tag}}</mat-chip>
+                </mat-chip-list>
+                <div class="small-spacer"></div>
+            </div>
+        </div>
+
+        <div class="item-content block-3">    
+            <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete Item</button>
+            <br>
+            <br>
         </div>
     </div>
 </div>

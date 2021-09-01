@@ -135,6 +135,14 @@ mat-button-toggle-group {
   -webkit-box-align: end;
 }
 
+.qr-scanner-button {
+  position: fixed;
+  bottom: calc(8vmin + 64px);
+  right: 6vmin;
+  background-color: white;
+  color: gray;
+}
+
 .allContent {
   padding: 0 8px;
   max-width: 1200px;

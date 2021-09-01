@@ -81,6 +81,9 @@ import { QRCodeModule } from 'angularx-qrcode';
 import { QRCodeLocationDialogComponent } from './components/qrcode-location-dialog/qrcode-location-dialog.component';
 import { QRCodeCategoryDialogComponent } from './components/qrcode-category-dialog/qrcode-category-dialog.component';
 import { MoveStockDialogComponent } from './components/move-stock-dialog/move-stock-dialog.component';
+import { NgxMasonryModule } from 'ngx-masonry';
+import { ZXingScannerModule } from '@zxing/ngx-scanner';
+import { QRScannerDialogComponent } from './components/qrscanner-dialog/qrscanner-dialog.component';
 
 @NgModule({
   declarations: [
@@ -122,7 +125,8 @@ import { MoveStockDialogComponent } from './components/move-stock-dialog/move-st
     QRCodeItemDialogComponent,
     QRCodeLocationDialogComponent,
     QRCodeCategoryDialogComponent,
-    MoveStockDialogComponent
+    MoveStockDialogComponent,
+    QRScannerDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -164,7 +168,9 @@ import { MoveStockDialogComponent } from './components/move-stock-dialog/move-st
     HttpClientModule,
     TextFieldModule,
     DragDropModule,
-    QRCodeModule
+    QRCodeModule,
+    NgxMasonryModule,
+    ZXingScannerModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

@@ -1,0 +1,3 @@
+
+<zxing-scanner [(device)]="device" (scanComplete)="errorPrint($event)" (camerasFound)="loadCameras($event)"></zxing-scanner>
+<button *ngIf="devices.length > 1" class="big-button report-button structure-color-dark" mat-raised-button (click)="changeCamera()"> Change Camera </button>

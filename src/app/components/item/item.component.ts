@@ -29,6 +29,7 @@ import {HierarchyLocation} from 'src/app/models/Location';
 import { stringify } from '@angular/compiler/src/util';
 import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
 import { QRCodeItemDialogComponent } from '../qrcode-item-dialog/qrcode-item-dialog.component';
+import { NgxMasonryComponent } from 'ngx-masonry';
 
 
 interface TreeNode {
@@ -111,6 +112,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   @ViewChild('name') nameField: ElementRef;
   @ViewChild('desc') descField: ElementRef;
   @ViewChild('tags') tagsField: ElementRef;
+  @ViewChild(NgxMasonryComponent) masonry: NgxMasonryComponent;
 
   loaded: boolean = false;  // To tell if the item doesn't exist or just hasn't loaded
   workspaceID: string;
@@ -222,11 +224,13 @@ export class ItemComponent implements OnInit, OnDestroy {
         */
       }
 
+      this.masonry.reloadItems();
+      this.masonry.layout();
+
     });
 
     // get user role
     this.role = this.authService.role;
-
   }
 
   linkTo(objID: string, type: string){

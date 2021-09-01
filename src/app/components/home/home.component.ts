@@ -22,6 +22,7 @@ import { AttributeValue } from 'src/app/models/Attribute';
 import { AdvancedAlphaNumSort } from 'src/app/utils/AdvancedAlphaNumSort';
 import { HierarchyLocation } from 'src/app/models/Location';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { QRScannerDialogComponent } from '../qrscanner-dialog/qrscanner-dialog.component';
 
 /**
  *
@@ -760,5 +761,14 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.loadLevel();
       }
     }
+  }
+
+  openQRScanner(){
+    this.dialog.open(QRScannerDialogComponent, {
+      width: '480px',
+      data: {
+        workspaceID: this.workspaceID
+      }
+    });
   }
 }

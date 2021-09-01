@@ -8,7 +8,7 @@
 }
 
 h3 {
-  margin: 24px 0;
+  margin: 48px 0 24px 0;
 }
 
 h2 {
@@ -130,20 +130,6 @@ h1 {
     right: 3%;
     position: fixed;
     z-index: 1;
-}
-
-.all-content {
-  max-width: 600px;
-  position: center;
-  margin: auto;
-}
-
-.item-content {
-  margin: 8px 16px 32px 16px;
-}
-
-.desktop-content {
-  display: none;
 }
 
 .upper-half {
@@ -452,37 +438,54 @@ p {
   margin-bottom: 8px;
 }
 
+.all-content {
+  display: block;
+  max-width: 1320px;
+  padding: 0 16px;
+  position: center;
+  margin: auto;
+}
+
+.desktop-image {
+  display: none;
+}
+
 /* Desktop verion */
 @media screen and (min-width: 720px){
 
-  .attribute-header {
-    margin-top: 26px;
+  .title {
+    padding-top: 32px;
+    margin-bottom: 64px;
   }
 
-  .title {
-    padding: 30px 30px 0 30px;
+  .item-content {
+    display: grid;
   }
 
   .item-content-block {
-    padding: 30px;
-    max-width: 50%;
-    width: calc(50vw - 60px);
+    padding: 0 64px 64px 0;
+    /*
+    max-width: calc(50% - 64px);
+    width: calc(50% - 64px);
+    min-width: calc(50% - 64px);
+    */
+  }
+
+  .block-1 {
+    grid-area: 1 / 1;
+  }
+
+  .block-2 {
+    grid-area: 1 / 2;
+  }
+
+  .block-3 {
+    grid-area: 2 / 1;
+    align-self: start;
   }
 
   .mobile-content {
     display: none;
-  }
-
-  .desktop-content {
-    display: block;
-    max-width: 1320px;
-    position: center;
-    margin: auto;
-  }
-
-  .item-content {
-    display: flex;
-    margin: 0;
   }
 
   .responsive-item-image {
@@ -494,12 +497,16 @@ p {
     max-width: 100%;
     height: auto;
     object-fit: cover;
-    margin: 0 auto;
+    margin: 0 0;
   }
 
   .camera-button {
     left: calc(100% - 64px);
     top: -22px;
+  }
+
+  .desktop-no-top-space {
+    margin-top: 0;
   }
 }
 
