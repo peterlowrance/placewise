@@ -14,3 +14,8 @@ mat-toolbar {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+.add-menu-button {
+  font-size: 1rem;
+  padding: 0 18px;
+}

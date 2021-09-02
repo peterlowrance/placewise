@@ -13,6 +13,8 @@ import { ReportService } from 'src/app/services/report.service';
 import { MatDialog } from '@angular/material/dialog';
 import { QRCodeLocationDialogComponent } from '../qrcode-location-dialog/qrcode-location-dialog.component';
 import { QRCodeCategoryDialogComponent } from '../qrcode-category-dialog/qrcode-category-dialog.component';
+import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
+import { Category } from 'src/app/models/Category';
 
 
 @Component({
@@ -298,6 +300,46 @@ export class NavbarComponent implements OnInit {
       this.dialog.open(QRCodeLocationDialogComponent, {
         width: '45rem',
         data: {workspaceID: this.workspaceID, location: this.parent}
+      });
+    }
+  }
+
+  addItem(){
+    const dialogRef = this.dialog.open(ItemBuilderModalComponent, {
+      width: '480px',
+      data: {
+        workspaceID: this.workspaceID,
+        hierarchyObj: this.parent
+      }
+    });
+  }
+
+  /** Adds a hierarchy item to the current depth */
+  addHierarchy() {
+    if (this.parent.type === 'category') {
+
+      let categoryData: Category =
+      {
+        name: 'NEW CATEGORY',
+        parent: this.parent.ID,
+        children: [],
+        items: [],
+        titleFormat: [{type: "parent"}]
+      }
+
+      this.adminService.addCategory(this.workspaceID, categoryData, this.parent.ID).subscribe(id => {
+        this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/categories/' + id]);
+      });
+    }
+    else {
+
+      this.adminService.addLocation(this.workspaceID, {
+        name: 'NEW LOCATION',
+        parent: this.parent.ID,
+        children: [],
+        items: []
+      } as HierarchyItem, this.parent.ID).subscribe(id => {
+        this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/locations/' + id]);
       });
     }
   }

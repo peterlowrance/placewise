@@ -47,11 +47,18 @@
             <mat-icon>settings</mat-icon>
         </button>
     </mat-toolbar-row>
-    <mat-toolbar-row class="structure-color-light" *ngIf="checkLocation() === '/' && parent && parent.ID !== 'root'">
+    <mat-toolbar-row class="structure-color-light" *ngIf="checkLocation() === '/' && parent">
         <!-- <button mat-flat-button color="accent" (click)="goToModify()">{{parent.name}}</button> -->
-        <span class="nav-text">{{parent.name}}</span>
+        <span class="nav-text" (click)="route('modify')">{{parent.name}}</span>
         <span class="spacer"></span>
-        <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="openQRDialog()"><mat-icon>qr_code_2</mat-icon></button>
-        <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="route('modify')"><mat-icon>read_more</mat-icon></button>
+
+        <button mat-icon-button *ngIf="this.role === 'Admin'" [matMenuTriggerFor]="addMenu"><mat-icon>add</mat-icon></button>
+        <mat-menu #addMenu="matMenu">
+            <button class="add-menu-button" (click)="addHierarchy()" mat-menu-item> {{parent.type === 'category' ? "Category" : "Location"}} </button>
+            <button class="add-menu-button" (click)="addItem()" mat-menu-item> Item </button>
+        </mat-menu>
+
+        <button mat-icon-button (click)="openQRDialog()"><mat-icon>qr_code_2</mat-icon></button>
+        <!--button mat-icon-button (click)="route('modify')"><mat-icon>read_more</mat-icon></button-->
     </mat-toolbar-row>
 </mat-toolbar>

@@ -79,6 +79,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   parentSub: Subscription;
   returnSub: Subscription;
+  paramQuerySub: Subscription;
+  routeSub: Subscription;
 
   /**The user's role, used for fab loading */
   role: string = '';
@@ -137,36 +139,33 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.parentSub.unsubscribe();
     this.returnSub.unsubscribe();
+    this.paramQuerySub.unsubscribe();
+    this.routeSub.unsubscribe();
     Object.values(this.subItems).forEach(sub => sub.unsubscribe());
   }
 
   ngOnInit() {
     // Naviagte to the location/category everytime the url is updated
-    const urlID = this.route.snapshot.paramMap.get('id');
-    const selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'category' : 'location';
-    this.workspaceID = this.route.snapshot.paramMap.get('workspaceID');
-    this.typeForSelectionButtons = selectedSearch;
+    this.routeSub = this.route.paramMap.subscribe(route => {
+      const urlID = route.get('id');
+      const selectedSearch = route.get('selectedHierarchy') === 'categories' ? 'category' : 'location';
+      this.workspaceID = route.get('workspaceID');
+      this.typeForSelectionButtons = selectedSearch;
 
-    // Load root from cache if possible
-    
-    let cache = this.cacheService.get(urlID, selectedSearch);
-    if(cache){
-      window.scrollTo(0,0); 
-      this.root = cache as HierarchyItem;
-    }
+      if(urlID && (!this.root || this.root.ID !== urlID)){
+        // Load root from cache if possible
+        let cache = this.cacheService.get(urlID, selectedSearch);
+        if(cache){
+          window.scrollTo(0,0); 
+          this.root = cache as HierarchyItem;
+        }
+  
+        // Load the current level
+        this.updateSubscribedParent(urlID, selectedSearch);
+        this.determineCols();
+      }
+    })
 
-    // Load the current level
-    this.updateSubscribedParent(urlID, selectedSearch);
-
-    // ROUTER IS UNTRUSTWORTHY - internal changes can make the router think it doesn't need to update anything
-    // this.route.paramMap.subscribe(params => {
-    //     const urlID = params.get('id');
-    //     this.selectedSearch = params.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
-    //     this.loadLevel(urlID, this.selectedSearch);
-    //   }
-    // );
-
-    this.determineCols();
     // Get role
     this.authService.getRole().subscribe(
       val => this.role = val
@@ -214,17 +213,19 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.searchService.loadBinData(this.workspaceID).then(resolved => {
       if(resolved){
-        let URLbinID = this.route.snapshot.queryParamMap.get('bin');
-        if(URLbinID){
-          let itemID = this.searchService.getItemIDFromBinID(URLbinID);
-          if(itemID && itemID !== 'no ID'){
-            this.router.navigate(['/w/' + this.workspaceID +  '/item/', itemID]);
-            this.snack.open("Routed from bin " + URLbinID, "OK", {duration: 4000});
+        this.paramQuerySub = this.route.queryParamMap.subscribe(queryMap => {
+          let URLbinID = queryMap.get('bin')
+          if(URLbinID){
+            let itemID = this.searchService.getItemIDFromBinID(URLbinID);
+            if(itemID && itemID !== 'no ID'){
+              this.router.navigate(['/w/' + this.workspaceID +  '/item/', itemID], {replaceUrl:true});
+              this.snack.open("Routed from bin " + URLbinID, "OK", {duration: 4000});
+            }
+            else {
+              this.snack.open("No item was found for " + URLbinID, "OK", {duration: 4000});
+            }
           }
-          else {
-            this.snack.open("No item was found for " + URLbinID, "OK", {duration: 4000});
-          }
-        }
+        })
       }
     });
   }
@@ -527,78 +528,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   toggleIco() {
     this.ico = this.ico === 'add' ? 'close' : 'add';
     this.miniFabState = this.ico === 'add' ? 'shrunk' : 'extended';
-  }
-
-  /**Adds an item to the current depth */
-  addItem() {
-    if (this.ico === 'close') {
-      this.toggleIco();
-    }
-    // add the item
-    let category = 'root';
-    let location = null;
-    let name = '';
-    // to category
-    if (this.root.type === 'category') {
-      category = this.root.ID;
-      let cat = this.root as Category;
-      if(cat.prefix){
-        name = cat.prefix;
-      }
-    } else { // add to locations
-      location = this.root.ID;
-    }
-
-    const dialogRef = this.dialog.open(ItemBuilderModalComponent, {
-      width: '480px',
-      data: {
-        workspaceID: this.workspaceID,
-        hierarchyObj: this.root
-      }
-    });
-
-    /*this.adminService.createItemAtLocation(name, '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
-      if(this.root.type === 'category'){
-        this.router.navigate(['/itemBuilder/' + id], { queryParams: { step: 0, returnTo: 'search/categories/' + this.root.ID + ':' + this.root.name} });
-      }
-      else {
-        this.router.navigate(['/itemBuilder/' + id], { queryParams: { step: 0, returnTo: 'search/locations/' + this.root.ID + ':' + this.root.name} });
-      }
-    });*/
-  }
-
-  /** Adds a hierarchy item to the current depth */
-  addHierarchy() {
-    if (this.ico === 'close') {
-      this.toggleIco();
-    }
-
-    if (this.root.type === 'category') {
-
-      let categoryData: Category =
-      {
-        name: 'NEW CATEGORY',
-        parent: this.root.ID,
-        children: [],
-        items: [],
-        titleFormat: [{type: "parent"}]
-      }
-
-      this.adminService.addCategory(this.workspaceID, categoryData, this.root.ID).subscribe(id => {
-        this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/categories/' + id]);
-      });
-    }
-    else {
-
-      this.adminService.addLocation(this.workspaceID, {
-        name: 'NEW LOCATION',
-        parent: this.root.ID,
-        children: [],
-        items: []
-      } as HierarchyItem, this.root.ID).subscribe(id => {
-        this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/locations/' + id]);
-      });
-    }
   }
 
   clearSearchBar(){

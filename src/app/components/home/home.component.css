@@ -42,7 +42,7 @@ p {
 
 .bin-form {
   font-size: 16px;
-  max-width: 90px;
+  max-width: 72px;
 }
 
 .quick-search {
@@ -60,8 +60,6 @@ p {
   position: relative;
   left: 10px;
 }
-
-
 
 /* Toggle */
 
@@ -135,14 +133,6 @@ mat-button-toggle-group {
   -webkit-box-align: end;
 }
 
-.qr-scanner-button {
-  position: fixed;
-  bottom: calc(8vmin + 64px);
-  right: 6vmin;
-  background-color: white;
-  color: gray;
-}
-
 .allContent {
   padding: 0 8px;
   max-width: 1200px;
@@ -186,13 +176,28 @@ mat-card-content {
   padding: calc(5% - 0.1rem) calc(0.2rem + 6%) ;
 }
 
-.extended-fab-button {
-  align-items: flex-end;
-  position: relative;
+.qr-scanner-button {
+  position: fixed;
+  bottom: 8vmin;
+  right: calc(50vw - 150px);
+  background-color: white;
+  color: rgb(100, 100, 100);
   padding: 0 0.8rem;
   border-radius: 10rem;
-  pointer-events: none;
+  letter-spacing: .08em;
+  width: 300px;
+  font-weight: 500;
+}
+
+.qr-icon {
+  padding-right: 4px;
+}
+
+.add-fabs {
   visibility: hidden;
+  align-items: flex-end;
+  position: relative;
+  pointer-events: none;
 }
 
 .extended-fab-button__text {

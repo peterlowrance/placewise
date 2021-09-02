@@ -56,8 +56,8 @@ export class QRCodeLocationDialogComponent implements OnInit {
   }
 
   setupBinQR(){
-    this.urlToString = 'https://placebin.online/w/' + this.data.workspaceID.replace(' ', '%20') + '/s/l/' 
-    + this.data.location.ID + '?bin=' + this.data.location.shelfID + '-' + this.binID;
+    this.urlToString = '/b/' + this.data.location.shelfID + '-' + this.binID; //'https://placebin.online/w/' + this.data.workspaceID.replace(' ', '%20') + '/s/l/' 
+    //+ this.data.location.ID + '?bin=' + this.data.location.shelfID + '-' + this.binID;
   }
 
   setupLocationQR(){

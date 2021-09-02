@@ -1,3 +1,20 @@
 
-<zxing-scanner [(device)]="device" (scanComplete)="errorPrint($event)" (camerasFound)="loadCameras($event)"></zxing-scanner>
-<button *ngIf="devices.length > 1" class="big-button report-button structure-color-dark" mat-raised-button (click)="changeCamera()"> Change Camera </button>
+<div *ngIf="devices && devices.length < 1">
+    This device does not have cameras.
+</div>
+
+<!-- For Debugging div *ngIf="manualPrint">
+    {{ manualPrint }}
+</div-->
+
+<zxing-scanner [device]="device" (autostarting)="setDefaultCamera()" (scanComplete)="errorPrint($event)" (camerasFound)="loadCameras($event)" (camerasNotFound)="loadCameras([])"></zxing-scanner>
+<button *ngIf="devices && devices.length > 1" class="big-button report-button structure-color-dark" mat-raised-button (click)="changeCamera()"> Change Camera </button>
+
+<br>
+<br>
+
+<!-- Buttons -->
+<div class="action-buttons">
+    <!-- Cancel button is always here -->
+    <button mat-raised-button class="rect-action-button" (click)="cancel()">Cancel</button>
+</div>

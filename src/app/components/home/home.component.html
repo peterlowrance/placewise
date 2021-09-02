@@ -112,21 +112,21 @@
   <br>
   <br>
 
-  <!-- add homescreen fab for admins here -->
+  <!-- add homescreen fab for admins here >
   <smd-fab-speed-dial *ngIf="this.role === 'Admin'" class="fab" [direction]="direction" [animationMode]="animation">
     <smd-fab-trigger [spin]="spin">
       <button mat-fab matTooltip="Add to this hierarchy level" class="structure-color-dark" (click)="toggleIco()"><mat-icon>{{ico}}</mat-icon></button>
     </smd-fab-trigger>
     <smd-fab-actions>
-      <button mat-mini-fab class="extended-fab-button structure-color-dark" [@button-extention-item]="miniFabState" matTooltip="Add item" (click)="addItem()">
+      <button mat-mini-fab class="extended-fab-button add-fabs structure-color-dark" [@button-extention-item]="miniFabState" matTooltip="Add item" (click)="addItem()">
         <span class="extended-fab-button__text">Item</span>
       </button>
-      <button mat-mini-fab class="extended-fab-button structure-color-dark" [@button-extention-hierarchy]="miniFabState" matTooltip="Add item" (click)="addHierarchy()">
+      <button mat-mini-fab class="extended-fab-button add-fabs structure-color-dark" [@button-extention-hierarchy]="miniFabState" matTooltip="Add item" (click)="addHierarchy()">
         <span class="extended-fab-button__text">{{typeForSelectionButtons === 'category' ? 'Category' : 'Location'}}</span>
       </button>
-      <!-- <button mat-mini-fab matTooltip="Add hierarchy level" color="primary" (click)="addHierarchy()"><mat-icon>account_tree</mat-icon></button> -->
+      <!-- <button mat-mini-fab matTooltip="Add hierarchy level" color="primary" (click)="addHierarchy()"><mat-icon>account_tree</mat-icon></button> >
     </smd-fab-actions>
-  </smd-fab-speed-dial>
+  </smd-fab-speed-dial -->
 
-  <button mat-fab class="qr-scanner-button" (click)="openQRScanner()"><mat-icon>qr_code_2</mat-icon></button>
+  <button mat-fab class="extended-fab-button qr-scanner-button" (click)="openQRScanner()"><mat-icon class="qr-icon">qr_code_2</mat-icon> SCAN </button>
 </div>
