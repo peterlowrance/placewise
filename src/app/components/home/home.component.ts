@@ -75,7 +75,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   originalAttributeValues: string[]; // For resetting after searching
   currentAttribute: AttributeValue; // For the current attribute that that values are being searched for
   filteredAttributes: AttributeValue[]; // Attributes that are being actively filtered.
-  typeForSelectionButtons: string;
 
   parentSub: Subscription;
   returnSub: Subscription;
@@ -150,7 +149,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       const urlID = route.get('id');
       const selectedSearch = route.get('selectedHierarchy') === 'categories' ? 'category' : 'location';
       this.workspaceID = route.get('workspaceID');
-      this.typeForSelectionButtons = selectedSearch;
 
       if(urlID && (!this.root || this.root.ID !== urlID)){
         // Load root from cache if possible
@@ -175,7 +173,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.parentSub = this.navService.getParent().subscribe(val => {
       if(val){
         this.root = val;
-        this.typeForSelectionButtons = this.root.type;
 
         // Clear or update the quick search (kinda messy)
         if(this.binSearchItem && this.binSearchItem.locations.indexOf(this.root.ID) > -1){
@@ -509,13 +506,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.control.setValue('');
     window.history.pushState(null, null, '/w/' + this.workspaceID + '/search/' + (hierItem.type === 'category' ? 'categories' : 'locations') + '/' + hierItem.ID);
     this.updateSubscribedParent(hierItem.ID, hierItem.type);
-  }
-
-  toggleHierarchy(event) {
-    this.control.setValue('');
-    this.searchTextChange('');
-    window.history.pushState(null, null, '/w/' + this.workspaceID + '/search/' + event.value.toLowerCase() + '/root');
-    this.updateSubscribedParent('root', this.root? (this.root.type === 'category' ? 'location' : 'category') : 'location');
   }
 
   resetAttributeData(){

@@ -38,6 +38,7 @@ export class NavbarComponent implements OnInit {
     items: [],
     imageUrl: ''
   };
+  typeForHierarchyToggleButtons: string;
 
   /**The user's role */
   role: string = '';
@@ -50,9 +51,7 @@ export class NavbarComponent implements OnInit {
   
   @HostListener('window:popstate', ['$event'])
   onPopState(event) {
-    let url: string  = event.target.location.pathname;
-    console.log("OH NO: " + url);
-    
+    let url: string  = event.target.location.pathname;    
   }
 
   constructor(
@@ -107,10 +106,15 @@ export class NavbarComponent implements OnInit {
         }
 
         if(this.locationString.includes('/search/')){ // Catch back button in the searching, router does not pickup on the changes
+          
+          
           let splitURL = this.locationString.split('/');
           console.log(splitURL);
 
           if(splitURL[4] === 'categories'){
+            // Setup toggle button
+            this.typeForHierarchyToggleButtons = 'categories';
+
             // Remove any parameters at the end of the URL
             let catID = splitURL[5].replace('%20', ' ');
             let foundParamsIndex = catID.indexOf('?');
@@ -127,6 +131,9 @@ export class NavbarComponent implements OnInit {
           }
 
           else if (splitURL[4] === 'locations'){
+            // Setup toggle button
+            this.typeForHierarchyToggleButtons = 'locations';
+
             // Remove any parameters at the end of the URL
             let locID = splitURL[5].replace('%20', ' ');
             let foundParamsIndex = locID.indexOf('?');
@@ -156,10 +163,14 @@ export class NavbarComponent implements OnInit {
   }
 
   ngOnInit() {
+    /*
+    this.typeForSelectionButtons = this.activatedRoute.snapshot.paramMap.get('selectedHierarchy');
+
     this.activatedRoute.paramMap.subscribe(route => {
-      console.log("N A V B A R: " + this.workspaceID);
       this.workspaceID = route.get('workspaceID');
+      console.log(this.workspaceID);
     })
+    */
 
     this.authService.getRole().subscribe(val =>  this.role = val);
   }
@@ -342,6 +353,10 @@ export class NavbarComponent implements OnInit {
         this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/locations/' + id]);
       });
     }
+  }
+
+  toggleHierarchy(event) {
+    this.router.navigate(['/w/' + this.workspaceID + '/search/' + event.value.toLowerCase() + '/root']);
   }
 
 }

@@ -49,7 +49,11 @@
     </mat-toolbar-row>
     <mat-toolbar-row class="structure-color-light" *ngIf="checkLocation() === '/' && parent">
         <!-- <button mat-flat-button color="accent" (click)="goToModify()">{{parent.name}}</button> -->
-        <span class="nav-text" (click)="route('modify')">{{parent.name}}</span>
+        <span *ngIf="parent.ID !== 'root'" class="nav-text" (click)="route('modify')">{{parent.name}}</span>
+        <mat-button-toggle-group *ngIf="parent.ID === 'root'" class="hierarchySelector" [(value)]="typeForHierarchyToggleButtons" name="hierarchySelector" (change)="toggleHierarchy($event)">
+            <mat-button-toggle class="toggle-button" value="categories" >Categories</mat-button-toggle>
+            <mat-button-toggle class="toggle-button" value="locations">Locations</mat-button-toggle>
+        </mat-button-toggle-group>
         <span class="spacer"></span>
 
         <button mat-icon-button *ngIf="this.role === 'Admin'" [matMenuTriggerFor]="addMenu"><mat-icon>add</mat-icon></button>

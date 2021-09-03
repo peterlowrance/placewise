@@ -28,11 +28,6 @@
   
       <!--button mat-raised-button class="quick-search-button action-color-light"> GO </button-->
     </div>
-
-    <mat-button-toggle-group class="hierarchySelector" *ngIf="(!root || root?.ID === 'root')" [(value)]="typeForSelectionButtons" name="hierarchySelector" (change)="toggleHierarchy($event)">
-      <mat-button-toggle value="category" >Category</mat-button-toggle>
-      <mat-button-toggle value="location">Location</mat-button-toggle>
-    </mat-button-toggle-group>
     <!--div class ="tool-spacer"></div-->
     
 
@@ -83,7 +78,7 @@
   
     <!--Hierarchy Items-->
     <div *ngIf="hierarchyItems && hierarchyItems.length > 0 && !filteredAttributes" (window:resize)="onResize($event)">
-      <div class="header">{{typeForSelectionButtons === 'category' ? 'Categories' : 'Locations'}}</div>
+      <div class="header">{{root.type === 'category' ? 'Categories' : 'Locations'}}</div>
       <app-hierarchy-item-grid [hierarchyItemList]="hierarchyItems" (clickedHierarchy)="goToHierarchy($event)"></app-hierarchy-item-grid>
       <br>
     </div>
