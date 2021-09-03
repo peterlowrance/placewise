@@ -4,8 +4,8 @@ import { of } from 'rxjs';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Item } from '../models/Item';
-import { ItemTrackingInfo } from '../models/ItemTrackingInfo';
 import { ItemTrackingPacket } from '../models/ItemTrackingPacket';
+import { ItemTrackingTransfer } from '../models/ItemTrackingTransfer';
 
 @Injectable({
   providedIn: 'root'
@@ -34,7 +34,7 @@ export class TrackingService {
     }));
   }
 
-  updateTracking(workspaceID: string, info: ItemTrackingInfo, item: Item): Promise<string> {
+  updateTracking(workspaceID: string, info: ItemTrackingTransfer, item: Item): Promise<string> {
     return new Promise<string>( async resolve => {
       if(item.trackingID){
         this.afs.doc<ItemTrackingPacket>('/Workspaces/' + workspaceID + '/ItemTracking/' + item.trackingID).get().subscribe(trackingPacket => {
@@ -42,13 +42,13 @@ export class TrackingService {
             let packetData = trackingPacket.data() as ItemTrackingPacket;
 
             // If the packet is full, split into two packets, the trailing one having 100 and the new one with 20
-            if(packetData.info.length >= 120){
+            if(packetData.data.length >= 120){
               
             }
 
             // Otherwise add the info to the beginning of the packet
             else {
-              packetData.info.unshift(info);
+              packetData.data.unshift(info);
             }
           }
         });

@@ -31,12 +31,6 @@ export class AdminMockService {
     return of(true);
   }
 
-  getReports(): Observable<SentReport[]> {
-    const trueItem: Item = {name: 'test', ID: '1', locations: [], category: 'cat'};
-    const report: SentReport = {item: 'I1', desc: 'an item', user: 'aP87kgghQ8mqvvwcZGQV', reportedTo: ['no'], ID: '1', trueItem, userName: 'Bobbo', timestamp: 0, location: '', type: 'custom'};
-    return of([report]);
-  }
-
   updateItem(item: Item): Observable<boolean> {
     return of(true);
   }

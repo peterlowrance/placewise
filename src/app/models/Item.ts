@@ -3,6 +3,7 @@ import { Attribute } from './Attribute';
 import { ItemTypeReportTimestamp } from './ItemTypeReportTimestamp';
 import { ItemReport } from './ItemReport';
 import { AttributeValue } from './Attribute';
+import { ItemTrackingArray } from './ItemTrackingPacket';
 
 export interface Item extends HierarchyObject {
   desc?: string;
@@ -33,6 +34,8 @@ export interface Item extends HierarchyObject {
       }
     }
   }
+
+  transferTracking?: ItemTrackingArray[];
 
   // These get added and removed as reports are resolved
   reports?: ItemReport[];

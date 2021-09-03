@@ -59,33 +59,6 @@ export const LOCATIONS: HierarchyItem[] = [
 ];
 
 export const ITEMS: Item[] = [
-    {
-        ID: '999',
-        name: 'Niner',
-        desc: 'A big ol boy',
-        tags: ['Round','High'],
-        locations: ['110'],
-        category: '554',
-        imageUrl: 'crouton.png'
-    },
-    {
-        ID: '998',
-        name: 'An 8',
-        desc: 'Had to be different?',
-        tags: ['Hated'],
-        locations: ['110','200'],
-        category: '553',
-        imageUrl: 'crouton.png'
-    },
-    {
-        ID: '997',
-        name: 'Smaller',
-        desc: 'Oh wee bab',
-        tags: [],
-        locations: ['111','210'],
-        category: '554',
-        imageUrl: 'crouton.png'
-    }
 ]
 
 export const CATEGORIES: HierarchyItem[] = [
