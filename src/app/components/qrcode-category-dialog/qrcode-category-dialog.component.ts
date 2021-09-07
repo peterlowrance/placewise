@@ -17,7 +17,24 @@ export class QRCodeCategoryDialogComponent implements OnInit {
   urlToString = '';
 
   ngOnInit(): void {
+    this.setupCategoryQR();
+  }
+
+  setupCategoryQR(){
+    this.urlToString = '/c/' + this.data.category.ID;
+  }
+
+  setupUniversalCategoryQR(){
     this.urlToString = 'https://placebin.online/w/' + this.data.workspaceID.replace(' ', '%20') + '/s/c/' + this.data.category.ID;
+  }
+
+  toggleUniversalQR(event){
+    if(event.checked){ // If we are using universal QR
+      this.setupUniversalCategoryQR();
+    }
+    else {
+      this.setupCategoryQR();
+    }
   }
 
   cancel(){

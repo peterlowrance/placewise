@@ -1,5 +1,12 @@
 
-<qrcode [qrdata]="urlToString" [width]="256" [errorCorrectionLevel]="'Q'"></qrcode>
+<div class="QR-code-holder">
+    <qrcode [qrdata]="urlToString" [width]="256" [errorCorrectionLevel]="'Q'"></qrcode>
+</div>
+
+<mat-slide-toggle [(ngModel)]="isUniversalQR" (change)="toggleUniversalQR($event)"> Use Universal QR </mat-slide-toggle>
+<div><small class="light-text">
+    The universal QR works with any camera app or workspace, but needs to be bigger to be scanned properly.
+</small></div>
 
 <!-- Buttons -->
 <div class="action-buttons">
