@@ -18,6 +18,8 @@ export class QRCodeItemDialogComponent implements OnInit {
   urlToString = '';
   step = 'version';
   version = '';
+  isUniversalQR = false;
+  isBin: boolean;
 
   ngOnInit(): void {
   }
@@ -37,11 +39,13 @@ export class QRCodeItemDialogComponent implements OnInit {
           this.step = 'where';
         }
         else {
+          this.isBin = true;
           this.setupBinQR(this.data.item.locationMetadata[this.data.locations[0].ID].binID);
           this.step = 'QR';
         }
       }
       else {
+        this.isBin = false;
         this.setupItemQR();
         this.step = 'QR';
       }
@@ -49,12 +53,39 @@ export class QRCodeItemDialogComponent implements OnInit {
   }
 
   setupBinQR(binID){
+    this.urlToString = '/b/' + binID;
+  }
+
+  setupItemQR(){
+    this.urlToString = '/i/' + this.data.item.ID;
+  }
+
+  setupUniversalBinQR(binID){
     this.urlToString = 'https://placebin.online/w/' + this.data.workspaceID.replace(' ', '%20') + '/s/l/' 
     + this.data.locations[0].ID + '?bin=' + binID;
   }
 
-  setupItemQR(){
+  setupUniversalItemQR(){
     this.urlToString = 'https://placebin.online/w/' + this.data.workspaceID.replace(' ', '%20') + '/i/' + this.data.item.ID;
+  }
+
+  toggleUniversalQR(event){
+    if(event.checked){ // If we are using universal QR
+      if(this.isBin){
+        this.setupUniversalBinQR(this.data.item.locationMetadata[this.data.locations[0].ID].binID);
+      }
+      else {
+        this.setupUniversalItemQR();
+      }
+    }
+    else {
+      if(this.isBin){
+        this.setupBinQR(this.data.item.locationMetadata[this.data.locations[0].ID].binID);
+      }
+      else {
+        this.setupItemQR();
+      }
+    }
   }
 
   cancel(){

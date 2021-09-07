@@ -7,12 +7,12 @@
             This will always link to this specific location, no matter where it is moved or how it gets modified. 
         </small></div>
         <br>
-        <mat-radio-button [disabled]="data.location.shelfID === '000'" value="bin"> Link to Bin </mat-radio-button>
-        <div *ngIf="data.location.shelfID  === '000'" class="light-text"><small> 
+        <mat-radio-button [disabled]="!validShelfID" value="bin"> Link to Bin </mat-radio-button>
+        <div *ngIf="!validShelfID" class="light-text"><small> 
             This location needs a shelf ID to have a bin ID linked here.
         </small></div>
-        <div *ngIf="data.location.shelfID  !== '000'"><small> 
-            Input a bin number, which will link to an item if it has the bin number, otherwise it will link to this location.
+        <div *ngIf="validShelfID"><small> 
+            Input a bin number, which will link to an item if it has the bin number, otherwise it will link to this location. This can also be very small.
         </small></div>
     </mat-radio-group>
 </div>
@@ -34,7 +34,14 @@
 </div>
 
 <div *ngIf="step === 'QR'">
-    <qrcode [qrdata]="urlToString" [width]="256" [errorCorrectionLevel]="'Q'"></qrcode>
+    <div class="QR-code-holder">
+        <qrcode [qrdata]="urlToString" [width]="250" [errorCorrectionLevel]="'Q'"></qrcode>
+    </div>    
+
+    <mat-slide-toggle [(ngModel)]="isUniversalQR" (change)="toggleUniversalQR($event)"> Use Universal QR </mat-slide-toggle>
+    <div><small class="light-text">
+        The universal QR works with any camera app or workspace, but needs to be bigger to be scanned properly.
+    </small></div>
 </div>
 
 <br>

@@ -545,14 +545,14 @@ export class HierarchyItemComponent implements OnInit {
       if (this.isCategory) {
         this.adminService.removeCategory(this.workspaceID, this.hierarchyItem).then(() => {
           this.snack.open('Category Successfully Deleted', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
-          this.router.navigate(['/w/' + this.workspaceID + 'search/categories/' + this.hierarchyItem.parent]);
+          this.router.navigate(['/w/' + this.workspaceID + '/search/categories/' + this.hierarchyItem.parent]);
         }).catch(err => {
           this.snack.open('Category Deletion Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
         });
       } else {
         this.adminService.removeLocation(this.workspaceID, this.hierarchyItem).then(() => {
           this.snack.open('Location Successfully Deleted', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
-          this.router.navigate(['/w/' + this.workspaceID + 'search/locations/' + this.hierarchyItem.parent]);
+          this.router.navigate(['/w/' + this.workspaceID + '/search/locations/' + this.hierarchyItem.parent]);
         }).catch(err => {
           this.snack.open('Location Deletion Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
         });

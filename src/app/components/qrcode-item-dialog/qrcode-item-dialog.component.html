@@ -8,13 +8,20 @@
         <br>
         <mat-radio-button value="bin"> Link to Bin </mat-radio-button>
         <div><small> 
-            This will link to the bin number, so if a different item gets placed in the bin, this will link to that item instead. 
+            This will link to the bin number, so if a different item gets placed in the bin, this will link to that item instead. This can also be very small.
         </small></div>
     </mat-radio-group>
 </div>
 
 <div *ngIf="step === 'QR'">
-    <qrcode [qrdata]="urlToString" [width]="256" [errorCorrectionLevel]="'Q'"></qrcode>
+    <div class="QR-code-holder">
+        <qrcode [qrdata]="urlToString" [width]="250" [errorCorrectionLevel]="'Q'"></qrcode>
+    </div>
+    
+    <mat-slide-toggle [(ngModel)]="isUniversalQR" (change)="toggleUniversalQR($event)"> Use Universal QR </mat-slide-toggle>
+    <div><small class="light-text">
+        The universal QR works with any camera app or workspace, but needs to be bigger to be scanned properly.
+    </small></div>
 </div>
 
 <br>
