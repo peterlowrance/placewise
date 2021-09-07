@@ -18,11 +18,16 @@ export class QRCodeLocationDialogComponent implements OnInit {
   urlToString = '';
   step = 'version';
   version = '';
+  validShelfID: boolean;
   validBinID: boolean = false;
   binID: string;
+  isUniversalQR = false;
+  isBin: boolean;
 
   ngOnInit(): void {
-    console.log(this.data.location.shelfID);
+    if(this.data.location.shelfID) {
+      this.validShelfID = true;
+    }
   }
 
   isReadyForNextStep(): boolean {
@@ -39,28 +44,43 @@ export class QRCodeLocationDialogComponent implements OnInit {
   nextStep(){
     if(this.step === 'version'){
       if(this.version === 'bin'){
+        this.isBin = true;
         this.step = 'bin';
         return;
       }
       else {
+        this.isBin = false;
         this.setupLocationQR();
         this.step = 'QR';
         return;
       }
     }
+
     if(this.step === 'bin'){
       this.setupBinQR();
       this.step = 'QR';
       return;
     }
+
+    if(this.step === 'QR'){
+      this.finish();
+    }
   }
 
   setupBinQR(){
+    this.urlToString = '/b/' + this.data.location.shelfID + '-' + this.binID;
+  }
+
+  setupLocationQR(){
+    this.urlToString = '/l/' + this.data.location.ID;
+  }
+
+  setupUniversalBinQR(){
     this.urlToString = 'https://placebin.online/w/' + this.data.workspaceID.replace(' ', '%20') + '/s/l/' 
     + this.data.location.ID + '?bin=' + this.data.location.shelfID + '-' + this.binID;
   }
 
-  setupLocationQR(){
+  setupUniversalLocationQR(){
     this.urlToString = 'https://placebin.online/w/' + this.data.workspaceID.replace(' ', '%20') + '/s/l/' + this.data.location.ID;
   }
 
@@ -79,8 +99,31 @@ export class QRCodeLocationDialogComponent implements OnInit {
     }
   }
 
+  toggleUniversalQR(event){
+    if(event.checked){ // If we are using universal QR
+      if(this.isBin){
+        this.setupUniversalBinQR();
+      }
+      else {
+        this.setupUniversalLocationQR();
+      }
+    }
+    else {
+      if(this.isBin){
+        this.setupBinQR();
+      }
+      else {
+        this.setupLocationQR();
+      }
+    }
+  }
+
   cancel(){
     this.dialogRef.close({wasValid: false});
+  }
+
+  finish(){
+    this.dialogRef.close({wasValid: true});
   }
   
   back(){
