@@ -162,7 +162,7 @@
         </h1>
         <div *ngIf="item.desc" class="item-description">{{item.desc}}</div>
 
-        <button class="big-button report-button action-color" mat-raised-button [class.mat-elevation-z3]="true">
+        <button class="big-button report-button action-color" mat-raised-button (click)="transferStock()" [class.mat-elevation-z3]="true">
             <mat-icon>arrow_circle_right</mat-icon> 
             Transfer Stock
         </button>

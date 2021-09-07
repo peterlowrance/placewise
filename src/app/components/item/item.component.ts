@@ -30,6 +30,7 @@ import { stringify } from '@angular/compiler/src/util';
 import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
 import { QRCodeItemDialogComponent } from '../qrcode-item-dialog/qrcode-item-dialog.component';
 import { NgxMasonryComponent } from 'ngx-masonry';
+import { TransferStockDialogComponent } from '../transfer-stock-dialog/transfer-stock-dialog.component';
 
 
 interface TreeNode {
@@ -672,6 +673,16 @@ export class ItemComponent implements OnInit, OnDestroy {
       return 0;
     })
     return cards;
+  }
+
+  transferStock(){
+    this.dialog.open(TransferStockDialogComponent, {
+      width: '480px',
+      data: {
+        workspaceID: this.workspaceID,
+        item: this.item
+      }
+    });
   }
 
   /**

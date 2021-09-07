@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MoveStockDialogComponent } from './move-stock-dialog.component';
+import { MoveStockDialogComponent } from './transfer-stock-dialog.component';
 
 describe('MoveStockDialogComponent', () => {
   let component: MoveStockDialogComponent;

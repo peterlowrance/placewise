@@ -80,7 +80,7 @@ import { QRCodeItemDialogComponent } from './components/qrcode-item-dialog/qrcod
 import { QRCodeModule } from 'angularx-qrcode';
 import { QRCodeLocationDialogComponent } from './components/qrcode-location-dialog/qrcode-location-dialog.component';
 import { QRCodeCategoryDialogComponent } from './components/qrcode-category-dialog/qrcode-category-dialog.component';
-import { MoveStockDialogComponent } from './components/move-stock-dialog/move-stock-dialog.component';
+import { TransferStockDialogComponent } from './components/transfer-stock-dialog/transfer-stock-dialog.component';
 import { NgxMasonryModule } from 'ngx-masonry';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { QRScannerDialogComponent } from './components/qrscanner-dialog/qrscanner-dialog.component';
@@ -125,7 +125,7 @@ import { QRScannerDialogComponent } from './components/qrscanner-dialog/qrscanne
     QRCodeItemDialogComponent,
     QRCodeLocationDialogComponent,
     QRCodeCategoryDialogComponent,
-    MoveStockDialogComponent,
+    TransferStockDialogComponent,
     QRScannerDialogComponent,
   ],
   imports: [
