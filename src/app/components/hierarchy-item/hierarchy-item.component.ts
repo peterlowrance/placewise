@@ -575,7 +575,7 @@ export class HierarchyItemComponent implements OnInit {
   updateShelfID(){
     let previousShelfID = (this.hierarchyItem as HierarchyLocation).shelfID;
     (this.hierarchyItem as HierarchyLocation).shelfID = this.searchService.convertNumberToThreeDigitString(this.shelfID);
-    this.adminService.setShelfID(this.hierarchyItem.ID, (this.hierarchyItem as HierarchyLocation).shelfID, previousShelfID).subscribe(result => {
+    this.adminService.setShelfID(this.workspaceID, this.hierarchyItem.ID, (this.hierarchyItem as HierarchyLocation).shelfID, previousShelfID).subscribe(result => {
       if(result === 'valid' || result.startsWith("Zero")){
         this.usedID = null;
         this.update();

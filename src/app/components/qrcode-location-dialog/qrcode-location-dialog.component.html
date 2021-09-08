@@ -35,7 +35,12 @@
 
 <div *ngIf="step === 'QR'">
     <div class="QR-code-holder">
-        <qrcode [qrdata]="urlToString" [width]="250" [errorCorrectionLevel]="'Q'"></qrcode>
+        <qrcode *ngIf="!isBin || isUniversalQR" [qrdata]="urlToString" [width]="250" [errorCorrectionLevel]="'Q'"></qrcode>
+
+        <!-- This is because the type 1 is harder to scan, so adding extra error correction 
+            (which is already good for a bin label that will get more guffed over time) 
+            forces verion 2 to be used, which has that extra square for detection -->
+        <qrcode *ngIf="isBin && !isUniversalQR" [qrdata]="urlToString" [width]="250" [errorCorrectionLevel]="'H'"></qrcode>
     </div>    
 
     <mat-slide-toggle [(ngModel)]="isUniversalQR" (change)="toggleUniversalQR($event)"> Use Universal QR </mat-slide-toggle>

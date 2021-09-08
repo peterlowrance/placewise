@@ -113,7 +113,6 @@ export class ItemComponent implements OnInit, OnDestroy {
   @ViewChild('name') nameField: ElementRef;
   @ViewChild('desc') descField: ElementRef;
   @ViewChild('tags') tagsField: ElementRef;
-  @ViewChild(NgxMasonryComponent) masonry: NgxMasonryComponent;
 
   loaded: boolean = false;  // To tell if the item doesn't exist or just hasn't loaded
   workspaceID: string;
@@ -224,9 +223,6 @@ export class ItemComponent implements OnInit, OnDestroy {
         this.locationsSub = 
         */
       }
-
-      this.masonry.reloadItems();
-      this.masonry.layout();
 
     });
 
