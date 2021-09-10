@@ -20,6 +20,14 @@ mat-toolbar {
   padding: 0 18px;
 }
 
+.hierarchy-name {
+  cursor: pointer;
+  padding: 4px 16px;
+  border-radius: 16px;
+  margin-right: 8px;
+  border: 1px solid rgba(0,0,0, 0.07);
+}
+
 /* Toggle */
 
 mat-button-toggle {
