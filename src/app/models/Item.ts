@@ -31,6 +31,7 @@ export interface Item extends HierarchyObject {
       trackingData?: {
         type: string;
         amount: any;
+        updated: number;
       }
     }
   }

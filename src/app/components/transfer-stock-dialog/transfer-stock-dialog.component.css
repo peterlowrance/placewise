@@ -1,0 +1,12 @@
+
+mat-radio-button {
+    display: block;
+    margin: 16px 8px;
+}
+
+.qty-on-hand {
+    background-color: #ccc;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 4px;
+}

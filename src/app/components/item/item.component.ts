@@ -31,6 +31,7 @@ import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-mo
 import { QRCodeItemDialogComponent } from '../qrcode-item-dialog/qrcode-item-dialog.component';
 import { NgxMasonryComponent } from 'ngx-masonry';
 import { TransferStockDialogComponent } from '../transfer-stock-dialog/transfer-stock-dialog.component';
+import { timeStamp } from 'console';
 
 
 interface TreeNode {
@@ -393,7 +394,12 @@ export class ItemComponent implements OnInit, OnDestroy {
           */
         }
         else {
-          this.item.locationMetadata[locationID].trackingData = {type: 'number,0', amount: 0};
+          if(this.item.locationMetadata){
+            this.item.locationMetadata[locationID].trackingData = {type: 'number,0', amount: 0, updated: Date.now()};
+          }
+          else {
+            this.item.locationMetadata = {[locationID]: {trackingData: {type: 'number,0', amount: 0, updated: Date.now()}}};
+          }
           // Update the ItemLocation data here?
         }
       }
@@ -450,6 +456,7 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
     else {
       this.item.locationMetadata[locationID].trackingData.amount = value;
+      this.item.locationMetadata[locationID].trackingData.updated = Date.now();
 
       this.updateUITrackingData(locationID, value)
       this.checkDirty();
@@ -676,7 +683,8 @@ export class ItemComponent implements OnInit, OnDestroy {
       width: '480px',
       data: {
         workspaceID: this.workspaceID,
-        item: this.item
+        item: this.item,
+        locations: this.itemLocations.map(itemLocation => itemLocation.location)
       }
     });
   }
