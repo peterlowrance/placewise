@@ -219,7 +219,7 @@ export class SearchService implements SearchInterfaceService {
   getItem(workspaceID: string, id: string): Observable<Item> {
     return this.afs.doc<Item>('/Workspaces/' + workspaceID + '/Items/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as Item;
-      console.log(data);
+      //console.log(data);
       if (!data) {
         return;
       }
@@ -257,7 +257,7 @@ export class SearchService implements SearchInterfaceService {
     return this.afs.doc<Category>('/Workspaces/' + workspaceID + '/Category/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as Category;
       if(data){
-        console.log(data);
+        //console.log(data);
         data.ID = a.payload.id;
         if (data.imageUrl == null) {
           data.imageUrl = '../../../assets/notFound.png';
@@ -527,7 +527,7 @@ export class SearchService implements SearchInterfaceService {
   getWorkspaceInfo(id: string): Observable<WorkspaceInfo> {
     return this.afs.doc<WorkspaceInfo>(`Workspaces/${id}`).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as WorkspaceInfo;
-      console.log(data);
+      //console.log(data);
       if (!data) {
         return;
       }

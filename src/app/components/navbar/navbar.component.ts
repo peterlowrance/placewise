@@ -109,7 +109,6 @@ export class NavbarComponent implements OnInit {
           
           
           let splitURL = this.locationString.split('/');
-          console.log(splitURL);
 
           if(splitURL[4] === 'categories'){
             // Setup toggle button
@@ -123,7 +122,6 @@ export class NavbarComponent implements OnInit {
             }
 
             let sub = this.searchService.getCategory(this.workspaceID, catID).subscribe(cat => { // %20 replace for the conversion from the URL's spaces to string spaces
-              console.log(cat);
               this.navService.setSearchType('Categories');
               this.navService.setParent(cat)
               sub.unsubscribe();
@@ -139,11 +137,9 @@ export class NavbarComponent implements OnInit {
             let foundParamsIndex = locID.indexOf('?');
             if(foundParamsIndex > -1){
               locID = locID.substring(0, foundParamsIndex);
-              console.log(locID);
             }
 
             let sub = this.searchService.getLocation(this.workspaceID, locID).subscribe(loc => {
-              console.log(loc);
               this.navService.setSearchType('Locations');
               this.navService.setParent(loc)
               sub.unsubscribe();

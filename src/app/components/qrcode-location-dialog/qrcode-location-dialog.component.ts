@@ -85,7 +85,6 @@ export class QRCodeLocationDialogComponent implements OnInit {
   }
 
   submitBinID(binInput){
-    console.log(binInput.value);
     if(binInput.value.length !== 3){
       this.validBinID = false;
 

@@ -47,7 +47,6 @@ export class NavService {
   setSubscribedParent(newParent: Observable<HierarchyItem>){
     if(this.subscribedParent) this.subscribedParent.unsubscribe();
     this.subscribedParent = newParent.subscribe(updatedParent => {
-      console.log(updatedParent);
       this.parent.next(updatedParent);
     })
   }

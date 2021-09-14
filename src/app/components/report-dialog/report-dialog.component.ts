@@ -82,7 +82,6 @@ export class ReportDialogComponent implements OnInit {
     this.locationData = this.countRecentReports(this.data.locations, this.data.item.reports, this.timestamp);
     this.canReport = this.isAbleToReport(this.locationData);
 
-    console.log(this.data.item);
     this.reportService.getReportsAvailableHere(this.workspaceID, this.data.item).then(result => {
       this.reportTypes = result;
 
@@ -352,7 +351,7 @@ export class ReportDialogComponent implements OnInit {
           }
         }
 
-        console.log(this.selectedAdmins);
+        //console.log(this.selectedAdmins);
 
         this.sendReport();
       }
