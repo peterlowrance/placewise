@@ -63,11 +63,11 @@ export class QRScannerDialogComponent implements OnInit {
       this.dialogRef.close({wasValid: true});
     }
     else if(text.startsWith('/l/')){
-      this.router.navigate(['/w/' + this.data.workspaceID + '/locations/' + text.substring(3)]);
+      this.router.navigate(['/w/' + this.data.workspaceID + '/search/locations/' + text.substring(3)]);
       this.dialogRef.close({wasValid: true});
     }
     else if(text.startsWith('/c/')){
-      this.router.navigate(['/w/' + this.data.workspaceID + '/category/' + text.substring(3)]);
+      this.router.navigate(['/w/' + this.data.workspaceID + '/search/category/' + text.substring(3)]);
       this.dialogRef.close({wasValid: true});
     }
     else if(text.startsWith('/b/')){

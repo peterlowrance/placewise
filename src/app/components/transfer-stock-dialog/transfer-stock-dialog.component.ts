@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { time } from 'console';
 import { Item } from 'src/app/models/Item';
 import { HierarchyLocation } from 'src/app/models/Location';
@@ -12,10 +12,11 @@ import { HierarchyLocation } from 'src/app/models/Location';
 export class TransferStockDialogComponent implements OnInit {
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: {workspaceID: string, item: Item, locations: HierarchyLocation}
+    @Inject(MAT_DIALOG_DATA) public data: {workspaceID: string, item: Item, locations: HierarchyLocation},
+    public dialogRef: MatDialogRef<TransferStockDialogComponent>
   ) { }
 
-  step: string = 'from';
+  step: string = 'not used yet';
   from: string;
 
   ngOnInit(): void {
@@ -68,6 +69,10 @@ export class TransferStockDialogComponent implements OnInit {
     else if(this.step === 'from-other'){
       this.step = 'amount';
     }
+  }
+
+  cancel(){
+    this.dialogRef.close({wasValid: false});
   }
 
 }

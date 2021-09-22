@@ -43,6 +43,7 @@ export class ReportService {
 
 
   placeReport(itemID: string, text: string, reportedTo: string[], locationID: string, type: string, urgentTitle?: string) {
+    console.log(type);
     return new Promise((resolve, reject) => {
       this.auth.getAuth().subscribe(auth => {
         auth.getIdTokenResult().then(

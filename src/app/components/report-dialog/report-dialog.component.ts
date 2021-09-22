@@ -420,7 +420,7 @@ export class ReportDialogComponent implements OnInit {
     this.dialogRef.close({wasValid: true});
     this.snack.open("Sending Report...", '', {duration: 3000, panelClass: ['mat-toolbar']});
 
-    this.reportService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type, this.reportTemplate.urgentReportSubject).then(
+    this.reportService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type, this.reportTemplate ? this.reportTemplate.urgentReportSubject : null).then(
       () => this.snack.open("Report Sent!", "OK", {duration: 5000, panelClass: ['successful-report']}),
       (err) => {
         this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})

@@ -15,31 +15,29 @@ export class ReportDetailViewComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     public dialogRef: MatDialogRef<ReportDetailViewComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DetailedReportModalData
+    @Inject(MAT_DIALOG_DATA) public data: {workspaceID: string, reportData: DetailedReportModalData}
   ) { }
 
   location: string;
-  workspaceID: string;
 
   onSendClick(){
     //set invalid report
-    this.data.toBeRemoved=true;
+    this.data.reportData.toBeRemoved=true;
     this.dialogRef.close(this.data);
   }
 
   onCancelClick(){
     //set invalid report
-    this.data.toBeRemoved=false;
+    this.data.reportData.toBeRemoved=false;
     this.dialogRef.close(this.data);
   }
 
   goToItem() {
-    this.router.navigate(['/w/' + this.workspaceID + '/item/', this.data.itemID]);
+    this.router.navigate(['/w/' + this.data.workspaceID + '/item/', this.data.reportData.itemID]);
     this.dialogRef.close(this.data);
   }
 
   ngOnInit() {
-    this.workspaceID = this.route.snapshot.paramMap.get("workspaceID");
   }
 
 }

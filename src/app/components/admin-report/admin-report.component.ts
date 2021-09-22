@@ -169,12 +169,15 @@ export class AdminReportComponent implements OnInit {
         const dialogRef = this.dialog.open(ReportDetailViewComponent, {
           width: '28rem',
           data: {
-            itemName: reportData.itemName,
-            reportDesc: reportData.reportDesc,
-            reportID: reportData.reportID,
-            remove: reportData.toBeRemoved,
-            itemID: reportData.itemID, 
-            location: r.location
+            workspaceID: this.workspaceID,
+            reportData: {
+              itemName: reportData.itemName,
+              reportDesc: reportData.reportDesc,
+              reportID: reportData.reportID,
+              remove: reportData.toBeRemoved,
+              itemID: reportData.itemID, 
+              location: r.location
+            }
           }
         });
 

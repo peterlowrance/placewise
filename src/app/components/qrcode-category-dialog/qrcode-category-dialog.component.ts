@@ -15,6 +15,7 @@ export class QRCodeCategoryDialogComponent implements OnInit {
   ) { }
 
   urlToString = '';
+  isUniversalQR = false;
 
   ngOnInit(): void {
     this.setupCategoryQR();

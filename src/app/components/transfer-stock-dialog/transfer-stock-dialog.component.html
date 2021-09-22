@@ -19,17 +19,6 @@
         </mat-radio-button>
         <mat-radio-button value="other"> Other </mat-radio-button>
     </mat-radio-group>
-
-    <!-- Buttons -->
-    <div class="action-buttons">
-        <!-- Cancel button is always here -->
-        <button mat-raised-button class="rect-action-button" (click)="cancel()">Cancel</button>
-
-        <!-- Next or confirm button depending on if this is a single step-->
-        <button *ngIf="step !== 'name'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary"> Next </button>
-        <button *ngIf="step === 'name'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Finish</button>
-    </div>
-
 </div>
 
 <div *ngIf="step === 'from-other'">
@@ -38,4 +27,14 @@
 
 <div *ngIf="step === 'amount'">
     <h3> How many are coming from here? </h3>
+</div>
+
+<!-- Buttons -->
+<div class="action-buttons">
+    <!-- Cancel button is always here -->
+    <button mat-raised-button class="rect-action-button" (click)="cancel()">Cancel</button>
+
+    <!-- Next or confirm button depending on if this is a single step-->
+    <button *ngIf="step !== 'name'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary"> Next </button>
+    <button *ngIf="step === 'name'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Finish</button>
 </div>

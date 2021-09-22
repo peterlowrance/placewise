@@ -1,12 +1,12 @@
 <h1 mat-dialog-title>Report Details</h1>
 <mat-dialog-content class="reportText">
     <div class="item-name">
-        {{data.itemName}}
+        {{data.reportData.itemName}}
         <!--span class="light-text" *ngIf="data.location">
             in {{ data.location }}
         </span-->
     </div>
-    <b> {{data.reportDesc}} </b>
+    <b> {{data.reportData.reportDesc}} </b>
 </mat-dialog-content>
 <div mat-dialog-actions>
     <button mat-raised-button (click)="onCancelClick()">Back</button>
