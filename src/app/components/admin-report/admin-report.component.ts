@@ -182,7 +182,7 @@ export class AdminReportComponent implements OnInit {
         });
 
         dialogRef.afterClosed().subscribe(result => {
-          reportData = result;
+          reportData = result.reportData;
           // if it's valid, build and isue report, else leave
           if (reportData && reportData.toBeRemoved) {
             this.adminService.deleteReport(this.workspaceID, reportData.reportID, reportData.itemID);
