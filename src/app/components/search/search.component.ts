@@ -23,6 +23,8 @@ import { AdvancedAlphaNumSort } from 'src/app/utils/AdvancedAlphaNumSort';
 import { HierarchyLocation } from 'src/app/models/Location';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { QRScannerDialogComponent } from '../qrscanner-dialog/qrscanner-dialog.component';
+import { QRCodeCategoryDialogComponent } from '../qrcode-category-dialog/qrcode-category-dialog.component';
+import { QRCodeLocationDialogComponent } from '../qrcode-location-dialog/qrcode-location-dialog.component';
 
 /**
  *
@@ -33,8 +35,8 @@ import { QRScannerDialogComponent } from '../qrscanner-dialog/qrscanner-dialog.c
 
 @Component({
   selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css'],
+  templateUrl: './search.component.html',
+  styleUrls: ['./search.component.css'],
   animations:[
     trigger('button-extention-item', [
       state('shrunk', style({width: '50px', visibility: 'hidden', pointerEvents: 'none', display: 'none'})),
@@ -45,12 +47,24 @@ import { QRScannerDialogComponent } from '../qrscanner-dialog/qrscanner-dialog.c
       state('shrunk', style({width: '90px', visibility: 'hidden', pointerEvents: 'none', display: 'none'})),
       state('extended', style({width: '140px', visibility: 'visible', pointerEvents: 'auto', display: 'block'})),
       transition('shrunk <=> extended', animate('250ms'))
+    ]),
+    trigger('binInput', [
+      state('open', style({
+        marginTop: '0px'
+      })),
+      state('closed', style({
+        marginTop: '-150px'
+      })),
+      transition('open <=> closed', [
+        animate('0.25s ease-out')
+      ]),
     ])
   ]
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class SearchComponent implements OnInit, OnDestroy {
   @ViewChild("binInput") binInput: ElementRef;
   @ViewChild("shelfInput") shelfInput: ElementRef;
+
   control = new FormControl();
   root: HierarchyItem;
   rootSub: Subscription;
@@ -81,6 +95,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   paramQuerySub: Subscription;
   routeSub: Subscription;
 
+  binBarOpen = false;
+  binSearchItem: Item = null;
+  doubleBackspace = false;
+
   /**The user's role, used for fab loading */
   role: string = '';
 
@@ -110,10 +128,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     distance: 50,
     threshold: .4
   };
-
-  doubleBackspace = false;
-
-  binSearchItem: Item = null;
 
   constructor(
     private navService: NavService,
@@ -245,7 +259,6 @@ export class HomeComponent implements OnInit, OnDestroy {
    * @param selectedSearch category or location
    */
   loadLevel() {
-    this.binSearchItem = null;
     this.resetAttributeData();
     this.displayDescendants(this.root);
     this.loadAttributes();
@@ -325,7 +338,7 @@ export class HomeComponent implements OnInit, OnDestroy {
                   if(this.attributeValues.length === 0){
                     this.attributeValues.push(items[item].attributes[attr].value);
                   }
-                  else if(this.attributeValues[this.attributeValues.length-1].toUpperCase() < newAttrValueCapped){
+                  else if(AdvancedAlphaNumSort.compare(this.attributeValues[this.attributeValues.length-1].toUpperCase(), newAttrValueCapped) < 0){
                     this.attributeValues.splice(this.attributeValues.length, 0, items[item].attributes[attr].value);
                   }
                   else if(this.attributeValues[this.attributeValues.length-1].toUpperCase() === newAttrValueCapped){
@@ -337,7 +350,7 @@ export class HomeComponent implements OnInit, OnDestroy {
                         // Do nothing. It already has a value like it
                         break;
                       }
-                      else if(newAttrValueCapped < this.attributeValues[value].toUpperCase()){
+                      else if(AdvancedAlphaNumSort.compare(newAttrValueCapped, this.attributeValues[value].toUpperCase()) < 0){
                         this.attributeValues.splice(parseInt(value), 0, items[item].attributes[attr].value);
                         break;
                       }
@@ -583,6 +596,89 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.previousSearchRoot = this.root.ID;
   }
 
+  openQRScanner(){
+    this.dialog.open(QRScannerDialogComponent, {
+      width: '480px',
+      data: {
+        workspaceID: this.workspaceID
+      }
+    });
+  }
+
+  
+
+  goToModify() {
+    this.router.navigate(['w/' + this.workspaceID + '/hierarchyItem/' + (this.root.type === 'category' ? 'categories' : 'locations') + '/' + this.root.ID]);
+  }
+
+  openQRDialog() {
+    if(this.root.type === 'category'){
+      this.dialog.open(QRCodeCategoryDialogComponent, {
+        width: '45rem',
+        data: {workspaceID: this.workspaceID, category: this.root}
+      });
+    }
+    else {
+      this.dialog.open(QRCodeLocationDialogComponent, {
+        width: '45rem',
+        data: {workspaceID: this.workspaceID, location: this.root}
+      });
+    }
+  }
+
+  addItem(){
+    const dialogRef = this.dialog.open(ItemBuilderModalComponent, {
+      width: '480px',
+      data: {
+        workspaceID: this.workspaceID,
+        hierarchyObj: this.root
+      }
+    });
+  }
+
+  /** Adds a hierarchy item to the current depth */
+  addHierarchy() {
+    if (this.root.type === 'category') {
+
+      let categoryData: Category =
+      {
+        name: 'NEW CATEGORY',
+        parent: this.root.ID,
+        children: [],
+        items: [],
+        titleFormat: [{type: "parent"}]
+      }
+
+      this.adminService.addCategory(this.workspaceID, categoryData, this.root.ID).subscribe(id => {
+        this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/categories/' + id]);
+      });
+    }
+    else {
+
+      this.adminService.addLocation(this.workspaceID, {
+        name: 'NEW LOCATION',
+        parent: this.root.ID,
+        children: [],
+        items: []
+      } as HierarchyItem, this.root.ID).subscribe(id => {
+        this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/locations/' + id]);
+      });
+    }
+  }
+
+  toggleHierarchy() {
+    if(this.root.type === 'category'){
+      this.router.navigate(['/w/' + this.workspaceID + '/search/locations/root']);
+    }
+    else {
+      this.router.navigate(['/w/' + this.workspaceID + '/search/categories/root']);
+    }
+  }
+
+  toggleBinBar(){
+    this.binBarOpen = !this.binBarOpen;
+  }
+
   updateQuickSearchShelf(event){
     if(this.shelfInput.nativeElement.value.length > 3){
       let start = (this.shelfInput.nativeElement.value as string).substring(0, 3);
@@ -680,14 +776,5 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.loadLevel();
       }
     }
-  }
-
-  openQRScanner(){
-    this.dialog.open(QRScannerDialogComponent, {
-      width: '480px',
-      data: {
-        workspaceID: this.workspaceID
-      }
-    });
   }
 }

@@ -412,6 +412,10 @@ export class SearchService implements SearchInterfaceService {
             buildingString += this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex + 1);
             break;
           }
+          case 'category': {
+            buildingString += categoryAndAncestors[0].name;
+            break;
+          }
           case 'attribute': 
           {
             for(let attr in item.attributes){

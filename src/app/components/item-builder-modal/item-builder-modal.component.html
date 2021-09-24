@@ -144,41 +144,20 @@
                 <br>
                 <!-- Auto Title -->
                 <div *ngIf="autoTitleBuilder">
-                    <div class="scrollable title-scroll">
-                        <div class="info-box">
-                            <small class="light-text">This also means the item's title can be automatically updated when the item's category changes. </small>
-                        </div>
-                        <br>
-                        <h4> Title Components: </h4>
-
-                        <div class="label-text">Prefix</div>
-                        <div *ngIf="!category || !category.prefix" class="title-data-text">
-                            <small class="light-text"> ( No prefix in the item's category. ) </small>
-                        </div>
-                        <div *ngIf="category && category.prefix" class="title-data-text"> 
-                            <b> {{ category.prefix }} </b>
-                        </div>
-
-                        <div class="label-text"> Additional Text </div>
-                        <mat-form-field class="additional-text-form title-data-text">
-                            <textarea matInput #value
-                            type="text"
-                            [(ngModel)]="additionalText"
-                            (keyup)="updateTitleFromUI()"></textarea>
-                        </mat-form-field>
-
-                        <div class="label-text"> Attribute Suffix </div>
-                        <div *ngIf="!category || !attributeSuffix" class="title-data-text">
-                            <small class="light-text"> ( No suffix in the item's category. ) </small>
-                        </div>
-                        <div *ngIf="category && attributeSuffix" class="title-data-text">
-                            <b> {{ attributeSuffix }} </b>
-                        </div>
-                    </div>
+                    <small class="light-text">This also means the item's title is automatically updated when the item changes. </small>
+                    <br>
                     <br>
                     <div> Current title: </div>
                     <div><b> {{ item.name }} </b></div>
                     <div *ngIf="!item.name" class="light-text"> (No title!) </div>
+                    <br>
+                    <div class="label-text"> Optional Additional Text </div>
+                    <mat-form-field class="additional-text-form title-data-text">
+                        <textarea matInput #value
+                        type="text"
+                        [(ngModel)]="additionalText"
+                        (keyup)="updateTitleFromUI()"></textarea>
+                    </mat-form-field>
                 </div>
 
                 <!-- Manual Title -->

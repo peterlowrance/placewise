@@ -62,7 +62,7 @@ export class ItemBuilderModalComponent implements OnInit {
   attributesForCard: AttributeCard[];       // Attributes of the item, for the UI
   additionalText: string;                   // Helps with setting up the title
   autoTitleBuilder: boolean;                // Switch value on UI
-  attributeSuffix: string;                  // Pre-loaded suffix
+  autoTitle: string;                        // Pre-loaded title
   loadingLocations: boolean = true;         // For if it takes a while to load locations... Doesn't end up being very useful atm
   binIDsToSave: { 
     [locationID: string] : {
@@ -119,7 +119,7 @@ export class ItemBuilderModalComponent implements OnInit {
           this.categoryAndAncestors.unshift(this.category);
           
           let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.item, this.categoryAndAncestors);
-          this.attributeSuffix = returnData.attributeSuffix;
+          this.autoTitle = returnData.autoTitle;
           this.additionalText = returnData.additionalText;
           this.autoTitleBuilder = returnData.isAutoTitle;
 
@@ -243,7 +243,7 @@ export class ItemBuilderModalComponent implements OnInit {
             this.categoryAndAncestors.unshift(newCategory);
 
             let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.item, this.categoryAndAncestors, this.category);
-            this.attributeSuffix = returnData.attributeSuffix;
+            this.autoTitle = returnData.autoTitle;
             this.additionalText = returnData.additionalText;
             this.autoTitleBuilder = returnData.isAutoTitle;
 
@@ -536,23 +536,25 @@ export class ItemBuilderModalComponent implements OnInit {
   // After changing attributes, this updates the title
   rebuildTitle(){
     // Rebuild title
-    let newSuffix = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
+    let newAutoTitle = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
 
-    if(newSuffix){
+    if(newAutoTitle){
       this.autoTitleBuilder = true;
     }
 
     // If we had the auto suffix, replace it
-    if(this.attributeSuffix && this.item.name.endsWith(this.attributeSuffix)){
-      this.item.name = this.item.name.substring(0, this.item.name.length - this.attributeSuffix.length) + newSuffix;
+    if(this.autoTitle && this.item.name.startsWith(this.autoTitle)){
+      this.item.name = newAutoTitle + this.item.name.substring(this.autoTitle.length);
     }
 
     // If there was no suffix, add on the new one
-    if(!this.attributeSuffix){
-      this.item.name += newSuffix;
+    if(!this.autoTitle){
+      this.item.name += newAutoTitle;
     }
 
-    this.attributeSuffix = newSuffix;
+    this.autoTitle = newAutoTitle;
+
+    this.item.name = this.autoTitle;
   }
 
   /**
@@ -644,21 +646,11 @@ export class ItemBuilderModalComponent implements OnInit {
 
   // Build and set title string from auto title
   updateTitleFromUI(){
-    if(this.category.prefix){
-      if(this.additionalText){
-        this.item.name = this.category.prefix + " " + this.additionalText.trim() + this.attributeSuffix;
-      }
-      else {
-        this.item.name = this.category.prefix + this.attributeSuffix;
-      }
+    if(this.additionalText){
+      this.item.name =  this.autoTitle + " " + this.additionalText.trim();
     }
     else {
-      if(this.additionalText){
-        this.item.name = this.additionalText.trim() + this.attributeSuffix;
-      }
-      else {
-        this.item.name = this.attributeSuffix;
-      }
+      this.item.name = this.autoTitle;
     }
   }
 

@@ -6,13 +6,15 @@
 mat-toolbar {
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: 10;
+  background-color: transparent;
 }
 
 .nav-text {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  padding-left: 8px;
 }
 
 .add-menu-button {
@@ -24,8 +26,11 @@ mat-toolbar {
   cursor: pointer;
   padding: 4px 16px;
   border-radius: 16px;
-  margin-right: 8px;
+  margin-top: -2px;
   border: 1px solid rgba(0,0,0, 0.08);
+  background-color: rgba(255,255,255,0.5);
+  display: flex;
+  align-items: center;
 }
 
 /* Toggle */
@@ -43,11 +48,42 @@ mat-button-toggle {
 
 mat-button-toggle-group {
   width: 400px;
-  max-width: 72%;
+  max-width: 100%;
   box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.20);
   border: 0;
 }
 
 .mat-button-toggle-appearance-standard {
   font-size: 18px;
+}
+
+.hierarchy-toolbar {
+  margin-bottom: -16px;
+  z-index: 2;
+}
+
+.bin-button {
+  z-index: 10;
+  position: relative;
+  height: 60px;
+  width: 60px;
+  margin-bottom: -60px;
+  background-color: white;
+}
+
+.bin-bar {
+  height: 120px;
+  margin-bottom: 30px;
+  width: fit-content;
+  padding: 18px 40px 0 40px;
+  z-index: -1;
+  background-color: white;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  position: relative;
+  left: calc(100% - 324px);
+}
+
+.bin-form {
+  max-width: 90px;
 }

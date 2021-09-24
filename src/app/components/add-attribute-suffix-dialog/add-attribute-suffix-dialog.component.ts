@@ -55,6 +55,7 @@ export class AddAttributeSuffixDialogComponent implements OnInit {
     
     switch(this.selected){
       case 'space':
+      case 'category':
       case 'parent': {
         data = {type: this.selected};
         break;

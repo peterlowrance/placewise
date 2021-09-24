@@ -40,20 +40,35 @@ p {
 
 /* Quick Search */
 
-.bin-form {
-  font-size: 16px;
-  max-width: 80px;
+.hierarchy-toolbar {
+  margin-bottom: -16px;
+  z-index: 0;
 }
 
-.quick-search {
-  max-height: 84px;
-  max-width: 300px;
+.bin-button {
+  z-index: 10;
+  position: relative;
+  height: 60px;
+  width: 60px;
+  margin-bottom: -60px;
+  background-color: white;
+}
+
+.bin-bar {
+  height: 120px;
+  margin-bottom: 30px;
+  width: fit-content;
+  padding: 18px 40px 0 40px;
+  z-index: -1;
   background-color: white;
   border-bottom-left-radius: 18px;
   border-bottom-right-radius: 18px;
-  padding: 18px 30px 0 30px;
-  margin-bottom: 24px;
-  margin-top: -2px;
+  position: relative;
+  left: calc(100% - 324px);
+}
+
+.bin-form {
+  max-width: 90px;
 }
 
 .quick-search-button {
@@ -62,6 +77,40 @@ p {
 }
 
 
+
+.nav-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-left: 8px;
+}
+
+.add-menu-button {
+  font-size: 1rem;
+  padding: 0 18px;
+}
+
+.hierarchy-name {
+  cursor: pointer;
+  padding: 4px 16px;
+  border-radius: 16px;
+  margin-top: -2px;
+  border: 1px solid rgba(0,0,0, 0.08);
+  background-color: rgba(255,255,255,0.5);
+  display: flex;
+  align-items: center;
+}
+
+mat-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: transparent;
+}
+
+.spacer{
+  flex: 1 1 auto;
+}
 
 .element {
   width: 95%;

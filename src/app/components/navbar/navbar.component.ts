@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {Location} from '@angular/common';
 
@@ -15,12 +15,15 @@ import { QRCodeLocationDialogComponent } from '../qrcode-location-dialog/qrcode-
 import { QRCodeCategoryDialogComponent } from '../qrcode-category-dialog/qrcode-category-dialog.component';
 import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
 import { Category } from 'src/app/models/Category';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { Item } from 'src/app/models/Item';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.css']
+  styleUrls: ['./navbar.component.css'],
 })
 export class NavbarComponent implements OnInit {
 
@@ -63,6 +66,7 @@ export class NavbarComponent implements OnInit {
     private authService: AuthService, 
     private searchService: SearchService, 
     private adminService: AdminService,
+    private snack: MatSnackBar,
     private reportService: ReportService) {
     // For good measure, don't pile on identical subscriptions. These are used to stop previous ones.
     let reportsSub: Subscription;
@@ -229,10 +233,7 @@ export class NavbarComponent implements OnInit {
         this.returnInHierarchy();
         break;
       case 'home':
-        this.goToHierarchy('root');
-        break;
-      case 'modify':
-        this.goToModify();
+        this.goToHierarchy('root', 'location');
         break;
       case 'reports':
         this.hasReadReportsColor = 'accent'; // Note: also goes to default
@@ -267,15 +268,15 @@ export class NavbarComponent implements OnInit {
    */
   returnInHierarchy() {
     if(this.parent.parent){
-      this.goToHierarchy(this.parent.parent);
+      this.goToHierarchy(this.parent.parent, this.parent.type);
     }
     else {
       console.log("Unusual: There was no parent of parent.")
     }
   }
 
-  goToHierarchy(id: string){
-    if(this.parent && this.parent.type === 'category'){
+  goToHierarchy(id: string, type: string){
+    if(this.parent && type === 'category'){
       this.router.navigate(['w/' + this.workspaceID + '/search/categories/' + id]).then(confirm => {
         if(!confirm){ // Sometimes since we're going to the same component, the router will not navigate. If so, push to make sure the url gets in the history
           window.history.pushState(null, null, 'w/' + this.workspaceID + '/search/categories/' + id);
@@ -290,69 +291,6 @@ export class NavbarComponent implements OnInit {
       });
       this.navService.setSubscribedParent(this.searchService.getLocation(this.workspaceID, id));
     }
-  }
-
-  goToModify() {
-    this.router.navigate(['w/' + this.workspaceID + '/hierarchyItem/' + (this.parent.type === 'category' ? 'categories' : 'locations') + '/' + this.parent.ID]);
-  }
-
-  openQRDialog() {
-    if(this.parent.type === 'category'){
-      this.dialog.open(QRCodeCategoryDialogComponent, {
-        width: '45rem',
-        data: {workspaceID: this.workspaceID, category: this.parent}
-      });
-    }
-    else {
-      this.dialog.open(QRCodeLocationDialogComponent, {
-        width: '45rem',
-        data: {workspaceID: this.workspaceID, location: this.parent}
-      });
-    }
-  }
-
-  addItem(){
-    const dialogRef = this.dialog.open(ItemBuilderModalComponent, {
-      width: '480px',
-      data: {
-        workspaceID: this.workspaceID,
-        hierarchyObj: this.parent
-      }
-    });
-  }
-
-  /** Adds a hierarchy item to the current depth */
-  addHierarchy() {
-    if (this.parent.type === 'category') {
-
-      let categoryData: Category =
-      {
-        name: 'NEW CATEGORY',
-        parent: this.parent.ID,
-        children: [],
-        items: [],
-        titleFormat: [{type: "parent"}]
-      }
-
-      this.adminService.addCategory(this.workspaceID, categoryData, this.parent.ID).subscribe(id => {
-        this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/categories/' + id]);
-      });
-    }
-    else {
-
-      this.adminService.addLocation(this.workspaceID, {
-        name: 'NEW LOCATION',
-        parent: this.parent.ID,
-        children: [],
-        items: []
-      } as HierarchyItem, this.parent.ID).subscribe(id => {
-        this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/locations/' + id]);
-      });
-    }
-  }
-
-  toggleHierarchy(event) {
-    this.router.navigate(['/w/' + this.workspaceID + '/search/' + event.value.toLowerCase() + '/root']);
   }
 
 }

@@ -5,7 +5,7 @@ import { Routes, RouterModule } from '@angular/router';
 import {AuthGuard} from './guards/auth.guard'
 
 // TODO: import routes to all components here
-import {HomeComponent} from './components/home/home.component';
+import {SearchComponent} from './components/search/search.component';
 import {LoginComponent} from './components/login/login.component';
 import {ItemComponent} from './components/item/item.component';
 import {NotFoundComponent} from './components/not-found/not-found.component';
@@ -19,7 +19,7 @@ import { ReportTemplatesComponent } from './components/report-templates/report-t
 import { ReportTemplateEditComponent } from './components/report-template-edit/report-template-edit.component';
 
 const routes: Routes = [
-  {path: 'w/:workspaceID/search/:selectedHierarchy/:id', component: HomeComponent, canActivate: [AuthGuard]},
+  {path: 'w/:workspaceID/search/:selectedHierarchy/:id', component: SearchComponent, canActivate: [AuthGuard]},
   {path: 'w/:workspaceID/textSearch', component: TextSearchComponent, canActivate: [AuthGuard]},
   {path: 'login', component: LoginComponent},
   {path: 'w/:workspaceID/item/:id', component: ItemComponent, canActivate: [AuthGuard]},

@@ -516,7 +516,7 @@ export class HierarchyItemComponent implements OnInit {
     const oldLocation = this.hierarchyItem.parent ? this.hierarchyItem.parent : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
-      data: {hierarchy: this.isCategory ? 'categories' : 'locations', singleSelection: true, id: this.hierarchyItem.ID, parents: [this.hierarchyItem.parent]}
+      data: {workspaceID: this.workspaceID, hierarchy: this.isCategory ? 'categories' : 'locations', singleSelection: true, id: this.hierarchyItem.ID, parents: [this.hierarchyItem.parent]}
     });
     dialogRef.afterClosed().subscribe(result => {
       if(result && result[0] && this.hierarchyItem.parent !== result[0]){

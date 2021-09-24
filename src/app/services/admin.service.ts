@@ -176,25 +176,26 @@ export class AdminService {
   }
 
   updateItemDataFromCategoryAncestors(item: Item, categoryAndAncestors: Category[], oldCategory?: Category){
-    let attributeSuffix = this.searchService.buildAttributeSuffixFrom(item, categoryAndAncestors);
+    let autoTitle = this.searchService.buildAttributeSuffixFrom(item, categoryAndAncestors);
     let category = categoryAndAncestors[0];
 
     // Setup additional text for auto title builder
-    let returnData: any = this.getAdditionalTextFrom(category.prefix, attributeSuffix, item.name);
-    returnData.attributeSuffix = attributeSuffix;
+    let returnData: any = {};
+    returnData.autoTitle = autoTitle;
 
     // If there is no item name, build an automatic title.
-    if(!item.name){
-      item.name = (category.prefix ? category.prefix : "") + (attributeSuffix ? attributeSuffix : "");
-
-      // If this resulted in a name, toggle on the Automatic Title Builder
-      if(item.name){
-        returnData.isAutoTitle = true;
-      }
+    if(!item.name && autoTitle){
+      item.name = autoTitle;
+      returnData.isAutoTitle = true;
+    }
+    // If the item name started with the auto title, turn auto title on
+    else if(item.name.startsWith(autoTitle)){
+      returnData.additionalText = item.name.substring(autoTitle.length).trim();
+      returnData.isAutoTitle = true;
     }
 
     // If there is a category replacement, update item title
-    else if(oldCategory) {
+    else if(item.name && oldCategory) {
       // If this was using the auto prefix, replace it.
       if(oldCategory.prefix && item.name.startsWith(oldCategory.prefix)){
         item.name = item.name.substring(oldCategory.prefix.length);
@@ -204,56 +205,16 @@ export class AdminService {
       }
 
       // If this was using the auto suffix, replace it.
-      if (attributeSuffix && item.name.endsWith(attributeSuffix)) {
-        item.name = item.name.substring(0, item.name.length - attributeSuffix.length).trim()
+      if (autoTitle && item.name.startsWith(autoTitle)) {
+        item.name = item.name.substring(autoTitle.length).trim();
         if(category.titleFormat){
-          item.name = item.name + this.searchService.buildAttributeSuffixFrom(item, categoryAndAncestors);
+          returnData.additionalText = item.name;
+          item.name = this.searchService.buildAttributeSuffixFrom(item, categoryAndAncestors) + item.name;
         }
       }
     }
 
     return returnData;
-  }
-
-  /** 
-  * @return The additional text between the suffix and prefix. 
-  * If it could not remove both, the auto title flag is set to false.
-  */
-   getAdditionalTextFrom(prefix: string, suffix: string, name: string): {additionalText: string, isAutoTitle: boolean} {
-    // If there is no prefix or suffix, then there's no auto title
-    if(!prefix && !suffix){
-      return {additionalText: name, isAutoTitle: false};
-    }
-
-    let result = {additionalText: name, isAutoTitle: true};
-
-    // Check for a prefix. If there is one, remove it. If that was not possible, uncheck auto title.
-    if(prefix){
-      if(name.startsWith(prefix)){
-        result.additionalText = result.additionalText.substring(prefix.length).trim();
-      }
-      else {
-        result.isAutoTitle = false;
-      }
-    }
-
-    // Check for a suffix. If there is one, remove it. If that was not possible, uncheck auto title.
-    if(suffix){
-      if(name.endsWith(suffix)){
-        result.additionalText = result.additionalText.substring(0, result.additionalText.length - suffix.length).trim();
-      }
-      else {
-        if(result.isAutoTitle){
-          result.isAutoTitle = false;
-        }
-        else {
-          // If there was no prefix either, then there is no additional text
-          result.additionalText = "";
-        }
-      }
-    }
-
-    return result;
   }
 
   createItem(workspaceID: string, item: Item): Observable<boolean> {
