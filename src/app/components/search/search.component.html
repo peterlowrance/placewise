@@ -21,8 +21,12 @@
   <mat-toolbar-row class="structure-color-light ">
       <!-- <button mat-flat-button color="accent" (click)="goToModify()">{{parent.name}}</button> -->
       <button *ngIf="root.ID !== 'root'" mat-icon-button (click)="openQRDialog()"><mat-icon>qr_code_2</mat-icon></button>
-      <button mat-icon-button (click)="route('textSearch')"><mat-icon>search</mat-icon></button>
-      <!--button mat-icon-button ><mat-icon>filter_alt</mat-icon></button-->
+      <button mat-icon-button (click)="toggleSearchBar()"><mat-icon>search</mat-icon></button>
+      
+      <button *ngIf="root.type === 'category' && !isLoadingAttributes" mat-icon-button [matMenuTriggerFor]="beforeMenu"><mat-icon>filter_alt</mat-icon></button>
+      <mat-menu #beforeMenu="matMenu" xPosition="before">
+        <button mat-menu-item *ngFor="let attribute of filterableAttributes" (click)="gatherAttributeValues(attribute)">{{attribute.name}}</button>
+      </mat-menu>
 
       <button mat-icon-button *ngIf="this.role === 'Admin'" [matMenuTriggerFor]="addMenu"><mat-icon>add</mat-icon></button>
       <mat-menu #addMenu="matMenu">
@@ -30,7 +34,7 @@
           <button class="add-menu-button" (click)="addItem()" mat-menu-item> Item </button>
       </mat-menu>
       <!--button mat-icon-button (click)="route('modify')"><mat-icon>read_more</mat-icon></button-->
-      <button *ngIf="root.ID !== 'root'" mat-icon-button (click)="route('modify')"><mat-icon>read_more</mat-icon></button>
+      <button *ngIf="root.ID !== 'root'" mat-icon-button (click)="goToEditHierarchy()"><mat-icon>read_more</mat-icon></button>
 
       <span class="spacer"></span>
       <button mat-icon-button [class.mat-elevation-z3]="true" class="bin-button" (click)="toggleBinBar()"><mat-icon>inventory</mat-icon></button>
@@ -98,12 +102,15 @@
       <!--button mat-raised-button class="quick-search-button action-color-light"> GO </button-->
     <!--/div>
     <!--div class ="tool-spacer"></div-->
-    
 
-    <!--div class="search-tools">
+  <!--/div-->
+
+  <div *ngIf="!binSearchItem">
+
+    <div class="search-tools" [@searchInput]="searchBarOpen ? 'open' : 'closed'">
       <form class="search-bar" (submit)="null">
         <mat-form-field class="full-width">
-          <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : (typeForSelectionButtons === 'category' ? 'all Categories' : 'all Locations')}}" matInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null">
+          <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : (typeForSelectionButtons === 'category' ? 'all Categories' : 'all Locations')}}" matInput #searchInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null">
           <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearchBar()">
             <mat-icon>close</mat-icon>
           </button>
@@ -111,11 +118,7 @@
         </mat-form-field>
         <mat-progress-bar *ngIf="isLoading" class="search-progress-bar" mode="query"></mat-progress-bar>
       </form>
-    </div-->
-
-  <!--/div-->
-
-  <div *ngIf="!binSearchItem">
+    </div>
 
     <!--div class="filter-button">
       <button mat-stroked-button *ngIf="root && root.type === 'category'" [matMenuTriggerFor]="beforeMenu" class="filter-menu">Filter by <mat-icon>arrow_drop_down</mat-icon></button>
@@ -135,8 +138,9 @@
     </mat-chip-list>
   
     <!--Attribute values, if we're searching for that-->
+    <div class="header" *ngIf="isLoadingAttributes || attributeValues">{{"Select a value to filter by:"}}</div>
+    <mat-progress-spinner *ngIf="isLoadingAttributes" mode="determinate" [value]="percentLoadedAttributes"></mat-progress-spinner>
     <div *ngIf="attributeValues && attributeValues.length > 0">
-      <div class="header">{{"Found for " + currentAttribute.name + ":"}}</div>
       <mat-grid-list class="row" [cols]="columns * 2" rowHeight="50px">
         <mat-grid-tile class="holder" *ngFor="let attribute of attributeValues">
           <mat-card class="itemCard" [class.mat-elevation-z3]="true" (click)="selectAttribute(attribute)">

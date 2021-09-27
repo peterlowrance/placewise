@@ -50,13 +50,24 @@ import { QRCodeLocationDialogComponent } from '../qrcode-location-dialog/qrcode-
     ]),
     trigger('binInput', [
       state('open', style({
-        marginTop: '0px'
+        top: '150px'
       })),
       state('closed', style({
-        marginTop: '-150px'
+        top: '0px'
       })),
       transition('open <=> closed', [
-        animate('0.25s ease-out')
+        animate('0.18s ease-out')
+      ]),
+    ]),
+    trigger('searchInput', [
+      state('open', style({
+        marginTop: '24px'
+      })),
+      state('closed', style({
+        marginTop: '-80px'
+      })),
+      transition('open <=> closed', [
+        animate('0.18s ease-out')
       ]),
     ])
   ]
@@ -64,6 +75,7 @@ import { QRCodeLocationDialogComponent } from '../qrcode-location-dialog/qrcode-
 export class SearchComponent implements OnInit, OnDestroy {
   @ViewChild("binInput") binInput: ElementRef;
   @ViewChild("shelfInput") shelfInput: ElementRef;
+  @ViewChild("searchInput") searchInput: ElementRef;
 
   control = new FormControl();
   root: HierarchyItem;
@@ -95,6 +107,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   paramQuerySub: Subscription;
   routeSub: Subscription;
 
+  searchBarOpen = false;
   binBarOpen = false;
   binSearchItem: Item = null;
   doubleBackspace = false;
@@ -187,35 +200,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.parentSub = this.navService.getParent().subscribe(val => {
       if(val){
         this.root = val;
-
-        // Clear or update the quick search (kinda messy)
-        if(this.binSearchItem && this.binSearchItem.locations.indexOf(this.root.ID) > -1){
-
-        }
-        else if(this.root.type === 'location' && this.shelfInput){
-          this.searchService.getShelfIDFromAncestors(this.workspaceID, this.root.ID).then(result => {
-            if(result !== this.shelfInput.nativeElement.value){
-              if(result === '000'){
-                this.shelfInput.nativeElement.value = null;
-                this.binInput.nativeElement.value = null;
-              }
-              else {
-                this.shelfInput.nativeElement.value = result;
-                this.binInput.nativeElement.value = null;
-              }
-            }
-          });
-
-          this.loadLevel();
-        }
-        else {
-          if(this.shelfInput){
-            this.shelfInput.nativeElement.value = null;
-            this.binInput.nativeElement.value = null;
-          }
-
-          this.loadLevel();
-        }
+        this.loadLevel();
       }
       else {
         console.log("Error: unable to get home root");
@@ -259,7 +244,7 @@ export class SearchComponent implements OnInit, OnDestroy {
    * @param selectedSearch category or location
    */
   loadLevel() {
-    this.resetAttributeData();
+    this.resetDisplay();
     this.displayDescendants(this.root);
     this.loadAttributes();
   }
@@ -317,18 +302,26 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   gatherAttributeValues(attribute: AttributeValue){
 
-    this.percentLoadedAttributes = 2;
+    this.percentLoadedAttributes = 10;
     this.isLoadingAttributes = true;
     this.currentAttribute = attribute;
     this.attributeValues = [];
 
     this.searchService.getAllDescendantHierarchyItems(this.workspaceID, this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
-      this.percentLoadedAttributes = 6;
+      this.percentLoadedAttributes = 30;
       this.searchService.getAllDescendantItems(this.workspaceID, this.root, hierarchyItems).subscribe(items => {
 
-        let slice = 94/items.length;
+        // A progress bar for a ton amount of items
+        let slice = 60/((items.length/1000)+1);
+        let count = 0;
         for(let item in items) {
-          this.percentLoadedAttributes += slice;
+
+          count++;
+          if(count > 1000){
+            this.percentLoadedAttributes += slice;
+            count = 0;
+          }
+
           if(items[item].attributes)
           for(let attr in items[item].attributes){
             if(items[item].attributes[attr].name === attribute.name){
@@ -521,10 +514,12 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.updateSubscribedParent(hierItem.ID, hierItem.type);
   }
 
-  resetAttributeData(){
+  resetDisplay(){
     this.attributeValues = null;
     this.originalAttributeValues = null;
     this.filterableAttributes = null;
+    this.binBarOpen = false;
+    this.searchBarOpen = false;
   }
 
   /**Toggles the admin fab icon */
@@ -607,7 +602,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   
 
-  goToModify() {
+  goToEditHierarchy() {
     this.router.navigate(['w/' + this.workspaceID + '/hierarchyItem/' + (this.root.type === 'category' ? 'categories' : 'locations') + '/' + this.root.ID]);
   }
 
@@ -677,6 +672,19 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   toggleBinBar(){
     this.binBarOpen = !this.binBarOpen;
+    if(this.binBarOpen){
+      this.shelfInput.nativeElement.focus();
+    }
+  }
+
+  toggleSearchBar(){
+    this.searchBarOpen = !this.searchBarOpen;
+    if(this.searchBarOpen){
+      this.searchInput.nativeElement.focus();
+    }
+    if(this.binBarOpen){
+      this.binBarOpen = false;
+    }
   }
 
   updateQuickSearchShelf(event){
