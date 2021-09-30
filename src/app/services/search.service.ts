@@ -387,7 +387,7 @@ export class SearchService implements SearchInterfaceService {
       }));
   }
 
-  buildAttributeSuffixFrom(item: Item, categoryAndAncestors: Category[], startingIndex = 0): string{
+  buildAttributeAutoTitleFrom(item: Item, categoryAndAncestors: Category[], startingIndex = 0): string{
 
     // If there's no category, return empty string
     if(!categoryAndAncestors){
@@ -409,7 +409,7 @@ export class SearchService implements SearchInterfaceService {
             break;
           }
           case 'parent': {
-            buildingString += this.buildAttributeSuffixFrom(item, categoryAndAncestors, startingIndex + 1);
+            buildingString += this.buildAttributeAutoTitleFrom(item, categoryAndAncestors, startingIndex + 1);
             break;
           }
           case 'category': {

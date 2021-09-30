@@ -23,7 +23,7 @@
       <button *ngIf="root.ID !== 'root'" mat-icon-button (click)="openQRDialog()"><mat-icon>qr_code_2</mat-icon></button>
       <button mat-icon-button (click)="toggleSearchBar()"><mat-icon>search</mat-icon></button>
       
-      <button *ngIf="root.type === 'category' && !isLoadingAttributes" mat-icon-button [matMenuTriggerFor]="beforeMenu"><mat-icon>filter_alt</mat-icon></button>
+      <button *ngIf="root.type === 'category' && root.ID !== 'root'" mat-icon-button [matMenuTriggerFor]="beforeMenu"><mat-icon>filter_alt</mat-icon></button>
       <mat-menu #beforeMenu="matMenu" xPosition="before">
         <button mat-menu-item *ngFor="let attribute of filterableAttributes" (click)="gatherAttributeValues(attribute)">{{attribute.name}}</button>
       </mat-menu>
@@ -110,7 +110,7 @@
     <div class="search-tools" [@searchInput]="searchBarOpen ? 'open' : 'closed'">
       <form class="search-bar" (submit)="null">
         <mat-form-field class="full-width">
-          <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : (typeForSelectionButtons === 'category' ? 'all Categories' : 'all Locations')}}" matInput #searchInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null">
+          <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : (root.type === 'category' ? 'all Categories' : 'all Locations')}}" matInput #searchInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null">
           <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearchBar()">
             <mat-icon>close</mat-icon>
           </button>
@@ -138,7 +138,7 @@
     </mat-chip-list>
   
     <!--Attribute values, if we're searching for that-->
-    <div class="header" *ngIf="isLoadingAttributes || attributeValues">{{"Select a value to filter by:"}}</div>
+    <div class="header" *ngIf="isLoadingAttributes || (attributeValues && attributeValues.length > 0)">{{"Select a value to filter by:"}}</div>
     <mat-progress-spinner *ngIf="isLoadingAttributes" mode="determinate" [value]="percentLoadedAttributes"></mat-progress-spinner>
     <div *ngIf="attributeValues && attributeValues.length > 0">
       <mat-grid-list class="row" [cols]="columns * 2" rowHeight="50px">

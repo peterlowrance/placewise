@@ -118,7 +118,7 @@ export class ItemBuilderModalComponent implements OnInit {
           this.categoryAndAncestors = categoryAncestors[0];
           this.categoryAndAncestors.unshift(this.category);
           
-          let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.item, this.categoryAndAncestors);
+          let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.workspaceID, this.item, this.categoryAndAncestors);
           this.autoTitle = returnData.autoTitle;
           this.additionalText = returnData.additionalText;
           this.autoTitleBuilder = returnData.isAutoTitle;
@@ -242,7 +242,7 @@ export class ItemBuilderModalComponent implements OnInit {
             this.categoryAndAncestors = categoryAncestors[0];
             this.categoryAndAncestors.unshift(newCategory);
 
-            let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.item, this.categoryAndAncestors, this.category);
+            let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.workspaceID, this.item, this.categoryAndAncestors);
             this.autoTitle = returnData.autoTitle;
             this.additionalText = returnData.additionalText;
             this.autoTitleBuilder = returnData.isAutoTitle;
@@ -536,7 +536,7 @@ export class ItemBuilderModalComponent implements OnInit {
   // After changing attributes, this updates the title
   rebuildTitle(){
     // Rebuild title
-    let newAutoTitle = this.searchService.buildAttributeSuffixFrom(this.item, this.categoryAndAncestors);
+    let newAutoTitle = this.searchService.buildAttributeAutoTitleFrom(this.item, this.categoryAndAncestors);
 
     if(newAutoTitle){
       this.autoTitleBuilder = true;

@@ -256,7 +256,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         if(categoryAncestors[0]){
           // Update component data
           this.categoryAncestors = categoryAncestors[0];
-          this.attributeSuffix = this.searchService.buildAttributeSuffixFrom(item, this.categoryAncestors);
+          this.attributeSuffix = this.searchService.buildAttributeAutoTitleFrom(item, this.categoryAncestors);
           
           // Load item attributes into card data
           let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
@@ -601,8 +601,8 @@ export class ItemComponent implements OnInit, OnDestroy {
           this.adminService.addToRecent(newCategory);
   
           this.searchService.getAncestorsOf(this.workspaceID, newCategory).subscribe(categoryAncestors => {
+            this.adminService.updateItemDataFromCategoryAncestors(this.workspaceID, this.item, [newCategory].concat(this.categoryAncestors), [this.category].concat(this.categoryAncestors));
             this.categoryAncestors = categoryAncestors[0];
-            this.adminService.updateItemDataFromCategoryAncestors(this.item, [newCategory].concat(this.categoryAncestors), this.category);
 
             this.item.category = result[0];
             this.adminService.updateItem(this.workspaceID, this.item, oldCategory, null);

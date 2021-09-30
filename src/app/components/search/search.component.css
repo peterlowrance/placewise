@@ -208,7 +208,7 @@ mat-card-content {
 
 .qr-scanner-button {
   position: fixed;
-  bottom: 8vmin;
+  top: max(400px, calc(96% - 64px)); /* For trying not to get this in the way of android keyboards */
   right: calc(50vw - 150px);
   background-color: white;
   color: rgb(100, 100, 100);

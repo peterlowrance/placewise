@@ -175,8 +175,8 @@ export class AdminService {
     return true;
   }
 
-  updateItemDataFromCategoryAncestors(item: Item, categoryAndAncestors: Category[], oldCategory?: Category){
-    let autoTitle = this.searchService.buildAttributeSuffixFrom(item, categoryAndAncestors);
+  updateItemDataFromCategoryAncestors(workspaceID: string, item: Item, categoryAndAncestors: Category[], oldCategoryAndAncestors?: Category[]){
+    let autoTitle = this.searchService.buildAttributeAutoTitleFrom(item, categoryAndAncestors);
     let category = categoryAndAncestors[0];
 
     // Setup additional text for auto title builder
@@ -195,22 +195,14 @@ export class AdminService {
     }
 
     // If there is a category replacement, update item title
-    else if(item.name && oldCategory) {
-      // If this was using the auto prefix, replace it.
-      if(oldCategory.prefix && item.name.startsWith(oldCategory.prefix)){
-        item.name = item.name.substring(oldCategory.prefix.length);
-        if(category.prefix){
-          item.name = category.prefix + item.name;
-        }
-      }
+    else if(item.name && oldCategoryAndAncestors) {
+      let oldAutoTitle = this.searchService.buildAttributeAutoTitleFrom(item, oldCategoryAndAncestors);
+      console.log("Old title: " + oldAutoTitle); 
 
-      // If this was using the auto suffix, replace it.
-      if (autoTitle && item.name.startsWith(autoTitle)) {
-        item.name = item.name.substring(autoTitle.length).trim();
-        if(category.titleFormat){
-          returnData.additionalText = item.name;
-          item.name = this.searchService.buildAttributeSuffixFrom(item, categoryAndAncestors) + item.name;
-        }
+      // If this was using the auto title, replace it.
+      if(item.name.startsWith(oldAutoTitle)){
+        item.name = autoTitle + item.name.substring(oldAutoTitle.length);
+        console.log("New name: " + item.name); 
       }
     }
 
