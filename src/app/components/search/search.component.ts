@@ -21,6 +21,10 @@ import { Attribute } from 'src/app/models/Attribute';
 import { AttributeValue } from 'src/app/models/Attribute';
 import { AdvancedAlphaNumSort } from 'src/app/utils/AdvancedAlphaNumSort';
 import { HierarchyLocation } from 'src/app/models/Location';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { QRScannerDialogComponent } from '../qrscanner-dialog/qrscanner-dialog.component';
+import { QRCodeCategoryDialogComponent } from '../qrcode-category-dialog/qrcode-category-dialog.component';
+import { QRCodeLocationDialogComponent } from '../qrcode-location-dialog/qrcode-location-dialog.component';
 
 /**
  *
@@ -31,8 +35,8 @@ import { HierarchyLocation } from 'src/app/models/Location';
 
 @Component({
   selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css'],
+  templateUrl: './search.component.html',
+  styleUrls: ['./search.component.css'],
   animations:[
     trigger('button-extention-item', [
       state('shrunk', style({width: '50px', visibility: 'hidden', pointerEvents: 'none', display: 'none'})),
@@ -43,16 +47,41 @@ import { HierarchyLocation } from 'src/app/models/Location';
       state('shrunk', style({width: '90px', visibility: 'hidden', pointerEvents: 'none', display: 'none'})),
       state('extended', style({width: '140px', visibility: 'visible', pointerEvents: 'auto', display: 'block'})),
       transition('shrunk <=> extended', animate('250ms'))
+    ]),
+    trigger('binInput', [
+      state('open', style({
+        top: '150px'
+      })),
+      state('closed', style({
+        top: '0px'
+      })),
+      transition('open <=> closed', [
+        animate('0.18s ease-out')
+      ]),
+    ]),
+    trigger('searchInput', [
+      state('open', style({
+        marginTop: '24px'
+      })),
+      state('closed', style({
+        marginTop: '-80px'
+      })),
+      transition('open <=> closed', [
+        animate('0.18s ease-out')
+      ]),
     ])
   ]
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class SearchComponent implements OnInit, OnDestroy {
   @ViewChild("binInput") binInput: ElementRef;
   @ViewChild("shelfInput") shelfInput: ElementRef;
+  @ViewChild("searchInput") searchInput: ElementRef;
+
   control = new FormControl();
   root: HierarchyItem;
   rootSub: Subscription;
 
+  workspaceID: string;
   hierarchyItems: HierarchyItem[];
   originalHierarchyItems: HierarchyItem[];
   items: Item[];
@@ -72,10 +101,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   originalAttributeValues: string[]; // For resetting after searching
   currentAttribute: AttributeValue; // For the current attribute that that values are being searched for
   filteredAttributes: AttributeValue[]; // Attributes that are being actively filtered.
-  typeForSelectionButtons: string;
 
   parentSub: Subscription;
   returnSub: Subscription;
+  paramQuerySub: Subscription;
+  routeSub: Subscription;
+
+  searchBarOpen = false;
+  binBarOpen = false;
+  binSearchItem: Item = null;
+  doubleBackspace = false;
 
   /**The user's role, used for fab loading */
   role: string = '';
@@ -107,10 +142,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     threshold: .4
   };
 
-  doubleBackspace = false;
-
-  binSearchItem: Item = null;
-
   constructor(
     private navService: NavService,
     private searchService: SearchService,
@@ -119,6 +150,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private adminService: AdminService,
     private cacheService: CacheService,
+    private snack: MatSnackBar,
     public dialog: MatDialog) {
     // subscribe to nav state
     this.returnSub = this.navService.getReturnState().subscribe(
@@ -128,85 +160,70 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       }
     );
-
-    // change if parent is different
-    this.parentSub = this.navService.getParent().subscribe(val => {
-        if(val){
-          this.root = val;
-          this.typeForSelectionButtons = this.root.type;
-
-          // Clear or update the quick search (kinda messy)
-          if(this.binSearchItem && this.binSearchItem.locations.indexOf(this.root.ID) > -1){
-
-          }
-          else if(this.root.type === 'location' && this.shelfInput){
-            this.searchService.getShelfIDFromAncestors(this.root.ID).then(result => {
-              if(result !== this.shelfInput.nativeElement.value){
-                if(result === '000'){
-                  this.shelfInput.nativeElement.value = null;
-                  this.binInput.nativeElement.value = null;
-                }
-                else {
-                  this.shelfInput.nativeElement.value = result;
-                  this.binInput.nativeElement.value = null;
-                }
-              }
-            });
-
-            this.loadLevel();
-          }
-          else {
-            if(this.shelfInput){
-              this.shelfInput.nativeElement.value = null;
-              this.binInput.nativeElement.value = null;
-            }
-
-            this.loadLevel();
-          }
-        }
-        else {
-          console.log("Error: unable to get home root");
-        }
-      }
-    );
   }
 
   ngOnDestroy() {
     this.parentSub.unsubscribe();
     this.returnSub.unsubscribe();
+    this.paramQuerySub.unsubscribe();
+    this.routeSub.unsubscribe();
     Object.values(this.subItems).forEach(sub => sub.unsubscribe());
   }
 
   ngOnInit() {
     // Naviagte to the location/category everytime the url is updated
-    const urlID = this.route.snapshot.paramMap.get('id');
-    const selectedSearch = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories' ? 'category' : 'location';
-    this.typeForSelectionButtons = selectedSearch;
+    this.routeSub = this.route.paramMap.subscribe(route => {
+      const urlID = route.get('id');
+      const selectedSearch = route.get('selectedHierarchy') === 'categories' ? 'category' : 'location';
+      this.workspaceID = route.get('workspaceID');
 
-    // Load root from cache if possible
-    
-    let cache = this.cacheService.get(urlID, selectedSearch);
-    if(cache){
-      window.scrollTo(0,0); 
-      this.root = cache as HierarchyItem;
-    }
+      if(urlID && (!this.root || this.root.ID !== urlID)){
+        // Load root from cache if possible
+        let cache = this.cacheService.get(urlID, selectedSearch);
+        if(cache){
+          window.scrollTo(0,0); 
+          this.root = cache as HierarchyItem;
+        }
+  
+        // Load the current level
+        this.updateSubscribedParent(urlID, selectedSearch);
+        this.determineCols();
+      }
+    })
 
-    // Load the current level
-    this.updateSubscribedParent(urlID, selectedSearch);
-
-    // ROUTER IS UNTRUSTWORTHY - internal changes can make the router think it doesn't need to update anything
-    // this.route.paramMap.subscribe(params => {
-    //     const urlID = params.get('id');
-    //     this.selectedSearch = params.get('selectedHierarchy') === 'categories' ? 'Categories' : 'Locations';
-    //     this.loadLevel(urlID, this.selectedSearch);
-    //   }
-    // );
-
-    this.determineCols();
     // Get role
     this.authService.getRole().subscribe(
       val => this.role = val
     );
+
+    // change if parent is different
+    this.parentSub = this.navService.getParent().subscribe(val => {
+      if(val){
+        this.root = val;
+        this.loadLevel();
+      }
+      else {
+        console.log("Error: unable to get home root");
+      }
+    });
+
+    this.searchService.loadBinData(this.workspaceID).then(resolved => {
+      if(resolved){
+        this.paramQuerySub = this.route.queryParamMap.subscribe(queryMap => {
+          let URLbinID = queryMap.get('bin')
+          if(URLbinID){
+            let itemID = this.searchService.getItemIDFromBinID(URLbinID);
+            if(itemID && itemID !== 'no ID'){
+              this.router.navigate(['/w/' + this.workspaceID +  '/item/', itemID], {replaceUrl:true});
+              this.snack.open("Routed from bin " + URLbinID, "OK", {duration: 4000});
+            }
+            else {
+              this.snack.open("No item was found for " + URLbinID, "OK", {duration: 4000});
+            }
+          }
+        })
+      }
+    });
   }
 
   navigateUpHierarchy() { // Yikes, repeated code from init
@@ -215,9 +232,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   updateSubscribedParent(id: string, type: string){
     if(type === 'category'){
-      this.navService.setSubscribedParent(this.searchService.getCategory(id));
+      this.navService.setSubscribedParent(this.searchService.getCategory(this.workspaceID, id));
     } else {
-      this.navService.setSubscribedParent(this.searchService.getLocation(id));
+      this.navService.setSubscribedParent(this.searchService.getLocation(this.workspaceID, id));
     }
   }
 
@@ -227,8 +244,7 @@ export class HomeComponent implements OnInit, OnDestroy {
    * @param selectedSearch category or location
    */
   loadLevel() {
-    this.binSearchItem = null;
-    this.resetAttributeData();
+    this.resetDisplay();
     this.displayDescendants(this.root);
     this.loadAttributes();
   }
@@ -264,7 +280,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     if(this.root.type === 'category'){
       let category = this.root as Category;
       let attributes: Attribute[];
-      this.searchService.getAncestorsOf(category).subscribe(categoryAncestors => {
+      this.searchService.getAncestorsOf(this.workspaceID, category).subscribe(categoryAncestors => {
 
         if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
           let allParents = [category].concat(categoryAncestors[0]);
@@ -286,18 +302,26 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   gatherAttributeValues(attribute: AttributeValue){
 
-    this.percentLoadedAttributes = 2;
+    this.percentLoadedAttributes = 10;
     this.isLoadingAttributes = true;
     this.currentAttribute = attribute;
     this.attributeValues = [];
 
-    this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
-      this.percentLoadedAttributes = 6;
-      this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
+    this.searchService.getAllDescendantHierarchyItems(this.workspaceID, this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
+      this.percentLoadedAttributes = 30;
+      this.searchService.getAllDescendantItems(this.workspaceID, this.root, hierarchyItems).subscribe(items => {
 
-        let slice = 94/items.length;
+        // A progress bar for a ton amount of items
+        let slice = 60/((items.length/1000)+1);
+        let count = 0;
         for(let item in items) {
-          this.percentLoadedAttributes += slice;
+
+          count++;
+          if(count > 1000){
+            this.percentLoadedAttributes += slice;
+            count = 0;
+          }
+
           if(items[item].attributes)
           for(let attr in items[item].attributes){
             if(items[item].attributes[attr].name === attribute.name){
@@ -307,7 +331,7 @@ export class HomeComponent implements OnInit, OnDestroy {
                   if(this.attributeValues.length === 0){
                     this.attributeValues.push(items[item].attributes[attr].value);
                   }
-                  else if(this.attributeValues[this.attributeValues.length-1].toUpperCase() < newAttrValueCapped){
+                  else if(AdvancedAlphaNumSort.compare(this.attributeValues[this.attributeValues.length-1].toUpperCase(), newAttrValueCapped) < 0){
                     this.attributeValues.splice(this.attributeValues.length, 0, items[item].attributes[attr].value);
                   }
                   else if(this.attributeValues[this.attributeValues.length-1].toUpperCase() === newAttrValueCapped){
@@ -319,7 +343,7 @@ export class HomeComponent implements OnInit, OnDestroy {
                         // Do nothing. It already has a value like it
                         break;
                       }
-                      else if(newAttrValueCapped < this.attributeValues[value].toUpperCase()){
+                      else if(AdvancedAlphaNumSort.compare(newAttrValueCapped, this.attributeValues[value].toUpperCase()) < 0){
                         this.attributeValues.splice(parseInt(value), 0, items[item].attributes[attr].value);
                         break;
                       }
@@ -337,7 +361,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   displayDescendants(root: HierarchyItem = this.root) {
     this.hierarchyItems = [];
-    this.searchService.getDescendantsOfRoot(root ? root.ID : 'root', root ? root.type === 'category' : false).subscribe(descendants => {
+    this.searchService.getDescendantsOfRoot(this.workspaceID, root ? root.ID : 'root', root ? root.type === 'category' : false).subscribe(descendants => {
       this.hierarchyItems = descendants;
     });
     // Load items that descend from root
@@ -358,7 +382,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (root.items) {
       // For each itemID descending from root, get the item from the data and added to the global items array
       for (let itemID of root.items) {
-        this.obsItems[itemID] = this.searchService.getItem(itemID);
+        this.obsItems[itemID] = this.searchService.getItem(this.workspaceID, itemID);
         this.subItems[itemID] = this.obsItems[itemID].subscribe(returnedItem => {
           if (returnedItem !== null && typeof returnedItem !== 'undefined') {
             let itemFound = false;
@@ -481,26 +505,21 @@ export class HomeComponent implements OnInit, OnDestroy {
   goToItem(item: Item) {
     this.cacheService.store(item);
     this.cacheService.store(this.root); // Currently this only helps if you go back to this page, but that still happens often
-    this.router.navigate(['/item/', item.ID]);
+    this.router.navigate(['/w/' + this.workspaceID +  '/item/', item.ID]);
   }
 
   goToHierarchy(hierItem: HierarchyItem) {
     this.control.setValue('');
-    window.history.pushState(null, null, 'search/' + (this.root.type === 'category' ? 'categories' : 'locations') + '/' + hierItem.ID);
+    window.history.pushState(null, null, '/w/' + this.workspaceID + '/search/' + (hierItem.type === 'category' ? 'categories' : 'locations') + '/' + hierItem.ID);
     this.updateSubscribedParent(hierItem.ID, hierItem.type);
   }
 
-  toggleHierarchy(event) {
-    this.control.setValue('');
-    this.searchTextChange('');
-    window.history.pushState(null, null, 'search/' + event.value.toLowerCase() + '/root');
-    this.updateSubscribedParent('root', this.root? (this.root.type === 'category' ? 'location' : 'category') : 'location');
-  }
-
-  resetAttributeData(){
+  resetDisplay(){
     this.attributeValues = null;
     this.originalAttributeValues = null;
     this.filterableAttributes = null;
+    this.binBarOpen = false;
+    this.searchBarOpen = false;
   }
 
   /**Toggles the admin fab icon */
@@ -509,84 +528,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.miniFabState = this.ico === 'add' ? 'shrunk' : 'extended';
   }
 
-  /**Adds an item to the current depth */
-  addItem() {
-    if (this.ico === 'close') {
-      this.toggleIco();
-    }
-    // add the item
-    let category = 'root';
-    let location = null;
-    let name = '';
-    // to category
-    if (this.root.type === 'category') {
-      category = this.root.ID;
-      let cat = this.root as Category;
-      if(cat.prefix){
-        name = cat.prefix;
-      }
-    } else { // add to locations
-      location = this.root.ID;
-    }
-
-    const dialogRef = this.dialog.open(ItemBuilderModalComponent, {
-      width: '480px',
-      data: {
-        hierarchyObj: this.root
-      }
-    });
-
-    /*this.adminService.createItemAtLocation(name, '', [], category, '../../../assets/notFound.png', location).subscribe(id => {
-      if(this.root.type === 'category'){
-        this.router.navigate(['/itemBuilder/' + id], { queryParams: { step: 0, returnTo: 'search/categories/' + this.root.ID + ':' + this.root.name} });
-      }
-      else {
-        this.router.navigate(['/itemBuilder/' + id], { queryParams: { step: 0, returnTo: 'search/locations/' + this.root.ID + ':' + this.root.name} });
-      }
-    });*/
-  }
-
-  /** Adds a hierarchy item to the current depth */
-  addHierarchy() {
-    if (this.ico === 'close') {
-      this.toggleIco();
-    }
-
-    if (this.root.type === 'category') {
-
-      let categoryData: Category =
-      {
-        name: 'NEW CATEGORY',
-        parent: this.root.ID,
-        children: [],
-        items: [],
-        titleFormat: [{type: "parent"}]
-      }
-
-      this.adminService.addCategory(categoryData, this.root.ID).subscribe(id => {
-        this.router.navigate(['/hierarchyItem/categories/' + id]);
-      });
-    }
-    else {
-
-      this.adminService.addLocation({
-        name: 'NEW LOCATION',
-        parent: this.root.ID,
-        children: [],
-        items: []
-      } as HierarchyItem, this.root.ID).subscribe(id => {
-        this.router.navigate(['/hierarchyItem/locations/' + id]);
-      });
-    }
-  }
-
   clearSearchBar(){
     this.control.setValue('');
   }
 
   filterResults(){
-    this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
-      this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
+    this.searchService.getAllDescendantHierarchyItems(this.workspaceID, this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
+      this.searchService.getAllDescendantItems(this.workspaceID, this.root, hierarchyItems).subscribe(items => {
         let newItemResults: Item[] = [];
         for(let item in items){
           if(items[item].attributes){
@@ -622,8 +570,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       return;
     } else { // Otherwise, get all descendant hierarchy items and items and fuzzy match them
       this.isLoading = true;
-      this.searchService.getAllDescendantHierarchyItems(this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
-        this.searchService.getAllDescendantItems(this.root, hierarchyItems).subscribe(items => {
+      this.searchService.getAllDescendantHierarchyItems(this.workspaceID, this.root.ID, this.root.type === 'category').subscribe(hierarchyItems => {
+        this.searchService.getAllDescendantItems(this.workspaceID, this.root, hierarchyItems).subscribe(items => {
           // Search items
           const itemSearcher = new Fuse(items, this.itemSearchOptions);
           this.items = itemSearcher.search(event);
@@ -641,6 +589,102 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
     this.previousSearch = event;
     this.previousSearchRoot = this.root.ID;
+  }
+
+  openQRScanner(){
+    this.dialog.open(QRScannerDialogComponent, {
+      width: '480px',
+      data: {
+        workspaceID: this.workspaceID
+      }
+    });
+  }
+
+  
+
+  goToEditHierarchy() {
+    this.router.navigate(['w/' + this.workspaceID + '/hierarchyItem/' + (this.root.type === 'category' ? 'categories' : 'locations') + '/' + this.root.ID]);
+  }
+
+  openQRDialog() {
+    if(this.root.type === 'category'){
+      this.dialog.open(QRCodeCategoryDialogComponent, {
+        width: '45rem',
+        data: {workspaceID: this.workspaceID, category: this.root}
+      });
+    }
+    else {
+      this.dialog.open(QRCodeLocationDialogComponent, {
+        width: '45rem',
+        data: {workspaceID: this.workspaceID, location: this.root}
+      });
+    }
+  }
+
+  addItem(){
+    const dialogRef = this.dialog.open(ItemBuilderModalComponent, {
+      width: '480px',
+      data: {
+        workspaceID: this.workspaceID,
+        hierarchyObj: this.root
+      }
+    });
+  }
+
+  /** Adds a hierarchy item to the current depth */
+  addHierarchy() {
+    if (this.root.type === 'category') {
+
+      let categoryData: Category =
+      {
+        name: 'NEW CATEGORY',
+        parent: this.root.ID,
+        children: [],
+        items: [],
+        titleFormat: [{type: "parent"}]
+      }
+
+      this.adminService.addCategory(this.workspaceID, categoryData, this.root.ID).subscribe(id => {
+        this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/categories/' + id]);
+      });
+    }
+    else {
+
+      this.adminService.addLocation(this.workspaceID, {
+        name: 'NEW LOCATION',
+        parent: this.root.ID,
+        children: [],
+        items: []
+      } as HierarchyItem, this.root.ID).subscribe(id => {
+        this.router.navigate(['/w/' + this.workspaceID + '/hierarchyItem/locations/' + id]);
+      });
+    }
+  }
+
+  toggleHierarchy() {
+    if(this.root.type === 'category'){
+      this.router.navigate(['/w/' + this.workspaceID + '/search/locations/root']);
+    }
+    else {
+      this.router.navigate(['/w/' + this.workspaceID + '/search/categories/root']);
+    }
+  }
+
+  toggleBinBar(){
+    this.binBarOpen = !this.binBarOpen;
+    if(this.binBarOpen){
+      this.shelfInput.nativeElement.focus();
+    }
+  }
+
+  toggleSearchBar(){
+    this.searchBarOpen = !this.searchBarOpen;
+    if(this.searchBarOpen){
+      this.searchInput.nativeElement.focus();
+    }
+    if(this.binBarOpen){
+      this.binBarOpen = false;
+    }
   }
 
   updateQuickSearchShelf(event){
@@ -666,7 +710,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
       let locationID = this.searchService.getLocationIDFromShelfID(this.shelfInput.nativeElement.value);
       if(locationID && locationID !== 'err' && locationID !== 'no ID' && locationID !== this.root.ID){
-        this.searchService.getLocation(locationID).subscribe(loc => {
+        this.searchService.getLocation(this.workspaceID, locationID).subscribe(loc => {
           this.binInput.nativeElement.value = '';
           this.goToHierarchy(loc);
           this.shelfInput.nativeElement.blur();
@@ -710,22 +754,27 @@ export class HomeComponent implements OnInit, OnDestroy {
         let binID = this.shelfInput.nativeElement.value + '-' + this.binInput.nativeElement.value;
         let itemID = this.searchService.getItemIDFromBinID(binID);
 
-        this.searchService.getItem(itemID).subscribe(item => {
-          if(item){
-            for(let loc in item.locationMetadata){
-              if(item.locationMetadata[loc].binID === binID){
-                this.searchService.getLocation(loc).subscribe(locationData => {
-
-                  // If we got a result, go to the item's location and deselect the input so
-                  // we can fully see the result on mobile
-                  this.goToHierarchy(locationData);
-                  this.binSearchItem = item;
-                  this.binInput.nativeElement.blur();
-                });
+        if(!itemID || itemID === 'no ID'){
+          this.snack.open("No item was found for " + binID, "OK", {duration: 4000});
+        }
+        else {
+          this.searchService.getItem(this.workspaceID, itemID).subscribe(item => {
+            if(item){
+              for(let loc in item.locationMetadata){
+                if(item.locationMetadata[loc].binID === binID){
+                  this.searchService.getLocation(this.workspaceID, loc).subscribe(locationData => {
+  
+                    // If we got a result, go to the item's location and deselect the input so
+                    // we can fully see the result on mobile
+                    this.goToHierarchy(locationData);
+                    this.binSearchItem = item;
+                    this.binInput.nativeElement.blur();
+                  });
+                }
               }
             }
-          }
-        });
+          });
+        }
       }
     }
     else {

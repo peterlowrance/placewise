@@ -32,6 +32,7 @@ export class ReportTemplateEditComponent implements OnInit {
     private searchService: SearchService
     ) { }
 
+  workspaceID: string;
   type: string;
   template: ReportStructure;
   locationIDs: string[] = [];
@@ -47,15 +48,16 @@ export class ReportTemplateEditComponent implements OnInit {
 
   ngOnInit(): void {
     this.type = this.route.snapshot.paramMap.get('type');
+    this.workspaceID = this.route.snapshot.paramMap.get('workspaceID');
 
-    this.adminService.getWorkspaceUsers().subscribe(users => {
+    this.adminService.getWorkspaceUsers(this.workspaceID).subscribe(users => {
       for(let user of users){
         this.usersLoadedMap[user.id] = user;
       }
 
       this.usersLoaded = users;
 
-      this.reportService.getReportTemplates().subscribe(templates => {
+      this.reportService.getReportTemplates(this.workspaceID).subscribe(templates => {
         if(templates){
           this.template = templates[this.type];
           if(this.template){
@@ -65,7 +67,7 @@ export class ReportTemplateEditComponent implements OnInit {
             if(this.template.locations){
               for(let locationID in this.template.locations){
                 this.locationIDs.push(locationID);
-                this.searchService.getLocation(locationID).subscribe(loc => {
+                this.searchService.getLocation(this.workspaceID, locationID).subscribe(loc => {
                   this.locationsLoadedMap[locationID] = loc;
                 })
               }
@@ -118,7 +120,7 @@ export class ReportTemplateEditComponent implements OnInit {
   addLocation(){
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
-      data: {hierarchy: 'locations', singleSelection: true, id: '', parents: ['root']}
+      data: {workspaceID: this.workspaceID, hierarchy: 'locations', singleSelection: true, id: '', parents: ['root']}
     });
     dialogRef.afterClosed().subscribe(result => {
       if(result && result[0]){
@@ -255,14 +257,14 @@ export class ReportTemplateEditComponent implements OnInit {
   }
 
   save(){
-    this.reportService.updateTemplate(this.template, this.type);
+    this.reportService.updateTemplate(this.workspaceID, this.template, this.type);
   }
 
   deleteTemplate(){
     if(confirm("Are you sure you want to delete this template? Reports that have used this template will stay, but you will no longer be able to use this report type.")){
-      this.reportService.deleteTemplate(this.type).then(result => {
+      this.reportService.deleteTemplate(this.workspaceID, this.type).then(result => {
         if(result){
-          this.router.navigate(['/reports/templates']);
+          this.router.navigate(['/w/' + this.workspaceID + '/reports/templates']);
         }
       });
     }

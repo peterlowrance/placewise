@@ -1,0 +1,42 @@
+
+<div *ngIf="step === 'version'">
+    <mat-radio-group [(ngModel)]="version">
+        <mat-radio-button value="item"> Link to Item </mat-radio-button>
+        <div><small> 
+            This will always link to this specific item, no matter where it is or how it gets modified. 
+        </small></div>
+        <br>
+        <mat-radio-button value="bin"> Link to Bin </mat-radio-button>
+        <div><small> 
+            This will link to the bin number, so if a different item gets placed in the bin, this will link to that item instead. This can also be very small.
+        </small></div>
+    </mat-radio-group>
+</div>
+
+<div *ngIf="step === 'QR'">
+    <div class="QR-code-holder">
+        <qrcode *ngIf="!isBin || isUniversalQR" [qrdata]="urlToString" [width]="250" [errorCorrectionLevel]="'Q'"></qrcode>
+
+        <!-- This is because the type 1 is harder to scan, so adding extra error correction 
+            (which is already good for a bin label that will get more guffed over time) 
+            forces verion 2 to be used, which has that extra square for detection -->
+        <qrcode *ngIf="isBin && !isUniversalQR" [qrdata]="urlToString" [width]="250" [errorCorrectionLevel]="'H'"></qrcode>
+    </div>
+    
+    <mat-slide-toggle [(ngModel)]="isUniversalQR" (change)="toggleUniversalQR($event)"> Use Universal QR </mat-slide-toggle>
+    <div><small class="light-text">
+        The universal QR works with any camera app or workspace, but needs to be bigger to be scanned properly.
+    </small></div>
+</div>
+
+<br>
+
+<!-- Buttons -->
+<div class="action-buttons">
+    <!-- Cancel button is always here -->
+    <button mat-raised-button class="rect-action-button" (click)="cancel()">Cancel</button>
+
+    <!-- Next or confirm button depending on if this is a single step-->
+    <button *ngIf="step !== 'QR'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary"> Next </button>
+    <button *ngIf="step === 'QR'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Finish</button>
+</div>

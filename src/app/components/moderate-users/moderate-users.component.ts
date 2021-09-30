@@ -7,6 +7,8 @@ import {AddUserDialogComponent} from '../add-user-dialog/add-user-dialog.compone
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
+import { ActivatedRoute } from '@angular/router';
+import { SearchService } from 'src/app/services/search.service';
 
 
 @Component({
@@ -17,6 +19,7 @@ import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 export class ModerateUsersComponent implements OnInit, OnDestroy {
   /** Array of workspace user data */
   workspaceUsers: WorkspaceUser[];
+  workspaceID: string;
 
   /** Table headers */
   headers: string[] = ['User', 'Admin','Delete'];
@@ -30,10 +33,18 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
   admins: WorkspaceUser[]; // For picking who reports go to by default
   defaults: WorkspaceUser[]; // For picking who reports go to by default
 
-  constructor(private authService: AuthService, private adminService: AdminService, private diag: MatDialog, private snack: MatSnackBar) { }
+  constructor(
+    private authService: AuthService, 
+    private adminService: AdminService, 
+    private searchService: SearchService,
+    private diag: MatDialog, 
+    private route: ActivatedRoute,
+    private snack: MatSnackBar) { }
 
   ngOnInit() {
-    this.adminService.getWorkspaceUsers().subscribe( (users) => this.workspaceUsers = users.sort(function(a, b) {
+    this.workspaceID = this.route.snapshot.paramMap.get("workspaceID");
+
+    this.adminService.getWorkspaceUsers(this.workspaceID).subscribe( (users) => this.workspaceUsers = users.sort(function(a, b) {
       var nameA = a.firstName.toUpperCase(); // ignore upper and lowercase
       var nameB = b.firstName.toUpperCase(); // ignore upper and lowercase
       if (nameA < nameB) {
@@ -59,12 +70,14 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
     }));
     this.userSub = this.authService.getUser().subscribe(val => this.signedInEmail = val.email);
 
-    this.adminService.getWorkspaceUsers().subscribe(users => {
+    this.adminService.getWorkspaceUsers(this.workspaceID).subscribe(users => {
       if(users && users.length === this.authService.usersInWorkspace){
-        // Load admins for selection
-        this.admins = users.filter(element => { return element.role === "Admin" });
-        // Load selected people to report to
-        this.defaults = this.admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
+        this.searchService.getWorkspaceInfo(this.workspaceID).subscribe(workspaceInfo => {
+          // Load admins for selection
+          this.admins = users.filter(element => { return element.role === "Admin" });
+          // Load selected people to report to
+          this.defaults = this.admins.filter(element => { return workspaceInfo.defaultUsersForReports.indexOf(element.id) > -1 });
+        })
       }
     });
   }
@@ -152,6 +165,6 @@ export class ModerateUsersComponent implements OnInit, OnDestroy {
   }
 
   updateDefaultReportedUsers(event) {
-    this.adminService.updateDefaultReportUsers(event.map(user => user.id));
+    this.adminService.updateDefaultReportUsers(this.workspaceID, event.map(user => user.id));
   }
 }

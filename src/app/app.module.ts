@@ -35,7 +35,7 @@ import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {NavbarComponent} from './components/navbar/navbar.component';
-import {HomeComponent} from './components/home/home.component';
+import {SearchComponent} from './components/search/search.component';
 import {LoginComponent} from './components/login/login.component';
 import {ItemComponent} from './components/item/item.component';
 import {NotFoundComponent} from './components/not-found/not-found.component';
@@ -76,12 +76,20 @@ import { ReportTemplateEditComponent } from './components/report-template-edit/r
 import { UserInputDialogComponent } from './components/user-input-dialog/user-input-dialog.component';
 import { ColorPaletteDialogComponent } from './components/color-palette-dialog/color-palette-dialog.component';
 import { ReportFormatPieceDialogComponent } from './components/report-format-piece-dialog/report-format-piece-dialog.component';
+import { QRCodeItemDialogComponent } from './components/qrcode-item-dialog/qrcode-item-dialog.component';
+import { QRCodeModule } from 'angularx-qrcode';
+import { QRCodeLocationDialogComponent } from './components/qrcode-location-dialog/qrcode-location-dialog.component';
+import { QRCodeCategoryDialogComponent } from './components/qrcode-category-dialog/qrcode-category-dialog.component';
+import { TransferStockDialogComponent } from './components/transfer-stock-dialog/transfer-stock-dialog.component';
+import { NgxMasonryModule } from 'ngx-masonry';
+import { ZXingScannerModule } from '@zxing/ngx-scanner';
+import { QRScannerDialogComponent } from './components/qrscanner-dialog/qrscanner-dialog.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     NavbarComponent,
-    HomeComponent,
+    SearchComponent,
     LoginComponent,
     ItemComponent,
     NotFoundComponent,
@@ -113,7 +121,12 @@ import { ReportFormatPieceDialogComponent } from './components/report-format-pie
     ReportTemplateEditComponent,
     UserInputDialogComponent,
     ColorPaletteDialogComponent,
-    ReportFormatPieceDialogComponent
+    ReportFormatPieceDialogComponent,
+    QRCodeItemDialogComponent,
+    QRCodeLocationDialogComponent,
+    QRCodeCategoryDialogComponent,
+    TransferStockDialogComponent,
+    QRScannerDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -154,7 +167,10 @@ import { ReportFormatPieceDialogComponent } from './components/report-format-pie
     MatTableModule,
     HttpClientModule,
     TextFieldModule,
-    DragDropModule
+    DragDropModule,
+    QRCodeModule,
+    NgxMasonryModule,
+    ZXingScannerModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

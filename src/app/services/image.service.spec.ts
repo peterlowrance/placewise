@@ -4,7 +4,7 @@ import { ImageService } from './image.service';
 import {AngularFireStorage} from '@angular/fire/storage';
 import {AuthService} from './auth.service';
 import * as AuthTest from './auth.mock.service';
-import {HomeComponent} from '../components/home/home.component';
+import {SearchComponent} from '../components/search/search.component';
 import {BehaviorSubject} from 'rxjs';
 
 

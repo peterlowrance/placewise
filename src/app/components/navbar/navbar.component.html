@@ -38,7 +38,7 @@
         </div>
         <span class="spacer"></span>
         <button mat-icon-button [disabled]="checkLocation() ==='/' && (parent === null || parent.ID === 'root')" (click)="route('home')"><mat-icon>home</mat-icon></button>
-        <button mat-icon-button [disabled]="checkLocation() ==='textSearch'" (click)="route('textSearch')"><mat-icon>search</mat-icon></button>
+        <!--button mat-icon-button [disabled]="checkLocation() ==='textSearch'" (click)="route('textSearch')"><mat-icon>search</mat-icon></button-->
         <button mat-icon-button *ngIf="this.role === 'Admin'" [disabled]="this.locationString==='/reports'" (click)="route('reports')">
             <mat-icon [matBadge]="numberOfReports" [matBadgeColor]="hasReadReportsColor" [matBadgeHidden]="numberOfReports === 0">report_problem</mat-icon>
         </button>
@@ -46,11 +46,5 @@
         <button mat-icon-button [disabled]="this.locationString==='/settings'"  (click)="route('settings')">
             <mat-icon>settings</mat-icon>
         </button>
-    </mat-toolbar-row>
-    <mat-toolbar-row class="structure-color-light" *ngIf="checkLocation() === '/' && parent && parent.ID !== 'root'">
-        <!-- <button mat-flat-button color="accent" (click)="goToModify()">{{parent.name}}</button> -->
-        <span class="nav-text">{{parent.name}}</span>
-        <span class="spacer"></span>
-        <button mat-icon-button *ngIf="this.role === 'Admin'" (click)="route('modify')"><mat-icon>chevron_right</mat-icon></button>
     </mat-toolbar-row>
 </mat-toolbar>

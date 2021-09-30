@@ -2,7 +2,7 @@ import { Component, OnInit, Inject } from '@angular/core';
 import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {ItemReportModalData} from 'src/app/models/ItemReportModalData'
 import { Item } from 'src/app/models/Item';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { unwatchFile } from 'fs';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 import { AdminService } from 'src/app/services/admin.service';
@@ -15,6 +15,7 @@ import { ReportService } from 'src/app/services/report.service';
 import { ReportStructure, ReportStructureWrapper } from 'src/app/models/ReportStructure';
 import { identifierModuleUrl } from '@angular/compiler';
 import { UserInput } from 'src/app/models/UserInput';
+import { SearchService } from 'src/app/services/search.service';
 
 interface LocationWithReportMeta {
   location?: HierarchyLocation, 
@@ -33,12 +34,14 @@ const PLACEHOLDER: string = 'Something is wrong with this item.\nPlease follow-u
 export class ReportDialogComponent implements OnInit {
 
   constructor(private router: Router,
+    private route: ActivatedRoute, 
     public dialogRef: MatDialogRef<ReportDialogComponent>,
     private adminService: AdminService,
+    private searchService: SearchService,
     private authService: AuthService,
     private reportService: ReportService,
     private snack: MatSnackBar,
-    @Inject(MAT_DIALOG_DATA) public data: {item: Item, locations: HierarchyLocation[]}
+    @Inject(MAT_DIALOG_DATA) public data: {workspaceID: string, item: Item, locations: HierarchyLocation[]}
   ) { }
 
   loading = {
@@ -47,6 +50,7 @@ export class ReportDialogComponent implements OnInit {
     //empty: false
   }
 
+  workspaceID: string;
   locationData: LocationWithReportMeta[] = [];
   reportTypes: ReportStructureWrapper[];
 
@@ -73,12 +77,12 @@ export class ReportDialogComponent implements OnInit {
 
   ngOnInit() {
     this.step = 'start';
+    this.workspaceID = this.data.workspaceID;
 
     this.locationData = this.countRecentReports(this.data.locations, this.data.item.reports, this.timestamp);
     this.canReport = this.isAbleToReport(this.locationData);
 
-    console.log(this.data.item);
-    this.reportService.getReportsAvailableHere(this.data.item).then(result => {
+    this.reportService.getReportsAvailableHere(this.workspaceID, this.data.item).then(result => {
       this.reportTypes = result;
 
       /*
@@ -216,14 +220,15 @@ export class ReportDialogComponent implements OnInit {
   onNextClick() {
     if(this.step === 'start'){
       this.loading.custom = true;
-      this.adminService.getWorkspaceUsers().subscribe(users => {
+      this.adminService.getWorkspaceUsers(this.workspaceID).subscribe(users => {
         if(users && users.length === this.authService.usersInWorkspace){
           this.loading.custom = false;
 
-          // Load admins for selection
+          this.searchService.getWorkspaceInfo(this.workspaceID).subscribe(workspaceInfo => {
+            // Load admins for selection
           this.admins = users.filter(element => { return element.role === "Admin" });
           // Load selected people to report to
-          this.selectedAdmins = this.admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
+          this.selectedAdmins = this.admins.filter(element => { return workspaceInfo.defaultUsersForReports.indexOf(element.id) > -1 });
           
           // If there's no location, keep the locationID to 'none' and skip a step
           if(!this.data.locations || this.data.locations.length < 1){
@@ -238,6 +243,7 @@ export class ReportDialogComponent implements OnInit {
           else {
             this.step = 'where';
           }
+          });
         }
       });
     }
@@ -282,7 +288,7 @@ export class ReportDialogComponent implements OnInit {
 
     this.updateLocationDataForAutoReport(type, this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
 
-    this.reportService.getReportTemplates().subscribe(templates => {
+    this.reportService.getReportTemplates(this.workspaceID).subscribe(templates => {
       this.reportTemplate = templates[type];
       this.input = this.reportTemplate.userInput[0];
 
@@ -331,7 +337,7 @@ export class ReportDialogComponent implements OnInit {
     }
     this.description = reportText;
 
-    this.adminService.getWorkspaceUsers().subscribe(users => {
+    this.adminService.getWorkspaceUsers(this.workspaceID).subscribe(users => {
       if(users && users.length === this.authService.usersInWorkspace){
         // Load admins for selection
         this.admins = users.filter(element => { return element.role === "Admin" });
@@ -345,7 +351,7 @@ export class ReportDialogComponent implements OnInit {
           }
         }
 
-        console.log(this.selectedAdmins);
+        //console.log(this.selectedAdmins);
 
         this.sendReport();
       }
@@ -414,7 +420,7 @@ export class ReportDialogComponent implements OnInit {
     this.dialogRef.close({wasValid: true});
     this.snack.open("Sending Report...", '', {duration: 3000, panelClass: ['mat-toolbar']});
 
-    this.reportService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type, this.reportTemplate.urgentReportSubject).then(
+    this.reportService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type, this.reportTemplate ? this.reportTemplate.urgentReportSubject : null).then(
       () => this.snack.open("Report Sent!", "OK", {duration: 5000, panelClass: ['successful-report']}),
       (err) => {
         this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})

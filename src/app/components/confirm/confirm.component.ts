@@ -12,7 +12,7 @@ import { ConfirmData } from 'src/app/models/ConfirmData';
 export class ConfirmComponent implements OnInit {
 
   constructor(private router: Router,
-    public dialogRef: MatDialogRef<ReportDetailViewComponent>,
+    public dialogRef: MatDialogRef<ConfirmComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ConfirmData
   ) { }
 

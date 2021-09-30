@@ -5,7 +5,7 @@ import { Routes, RouterModule } from '@angular/router';
 import {AuthGuard} from './guards/auth.guard'
 
 // TODO: import routes to all components here
-import {HomeComponent} from './components/home/home.component';
+import {SearchComponent} from './components/search/search.component';
 import {LoginComponent} from './components/login/login.component';
 import {ItemComponent} from './components/item/item.component';
 import {NotFoundComponent} from './components/not-found/not-found.component';
@@ -19,19 +19,27 @@ import { ReportTemplatesComponent } from './components/report-templates/report-t
 import { ReportTemplateEditComponent } from './components/report-template-edit/report-template-edit.component';
 
 const routes: Routes = [
-  {path: 'search/:selectedHierarchy/:id', component: HomeComponent, canActivate: [AuthGuard]},
-  {path: 'textSearch', component: TextSearchComponent, canActivate: [AuthGuard]},
+  {path: 'w/:workspaceID/search/:selectedHierarchy/:id', component: SearchComponent, canActivate: [AuthGuard]},
+  {path: 'w/:workspaceID/textSearch', component: TextSearchComponent, canActivate: [AuthGuard]},
   {path: 'login', component: LoginComponent},
-  {path: 'item/:id', component: ItemComponent, canActivate: [AuthGuard]},
+  {path: 'w/:workspaceID/item/:id', component: ItemComponent, canActivate: [AuthGuard]},
   {path: 'settings', component: SettingsComponent, canActivate: [AuthGuard]},
-  {path: 'reports', component: AdminReportComponent, canActivate: [AuthGuard]},
-  {path: 'reports/templates', component: ReportTemplatesComponent, canActivate: [AuthGuard]},
-  {path: 'reports/templates/:type', component: ReportTemplateEditComponent, canActivate: [AuthGuard]},
-  {path: 'modify/:selectedHierarchy', component: ReportTemplateEditComponent, canActivate: [AuthGuard]},
-  {path: 'users', component: ModerateUsersComponent, canActivate: [AuthGuard]},
-  {path: 'hierarchyItem/:selectedHierarchy/:id', component: HierarchyItemComponent, canActivate: [AuthGuard]},
-  { path: '', redirectTo: '/search/locations/root', pathMatch: 'full' },
+  {path: 'w/:workspaceID/reports', component: AdminReportComponent, canActivate: [AuthGuard]},
+  {path: 'w/:workspaceID/reports/templates', component: ReportTemplatesComponent, canActivate: [AuthGuard]},
+  {path: 'w/:workspaceID/reports/templates/:type', component: ReportTemplateEditComponent, canActivate: [AuthGuard]},
+  //{path: '/w/:workspace/modify/:selectedHierarchy', component: ReportTemplateEditComponent, canActivate: [AuthGuard]},
+  {path: 'w/:workspaceID/users', component: ModerateUsersComponent, canActivate: [AuthGuard]},
+  {path: 'w/:workspaceID/hierarchyItem/:selectedHierarchy/:id', component: HierarchyItemComponent, canActivate: [AuthGuard]},
+  {path: '', redirectTo: '/search/locations/root', pathMatch: 'full'},
   {path: '', redirectTo:'/login', pathMatch:'full'},
+
+  // QR Code Reroutes
+  {path: 'w/:workspaceID/i/:id', redirectTo: 'w/:workspaceID/item/:id', pathMatch: 'full'},
+  {path: 'w/:workspaceID/hi/c/:id', redirectTo: 'w/:workspaceID/hierarchyItem/categories/:id', pathMatch: 'full'},
+  {path: 'w/:workspaceID/hi/l/:id', redirectTo: 'w/:workspaceID/hierarchyItem/locations/:id', pathMatch: 'full'},
+  {path: 'w/:workspaceID/s/c/:id', redirectTo: 'w/:workspaceID/search/categories/:id', pathMatch: 'full'},
+  {path: 'w/:workspaceID/s/l/:id', redirectTo: 'w/:workspaceID/search/locations/:id', pathMatch: 'full'},
+
   {path: '**', component: NotFoundComponent}
 ];
 
@@ -40,4 +48,4 @@ const routes: Routes = [
   imports: [RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' })],
   exports: [RouterModule]
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

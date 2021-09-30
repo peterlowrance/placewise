@@ -1,5 +1,5 @@
-import {Component, OnInit} from '@angular/core';
-import {NavigationEnd, Router} from '@angular/router';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {Location} from '@angular/common';
 
 import {NavService} from '../../services/nav.service';
@@ -10,12 +10,20 @@ import { HostListener } from '@angular/core';
 import { AdminService } from 'src/app/services/admin.service';
 import { Subscription } from 'rxjs';
 import { ReportService } from 'src/app/services/report.service';
+import { MatDialog } from '@angular/material/dialog';
+import { QRCodeLocationDialogComponent } from '../qrcode-location-dialog/qrcode-location-dialog.component';
+import { QRCodeCategoryDialogComponent } from '../qrcode-category-dialog/qrcode-category-dialog.component';
+import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
+import { Category } from 'src/app/models/Category';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { Item } from 'src/app/models/Item';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.css']
+  styleUrls: ['./navbar.component.css'],
 })
 export class NavbarComponent implements OnInit {
 
@@ -33,6 +41,7 @@ export class NavbarComponent implements OnInit {
     items: [],
     imageUrl: ''
   };
+  typeForHierarchyToggleButtons: string;
 
   /**The user's role */
   role: string = '';
@@ -40,45 +49,110 @@ export class NavbarComponent implements OnInit {
   hasReadReportsColor = 'accent';
   numberOfReports = 0;
 
+  workspaceID: string;
+
   
   @HostListener('window:popstate', ['$event'])
   onPopState(event) {
-    let url: string  = event.target.location.pathname;
-    if(url.startsWith('/search/') && this.locationString.startsWith('/search/')){ // Catch back button in the searching, router does not pickup on the changes
-      let splitURL = url.split('/');
-      if(splitURL[2] === 'categories'){
-        let sub = this.searchService.getCategory(splitURL[3].replace('%20', ' ')).subscribe(cat => { // %20 replace for the conversion from the URL's spaces to string spaces
-          this.navService.setSearchType('Categories');
-          this.navService.setParent(cat)
-          sub.unsubscribe();
-        });
-      }
-      else if (splitURL[2] === 'locations'){
-        let sub = this.searchService.getLocation(splitURL[3].replace('%20', ' ')).subscribe(loc => {
-          this.navService.setSearchType('Locations');
-          this.navService.setParent(loc)
-          sub.unsubscribe();
-        });
-      }
-      else {
-        console.log("Malformed URL: " + splitURL[2]);
-      }
-    }
+    let url: string  = event.target.location.pathname;    
   }
 
   constructor(
     private routeLocation: Location, 
     private router: Router, 
+    public dialog: MatDialog,
+    private activatedRoute: ActivatedRoute,
     private navService: NavService, 
     private authService: AuthService, 
     private searchService: SearchService, 
     private adminService: AdminService,
+    private snack: MatSnackBar,
     private reportService: ReportService) {
+    // For good measure, don't pile on identical subscriptions. These are used to stop previous ones.
+    let reportsSub: Subscription;
+    //let authSub: Subscription;
+    let reportLocationsSub: Subscription;
 
     router.events.subscribe(val => {
       this.navService.setDirty(false); //Clear dirtyness anytime we leave a page
+
       if (val instanceof NavigationEnd) {    
         this.locationString = val.url;
+        
+        if(this.locationString.startsWith("/w/")){
+          let urlPieces = val.url.split('/');
+          let workspaceID = urlPieces[2].replace("%20", " ");
+          
+          if(workspaceID && workspaceID !== this.workspaceID){
+            this.workspaceID = workspaceID;
+            this.reportService.getReportTemplates(this.workspaceID);
+
+            if(reportLocationsSub) reportLocationsSub.unsubscribe();
+                if(reportsSub) reportsSub.unsubscribe();
+                reportsSub = this.reportService.getReports(this.workspaceID).subscribe(reports => {
+                  if(reports){
+                    this.numberOfReports = 0;
+
+                    if(this.locationString !== '/reports'){
+                      this.hasReadReportsColor = 'warn';
+                    }
+
+                    this.authService.getUser().subscribe(user => {
+                      for(let report of reports){
+                        if(report.reportedTo && report.reportedTo.indexOf(user.id) > -1){
+                          this.numberOfReports++;
+                        }
+                      }
+                    });
+                  }
+              });
+          }
+        }
+
+        if(this.locationString.includes('/search/')){ // Catch back button in the searching, router does not pickup on the changes
+          
+          
+          let splitURL = this.locationString.split('/');
+
+          if(splitURL[4] === 'categories'){
+            // Setup toggle button
+            this.typeForHierarchyToggleButtons = 'categories';
+
+            // Remove any parameters at the end of the URL
+            let catID = splitURL[5].replace('%20', ' ');
+            let foundParamsIndex = catID.indexOf('?');
+            if(foundParamsIndex > -1){
+              catID = catID.substring(0, foundParamsIndex);
+            }
+
+            let sub = this.searchService.getCategory(this.workspaceID, catID).subscribe(cat => { // %20 replace for the conversion from the URL's spaces to string spaces
+              this.navService.setSearchType('Categories');
+              this.navService.setParent(cat)
+              sub.unsubscribe();
+            });
+          }
+
+          else if (splitURL[4] === 'locations'){
+            // Setup toggle button
+            this.typeForHierarchyToggleButtons = 'locations';
+
+            // Remove any parameters at the end of the URL
+            let locID = splitURL[5].replace('%20', ' ');
+            let foundParamsIndex = locID.indexOf('?');
+            if(foundParamsIndex > -1){
+              locID = locID.substring(0, foundParamsIndex);
+            }
+
+            let sub = this.searchService.getLocation(this.workspaceID, locID).subscribe(loc => {
+              this.navService.setSearchType('Locations');
+              this.navService.setParent(loc)
+              sub.unsubscribe();
+            });
+          }
+          else {
+            console.log("Malformed URL: " + splitURL[2]);
+          }
+        }
       }
     });
 
@@ -89,61 +163,16 @@ export class NavbarComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.authService.getRole().subscribe(val =>  this.role = val);
+    /*
+    this.typeForSelectionButtons = this.activatedRoute.snapshot.paramMap.get('selectedHierarchy');
 
-     // For good measure, don't pile on identical subscriptions. These are used to stop previous ones.
-    let reportsSub: Subscription;
-    let authSub: Subscription;
-    let reportLocationsSub: Subscription;
-
-    this.authService.getWorkspace().subscribe(workspaceInfo => {
-      if(workspaceInfo && workspaceInfo.id !== ''){ // Make sure we have a workspace before subscribing to reports
-
-        if(reportLocationsSub) reportLocationsSub.unsubscribe();
-            
-            if(reportsSub) reportsSub.unsubscribe();
-            reportsSub = this.reportService.getReports().subscribe(reports => {
-              if(reports){
-                this.numberOfReports = 0;
-
-                if(this.locationString !== '/reports'){
-                  this.hasReadReportsColor = 'warn';
-                }
-
-                this.authService.getUser().subscribe(user => {
-                  for(let report of reports){
-
-                    if(report.reportedTo && report.reportedTo.indexOf(user.id) > -1){
-                      this.numberOfReports++;
-                    }
-                    
-                    /*
-                    OLD NASTY SYSTEM
-                    let itemSub = this.searchService.getItem(reports[reportIndex].item).subscribe(item => {
-                        this.searchService.getAncestorsOf(item).subscribe(itemLocations => {
-                          
-                          for(let listenedIndex in locations){
-                            for(let outerIndex in itemLocations){
-                              for(let innerIndex in itemLocations[outerIndex]){
-                                if(itemLocations[outerIndex][innerIndex].ID === locations[listenedIndex]){
-                                  this.numberOfReports++;
-                                  itemSub.unsubscribe();
-                                  return; // Cut some CPU cycles and don't repeat current item
-                                }
-                              }
-                            }
-                          }
-                          itemSub.unsubscribe(); // Don't want this messing with numbers later
-                        })
-                    })
-                    */
-                  }
-                });
-
-              }
-            });
-      }
+    this.activatedRoute.paramMap.subscribe(route => {
+      this.workspaceID = route.get('workspaceID');
+      console.log(this.workspaceID);
     })
+    */
+
+    this.authService.getRole().subscribe(val =>  this.role = val);
   }
 
   /**
@@ -159,18 +188,18 @@ export class NavbarComponent implements OnInit {
       return 'login';
     } else if (this.locationString === '/settings') {
       return 'settings';
-    } else if (this.locationString.startsWith('/hierarchyItem/categories')) {
+    } else if (this.locationString.includes('/hierarchyItem/categories')) {
       return 'category';
-    } else if (this.locationString.startsWith('/hierarchyItem/locations')) {
+    } else if (this.locationString.includes('/hierarchyItem/locations')) {
       return 'location';
     } else if (this.locationString === '/users') {
       return 'moderateUsers';
     } else if (this.locationString.includes('reports')) {
       return 'reports';
-    } else if (this.locationString.startsWith('/textSearch')) {
+    } else if (this.locationString.includes('/textSearch')) {
       return 'textSearch';
     }
-    else if(this.locationString.startsWith('/search/') && this.locationString.split('/').length === 4) {
+    else if(this.locationString.includes('/search/')) {
       return '/';
     }
     else{
@@ -204,13 +233,18 @@ export class NavbarComponent implements OnInit {
         this.returnInHierarchy();
         break;
       case 'home':
-        this.goToHierarchy('root');
-        break;
-      case 'modify':
-        this.goToModify();
+        this.goToHierarchy('root', 'location');
         break;
       case 'reports':
         this.hasReadReportsColor = 'accent'; // Note: also goes to default
+        this.router.navigateByUrl("/w/" + this.workspaceID + "/reports");
+        break;
+      case 'users':
+        this.router.navigateByUrl("/w/" + this.workspaceID + "/users");
+        break;
+      case 'textSearch':
+        this.router.navigateByUrl("/w/" + this.workspaceID + "/textSearch");
+        break;
       default:
         this.router.navigateByUrl(route);
     }
@@ -234,33 +268,29 @@ export class NavbarComponent implements OnInit {
    */
   returnInHierarchy() {
     if(this.parent.parent){
-      this.goToHierarchy(this.parent.parent);
+      this.goToHierarchy(this.parent.parent, this.parent.type);
     }
     else {
       console.log("Unusual: There was no parent of parent.")
     }
   }
 
-  goToHierarchy(id: string){
-    if(this.parent && this.parent.type === 'category'){
-      this.router.navigate(['search/categories/' + id]).then(confirm => {
+  goToHierarchy(id: string, type: string){
+    if(this.parent && type === 'category'){
+      this.router.navigate(['w/' + this.workspaceID + '/search/categories/' + id]).then(confirm => {
         if(!confirm){ // Sometimes since we're going to the same component, the router will not navigate. If so, push to make sure the url gets in the history
-          window.history.pushState(null, null, 'search/categories/' + id);
+          window.history.pushState(null, null, 'w/' + this.workspaceID + '/search/categories/' + id);
         }
       });
-      this.navService.setSubscribedParent(this.searchService.getCategory(id));
+      this.navService.setSubscribedParent(this.searchService.getCategory(this.workspaceID, id));
     } else {
-      this.router.navigate(['search/locations/' + id]).then(confirm => {
+      this.router.navigate(['w/' + this.workspaceID + '/search/locations/' + id]).then(confirm => {
         if(!confirm){ // Sometimes since we're going to the same component, the router will not navigate. If so, push to make sure the url gets in the history
-          window.history.pushState(null, null, 'search/locations/' + id);
+          window.history.pushState(null, null, 'w/' + this.workspaceID + '/search/locations/' + id);
         }
       });
-      this.navService.setSubscribedParent(this.searchService.getLocation(id));
+      this.navService.setSubscribedParent(this.searchService.getLocation(this.workspaceID, id));
     }
-  }
-
-  goToModify() {
-    this.router.navigate(['hierarchyItem/' + (this.parent.type === 'category' ? 'categories' : 'locations') + '/' + this.parent.ID]);
   }
 
 }

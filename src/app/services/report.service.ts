@@ -11,6 +11,7 @@ import { HierarchyLocation } from '../models/Location';
 import { ReportStructure, ReportStructureTemplates, ReportStructureWrapper } from '../models/ReportStructure';
 import { SentReport } from '../models/SentReport';
 import { AuthService } from './auth.service';
+import { SearchService } from './search.service';
 
 // Not the best place to put this, but don't want the circular dependency with admin service
 export const adServe = 'https://placewise-d040e.appspot.com/';
@@ -27,25 +28,22 @@ export class ReportService {
     private auth: AuthService,
     private http: HttpClient,
     private afs: AngularFirestore, 
+    private searchService: SearchService,
     ) {
       
-      this.auth.getWorkspace().subscribe(result => {
-        if(result.id){
-          // If the report subscription exists, unsubscribe
-          if(this.reportSubscription){
-            this.reportSubscription.unsubscribe();
-          }
-
-          // Get the report data now that we have the workspace ID
-          this.reportSubscription = this.afs.doc<ReportStructureTemplates>('/Workspaces/' + this.auth.workspace.id + '/StructureData/ReportStructure').snapshotChanges().subscribe(structure => {
-            this.reportStructure.next(structure.payload.data());
-          });
-        }
-      })
+      // If the report subscription exists, unsubscribe
+      if(this.reportSubscription){
+        this.reportSubscription.unsubscribe();
+      }
     }
+
+  loadReportStructure(){
+
+  }
 
 
   placeReport(itemID: string, text: string, reportedTo: string[], locationID: string, type: string, urgentTitle?: string) {
+    console.log(type);
     return new Promise((resolve, reject) => {
       this.auth.getAuth().subscribe(auth => {
         auth.getIdTokenResult().then(
@@ -104,8 +102,8 @@ export class ReportService {
     });
   }
 
-  getReport(id: string) {
-    return this.afs.doc<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports/' + id).snapshotChanges().pipe(map(a => {
+  getReport(workspaceID: string, id: string) {
+    return this.afs.doc<SentReport>('/Workspaces/' + workspaceID + '/Reports/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as SentReport;
       if (!data) {
         return;
@@ -115,8 +113,8 @@ export class ReportService {
     }));
   }
 
-  getReports(): Observable<SentReport[]> {
-    return this.afs.collection<SentReport>('/Workspaces/' + this.auth.workspace.id + '/Reports').snapshotChanges().pipe(
+  getReports(workspaceID: string): Observable<SentReport[]> {
+    return this.afs.collection<SentReport>('/Workspaces/' + workspaceID + '/Reports').snapshotChanges().pipe(
       map(a => {
         return a.map(g => {
             const data = g.payload.doc.data() as SentReport;
@@ -127,18 +125,29 @@ export class ReportService {
       }));
   }
 
-  getReportTemplates(): Observable<ReportStructureTemplates> {
-    return this.reportStructure.asObservable();
+  lastWorkspaceID: string = '';
+  // Preloads at the beginning, knows the workspaceID through navbar
+  getReportTemplates(workspaceID: string): Observable<ReportStructureTemplates> {
+    if(this.lastWorkspaceID === workspaceID){
+      return;
+    }
+    if(this.reportSubscription){
+      this.reportSubscription.unsubscribe();
+    }
+
+    this.reportSubscription = this.afs.doc<ReportStructureTemplates>('/Workspaces/' + workspaceID + '/StructureData/ReportStructure').snapshotChanges().subscribe(structure => {
+      this.reportStructure.next(structure.payload.data());
+    });
+    return this.reportStructure.asObservable(); //needs different approach, maybe loading it here for the first time?
   }
 
-  async getReportsAvailableHere(item: Item): Promise<ReportStructureWrapper[]> {
+  async getReportsAvailableHere(workspaceID: string, item: Item): Promise<ReportStructureWrapper[]> {
     let availableReports: ReportStructureWrapper[] = [];
     let reportStructure = this.reportStructure.value;
 
     // 1: Go through and see what valid reports there are
 
     for(let report in reportStructure){
-      console.log(report);
 
       // If the report has no speific locations, it's available everywhere, so add
       if(!reportStructure[report].locations){
@@ -146,10 +155,11 @@ export class ReportService {
         continue;
       }
 
+      // First build out the basic structure
+      let reportWithValidLocations: ReportStructureWrapper = {type: report, reportStructure: reportStructure[report], validLocationIDs: []};
+
       // Look through the hierarchy of this location and its ancestors to see if we can find a hit
       for(let locationID of item.locations){
-        // First build out the basic structure
-        let reportWithValidLocations: ReportStructureWrapper = {type: report, reportStructure: reportStructure[report], validLocationIDs: []};
 
         // Then add valid locations we find
         for(let loopLocationID = locationID; loopLocationID;){
@@ -174,38 +184,40 @@ export class ReportService {
           }
   
           // Cycle to the next parent
-          let location = (await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/Locations/' + loopLocationID).get().toPromise()).data() as HierarchyLocation;
+          let location = (await this.afs.doc('/Workspaces/' + workspaceID + '/Locations/' + loopLocationID).get().toPromise()).data() as HierarchyLocation;
           loopLocationID = location.parent;
         }
+      }
 
-        // If we found some locations to report to, add this report to the available reports
-        if(reportWithValidLocations.validLocationIDs.length > 0){
-          availableReports.push(reportWithValidLocations);
-        }
+      // If we found some locations to report to, add this report to the available reports
+      if(reportWithValidLocations.validLocationIDs.length > 0){
+        availableReports.push(reportWithValidLocations);
       }
     }
 
-    // Include custom report at all times
-    availableReports.push({
-      type: 'custom',
-      validLocationIDs: item.locations,
-      reportStructure: {
-        name: "Custom Report",
-        description: "Give a message to any admin that you'd like.",
-        color: '#E8EFFF',
-        maximumReportAmount: 3,
-        maximumReportTimeframe: 24,
-        userInput: [{
-          name: "Report Details",
-          description: "What is the problem?",
-          type: 'text'
-        }],
-        reportToUsers: this.auth.workspace.defaultUsersForReports,
-        reportTextFormat: [
-          { type: 'input', data: 'Report Details' },
-          { type: 'text', data: "\n\nThis was made with a custom report."}
-        ]
-      }
+    this.searchService.getWorkspaceInfo(workspaceID).subscribe(workspaceInfo => {
+      // Include custom report at all times
+      availableReports.push({
+        type: 'custom',
+        validLocationIDs: item.locations,
+        reportStructure: {
+          name: "Custom Report",
+          description: "Give a message to any admin that you'd like.",
+          color: '#E8EFFF',
+          maximumReportAmount: 3,
+          maximumReportTimeframe: 24,
+          userInput: [{
+            name: "Report Details",
+            description: "What is the problem?",
+            type: 'text'
+          }],
+          reportToUsers: workspaceInfo.defaultUsersForReports,
+          reportTextFormat: [
+            { type: 'input', data: 'Report Details' },
+            { type: 'text', data: "\n\nThis was made with a custom report."}
+          ]
+        }
+      })
     })
 
     // 2: Of those valid reports, which have too many reports recently?
@@ -256,12 +268,12 @@ export class ReportService {
     return availableReports;
   }
 
-  updateTemplate(template: ReportStructure, type: string){
-    this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/ReportStructure').update({[type] : template});
+  updateTemplate(workspaceID: string, template: ReportStructure, type: string){
+    this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/ReportStructure').update({[type] : template});
   }
 
-  async addTemplate(id: string): Promise<boolean> {
-    await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/ReportStructure').update({
+  async addTemplate(workspaceID: string, id: string): Promise<boolean> {
+    await this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/ReportStructure').update({
       [id] : {
         name: id,
         description: "Default Description",
@@ -283,8 +295,8 @@ export class ReportService {
     return true;
   }
 
-  async deleteTemplate(id: string): Promise<boolean> {
-    await this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/ReportStructure').update({
+  async deleteTemplate(workspaceID: string, id: string): Promise<boolean> {
+    await this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/ReportStructure').update({
       [id]: firestore.FieldValue.delete()
     });
 

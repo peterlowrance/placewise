@@ -132,23 +132,7 @@
       <br>
       <mat-card class="attributes-card" *ngIf="this.role === 'Admin'" [class.mat-elevation-z0]="true">
         <mat-card-content>
-          <h2>Automatic Item Prefix:</h2>
-          <br>
-          <mat-form-field>
-            <mat-label>Prefix:</mat-label>
-            <input matInput #prefix
-            type="text"
-            [(ngModel)]="hierAsCategory.prefix"
-            (focus)="textEditFields.prefix = true"
-            (focusout)="onPrefixSubmit(prefix)">
-          </mat-form-field>
-          <button mat-icon-button class="fake-confirm-button" *ngIf="textEditFields.prefix"><mat-icon>done</mat-icon></button>
-        </mat-card-content>
-      </mat-card>
-      <br>
-      <mat-card class="attributes-card" *ngIf="this.role === 'Admin'" [class.mat-elevation-z0]="true">
-        <mat-card-content>
-          <h2>Automatic Item Suffix:</h2>
+          <h2>Automatic Item Title:</h2>
           <br>
           <!-- Drag and drop attributes -->
           <div cdkDropList (cdkDropListDropped)="drop($event)">
@@ -163,7 +147,10 @@
                   <small class="light-text"> (space) </small>
                 </div>
                 <div *ngIf="suffix.type === 'parent'" class="suffix-text">
-                  Parent Suffix
+                  Title format from parent
+                </div>
+                <div *ngIf="suffix.type === 'category'" class="suffix-text">
+                  Category Name
                 </div>
                 <div *ngIf="suffix.type === 'text'" class="suffix-text">
                   {{ suffix.data }} <small class="light-text"> (text) </small>

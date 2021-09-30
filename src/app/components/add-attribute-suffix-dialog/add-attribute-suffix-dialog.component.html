@@ -1,10 +1,11 @@
 
 <!-- Initial select step -->
 <mat-radio-group *ngIf="step === 'select'" class="radio-buttons" (change)="loadLayers()" [(ngModel)]="selected">
-    <mat-radio-button class="radio-button" value="parent"> Suffix from parent </mat-radio-button>
+    <mat-radio-button class="radio-button" value="category"> Category Name </mat-radio-button>
+    <mat-radio-button class="radio-button" value="parent"> Title format from parent </mat-radio-button>
     <mat-radio-button *ngFor="let attr of data.attributes" class="radio-button" [value]="attr.name"> {{ attr.name }} </mat-radio-button>
     <mat-radio-button class="radio-button" value="space"> Space (Spacebar) </mat-radio-button>
-    <mat-radio-button class="radio-button" value="text"> Text </mat-radio-button>
+    <mat-radio-button class="radio-button" value="text"> Custom Text </mat-radio-button>
 </mat-radio-group>
 
 <!-- If we had sleected text, input text -->

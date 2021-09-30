@@ -41,6 +41,7 @@ import { ErrorStateMatcher } from '@angular/material/core';
 })
 export class HierarchyItemComponent implements OnInit {
   
+  workspaceID: string;
   loaded: boolean = false;  // To tell if the item doesn't exist or just hasn't loaded
   isCategory = true;  // Category or location
   hierarchyItem: HierarchyItem;  // Main thing we'd view here
@@ -98,11 +99,12 @@ export class HierarchyItemComponent implements OnInit {
 
   ngOnInit() {
     let id = this.route.snapshot.paramMap.get('id');
+    this.workspaceID = this.route.snapshot.paramMap.get("workspaceID");
     this.isCategory = this.route.snapshot.paramMap.get('selectedHierarchy') === 'categories';
     this.role = this.authService.role;
 
     if(this.isCategory){
-      this.searchService.getCategory(id).subscribe(cat => {
+      this.searchService.getCategory(this.workspaceID, id).subscribe(cat => {
         this.loaded = true;
         if(cat){
           this.hierarchyItem = cat;
@@ -128,7 +130,7 @@ export class HierarchyItemComponent implements OnInit {
             return 0;
           });
 
-          this.searchService.getAncestorsOf(cat).subscribe(parents => {
+          this.searchService.getAncestorsOf(this.workspaceID, cat).subscribe(parents => {
             this.parentsToDisplay = parents;
             let buildingAttributes: {
               categoryName: string,
@@ -174,11 +176,11 @@ export class HierarchyItemComponent implements OnInit {
       })
       
     } else {
-      this.searchService.getLocation(id).subscribe(loc => {
+      this.searchService.getLocation(this.workspaceID, id).subscribe(loc => {
         this.loaded = true;
         if(loc){
           this.hierarchyItem = loc;
-          this.searchService.getAncestorsOf(loc).subscribe(parents => this.parentsToDisplay = parents);
+          this.searchService.getAncestorsOf(this.workspaceID, loc).subscribe(parents => this.parentsToDisplay = parents);
           
           if(loc.shelfID){
             this.shelfID = Number.parseInt(loc.shelfID);
@@ -239,7 +241,7 @@ export class HierarchyItemComponent implements OnInit {
     if (this.previousItem.imageUrl !== this.hierarchyItem.imageUrl) {
       // post to upload image
       if (this.imageToSave) {
-        return this.imageService.putImage(this.hierarchyItem.imageUrl, this.hierarchyItem.ID).then(link => {
+        return this.imageService.putImage(this.workspaceID, this.hierarchyItem.imageUrl, this.hierarchyItem.ID).then(link => {
           this.hierarchyItem.imageUrl = link;
           this.update();
         });
@@ -253,7 +255,7 @@ export class HierarchyItemComponent implements OnInit {
 
   update() {
     // BAD: We should pass around a wrapper so that we don't have to hard duplicate when messing with some metadata
-    this.adminService.updateHierarchy(JSON.parse(JSON.stringify(this.hierarchyItem)), this.isCategory).then(confirmation => {
+    this.adminService.updateHierarchy(this.workspaceID, JSON.parse(JSON.stringify(this.hierarchyItem)), this.isCategory).then(confirmation => {
       if (confirmation !== true) {
         this.snack.open('Save Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
       }
@@ -484,9 +486,9 @@ export class HierarchyItemComponent implements OnInit {
     
     if(this.hierarchyItem.parent !== itemToRevert.parent){
       if(this.isCategory){
-        this.adminService.updateCategoryPosition(this.hierarchyItem.parent, this.hierarchyItem.ID, itemToRevert.parent);
+        this.adminService.updateCategoryPosition(this.workspaceID, this.hierarchyItem.parent, this.hierarchyItem.ID, itemToRevert.parent);
       } else {
-        this.adminService.updateLocationPosition(this.hierarchyItem.parent, this.hierarchyItem.ID, itemToRevert.parent);
+        this.adminService.updateLocationPosition(this.workspaceID, this.hierarchyItem.parent, this.hierarchyItem.ID, itemToRevert.parent);
       }
     }
 
@@ -514,20 +516,20 @@ export class HierarchyItemComponent implements OnInit {
     const oldLocation = this.hierarchyItem.parent ? this.hierarchyItem.parent : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
-      data: {hierarchy: this.isCategory ? 'categories' : 'locations', singleSelection: true, id: this.hierarchyItem.ID, parents: [this.hierarchyItem.parent]}
+      data: {workspaceID: this.workspaceID, hierarchy: this.isCategory ? 'categories' : 'locations', singleSelection: true, id: this.hierarchyItem.ID, parents: [this.hierarchyItem.parent]}
     });
     dialogRef.afterClosed().subscribe(result => {
       if(result && result[0] && this.hierarchyItem.parent !== result[0]){
         this.hierarchyItem.parent = result[0];
         if(this.isCategory){
-          this.adminService.updateCategoryPosition(result[0], this.hierarchyItem.ID, oldLocation)
-          let sub = this.searchService.getCategory(this.hierarchyItem.parent).subscribe(cat => {
+          this.adminService.updateCategoryPosition(this.workspaceID, result[0], this.hierarchyItem.ID, oldLocation)
+          let sub = this.searchService.getCategory(this.workspaceID, this.hierarchyItem.parent).subscribe(cat => {
             this.adminService.addToRecent(cat);
             sub.unsubscribe();
           });
         } else {
-          this.adminService.updateLocationPosition(result[0], this.hierarchyItem.ID, oldLocation)
-          let sub = this.searchService.getLocation(this.hierarchyItem.parent).subscribe(loc => {
+          this.adminService.updateLocationPosition(this.workspaceID, result[0], this.hierarchyItem.ID, oldLocation)
+          let sub = this.searchService.getLocation(this.workspaceID, this.hierarchyItem.parent).subscribe(loc => {
             this.adminService.addToRecent(loc);
             sub.unsubscribe();
           });
@@ -541,16 +543,16 @@ export class HierarchyItemComponent implements OnInit {
   requestDelete(){
     if (confirm('Are you sure you want to delete the ' + (this.isCategory ? 'category?\nCategories and items within ' : 'location?\nLocations and items within ') + this.hierarchyItem.name + ' will not be deleted.\nThis cannot be undone.')) {
       if (this.isCategory) {
-        this.adminService.removeCategory(this.hierarchyItem).then(() => {
+        this.adminService.removeCategory(this.workspaceID, this.hierarchyItem).then(() => {
           this.snack.open('Category Successfully Deleted', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
-          this.router.navigate(['search/categories/' + this.hierarchyItem.parent]);
+          this.router.navigate(['/w/' + this.workspaceID + '/search/categories/' + this.hierarchyItem.parent]);
         }).catch(err => {
           this.snack.open('Category Deletion Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
         });
       } else {
-        this.adminService.removeLocation(this.hierarchyItem).then(() => {
+        this.adminService.removeLocation(this.workspaceID, this.hierarchyItem).then(() => {
           this.snack.open('Location Successfully Deleted', "OK", {duration: 3000, panelClass: ['mat-toolbar']});
-          this.router.navigate(['search/locations/' + this.hierarchyItem.parent]);
+          this.router.navigate(['/w/' + this.workspaceID + '/search/locations/' + this.hierarchyItem.parent]);
         }).catch(err => {
           this.snack.open('Location Deletion Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
         });
@@ -573,7 +575,7 @@ export class HierarchyItemComponent implements OnInit {
   updateShelfID(){
     let previousShelfID = (this.hierarchyItem as HierarchyLocation).shelfID;
     (this.hierarchyItem as HierarchyLocation).shelfID = this.searchService.convertNumberToThreeDigitString(this.shelfID);
-    this.adminService.setShelfID(this.hierarchyItem.ID, (this.hierarchyItem as HierarchyLocation).shelfID, previousShelfID).subscribe(result => {
+    this.adminService.setShelfID(this.workspaceID, this.hierarchyItem.ID, (this.hierarchyItem as HierarchyLocation).shelfID, previousShelfID).subscribe(result => {
       if(result === 'valid' || result.startsWith("Zero")){
         this.usedID = null;
         this.update();

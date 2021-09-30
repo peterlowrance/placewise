@@ -1,0 +1,63 @@
+
+
+<div *ngIf="step === 'version'">
+    <mat-radio-group [(ngModel)]="version">
+        <mat-radio-button value="location"> Link to Location </mat-radio-button>
+        <div><small> 
+            This will always link to this specific location, no matter where it is moved or how it gets modified. 
+        </small></div>
+        <br>
+        <mat-radio-button [disabled]="!validShelfID" value="bin"> Link to Bin </mat-radio-button>
+        <div *ngIf="!validShelfID" class="light-text"><small> 
+            This location needs a shelf ID to have a bin ID linked here.
+        </small></div>
+        <div *ngIf="validShelfID"><small> 
+            Input a bin number, which will link to an item if it has the bin number, otherwise it will link to this location. This can also be very small.
+        </small></div>
+    </mat-radio-group>
+</div>
+
+<div *ngIf="step === 'bin'">
+    <span> {{data.location.shelfID}} </span>
+    <span> - </span>
+    <mat-form-field class="bin-form" appearance="outline">
+        <mat-label>Bin #</mat-label>
+        <input 
+        class="shelf-input" 
+        matInput 
+        #binInput
+        type="number" 
+        pattern="\d*"
+        (keyup)="submitBinID($event.target)"
+        >
+    </mat-form-field>
+</div>
+
+<div *ngIf="step === 'QR'">
+    <div class="QR-code-holder">
+        <qrcode *ngIf="!isBin || isUniversalQR" [qrdata]="urlToString" [width]="250" [errorCorrectionLevel]="'Q'"></qrcode>
+
+        <!-- This is because the type 1 is harder to scan, so adding extra error correction 
+            (which is already good for a bin label that will get more guffed over time) 
+            forces verion 2 to be used, which has that extra square for detection -->
+        <qrcode *ngIf="isBin && !isUniversalQR" [qrdata]="urlToString" [width]="250" [errorCorrectionLevel]="'H'"></qrcode>
+    </div>    
+
+    <mat-slide-toggle [(ngModel)]="isUniversalQR" (change)="toggleUniversalQR($event)"> Use Universal QR </mat-slide-toggle>
+    <div><small class="light-text">
+        The universal QR works with any camera app or workspace, but needs to be bigger to be scanned properly.
+    </small></div>
+</div>
+
+<br>
+
+<!-- Buttons -->
+<div class="action-buttons">
+    <!-- Cancel button is always here -->
+    <button mat-raised-button *ngIf="this.step !== 'QR'" class="rect-action-button" (click)="cancel()">Cancel</button>
+    <button mat-raised-button *ngIf="this.step === 'QR' && this.validBinID" class="rect-action-button" (click)="back()">Back</button>
+
+    <!-- Next or confirm button depending on if this is a single step-->
+    <button *ngIf="step !== 'QR'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary"> Next </button>
+    <button *ngIf="step === 'QR'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Finish</button>
+</div>

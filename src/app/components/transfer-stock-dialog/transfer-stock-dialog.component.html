@@ -1,0 +1,40 @@
+
+<div *ngIf="step === 'from'">
+    <h3> Where is the stock coming from? </h3>
+
+    <mat-radio-group [(ngModel)]="from">
+        <mat-radio-button value="shipped"> Shipped In </mat-radio-button>
+        <mat-radio-button *ngFor="let location of data.locations" [value]="location.ID"> 
+            {{location.name}} 
+            <div *ngIf="data.item.locationMetadata && data.item.locationMetadata[location.ID] &&
+            data.item.locationMetadata[location.ID].trackingData">
+                <small> QTY: <span class="qty-on-hand">{{ data.item.locationMetadata[location.ID].trackingData.amount }}</span> </small>
+                <br>
+                <small> Updated: {{ convertTimestampToReadableTime(data.item.locationMetadata[location.ID].trackingData.updated) }} </small>
+            </div>
+            <div *ngIf="!(data.item.locationMetadata && data.item.locationMetadata[location.ID] &&
+            data.item.locationMetadata[location.ID].trackingData)">
+                <small  class="light-text"> Untracked </small>
+            </div>
+        </mat-radio-button>
+        <mat-radio-button value="other"> Other </mat-radio-button>
+    </mat-radio-group>
+</div>
+
+<div *ngIf="step === 'from-other'">
+    <h3> Since you specified other, briefly state where it came from: </h3>
+</div>
+
+<div *ngIf="step === 'amount'">
+    <h3> How many are coming from here? </h3>
+</div>
+
+<!-- Buttons -->
+<div class="action-buttons">
+    <!-- Cancel button is always here -->
+    <button mat-raised-button class="rect-action-button" (click)="cancel()">Cancel</button>
+
+    <!-- Next or confirm button depending on if this is a single step-->
+    <button *ngIf="step !== 'name'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary"> Next </button>
+    <button *ngIf="step === 'name'" mat-raised-button class="rect-action-button" (click)="nextStep()" [disabled]="!isReadyForNextStep()" color="primary">Finish</button>
+</div>

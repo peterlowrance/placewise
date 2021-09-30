@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ReportStructure, ReportStructureWrapper } from 'src/app/models/ReportStructure';
 import { ReportService } from 'src/app/services/report.service';
 import { AttributeBuilderDialogComponent } from '../attribute-builder-dialog/attribute-builder-dialog.component';
@@ -15,17 +15,19 @@ export class ReportTemplatesComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     public dialog: MatDialog,
     private reportService: ReportService
     ) { }
 
-
+  workspaceID: string;
   reportTemplates: ReportStructureWrapper[];
 
 
   ngOnInit(): void {
+    this.workspaceID = this.route.snapshot.paramMap.get('workspaceID');
 
-    this.reportService.getReportTemplates().subscribe(result => {
+    this.reportService.getReportTemplates(this.workspaceID).subscribe(result => {
       this.reportTemplates = [];
 
       for(let type in result){
@@ -36,7 +38,7 @@ export class ReportTemplatesComponent implements OnInit {
   }
 
   editTemplate(type: string){
-    this.router.navigate(['/reports/templates/' + type]);
+    this.router.navigate(['/w/' + this.workspaceID + '/reports/templates/' + type]);
   }
 
   addTemplate(){
@@ -47,9 +49,9 @@ export class ReportTemplatesComponent implements OnInit {
       if(result && result.wasValid){
         // Make sure there's no reports that already have that ID
         if(this.reportTemplates.filter(template => template.type === result.value).length === 0){
-          this.reportService.addTemplate(result.value).then(confirm => {
+          this.reportService.addTemplate(this.workspaceID, result.value).then(confirm => {
             if(confirm){
-              this.router.navigate(['/reports/templates/' + result.value]);
+              this.router.navigate(['/w/' + this.workspaceID + '/reports/templates/' + result.value]);
             }
           });
         }

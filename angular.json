@@ -71,7 +71,9 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "placewise:build"
+            "browserTarget": "placewise:build",
+            "sslKey": "src/environments/localhost.key",
+            "sslCert": "src/environments/localhost.crt"
           },
           "configurations": {
             "production": {
