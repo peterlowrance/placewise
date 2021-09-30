@@ -120,7 +120,7 @@ export class ReportTemplateEditComponent implements OnInit {
   addLocation(){
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
-      data: {hierarchy: 'locations', singleSelection: true, id: '', parents: ['root']}
+      data: {workspaceID: this.workspaceID, hierarchy: 'locations', singleSelection: true, id: '', parents: ['root']}
     });
     dialogRef.afterClosed().subscribe(result => {
       if(result && result[0]){

@@ -148,7 +148,6 @@ export class ReportService {
     // 1: Go through and see what valid reports there are
 
     for(let report in reportStructure){
-      console.log(report);
 
       // If the report has no speific locations, it's available everywhere, so add
       if(!reportStructure[report].locations){
@@ -156,10 +155,11 @@ export class ReportService {
         continue;
       }
 
+      // First build out the basic structure
+      let reportWithValidLocations: ReportStructureWrapper = {type: report, reportStructure: reportStructure[report], validLocationIDs: []};
+
       // Look through the hierarchy of this location and its ancestors to see if we can find a hit
       for(let locationID of item.locations){
-        // First build out the basic structure
-        let reportWithValidLocations: ReportStructureWrapper = {type: report, reportStructure: reportStructure[report], validLocationIDs: []};
 
         // Then add valid locations we find
         for(let loopLocationID = locationID; loopLocationID;){
@@ -187,11 +187,11 @@ export class ReportService {
           let location = (await this.afs.doc('/Workspaces/' + workspaceID + '/Locations/' + loopLocationID).get().toPromise()).data() as HierarchyLocation;
           loopLocationID = location.parent;
         }
+      }
 
-        // If we found some locations to report to, add this report to the available reports
-        if(reportWithValidLocations.validLocationIDs.length > 0){
-          availableReports.push(reportWithValidLocations);
-        }
+      // If we found some locations to report to, add this report to the available reports
+      if(reportWithValidLocations.validLocationIDs.length > 0){
+        availableReports.push(reportWithValidLocations);
       }
     }
 
