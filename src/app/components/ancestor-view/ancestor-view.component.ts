@@ -30,9 +30,15 @@ export class AncestorViewComponent implements OnInit {
 
   onExpandPanel(){
     if(!this.parentsToDisplay){
-      this.searchService.getAncestorsByChain(this.workspaceID, this.parentsOf.ID, this.parentsOf.type).then(data => {
-        this.parentsToDisplay = data;
-      })
+      this.searchService.loadWorkspaceStructure(this.workspaceID).then(
+        (loaded) => {
+          if(loaded){
+            this.searchService.getLoadedParentsOf(this.workspaceID, this.parentsOf.ID, this.parentsOf.type).then(
+              result => this.parentsToDisplay = result
+            )
+          }
+        }
+      )
     }
   }
 

@@ -125,7 +125,7 @@ export class NavbarComponent implements OnInit {
               catID = catID.substring(0, foundParamsIndex);
             }
 
-            let sub = this.searchService.getCategory(this.workspaceID, catID).subscribe(cat => { // %20 replace for the conversion from the URL's spaces to string spaces
+            let sub = this.searchService.subscribeToCategory(this.workspaceID, catID).subscribe(cat => { // %20 replace for the conversion from the URL's spaces to string spaces
               this.navService.setSearchType('Categories');
               this.navService.setParent(cat)
               sub.unsubscribe();
@@ -143,7 +143,7 @@ export class NavbarComponent implements OnInit {
               locID = locID.substring(0, foundParamsIndex);
             }
 
-            let sub = this.searchService.getLocation(this.workspaceID, locID).subscribe(loc => {
+            let sub = this.searchService.subscribeToLocation(this.workspaceID, locID).subscribe(loc => {
               this.navService.setSearchType('Locations');
               this.navService.setParent(loc)
               sub.unsubscribe();
@@ -282,14 +282,14 @@ export class NavbarComponent implements OnInit {
           window.history.pushState(null, null, 'w/' + this.workspaceID + '/search/categories/' + id);
         }
       });
-      this.navService.setSubscribedParent(this.searchService.getCategory(this.workspaceID, id));
+      this.navService.setSubscribedParent(this.searchService.subscribeToCategory(this.workspaceID, id));
     } else {
       this.router.navigate(['w/' + this.workspaceID + '/search/locations/' + id]).then(confirm => {
         if(!confirm){ // Sometimes since we're going to the same component, the router will not navigate. If so, push to make sure the url gets in the history
           window.history.pushState(null, null, 'w/' + this.workspaceID + '/search/locations/' + id);
         }
       });
-      this.navService.setSubscribedParent(this.searchService.getLocation(this.workspaceID, id));
+      this.navService.setSubscribedParent(this.searchService.subscribeToLocation(this.workspaceID, id));
     }
   }
 

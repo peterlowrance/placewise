@@ -67,7 +67,7 @@ export class ReportTemplateEditComponent implements OnInit {
             if(this.template.locations){
               for(let locationID in this.template.locations){
                 this.locationIDs.push(locationID);
-                this.searchService.getLocation(this.workspaceID, locationID).subscribe(loc => {
+                this.searchService.subscribeToLocation(this.workspaceID, locationID).subscribe(loc => {
                   this.locationsLoadedMap[locationID] = loc;
                 })
               }

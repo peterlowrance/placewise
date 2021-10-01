@@ -50,7 +50,6 @@ export class HierarchyItemComponent implements OnInit {
   role: string;  // If the user is admin
   previousItem: HierarchyItem;  // Previous item, before edits are made
   imageToSave: File = null;  // The image to upload when saved
-  parentsToDisplay: HierarchyItem[][];  // For the ancestor view component (and eventually loading attributes)
   localAttributes: {  // Names of attributes in this category
     name: string,
     type: string,
@@ -104,7 +103,7 @@ export class HierarchyItemComponent implements OnInit {
     this.role = this.authService.role;
 
     if(this.isCategory){
-      this.searchService.getCategory(this.workspaceID, id).subscribe(cat => {
+      this.searchService.subscribeToCategory(this.workspaceID, id).subscribe(cat => {
         this.loaded = true;
         if(cat){
           this.hierarchyItem = cat;
@@ -130,15 +129,14 @@ export class HierarchyItemComponent implements OnInit {
             return 0;
           });
 
-          this.searchService.getAncestorsOf(this.workspaceID, cat).subscribe(parents => {
-            this.parentsToDisplay = parents;
+          this.searchService.getLoadedParentsOf(this.workspaceID, cat.ID, 'category').then(parents => {
             let buildingAttributes: {
               categoryName: string,
               attribute: CategoryAttribute
             }[];
 
-            for(let parent in parents[0]){
-              let ancestorCategory = (parents[0][parent] as Category);
+            for(let parent in parents){
+              let ancestorCategory = (parents[parent] as Category);
               if(ancestorCategory.attributes)
               for(let attr in ancestorCategory.attributes){
                 if(buildingAttributes){
@@ -176,11 +174,10 @@ export class HierarchyItemComponent implements OnInit {
       })
       
     } else {
-      this.searchService.getLocation(this.workspaceID, id).subscribe(loc => {
+      this.searchService.subscribeToLocation(this.workspaceID, id).subscribe(loc => {
         this.loaded = true;
         if(loc){
           this.hierarchyItem = loc;
-          this.searchService.getAncestorsOf(this.workspaceID, loc).subscribe(parents => this.parentsToDisplay = parents);
           
           if(loc.shelfID){
             this.shelfID = Number.parseInt(loc.shelfID);
@@ -523,13 +520,13 @@ export class HierarchyItemComponent implements OnInit {
         this.hierarchyItem.parent = result[0];
         if(this.isCategory){
           this.adminService.updateCategoryPosition(this.workspaceID, result[0], this.hierarchyItem.ID, oldLocation)
-          let sub = this.searchService.getCategory(this.workspaceID, this.hierarchyItem.parent).subscribe(cat => {
+          let sub = this.searchService.subscribeToCategory(this.workspaceID, this.hierarchyItem.parent).subscribe(cat => {
             this.adminService.addToRecent(cat);
             sub.unsubscribe();
           });
         } else {
           this.adminService.updateLocationPosition(this.workspaceID, result[0], this.hierarchyItem.ID, oldLocation)
-          let sub = this.searchService.getLocation(this.workspaceID, this.hierarchyItem.parent).subscribe(loc => {
+          let sub = this.searchService.subscribeToLocation(this.workspaceID, this.hierarchyItem.parent).subscribe(loc => {
             this.adminService.addToRecent(loc);
             sub.unsubscribe();
           });

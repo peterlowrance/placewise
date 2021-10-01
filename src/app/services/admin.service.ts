@@ -22,6 +22,7 @@ import { CacheService } from './cache.service';
 import { BinDictionary } from '../models/BinDictionary';
 import { Report } from '../models/Report';
 import { ReportService, adServe } from './report.service';
+import { HierarchyStructure } from '../models/HierarchyStructure';
 
 declare var require: any;
 
@@ -308,6 +309,24 @@ export class AdminService {
     this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + oldParentID).update({children: firebase.firestore.FieldValue.arrayRemove(moveID)});
     // Add to new parent's list
     this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + parentID).update({children: firebase.firestore.FieldValue.arrayUnion(moveID)});
+  
+    // QUICK REFERENCE DOC
+    this.afs.doc<HierarchyStructure>('Workspaces/' + workspaceID + '/StructureData/LocationsHierarchy').ref.get().then(
+      locationStructureData => {
+        let structure = (locationStructureData.data() as HierarchyStructure);
+
+        structure[moveID].parent = parentID;
+        structure[oldParentID].children = structure[oldParentID].children.filter(child => child !== moveID);
+        if(structure[parentID].children){
+          structure[parentID].children.push(moveID);
+        }
+        else {
+          structure[parentID].children = [moveID];
+        }
+
+        this.afs.doc<HierarchyStructure>('Workspaces/' + workspaceID + '/StructureData/LocationsHierarchy').update(structure);
+      }
+    )
   }
 
   // Originally "Add Location"
@@ -339,7 +358,24 @@ export class AdminService {
               this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + newParentID).update({children: ary});
               obs.next(val.id);
               obs.complete();
-        });
+          });
+
+          this.afs.doc<HierarchyStructure>('/Workspaces/' + workspaceID + '/StructureData/LocationsHierarchy/').ref.get().then(
+            locationStructureData => {
+              let structure = (locationStructureData.data() as HierarchyStructure);
+
+
+              structure[val.id] = {parent: newParentID};
+              if(structure[newParentID].children){
+                structure[newParentID].children.push(val.id);
+              }
+              else {
+                structure[newParentID].children = [val.id];
+              }
+
+              this.afs.doc<HierarchyStructure>('Workspaces/' + workspaceID + '/StructureData/LocationsHierarchy').update(structure);
+            }
+          )
       });
     });
   }
@@ -385,6 +421,18 @@ export class AdminService {
         }
       }
     );
+
+    this.afs.doc<HierarchyStructure>('/Workspaces/' + workspaceID + '/StructureData/LocationsHierarchy/').ref.get().then(
+      locationStructureData => {
+        let structure = (locationStructureData.data() as HierarchyStructure);
+
+        delete structure[remove.ID];
+        structure[remove.parent].children = structure[remove.parent].children.filter(child => child !== remove.ID);
+
+        this.afs.doc<HierarchyStructure>('Workspaces/' + workspaceID + '/StructureData/LocationsHierarchy').update(structure);
+      }
+    )
+
     return this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Locations/' + remove.ID).delete();
   }
 
@@ -422,6 +470,18 @@ export class AdminService {
         this.afs.doc('Workspaces/' + workspaceID + '/Category/' + toRemove.parent).update({children: newChildren, items: newItems});
       }
     );
+
+    this.afs.doc<HierarchyStructure>('/Workspaces/' + workspaceID + '/StructureData/CategoriesHierarchy/').ref.get().then(
+      locationStructureData => {
+        let structure = (locationStructureData.data() as HierarchyStructure);
+
+        delete structure[toRemove.ID];
+        structure[toRemove.parent].children = structure[toRemove.parent].children.filter(child => child !== toRemove.ID);
+
+        this.afs.doc<HierarchyStructure>('Workspaces/' + workspaceID + '/StructureData/CategoriesHierarchy').update(structure);
+      }
+    )
+
     return this.afs.doc<HierarchyItem>('/Workspaces/' + workspaceID + '/Category/' + toRemove.ID).delete();
   }
 
@@ -454,7 +514,24 @@ export class AdminService {
               this.afs.doc('Workspaces/' + workspaceID + '/Category/' + newParentID).update({children: ary});
               obs.next(val.id);
               obs.complete();
-        });
+          });
+
+          this.afs.doc<HierarchyStructure>('/Workspaces/' + workspaceID + '/StructureData/CategoriesHierarchy/').ref.get().then(
+            categoryStructureData => {
+              let structure = (categoryStructureData.data() as HierarchyStructure);
+
+
+              structure[val.id] = {parent: newParentID};
+              if(structure[newParentID].children){
+                structure[newParentID].children.push(val.id);
+              }
+              else {
+                structure[newParentID].children = [val.id];
+              }
+
+              this.afs.doc<HierarchyStructure>('Workspaces/' + workspaceID + '/StructureData/CategoriesHierarchy').update(structure);
+            }
+          )
       });
     });
   }
@@ -466,6 +543,25 @@ export class AdminService {
     this.afs.doc('Workspaces/' + workspaceID + '/Category/' + oldParentID).update({children: firebase.firestore.FieldValue.arrayRemove(moveID)});
     // Add to new parent's list
     this.afs.doc('Workspaces/' + workspaceID + '/Category/' + parentID).update({children: firebase.firestore.FieldValue.arrayUnion(moveID)});
+
+    // QUICK REFERENCE DOC
+    this.afs.doc<HierarchyStructure>('Workspaces/' + workspaceID + '/StructureData/CategoriesHierarchy').ref.get().then(
+      categoryStructureData => {
+        let structure = (categoryStructureData.data() as HierarchyStructure);
+        console.log(structure);
+
+        structure[moveID].parent = parentID;
+        structure[oldParentID].children = structure[oldParentID].children.filter(child => child !== moveID);
+        if(structure[parentID].children){
+          structure[parentID].children.push(moveID);
+        }
+        else {
+          structure[parentID].children = [moveID];
+        }
+
+        this.afs.doc<HierarchyStructure>('Workspaces/' + workspaceID + '/StructureData/CategoriesHierarchy').update(structure);
+      }
+    )
   }
 
   async updateHierarchy(workspaceID: string, node: HierarchyItem, isCategory: boolean): Promise<boolean> {
@@ -744,24 +840,36 @@ export class AdminService {
     });
   }
 
-  /*
-  async setBinID(locationID: string, itemID: string, binID: string): boolean {
-    if(binID.startsWith('000')){
-      return false; // 0 shelf not allowed
-    }
+  hack(){
+    this.afs.collection('Workspaces/Apex Fab/Category').get().subscribe(hier => {
+      let structure = {};
 
-    this.afs.doc('/Workspaces/' + this.auth.workspace.id + '/StructureData/BinDictionary').get().subscribe(doc => {
-      if(doc.exists && doc.data().shelves){
-        let data = doc.data() as BinDictionary;
-        if(data.bins[binID]){
-          return false;
+      hier.forEach(doc => {
+        let data = doc.data();
+        if(data){
+					if(data.children){
+						if(!structure[doc.id]){
+              structure[doc.id] = {children: data.children};
+            }
+            else {
+              structure[doc.id].children = data.children;
+            }
+					}
+          
+					if(data.parent){
+						if(!structure[doc.id]){
+              structure[doc.id] = {parent: data.parent};
+            }
+            else {
+              structure[doc.id].parent = data.parent;
+            }
+					}
         }
-      }
-      else {
+      })
 
-      }
-    });
-  }*/
+      this.afs.doc('Workspaces/Apex Fab/StructureData/CategoriesHierarchy').set(structure);
+    })
+  }
 
   constructor(
     private afs: AngularFirestore, 

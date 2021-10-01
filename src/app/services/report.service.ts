@@ -162,7 +162,7 @@ export class ReportService {
       for(let locationID of item.locations){
 
         // Then add valid locations we find
-        for(let loopLocationID = locationID; loopLocationID;){
+        for(let loopLocationID of await this.searchService.getParentsOf(workspaceID, locationID, 'location')){
           if(reportStructure[report].locations[loopLocationID]){
   
             // If there are no users for this location, add it
@@ -182,10 +182,6 @@ export class ReportService {
               break;
             }
           }
-  
-          // Cycle to the next parent
-          let location = (await this.afs.doc('/Workspaces/' + workspaceID + '/Locations/' + loopLocationID).get().toPromise()).data() as HierarchyLocation;
-          loopLocationID = location.parent;
         }
       }
 

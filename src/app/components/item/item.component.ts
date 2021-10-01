@@ -31,7 +31,7 @@ import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-mo
 import { QRCodeItemDialogComponent } from '../qrcode-item-dialog/qrcode-item-dialog.component';
 import { NgxMasonryComponent } from 'ngx-masonry';
 import { TransferStockDialogComponent } from '../transfer-stock-dialog/transfer-stock-dialog.component';
-import { timeStamp } from 'console';
+import { Console, timeStamp } from 'console';
 
 
 interface TreeNode {
@@ -242,7 +242,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   
   private setupCategorySubscription(item: Item): Subscription { // I could also take in Obs<Cat> if that helps in the future
     // Return it for unsubscribing
-    return this.searchService.getCategory(this.workspaceID, item.category).subscribe(category => {
+    return this.searchService.subscribeToCategory(this.workspaceID, item.category).subscribe(category => {
       this.category = category;
 
       if(this.categoryAncestorSub){
@@ -250,16 +250,16 @@ export class ItemComponent implements OnInit, OnDestroy {
       }
 
       // Load category ancestors for attributes
-      this.categoryAncestorSub = this.searchService.getAncestorsOf(this.workspaceID, category).subscribe(categoryAncestors => {
+      this.searchService.getLoadedParentsOf(this.workspaceID, item.category, 'category').then(categoryAncestors => {
 
         // Make sure it exists, and also make sure it's not just an empty array
-        if(categoryAncestors[0]){
+        if(categoryAncestors){
           // Update component data
-          this.categoryAncestors = categoryAncestors[0];
+          this.categoryAncestors = categoryAncestors;
           this.attributeSuffix = this.searchService.buildAttributeAutoTitleFrom(item, this.categoryAncestors);
           
           // Load item attributes into card data
-          let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors[0]), item);
+          let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors), item);
 
           // If we'd never had them loaded or the amount of cards/attributes have changed, update them
           if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){
@@ -318,7 +318,7 @@ export class ItemComponent implements OnInit, OnDestroy {
 
     // Subscribe to the locations individually
     for(let locIndex in item.locations){
-      let sub = this.searchService.getLocation(this.workspaceID, item.locations[locIndex]).subscribe(location => {
+      let sub = this.searchService.subscribeToLocation(this.workspaceID, item.locations[locIndex]).subscribe(location => {
         if(location){
           // Init with default data
           let locationData: ItemLocation = { 
@@ -569,7 +569,7 @@ export class ItemComponent implements OnInit, OnDestroy {
 
       // Update recent locations
       for(let index in newLocations){
-        let localSub = this.searchService.getLocation(this.workspaceID, newLocations[index]).subscribe(loc => {
+        let localSub = this.searchService.subscribeToLocation(this.workspaceID, newLocations[index]).subscribe(loc => {
           this.adminService.addToRecent(loc);
           localSub.unsubscribe(); // Don't want this screwing with us later
         })
@@ -596,13 +596,13 @@ export class ItemComponent implements OnInit, OnDestroy {
    */
   updateItemCategory(result: string[], oldCategory: string) {
     if (result && result.length > 0 && this.item.category !== result[0]) {
-      let localSub = this.searchService.getCategory(this.workspaceID, result[0]).subscribe(newCategory => {
+      let localSub = this.searchService.subscribeToCategory(this.workspaceID, result[0]).subscribe(newCategory => {
         if(newCategory){
           this.adminService.addToRecent(newCategory);
   
-          this.searchService.getAncestorsOf(this.workspaceID, newCategory).subscribe(categoryAncestors => {
-            this.adminService.updateItemDataFromCategoryAncestors(this.workspaceID, this.item, [newCategory].concat(this.categoryAncestors), [this.category].concat(this.categoryAncestors));
-            this.categoryAncestors = categoryAncestors[0];
+          this.searchService.getLoadedParentsOf(this.workspaceID, newCategory.ID, 'category').then(categoryAncestors => {
+            this.adminService.updateItemDataFromCategoryAncestors(this.workspaceID, this.item, [newCategory].concat(this.categoryAncestors), this.categoryAncestors);
+            this.categoryAncestors = categoryAncestors;
 
             this.item.category = result[0];
             this.adminService.updateItem(this.workspaceID, this.item, oldCategory, null);
