@@ -232,9 +232,9 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   updateSubscribedParent(id: string, type: string){
     if(type === 'category'){
-      this.navService.setSubscribedParent(this.searchService.getCategory(this.workspaceID, id));
+      this.navService.setSubscribedParent(this.searchService.subscribeToCategory(this.workspaceID, id));
     } else {
-      this.navService.setSubscribedParent(this.searchService.getLocation(this.workspaceID, id));
+      this.navService.setSubscribedParent(this.searchService.subscribeToLocation(this.workspaceID, id));
     }
   }
 
@@ -280,10 +280,10 @@ export class SearchComponent implements OnInit, OnDestroy {
     if(this.root.type === 'category'){
       let category = this.root as Category;
       let attributes: Attribute[];
-      this.searchService.getAncestorsOf(this.workspaceID, category).subscribe(categoryAncestors => {
+      this.searchService.getLoadedParentsOf(this.workspaceID, category.ID, 'category').then(categoryAncestors => {
 
-        if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
-          let allParents = [category].concat(categoryAncestors[0]);
+        if(categoryAncestors){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
+          let allParents = categoryAncestors as Category[];
           for(let parent in allParents){
             for(let attr in allParents[parent].attributes){
               if(attributes){
@@ -710,7 +710,7 @@ export class SearchComponent implements OnInit, OnDestroy {
       }
       let locationID = this.searchService.getLocationIDFromShelfID(this.shelfInput.nativeElement.value);
       if(locationID && locationID !== 'err' && locationID !== 'no ID' && locationID !== this.root.ID){
-        this.searchService.getLocation(this.workspaceID, locationID).subscribe(loc => {
+        this.searchService.subscribeToLocation(this.workspaceID, locationID).subscribe(loc => {
           this.binInput.nativeElement.value = '';
           this.goToHierarchy(loc);
           this.shelfInput.nativeElement.blur();
@@ -762,7 +762,7 @@ export class SearchComponent implements OnInit, OnDestroy {
             if(item){
               for(let loc in item.locationMetadata){
                 if(item.locationMetadata[loc].binID === binID){
-                  this.searchService.getLocation(this.workspaceID, loc).subscribe(locationData => {
+                  this.searchService.subscribeToLocation(this.workspaceID, loc).subscribe(locationData => {
   
                     // If we got a result, go to the item's location and deselect the input so
                     // we can fully see the result on mobile

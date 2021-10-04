@@ -110,7 +110,7 @@
     <div class="search-tools" [@searchInput]="searchBarOpen ? 'open' : 'closed'">
       <form class="search-bar" (submit)="null">
         <mat-form-field class="full-width">
-          <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : (root.type === 'category' ? 'all Categories' : 'all Locations')}}" matInput #searchInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null">
+          <input type="text" placeholder="Search in {{(root && root.name !== 'root')? root.name : ((root && root.type === 'category') ? 'all Categories' : 'all Locations')}}" matInput #searchInput [formControl]="control" (ngModelChange)="searchTextChange($event)" (submit)="null">
           <button type="button" mat-button *ngIf="control.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearchBar()">
             <mat-icon>close</mat-icon>
           </button>

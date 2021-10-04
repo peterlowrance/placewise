@@ -98,11 +98,9 @@ export class SettingsComponent implements OnInit {
     this.authService.logout();
   }
 
-  /*
-  goToModify(isCategory: boolean) {
-    this.router.navigate(['modify/' + (isCategory ? 'categories' : 'locations')]);
+  hack(){
+    this.adminService.hack();
   }
-  */
 
   setEmailReports(event){
     this.adminService.setEmailReportsForUser(this.workspace.id, this.user.id, event.checked);

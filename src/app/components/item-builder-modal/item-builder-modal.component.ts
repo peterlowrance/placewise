@@ -110,12 +110,12 @@ export class ItemBuilderModalComponent implements OnInit {
     }
 
     // Load category info plus category's parents for attributes
-    this.searchService.getCategory(this.workspaceID, this.item.category).subscribe(category => {
+    this.searchService.subscribeToCategory(this.workspaceID, this.item.category).subscribe(category => {
       this.category = category;
 
-      this.searchService.getAncestorsOf(this.workspaceID, category).subscribe(categoryAncestors => {
-        if(categoryAncestors[0]){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
-          this.categoryAndAncestors = categoryAncestors[0];
+      this.searchService.getLoadedParentsOf(this.workspaceID, category.ID, 'category').then(categoryAncestors => {
+        if(categoryAncestors){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
+          this.categoryAndAncestors = categoryAncestors;
           this.categoryAndAncestors.unshift(this.category);
           
           let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.workspaceID, this.item, this.categoryAndAncestors);
@@ -161,7 +161,7 @@ export class ItemBuilderModalComponent implements OnInit {
     // Assign data to slots in locations and subs as they load in
     for(let location in locationIDs){
       // Manual single get. Maybe we should add this functionaly in search service
-      let localSub = this.searchService.getLocation(this.workspaceID, locationIDs[location]).subscribe(locationData => {
+      let localSub = this.searchService.subscribeToLocation(this.workspaceID, locationIDs[location]).subscribe(locationData => {
         if(locationData){
           loadedLocations[location] = locationData;
 
@@ -234,12 +234,12 @@ export class ItemBuilderModalComponent implements OnInit {
     if (result && result.length > 0 && this.item.category !== result[0]) { 
 
       // Get category data
-      let localSub = this.searchService.getCategory(this.workspaceID, result[0]).subscribe(newCategory => {
+      let localSub = this.searchService.subscribeToCategory(this.workspaceID, result[0]).subscribe(newCategory => {
         if(newCategory){ // For for the actual data to come in
 
           // Load new category ancestors before continuing
-          this.searchService.getAncestorsOf(this.workspaceID, newCategory).subscribe(categoryAncestors => {
-            this.categoryAndAncestors = categoryAncestors[0];
+          this.searchService.getLoadedParentsOf(this.workspaceID, newCategory.ID, 'category').then(categoryAncestors => {
+            this.categoryAndAncestors = categoryAncestors;
             this.categoryAndAncestors.unshift(newCategory);
 
             let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.workspaceID, this.item, this.categoryAndAncestors);
@@ -323,7 +323,7 @@ export class ItemBuilderModalComponent implements OnInit {
 
       // Update recent locations
       for(let index in newLocations){
-        let localSub = this.searchService.getLocation(this.workspaceID, newLocations[index]).subscribe(loc => {
+        let localSub = this.searchService.subscribeToLocation(this.workspaceID, newLocations[index]).subscribe(loc => {
           this.adminService.addToRecent(loc);
           localSub.unsubscribe(); // Don't want this screwing with us later
         })

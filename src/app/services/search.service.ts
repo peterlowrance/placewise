@@ -18,6 +18,7 @@ import { CacheService } from './cache.service';
 import { time } from 'console';
 import { BinDictionary } from '../models/BinDictionary';
 import { WorkspaceInfo } from '../models/WorkspaceInfo';
+import { HierarchyStructure } from '../models/HierarchyStructure';
 
 const httpOptions = {
   headers: new HttpHeaders({
@@ -34,6 +35,54 @@ export class SearchService implements SearchInterfaceService {
   locations: HierarchyItem[];
   categories: Category[];
 
+
+  lastWorkspaceID: string = '';
+  locStructSubscription: Subscription;
+  catStructSubscription: Subscription;
+  locationStructure: HierarchyStructure;
+  categoryStructure: HierarchyStructure;
+
+  /**
+  * This is called whenever loading a page that may need to use the way the workspace is structured.
+  * This allows for having a quick reference for most operations instead of constantly accessing the DB.
+  */
+  async loadWorkspaceStructure(workspaceID): Promise<boolean> {
+    if(workspaceID === this.lastWorkspaceID){
+      return true;
+    }
+    else {
+      return new Promise<boolean>( async resolve => {
+
+        let subscriptionsComplete: boolean[] = [false, false];
+        let resolved = false;
+        this.lastWorkspaceID = workspaceID;
+  
+        this.catStructSubscription = this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/CategoriesHierarchy').snapshotChanges().subscribe(
+          catStructure => { 
+            this.categoryStructure = catStructure.payload.data() as HierarchyStructure; 
+  
+            subscriptionsComplete[0] = true;
+            if(!resolved && subscriptionsComplete.indexOf(false) < 0){
+              resolve(true);
+              return;
+            }
+          }
+        )
+        this.locStructSubscription = this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/LocationsHierarchy').snapshotChanges().subscribe(
+          locStructure => { 
+            this.locationStructure = locStructure.payload.data() as HierarchyStructure;
+  
+            subscriptionsComplete[1] = true;
+            if(!resolved && subscriptionsComplete.indexOf(false) < 0){
+              resolve(true);
+              return;
+            } 
+          }
+        )
+      })
+    }
+  }
+
   // /**
   //  * Finds all the ancestors of an item and returns them in a 2D array.
   //  * The first dimension of the array are arrays of ancestors, the second dimension is each individual ancestor.
@@ -49,112 +98,32 @@ export class SearchService implements SearchInterfaceService {
   // }
 
   /**
-   * Returns the ancestors from IDs of whichever type you are searching by.
-   * @param parents the parent or parents of what something is located in
-   * @param locations array of hierarchy items to find ancestors out of
+   * This should be very fast
    */
-  getAncestors(parentIDs: string[], hierItems: HierarchyItem[]): HierarchyItem[][] {
-    const result: HierarchyItem[][] = [];
-    // Find all parents of items and add an array for each parent
-    for(const parentID of parentIDs){
-      for(const firstParent of hierItems) {
-        if (firstParent.ID === parentID) {
-          const ancestors: HierarchyItem[] = [firstParent];
-          result.push(ancestors);
-          // Find all parents in this ancestor list
-          // While the last parent of the last array of ancestors is not the root
-          while (result[result.length - 1][result[result.length - 1].length - 1].ID !== 'root') {
-            let not_found_error = true; // Prevent infinite loop
+  async getParentsOf(workspaceID: string, id: string, type: string): Promise<string[]> {
+    await this.loadWorkspaceStructure(workspaceID);
 
-            for (const nextParent of hierItems) {
-              // If the item has the same ID as the parent of the last item in the ancestor list, add it
-              if (nextParent.ID === result[result.length - 1][result[result.length - 1].length - 1].parent) {
-                result[result.length - 1].push(nextParent);
-                not_found_error = false;
-                break;
-              }
-            }
+    let parents = [id];
+    let structure: HierarchyStructure = type === 'category' ? this.categoryStructure : this.locationStructure;
 
-            if(not_found_error){
-              console.log("ERROR! Categories improperly loaded.");
-              console.log(result[result.length - 1][result[result.length - 1].length - 1].ID);
-              // NOTE: this has popped up with a location ID before!
-              break;
-            }
-          }
-        }
-      }
+    let currentParent = structure[id].parent;
+    while(currentParent){
+      parents.push(currentParent);
+      currentParent = structure[currentParent].parent;
     }
-    
-    return result;
+
+    return parents;
   }
 
-  /**
-   * A general ancestor call for any type of thing in a hierarchy (item, category, location)
-   * The first dimension of the array are arrays of ancestors (multiple when getting mutliple locations from an item),
-   * The second dimension is each individual ancestor.
-   * @param id item to find ancestors of
-   */
-  getAncestorsOf(workspaceID: string, item: HierarchyObject): Observable<HierarchyItem[][]> {
+  async getLoadedParentsOf(workspaceID: string, id: string, type: string): Promise<HierarchyItem[]> {
+    let IDs = await this.getParentsOf(workspaceID, id, type);
     
-    return new Observable(obs => {
-    if(item.type === "item"){
-        this.getAllLocations(workspaceID).subscribe(locs => {
-          obs.next(this.getAncestors((item as Item).locations, locs));
-          obs.complete();
-        });
+    if(type === 'category'){
+      return Promise.all(IDs.map(id => this.getCategory(this.lastWorkspaceID, id)));
     }
     else {
-        let hierItem = item as HierarchyItem;
-        if(hierItem.type === 'category'){
-          this.getAllCategories(workspaceID).subscribe(categories =>
-            {
-              console.log("RECV ALL CATS");
-              obs.next(this.getAncestors([hierItem.parent], categories));
-
-              if(categories.length > 1){  // Finish when we have all the data (It always has at least a length of one ??)
-                obs.complete();
-              }
-            })
-        } else {
-          this.getAllLocations(workspaceID).subscribe(locations =>
-            {
-              console.log("RECV ALL LOCS");
-              obs.next(this.getAncestors([hierItem.parent], locations));
-              
-              if(locations.length > 1){  // Finish when we have all the data (It always has at least a length of one ??)
-                obs.complete();
-              }
-            })
-        }
-      }
-    });
-  }
-
-  // TESTING METHOD
-  // INCLUDES PARENT
-  getAncestorsByChain(workspaceID: string, ID: string, type: string): Promise<HierarchyItem[]> {
-    return new Promise<HierarchyItem[]>( async resolve => {
-      let results: HierarchyItem[] = [];
-      let nextID = ID;
-      let finished = false;
-      let typeURL = type === 'category' ? 'Category' : 'Locations';
-
-      while(!finished){
-        let location = (await this.afs.doc('/Workspaces/' + workspaceID + '/' + typeURL + '/' + nextID).get().toPromise()).data() as HierarchyLocation;
-        location.ID = nextID;
-        results.push(location);
-        
-        if(location.parent){
-          nextID = location.parent;
-        }
-        else {
-          finished = true;
-        }
-      }
-
-      resolve(results);
-    })
+      return Promise.all(IDs.map(id => this.getLocation(this.lastWorkspaceID, id)));
+    }
   }
 
   getShelfIDFromAncestors(workspaceID: string, locationID: string): Promise<string>{
@@ -229,19 +198,14 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getLocation(workspaceID: string, id: string): Observable<HierarchyLocation> {
+  subscribeToLocation(workspaceID: string, id: string): Observable<HierarchyLocation> {
     if (!id || id === 'none') {
       return of(null);
     }
     return this.afs.doc<HierarchyLocation>('/Workspaces/' + workspaceID + '/Locations/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as HierarchyLocation;
       if(data){
-        data.ID = a.payload.id;
-        if (data.imageUrl == null) {
-          data.imageUrl = '../../../assets/notFound.png';
-        }
-        data.type = "location";
-        return data;
+        return this.prepRawHierarchyData(data, a.payload.id, 'location');
       }
       else {
         return null;
@@ -249,7 +213,20 @@ export class SearchService implements SearchInterfaceService {
     }));
   }
 
-  getCategory(workspaceID: string, id: string): Observable<Category> {
+  async getLocation(workspaceID: string, id: string): Promise<HierarchyLocation> {
+    let locationDoc = await this.afs.doc<HierarchyLocation>('/Workspaces/' + workspaceID + '/Locations/' + id).ref.get();
+    if(locationDoc.exists){
+      const data = locationDoc.data() as HierarchyLocation;
+      if(data){
+        return this.prepRawHierarchyData(data, locationDoc.id, 'location');
+      }
+      else {
+        return null;
+      }
+    }
+  }
+
+  subscribeToCategory(workspaceID: string, id: string): Observable<Category> {
     if (!id) {
       return of(null);
     }
@@ -257,18 +234,39 @@ export class SearchService implements SearchInterfaceService {
     return this.afs.doc<Category>('/Workspaces/' + workspaceID + '/Category/' + id).snapshotChanges().pipe(map(a => {
       const data = a.payload.data() as Category;
       if(data){
-        //console.log(data);
-        data.ID = a.payload.id;
-        if (data.imageUrl == null) {
-          data.imageUrl = '../../../assets/notFound.png';
-        }
-        data.type = "category";
-        return data;
+        return this.prepRawHierarchyData(data, a.payload.id, 'category');
       }
       else {
         return null;
       }
     }));
+  }
+
+  async getCategory(workspaceID: string, id: string): Promise<Category> {
+    let locationDoc = await this.afs.doc<Category>('/Workspaces/' + workspaceID + '/Category/' + id).ref.get();
+    if(locationDoc.exists){
+      const data = locationDoc.data() as Category;
+      if(data){
+        return this.prepRawHierarchyData(data, locationDoc.id, 'category');
+      }
+      else {
+        return null;
+      }
+    }
+  }
+
+  /**
+   * This acts more as a check to make sure everything gets setup properly
+   */
+  prepRawHierarchyData(hierItem: HierarchyItem, id: string, type: string): HierarchyItem {
+    
+    
+    hierItem.ID = id;
+    if (hierItem.imageUrl == null) {
+      hierItem.imageUrl = '../../../assets/notFound.png';
+    }
+    hierItem.type = type;
+    return hierItem;
   }
 
   getAllItems(workspaceID: string): Observable<Item[]> {
@@ -506,10 +504,10 @@ export class SearchService implements SearchInterfaceService {
   }
 
   binSub: Subscription;
-  lastWorkspaceID: string = '';
+  lastWorkspaceIDForBins: string = '';
    loadBinData(workspaceID: string): Promise<boolean> {
     return new Promise<boolean>(resolve => {
-      if(workspaceID !== this.lastWorkspaceID){
+      if(workspaceID !== this.lastWorkspaceIDForBins){
         if(this.binSub){
           this.binSub.unsubscribe();
         }

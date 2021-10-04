@@ -22,6 +22,7 @@ export class QRScannerDialogComponent implements OnInit {
   device: MediaDeviceInfo;
   cameraNum = 0;
   devices: MediaDeviceInfo[];
+  scannerEnabled: boolean = true; // This is because sometimes the camera feed sometimes didn't shut off after the dialog was closed, so we delete
   //manualPrint: string;  // For debugging
 
   loadCameras(event){
@@ -48,37 +49,43 @@ export class QRScannerDialogComponent implements OnInit {
     this.device = this.devices[this.cameraNum];
   }
 
-  errorPrint(event){
+  scan(event){
     let text: string = event.text;
 
     // Full URL
     if(text.startsWith('https://placebin.online/')){
       this.router.navigateByUrl(text.substring(24));
-      this.dialogRef.close({wasValid: true});
+      this.close();
     }
 
     // Mini link versions
     else if(text.startsWith('/i/')){
       this.router.navigate(['/w/' + this.data.workspaceID + '/item/' + text.substring(3)]);
-      this.dialogRef.close({wasValid: true});
+      this.close();
     }
     else if(text.startsWith('/l/')){
       this.router.navigate(['/w/' + this.data.workspaceID + '/search/locations/' + text.substring(3)]);
-      this.dialogRef.close({wasValid: true});
+      this.close();
     }
     else if(text.startsWith('/c/')){
       this.router.navigate(['/w/' + this.data.workspaceID + '/search/category/' + text.substring(3)]);
-      this.dialogRef.close({wasValid: true});
+      this.close();
     }
     else if(text.startsWith('/b/')){
       this.router.navigate(['/w/' + this.data.workspaceID + '/search/category/root'], { queryParams: { bin: text.substring(3)}});
-      this.dialogRef.close({wasValid: true});
+      this.close();
     }
 
 
   }
 
+  close(){
+    this.scannerEnabled = false;
+    this.dialogRef.close({wasValid: true});
+  }
+
   cancel(){
+    this.scannerEnabled = false;
     this.dialogRef.close({wasValid: false});
   }
 

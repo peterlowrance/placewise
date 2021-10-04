@@ -89,7 +89,7 @@ export class ModifyHierarchyComponent implements OnInit {
           this.updateCurrentlyIn();
         });
       } else { // If you are selecting new locations or categories, include the root
-        const appropriateRoot: Observable<HierarchyItem> = this.isCategory ? this.searchService.getCategory(this.workspaceID, 'root') : this.searchService.getLocation(this.workspaceID, 'root');
+        const appropriateRoot: Observable<HierarchyItem> = this.isCategory ? this.searchService.subscribeToCategory(this.workspaceID, 'root') : this.searchService.subscribeToLocation(this.workspaceID, 'root');
         appropriateRoot.subscribe(root => {
           this.buildTree(root, hierarchy);
           this.dataChange.next([root]);
