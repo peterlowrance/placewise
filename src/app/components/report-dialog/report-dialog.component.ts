@@ -61,6 +61,8 @@ export class ReportDialogComponent implements OnInit {
   type: string = 'custom';
   locationID = 'none';
   isTemplateReport = false;
+  reportSuccess = false;
+  reportFailReason: string;
 
   //reportEmptyDisabled = false;
   canReport = true;
@@ -417,16 +419,24 @@ export class ReportDialogComponent implements OnInit {
       }
     }
 
-    this.dialogRef.close({wasValid: true});
-    this.snack.open("Sending Report...", '', {duration: 3000, panelClass: ['mat-toolbar']});
+    this.step = 'sending';
 
     this.reportService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type, this.reportTemplate ? this.reportTemplate.urgentReportSubject : null).then(
-      () => this.snack.open("Report Sent!", "OK", {duration: 5000, panelClass: ['successful-report']}),
+      () => this.reportSuccess = true,
       (err) => {
-        this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
-        console.log(JSON.stringify(err));
+        //this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
+        if(!err.status){
+          this.reportFailReason = "The server did not respond or crashed. If your internet is working, this is likely a problem with Placebin.";
+        }
+        else {
+          this.reportFailReason = err.status;
+        }
       }
     );
+  }
+
+  finish(){
+    this.dialogRef.close({wasValid: true});
   }
 
 }
