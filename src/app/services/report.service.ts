@@ -42,7 +42,7 @@ export class ReportService {
   }
 
 
-  placeReport(itemID: string, text: string, reportedTo: string[], locationID: string, type: string, urgentTitle?: string) {
+  placeReport(workspaceID: string, itemID: string, backupName: string, text: string, reportedTo: string[], locationID: string, type: string, urgentTitle?: string) {
     console.log(type);
     return new Promise((resolve, reject) => {
       this.auth.getAuth().subscribe(auth => {
@@ -56,7 +56,9 @@ export class ReportService {
                 message: text,
                 reportTo: reportedTo,
                 type: type,
-                urgentSubject: urgentTitle
+                urgentSubject: urgentTitle,
+                workspace: workspaceID,
+                backupName: backupName
               });
   
               // with token remove user by pinging server with token and email
@@ -67,7 +69,9 @@ export class ReportService {
                 message: text,
                 reportTo: reportedTo,
                 type: type,
-                urgentSubject: urgentTitle
+                urgentSubject: urgentTitle,
+                workspace: workspaceID,
+                backupName: backupName
               }).toPromise().then(
                 () => resolve(`Report sent!`),
                 (err) => reject(err.error)
@@ -81,6 +85,8 @@ export class ReportService {
                 message: text,
                 reportTo: reportedTo,
                 type: type,
+                workspace: workspaceID,
+                backupName: backupName
               });
   
               // with token remove user by pinging server with token and email
@@ -91,6 +97,8 @@ export class ReportService {
                 message: text,
                 reportTo: reportedTo,
                 type: type,
+                workspace: workspaceID,
+                backupName: backupName
               }).toPromise().then(
                 () => resolve(`Report sent!`),
                 (err) => reject(err.error)

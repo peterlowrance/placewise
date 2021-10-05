@@ -421,12 +421,12 @@ export class ReportDialogComponent implements OnInit {
 
     this.step = 'sending';
 
-    this.reportService.placeReport(this.data.item.ID, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type, this.reportTemplate ? this.reportTemplate.urgentReportSubject : null).then(
+    this.reportService.placeReport(this.workspaceID, this.data.item.ID, this.data.item.name, this.description, this.selectedAdmins.map(user => user.id), this.locationID, this.type, this.reportTemplate ? this.reportTemplate.urgentReportSubject : null).then(
       () => this.reportSuccess = true,
       (err) => {
         //this.snack.open("Report Failed. " + err.status, "OK", {duration: 10000, panelClass: ['mat-toolbar']})
         if(!err.status){
-          this.reportFailReason = "The server did not respond or crashed. If your internet is working, this is likely a problem with Placebin.";
+          this.reportFailReason = "The server did not respond. If your internet is working, this is likely a problem with Placebin.";
         }
         else {
           this.reportFailReason = err.status;
