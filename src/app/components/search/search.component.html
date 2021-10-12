@@ -152,8 +152,6 @@
     </div>
   
     <!--Hierarchy Items-->
-    <br>
-
     <div *ngIf="hierarchyItems && hierarchyItems.length > 0 && !filteredAttributes" (window:resize)="onResize($event)">
       <div class="header">{{root.type === 'category' ? 'Categories' : 'Locations'}}</div>
       <app-hierarchy-item-grid [hierarchyItemList]="hierarchyItems" (clickedHierarchy)="goToHierarchy($event)"></app-hierarchy-item-grid>

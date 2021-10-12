@@ -259,7 +259,7 @@ export class ItemComponent implements OnInit, OnDestroy {
           this.attributeSuffix = this.searchService.buildAttributeAutoTitleFrom(item, this.categoryAncestors);
           
           // Load item attributes into card data
-          let rebuiltCards = this.loadAttributesForCards([category].concat(categoryAncestors), item);
+          let rebuiltCards = this.loadAttributesForCards(categoryAncestors, item);
 
           // If we'd never had them loaded or the amount of cards/attributes have changed, update them
           if(!this.attributesForCard || this.attributesForCard.length !== rebuiltCards.length){

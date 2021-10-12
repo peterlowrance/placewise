@@ -61,10 +61,10 @@ import { QRCodeLocationDialogComponent } from '../qrcode-location-dialog/qrcode-
     ]),
     trigger('searchInput', [
       state('open', style({
-        marginTop: '24px'
+        marginTop: '32px', marginBottom: '8px'
       })),
       state('closed', style({
-        marginTop: '-80px'
+        marginTop: '-80px', marginBottom: '32px'
       })),
       transition('open <=> closed', [
         animate('0.18s ease-out')

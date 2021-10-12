@@ -121,7 +121,6 @@ export class ItemBuilderModalComponent implements OnInit {
       this.searchService.getLoadedParentsOf(this.workspaceID, category.ID, 'category').then(categoryAncestors => {
         if(categoryAncestors){ //Sometimes it returns a sad empty array, cache seems to mess with the initial return
           this.categoryAndAncestors = categoryAncestors;
-          this.categoryAndAncestors.unshift(this.category);
           
           let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.workspaceID, this.item, this.categoryAndAncestors);
           this.autoTitle = returnData.autoTitle;
@@ -260,7 +259,6 @@ export class ItemBuilderModalComponent implements OnInit {
           // Load new category ancestors before continuing
           this.searchService.getLoadedParentsOf(this.workspaceID, newCategory.ID, 'category').then(categoryAncestors => {
             this.categoryAndAncestors = categoryAncestors;
-            this.categoryAndAncestors.unshift(newCategory);
 
             let returnData = this.adminService.updateItemDataFromCategoryAncestors(this.workspaceID, this.item, this.categoryAndAncestors);
             this.autoTitle = returnData.autoTitle;

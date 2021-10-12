@@ -135,6 +135,7 @@ export class HierarchyItemComponent implements OnInit {
               attribute: CategoryAttribute
             }[];
 
+            parents.splice(0, 1);
             for(let parent in parents){
               let ancestorCategory = (parents[parent] as Category);
               if(ancestorCategory.attributes)
