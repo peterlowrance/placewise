@@ -505,7 +505,8 @@ export class SearchService implements SearchInterfaceService {
 
   binSub: Subscription;
   lastWorkspaceIDForBins: string = '';
-   loadBinData(workspaceID: string): Promise<boolean> {
+
+  loadBinData(workspaceID: string): Promise<boolean> {
     return new Promise<boolean>(resolve => {
       if(workspaceID !== this.lastWorkspaceIDForBins){
         if(this.binSub){
@@ -516,6 +517,8 @@ export class SearchService implements SearchInterfaceService {
           let data = doc.payload.data();
           if(data){
             this.BinData = data;
+            console.log(Object.keys(data.bins).length);
+            console.log(JSON.stringify(data.bins).length);
             resolve(true);
           }
           else {

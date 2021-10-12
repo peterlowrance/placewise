@@ -62,15 +62,32 @@
                         #binInput
                         type="number" 
                         pattern="\d*"
-                        [value]="binData.loadedID"
-                        (keyup)="submitBinID(binData.location, $event.target, binData.shelfID)"
+                        [value]="binData.binNumber"
+                        (keyup)="submitBinData(binData, $event.target, false)"
                         >
                     </mat-form-field>
+                    <span *ngIf="binInput.value">
+                        <span> to </span>
+                        <mat-form-field class="bin-form" appearance="outline">
+                            <mat-label>Optional</mat-label>
+                            <input 
+                            class="shelf-input" 
+                            matInput 
+                            #rangeInput
+                            type="number" 
+                            pattern="\d*"
+                            [value]="binData.rangeNumber"
+                            (keyup)="submitBinData(binData, $event.target, true)"
+                            >
+                        </mat-form-field>
+                    </span>
+                    
                     <mat-error *ngIf="invalidBinIDErrors[binData.location.ID]">
                         {{ invalidBinIDErrors[binData.location.ID] }}
                         <br>
                         <br>
                     </mat-error>
+                    
 
                     <mat-divider></mat-divider>
                     <br>

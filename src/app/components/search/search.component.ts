@@ -761,7 +761,8 @@ export class SearchComponent implements OnInit, OnDestroy {
           this.searchService.getItem(this.workspaceID, itemID).subscribe(item => {
             if(item){
               for(let loc in item.locationMetadata){
-                if(item.locationMetadata[loc].binID === binID){
+                if((item.locationMetadata[loc].binID && item.locationMetadata[loc].binID === binID) ||
+                (item.locationMetadata[loc].binIDRange && item.locationMetadata[loc].binID <= binID && item.locationMetadata[loc].binIDRange >= binID)){
                   this.searchService.subscribeToLocation(this.workspaceID, loc).subscribe(locationData => {
   
                     // If we got a result, go to the item's location and deselect the input so

@@ -16,9 +16,13 @@
                     </mat-card>
                   
                     <p class='bin-text'>
-                        {{ item.locationMetadata[insideLocation.ID] ? 
-                            item.locationMetadata[insideLocation.ID].binID :
-                            "Loading" }} <!-- This tends to take a moment/cause undefined errors, so we'll give it some slack -->
+                        <span *ngIf="!item.locationMetadata[insideLocation.ID]">Loading</span>
+                        <span *ngIf="item.locationMetadata[insideLocation.ID]">
+                            {{item.locationMetadata[insideLocation.ID].binID}}
+                            <span *ngIf="item.locationMetadata[insideLocation.ID].binIDRange">
+                                 to {{item.locationMetadata[insideLocation.ID].binIDRange.substring(4)}}
+                            </span>
+                        </span>
                     </p>
                 </mat-card>
             </mat-grid-tile>

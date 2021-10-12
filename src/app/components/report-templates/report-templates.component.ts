@@ -28,11 +28,7 @@ export class ReportTemplatesComponent implements OnInit {
     this.workspaceID = this.route.snapshot.paramMap.get('workspaceID');
 
     this.reportService.getReportTemplates(this.workspaceID).subscribe(result => {
-      this.reportTemplates = [];
-
-      for(let type in result){
-        this.reportTemplates.push({type, reportStructure: result[type]});
-      }
+      this.reportTemplates = result;
     });
 
   }

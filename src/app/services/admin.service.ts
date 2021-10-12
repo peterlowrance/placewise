@@ -1,8 +1,8 @@
 // import { AdminInterfaceService } from './admin-interface.service';
 
-import {Injectable} from '@angular/core';
+import {ComponentFactoryResolver, Injectable} from '@angular/core';
 import {HttpHeaders, HttpClient, HttpResponse, HttpRequest} from '@angular/common/http';
-import {Observable, of, Subscription} from 'rxjs';
+import {Observable, of, range, Subscription} from 'rxjs';
 import {Item} from '../models/Item';
 import {AngularFirestore, DocumentReference, DocumentChangeAction} from '@angular/fire/firestore';
 import {AuthService} from './auth.service';
@@ -143,22 +143,24 @@ export class AdminService {
     if(item.type) delete item.type;
 
     if (oldLocationsID) {
-      // Remove from old locations - do this first so that the removed tracking data is saved when we update the item
+      
+      // Remove from old locations and delete internal bin data
       for(let i in oldLocationsID){
         // If this location is no longer present
         if (item.locations.indexOf(oldLocationsID[i]) === -1) {
+          // Update the binIDs externally first
+          this.removeBinIDs(workspaceID, item, [oldLocationsID[i]]);
+
           await this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + oldLocationsID[i]).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
           
-          let binIDsToRemove: string[] = [];
           for(let locID in item.locationMetadata){ // Remove tracking data
             if(locID === oldLocationsID[i]){
-              binIDsToRemove.push(item.locationMetadata[locID].binID);
               delete item.locationMetadata[locID];
             }
           }
-          this.removeBinIDs(workspaceID, binIDsToRemove);
         }
       };
+
       // Add to new locations
       item.locations.forEach(async location => {
         await this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayUnion(item.ID)});
@@ -198,12 +200,10 @@ export class AdminService {
     // If there is a category replacement, update item title
     else if(item.name && oldCategoryAndAncestors) {
       let oldAutoTitle = this.searchService.buildAttributeAutoTitleFrom(item, oldCategoryAndAncestors);
-      console.log("Old title: " + oldAutoTitle); 
 
       // If this was using the auto title, replace it.
       if(item.name.startsWith(oldAutoTitle)){
         item.name = autoTitle + item.name.substring(oldAutoTitle.length);
-        console.log("New name: " + item.name); 
       }
     }
 
@@ -264,15 +264,16 @@ export class AdminService {
       this.afs.doc('Workspaces/' + workspaceID + '/Category/' + item.category).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
     }
     if (item.locations && item.locations.length > 0) {
+      this.removeBinIDs(workspaceID, item, item.locations);
+
       item.locations.forEach(location => {
         // Remove bin IDs
-        let binIDsToRemove: string[] = [];
+        let binIDsToRemove: {binID: string, rangeID: string}[] = [];
         for(let locID in item.locationMetadata){
           if(locID === location){
-            binIDsToRemove.push(item.locationMetadata[locID].binID);
+            binIDsToRemove.push({binID: item.locationMetadata[locID].binID, rangeID: item.locationMetadata[locID].binID});
           }
         }
-        this.removeBinIDs(workspaceID, binIDsToRemove);
 
         this.afs.doc('Workspaces/' + workspaceID + '/Locations/' + location).update({items: firebase.firestore.FieldValue.arrayRemove(item.ID)});
       });
@@ -548,7 +549,6 @@ export class AdminService {
     this.afs.doc<HierarchyStructure>('Workspaces/' + workspaceID + '/StructureData/CategoriesHierarchy').ref.get().then(
       categoryStructureData => {
         let structure = (categoryStructureData.data() as HierarchyStructure);
-        console.log(structure);
 
         structure[moveID].parent = parentID;
         structure[oldParentID].children = structure[oldParentID].children.filter(child => child !== moveID);
@@ -792,21 +792,95 @@ export class AdminService {
   }
 
   /**
-   * This is a straight foward method of adding the bin ID to the BinDictionary
+   * Manages updating bin IDs with or without ranges
    */
-  addBinIDs(workspaceID: string, locationsData: {[locationID: string]: { ID: string, previousID: string}}, itemID: string) {
+  setBinIDs(workspaceID: string, locationsData: {[locationID: string]: { ID: string, previousID?: string, range: string, previousRange?: string}}, itemID: string) {
     this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').get().subscribe(doc => {
       if(doc.exists && doc.data().bins){
         let data = doc.data() as BinDictionary;
 
+        // This is for adding all the new ranges. It must be done after all delete loops so that if
+        // there where overlapping changes, it doesn't delete a chunk of a new range
+        let rangesToAdd: {shelfID: string, binStart: number, binStop: number}[] = [];
+
         for(let locationID in locationsData){
           let locationData = locationsData[locationID];
+          console.log("PREVIOUS ID: " + locationData.previousID);
 
-          if(locationData.previousID){
-            delete data.bins[locationData.previousID];
+          // If we don't have range, just move the single ID
+          if(!locationData.range && !locationData.previousRange){
+            // Delete old
+            if(locationData.previousID){
+              delete data.bins[locationData.previousID];
+            }
+            // Add new
+            if(locationData.ID){
+              data.bins[locationData.ID] = itemID;
+            }
           }
-          if(locationData.ID){
-            data.bins[locationData.ID] = itemID;
+          else {
+
+            // In tests, I found the delete function to basically be O(1), mostly when deleting only a few elements from a large array.
+            // So for simplicity's sake, just delete the old range and add the new one.
+
+            // ??? Maybe good still ???
+            // Fill in missing data for range calculations
+            // Otherwise this code would get another degree of complicated
+            if(!locationData.range){
+              locationData.range = locationData.ID;
+            }
+            if(!locationData.previousRange){
+              locationData.previousRange = locationData.range;
+            }
+            if(!locationData.previousID){
+              locationData.previousID = locationData.ID;
+            }
+
+            // Convert ranges into countable for loops
+            let binDeleteStart = Number.parseInt(locationData.previousID.split('-')[1]);
+            let binDeleteEnd = Number.parseInt(locationData.previousRange.split('-')[1]);
+            let shelfID = locationData.previousID.split('-')[0];
+
+            if(binDeleteEnd < binDeleteStart){ // For odd cases when we are completely changing things
+              binDeleteEnd = binDeleteStart;   // For example: going from point 009 to range 004 to 006
+            }                                  // So set the end to 009 for deleting, not 006
+
+            // Remove
+            for(let binNum = binDeleteStart; binNum <= binDeleteEnd; binNum ++){
+              if(binNum < 10) { 
+                delete data.bins[shelfID + '-00' + binNum]; 
+              }
+              else if(binNum < 100) { 
+                delete data.bins[shelfID + '-0' + binNum]; 
+              }
+              else { 
+                delete data.bins[shelfID + '-' + binNum]; 
+              }
+            }
+
+            // Make sure we're adding and not jsut deleting everything
+            if(locationData.ID){
+              // Add to the array for setting up all ranges later
+              let binStart = Number.parseInt(locationData.ID.split('-')[1]);
+              let binStop = Number.parseInt(locationData.range.split('-')[1]);
+
+              rangesToAdd.push({shelfID, binStart, binStop});
+            }
+          }
+        }
+
+        // Add new/changed ranges
+        for(let rangeData of rangesToAdd){
+          for(let binNum = rangeData.binStart; binNum <= rangeData.binStop; binNum++){
+            if(binNum < 10)  { 
+              data.bins[rangeData.shelfID + '-00' + binNum] = itemID;
+            }
+            else if(binNum < 100)  { 
+              data.bins[rangeData.shelfID + '-0' + binNum] = itemID;
+            }
+            else  { 
+              data.bins[rangeData.shelfID + '-' + binNum] = itemID; 
+            }
           }
         }
 
@@ -818,7 +892,23 @@ export class AdminService {
         for(let locationID in locationsData){
           let locationData = locationsData[locationID];
 
-          newBinDict.bins[locationData.ID] = itemID;
+          if(locationData.range){
+            let binNum = Number.parseInt(locationData.previousRange.split('-')[1]);
+            let rangeNum = Number.parseInt(locationData.range.split('-')[1]);
+            let shelfID = locationData.ID.split('-')[0];
+            let binAsThreeDigits;
+
+            for(let binID = binNum; binID <= rangeNum; binID++){
+              if(binNum < 10)  { binAsThreeDigits = "00" + binNum; }
+              else if(binNum < 100)  { binAsThreeDigits = "0" + binNum; }
+              else  { binAsThreeDigits = binNum }
+
+              newBinDict.bins[shelfID + '-' + binAsThreeDigits] = itemID;
+            }
+          }
+          else {
+            newBinDict.bins[locationData.ID] = itemID;
+          }
         }
 
         this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').update({bins: newBinDict.bins});
@@ -826,18 +916,21 @@ export class AdminService {
     });
   }
 
-  removeBinIDs(workspaceID: string, binIDs: string[]){
-    this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').get().subscribe(doc => {
-      if(doc.exists && doc.data().bins){
-        let data = doc.data() as BinDictionary;
+  removeBinIDs(workspaceID: string, item: Item, locationsToRemoveFrom: string[]){
+    let binsToReset: {[locationID: string]: { ID: string, previousID?: string, range: string, previousRange?: string}} = {};
 
-        for(let binID of binIDs){
-          delete data.bins[binID];
+    for(let locationID of locationsToRemoveFrom){
+      if(item.locationMetadata[locationID] && item.locationMetadata[locationID].binID){
+        binsToReset[locationID] = {
+          ID: null,
+          range: null,
+          previousID: item.locationMetadata[locationID].binID,
+          previousRange: item.locationMetadata[locationID].binIDRange
         }
-
-        this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/BinDictionary').update({bins: data.bins});
       }
-    });
+    }
+
+    this.setBinIDs(workspaceID, binsToReset, item.ID);
   }
 
   hack(){

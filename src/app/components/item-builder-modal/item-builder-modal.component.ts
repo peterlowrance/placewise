@@ -31,6 +31,13 @@ interface AttributeCard {
   }[] 
 }
 
+interface BinInterface {
+  location: HierarchyLocation;
+  binNumber: string;
+  rangeNumber?: string;
+  shelfID: string;
+}
+
 @Component({
   selector: 'app-item-builder-modal',
   templateUrl: './item-builder-modal.component.html',
@@ -64,18 +71,16 @@ export class ItemBuilderModalComponent implements OnInit {
   autoTitleBuilder: boolean;                // Switch value on UI
   autoTitle: string;                        // Pre-loaded title
   loadingLocations: boolean = true;         // For if it takes a while to load locations... Doesn't end up being very useful atm
-  binIDsToSave: { 
+  binIDsToSave: {  // NOTE: This may not be needed anymore with binIDData interface
     [locationID: string] : {
       ID: string;
-      previousID: string;
+      previousID?: string;
+      range: string;  // Left null if there's no range
+      previousRange?: string;
     }
   } = {};
   invalidBinIDErrors: {[locationID: string] : string} = {};
-  binIDData: {
-    location: HierarchyLocation;
-    loadedID: string;
-    shelfID: string;
-  }[] = [];
+  binIDData: BinInterface[] = [];
 
   ngOnInit() {
     this.workspaceID = this.data.workspaceID;
@@ -131,7 +136,10 @@ export class ItemBuilderModalComponent implements OnInit {
       })
     });
 
-    this.loadLocationsFromIDs(this.item.locations);
+
+    this.searchService.loadBinData(this.workspaceID).then(result => {
+      this.loadLocationsFromIDs(this.item.locations);
+    })
   }
 
   ngOnDestroy(){
@@ -166,7 +174,7 @@ export class ItemBuilderModalComponent implements OnInit {
           loadedLocations[location] = locationData;
 
           let shelfID = '000';
-          if(locationData.shelfID){
+          if(locationData.shelfID && locationData.shelfID !== '000'){
             shelfID = locationData.shelfID;
 
             // For tracking how many we've loaded so far. If we have all loaded, update the loading flag
@@ -178,10 +186,16 @@ export class ItemBuilderModalComponent implements OnInit {
 
             // Load bin data
             if(this.item.locationMetadata && this.item.locationMetadata[locationData.ID] && this.item.locationMetadata[locationData.ID].binID){
-              this.binIDData.push({location: locationData, loadedID: this.item.locationMetadata[locationData.ID].binID.split('-')[1], shelfID})
+              if(this.item.locationMetadata[locationData.ID].binIDRange){
+                this.binIDData.push({location: locationData, binNumber: this.item.locationMetadata[locationData.ID].binID.split('-')[1],
+                rangeNumber: this.item.locationMetadata[locationData.ID].binIDRange.split('-')[1], shelfID})
+              }
+              else {
+                this.binIDData.push({location: locationData, binNumber: this.item.locationMetadata[locationData.ID].binID.split('-')[1], shelfID})
+              }
             }
             else {
-              this.binIDData.push({location: locationData, loadedID: '', shelfID});
+              this.binIDData.push({location: locationData, binNumber: '', shelfID});
             }
           }
           else if(locationData.parent) {
@@ -197,10 +211,16 @@ export class ItemBuilderModalComponent implements OnInit {
 
               // Load bin data
               if(this.item.locationMetadata && this.item.locationMetadata[locationData.ID] && this.item.locationMetadata[locationData.ID].binID){
-                this.binIDData.push({location: locationData, loadedID: this.item.locationMetadata[locationData.ID].binID.split('-')[1], shelfID})
+                if(this.item.locationMetadata[locationData.ID].binIDRange){
+                  this.binIDData.push({location: locationData, binNumber: this.item.locationMetadata[locationData.ID].binID.split('-')[1],
+                  rangeNumber: this.item.locationMetadata[locationData.ID].binIDRange.split('-')[1], shelfID})
+                }
+                else {
+                  this.binIDData.push({location: locationData, binNumber: this.item.locationMetadata[locationData.ID].binID.split('-')[1], shelfID})
+                }
               }
               else {
-                this.binIDData.push({location: locationData, loadedID: '', shelfID});
+                this.binIDData.push({location: locationData, binNumber: '', shelfID});
               }
             });
           }
@@ -735,87 +755,209 @@ export class ItemBuilderModalComponent implements OnInit {
     }
   }
 
-  submitBinID(location: HierarchyLocation, binInput, shelfID){
-    let previousID = null;
-    if(this.item.locationMetadata && this.item.locationMetadata[location.ID] && this.item.locationMetadata[location.ID].binID){
-      previousID = this.item.locationMetadata[location.ID].binID;
-    }
-
-    // If we have it blank, leave values as null for deleting
-    if(!binInput.value){
-      this.addBinIDToBeSaved(location.ID, null, previousID);
-    }
-
+  submitBinData(binData: BinInterface, input, isRange: boolean){
     // If the input has gotten too long, cut off the extra added
-    if(binInput.value.length > 3){
-      binInput.value = binInput.value.substring(0, 3);
+    if(input.value.length > 3){
+      input.value = input.value.substring(0, 3);
+    }
+
+    if(isRange){
+      binData.rangeNumber = input.value;
+    }
+    else {
+      binData.binNumber = input.value;
+    }
+
+    let checkedID;
+    let polledID;
+
+    // If there's no range yet, set range to the binID to treat it as a point
+    let binAsNumber = Number.parseInt(binData.binNumber);
+    let rangeAsNumber;
+
+    if(binData.rangeNumber){
+      rangeAsNumber = Number.parseInt(binData.rangeNumber);
+
+      if(binAsNumber >= rangeAsNumber){
+        this.invalidBinIDErrors[binData.location.ID] = "The range must be greater than the first number."
+        return;
+      }
+
+      let result = this.checkForInternalOverlap(binData.location.ID, this.formatID(binData.shelfID, binData.binNumber), this.formatID(binData.shelfID, binData.rangeNumber));
+      if(result){
+        this.invalidBinIDErrors[binData.location.ID] = result;
+        return;
+      }
     }
     
-    // This is so then we're not directly messing with user input 
-    // when filling in the other zeros
-    let fullBinNumber: string = binInput.value;
-    if(fullBinNumber.length < 3){
-      for(let i = 0; i < 3-binInput.value.length; i++){
-        fullBinNumber = '0' + fullBinNumber;
+    else {
+      rangeAsNumber = binAsNumber;
+
+      let result = this.checkForInternalOverlap(binData.location.ID, this.formatID(binData.shelfID, binData.binNumber), null);
+      if(result){
+        this.invalidBinIDErrors[binData.location.ID] = result;
+        return;
       }
     }
 
-    // Build the new bin ID
-    let binID = shelfID + "-" + fullBinNumber;
-    // If the ID is the same as before, just exit
-    if(previousID === binID){
-      return;
+    for(let binCheck = binAsNumber; binCheck <= rangeAsNumber; binCheck++){
+      
+      // Format the range number so that it's all the same length
+      if(binCheck < 10)  { checkedID = binData.shelfID + "-00" + binCheck; }
+      else if(binCheck < 100)  { checkedID = binData.shelfID + "-0" + binCheck; }
+      else  { checkedID = binData.shelfID + "-" + binCheck; }
+
+      polledID = this.searchService.getItemIDFromBinID(checkedID);
+      console.log(polledID);
+      if(polledID === 'err'){
+        this.invalidBinIDErrors[binData.location.ID] = "There was an error retrieving" + checkedID + ".";
+        return;
+      }
+      else if(polledID !== 'no ID' && polledID !== this.item.ID){
+        this.invalidBinIDErrors[binData.location.ID] = checkedID + " is taken by another item.";
+        return;
+      }
+
+    }
+
+    // By this point we've cleared the problems, so prep for saving the range
+
+    delete this.invalidBinIDErrors[binData.location.ID];
+
+    this.addBinDataToBeSaved(binData);
+
+    console.log(this.binIDsToSave);
+  }
+
+  /**
+   * Looks at a bin & range we are changing and sees if it conflicts with other ranges
+   * inside this item. This includes ranges that are also pending for change.
+   * 
+   * @returns Error message containing the first conflict found, empty if no errors
+   */
+  checkForInternalOverlap(locationID: string, binID: string, rangeID?: string): string {
+    // If there's no base ID in the first place, just return no conflicts
+    if(!binID){
+      return '';
     }
     
-    // Check to make sure it's not being used by a different item
-    let polledID = this.searchService.getItemIDFromBinID(binID);
-    if(polledID === 'no ID'){
-      // This means everything checks out
+    // If there's no range, set it up like a point
+    if(!rangeID){
+      rangeID = binID;
+    }
 
-      // Add it to be saved to BinDictionary later
-      this.addBinIDToBeSaved(location.ID, binID, previousID);
-
-      // Update item data with new BinID
-      if(this.item.locationMetadata){
-        if(this.item.locationMetadata[location.ID]){
-          this.item.locationMetadata[location.ID].binID = binID;
+    // Check through ranges
+    for(let binData of this.binIDData){
+      if(binData.location.ID !== locationID){
+        if(binData.rangeNumber){
+          if(this.formatID(binData.shelfID, binData.rangeNumber) >= binID && this.formatID(binData.shelfID, binData.binNumber) <= rangeID){
+            return "Conflicts with the range " + this.formatID(binData.shelfID, binData.binNumber) + " to " + this.formatID(binData.shelfID, binData.rangeNumber) + " in this item.";
+          }
         }
         else {
-          this.item.locationMetadata[location.ID] = {binID: binID};
+          if(this.formatID(binData.shelfID, binData.binNumber) >= binID && this.formatID(binData.shelfID, binData.binNumber) <= rangeID){
+            return "Conflicts with " + this.formatID(binData.shelfID, binData.binNumber) + " in this item.";
+          }
+        }
+      }     
+    }
+
+    return '';
+  }
+
+  addBinDataToBeSaved(binData: BinInterface){
+    let binDataToSave = this.binIDsToSave[binData.location.ID];
+
+    // For Bin Dictionary
+    let baseID: string = this.formatID(binData.shelfID, binData.binNumber);
+    let rangeID: string = baseID ? this.formatID(binData.shelfID, binData.rangeNumber) : null;
+
+    if(binDataToSave){
+      binDataToSave.ID = baseID;
+      binDataToSave.range = rangeID;
+    }
+    else {
+      if(this.item.locationMetadata[binData.location.ID]){
+        this.binIDsToSave[binData.location.ID] = {
+          ID: baseID,
+          previousID: this.item.locationMetadata[binData.location.ID].binID,
+          range: rangeID,
+          previousRange: this.item.locationMetadata[binData.location.ID].binIDRange
         }
       }
       else {
-        this.item.locationMetadata = {[location.ID] : {binID: binID}};
+        this.binIDsToSave[binData.location.ID] = {
+          ID: baseID,
+          range: rangeID,
+        }
       }
     }
-    else if(polledID === 'err'){
-      this.invalidBinIDErrors[location.ID] = "There was an error retrieving your data.";
-    }
-    else if(polledID === this.item.ID){
-      delete this.invalidBinIDErrors[location.ID];
+
+    // For Item Data
+    if(!baseID){
+      if(this.item.locationMetadata && this.item.locationMetadata[binData.location.ID]){
+        delete this.item.locationMetadata[binData.location.ID];
+      }
     }
     else {
-      this.invalidBinIDErrors[location.ID] = "Bin ID " + binID + " is already in use.";
+      if(this.item.locationMetadata){
+        if(this.item.locationMetadata[binData.location.ID]){
+          if(rangeID){
+            this.item.locationMetadata[binData.location.ID].binID = baseID;
+            this.item.locationMetadata[binData.location.ID].binIDRange = rangeID;
+          }
+          else {
+            this.item.locationMetadata[binData.location.ID].binID = baseID;
+            delete this.item.locationMetadata[binData.location.ID].binIDRange;
+          }
+        }
+        else {
+          if(rangeID){
+            this.item.locationMetadata[binData.location.ID] = {binID: baseID, binIDRange: rangeID};
+          }
+          else {
+            this.item.locationMetadata[binData.location.ID] = {binID: baseID};
+          }
+        }
+      }
+      else {
+        if(rangeID){
+          this.item.locationMetadata = {[binData.location.ID] : {binID: baseID, binIDRange: rangeID}};
+        }
+        else {
+          this.item.locationMetadata = {[binData.location.ID] : {binID: baseID}};
+        }
+      }
     }
   }
 
-  addBinIDToBeSaved(locationID: string, binID: string, previousID: string){
-    let binIDtoSave = this.binIDsToSave[locationID];
-    if(binIDtoSave){
-      binIDtoSave.ID = binID;
+  formatID(shelf: string, bin: string): string {
+    if(!bin){
+      return null;
     }
-    else {
-      this.binIDsToSave[locationID] = {
-        ID: binID,
-        previousID: previousID
-      }
+    console.log("DUM: " + bin.length + " for " + bin);
+    if(bin.length < 2) {
+      return shelf + "-00" + bin;
     }
-
-    delete this.invalidBinIDErrors[locationID];
+    else if(bin.length < 3) {
+      return shelf + "-0" + bin;
+    }
+    else { 
+      return shelf + "-" + bin;
+    }
   }
 
   saveBinIDs(){
-    this.adminService.addBinIDs(this.workspaceID, this.binIDsToSave, this.item.ID);
+    // If we're updating any bins that have a range but the range is not changing,
+    // add in the range for proper saving.
+    for(let binLocation in this.binIDsToSave){
+      if(this.item.locationMetadata[binLocation] && this.item.locationMetadata[binLocation].binIDRange 
+        && !this.binIDsToSave[binLocation].range && !this.binIDsToSave[binLocation].previousRange){
+        this.binIDsToSave[binLocation].range = this.item.locationMetadata[binLocation].binIDRange;
+      }
+    }
+
+    this.adminService.setBinIDs(this.workspaceID, this.binIDsToSave, this.item.ID);
   }
 
   isCardIncomplete(card: AttributeCard){

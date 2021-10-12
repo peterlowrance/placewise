@@ -59,7 +59,12 @@ export class ReportTemplateEditComponent implements OnInit {
 
       this.reportService.getReportTemplates(this.workspaceID).subscribe(templates => {
         if(templates){
-          this.template = templates[this.type];
+          for(let template of templates){
+            if(template.type === this.type){
+              this.template = template.reportStructure;
+              break;
+            }
+          }
           if(this.template){
             this.locationIDs = [];
             this.isUrgent = this.template.urgentReportSubject ? true : false;

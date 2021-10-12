@@ -18,6 +18,7 @@ export interface ReportStructure {
     maximumReportTimeframe: number;  // In hours
     maximumReportAmount: number;  // Maximum reports allowed in a timeframe
     urgentReportSubject?: string;  // Sends the email immediately with this as the subject
+    order: number;  // How the reports are sorted
     
     locations?: { // Empty = all locations, everyone
         [locationID: string] : {  

@@ -178,40 +178,52 @@ export class ReportDialogComponent implements OnInit {
     return result;
   }
 
-  // Update location data to match what type of auto report we are looking for
-  updateLocationDataForAutoReport(type: string, locationData: LocationWithReportMeta[], typeReportTimestmaps: ItemTypeReportTimestamp[], timestamp: number){
+  // Update locations that have been reported within the timeframe given to disable them
+  updateLocationDataForAutoReport(type: string, locationData: LocationWithReportMeta[], timestamp: number){
     
-    // If there's no timestamps, nothing is affected
-    if(!typeReportTimestmaps){
+    // If there's no reports, every location can be reported so we can return
+    if(!this.data.item.reports || this.data.item.reports.length < 1){
       return;
     }
 
     for(let locationWithReportData of locationData){
+      let totalReportsWithinTimeframe = 0;
+
       // If there's a location, look for matching reports 
       if(locationWithReportData.location){
-        for(let timestampData of typeReportTimestmaps){
-          if(timestampData.location === locationWithReportData.location.ID && timestampData.type === type){
-            // If the last report was less than 12 hours ago, disable this location
-            if(timestampData.timestamp + 43200000 > timestamp){
-              locationWithReportData.canNotAutoReport = true;
+
+        for(let itemReport of this.data.item.reports){
+          if(itemReport.location === locationWithReportData.location.ID && itemReport.type === type){
+
+            // If the last report was within the time frame, disable this location
+            if(itemReport.timestamp + (this.reportTemplate.maximumReportTimeframe * 3600000) > timestamp){
+              totalReportsWithinTimeframe++;
             }
   
             // Since this is the correct location and type, we can break the loop and look at next location
-            break;
+            if(this.reportTemplate.maximumReportAmount >= totalReportsWithinTimeframe){
+              locationWithReportData.canNotAutoReport = true;
+              break;
+            }
           }
         }
       }
+      
       // If there's no location, look for matching reports with 'none' location
       else {
-        for(let timestampData of typeReportTimestmaps){
-          if(timestampData.location === 'none' && timestampData.type === type){
-            // If the last report was less than 12 hours ago, disable this location
-            if(timestampData.timestamp + 43200000 > timestamp){
-              locationWithReportData.canNotAutoReport = true;
+        for(let itemReport of this.data.item.reports){
+          if(itemReport.location === 'none' && itemReport.type === type){
+
+            // If the last report was within the time frame, disable this location
+            if(itemReport.timestamp + (this.reportTemplate.maximumReportTimeframe * 3600000) > timestamp){
+              totalReportsWithinTimeframe++;
             }
   
             // Since this is the correct location and type, we can break the loop and look at next location
-            break;
+            if(this.reportTemplate.maximumReportAmount >= totalReportsWithinTimeframe){
+              locationWithReportData.canNotAutoReport = true;
+              break;
+            }
           }
         }
       }
@@ -278,6 +290,7 @@ export class ReportDialogComponent implements OnInit {
     if(type !== 'custom'){
       this.setupTemplateReport(type);
     } else {
+      // Custom report is hard coded
       this.onNextClick();
     }
   }
@@ -288,10 +301,15 @@ export class ReportDialogComponent implements OnInit {
     this.loading.low = true;
     this.isTemplateReport = true;
 
-    this.updateLocationDataForAutoReport(type, this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
-
     this.reportService.getReportTemplates(this.workspaceID).subscribe(templates => {
-      this.reportTemplate = templates[type];
+
+      for(let template of templates){
+        if(template.type === type){
+          this.reportTemplate = template.reportStructure;
+          break;
+        }
+      }
+      this.updateLocationDataForAutoReport(type, this.locationData, this.timestamp);
       this.input = this.reportTemplate.userInput[0];
 
       if(!this.data.locations || this.data.locations.length < 2){
@@ -359,48 +377,6 @@ export class ReportDialogComponent implements OnInit {
       }
     })
   }
-
-  /*
-  setupAutoReport(message: string){
-
-    if(message === "low"){
-      this.description = "Item is low."
-      this.type = "Low";
-      this.loading.low = true;
-      this.updateLocationDataForAutoReport("Low", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
-    }
-    else {
-      this.description = "Item is empty!"
-      this.type = "Empty"
-      this.loading.empty = true;
-      this.updateLocationDataForAutoReport("Empty", this.locationData, this.data.item.lastReportTimestampByType, this.timestamp);
-    }
-
-    this.adminService.getWorkspaceUsers().subscribe(users => {
-      if(users && users.length === this.authService.usersInWorkspace){
-         
-        // Load admins for selection
-        this.admins = users.filter(element => { return element.role === "Admin" });
-        // Load selected people to report to
-        this.selectedAdmins = this.admins.filter(element => { return this.authService.workspace.defaultUsersForReports.indexOf(element.id) > -1 });
-
-        // If there's no location or only one, set that up quick and report immediately
-        if(!this.data.locations || this.data.locations.length < 2){
-          if(this.data.locations.length === 1){
-            this.locationID = this.data.locations[0].ID;
-          }
-          this.sendReport();
-        }
-        
-        // Otherwise specify which location
-        else {
-          this.isAutoReport = true;
-          this.step = 'where';
-        }
-      }
-    })
-  }
-  */
 
   sendReport(){
     // Append which location it was from

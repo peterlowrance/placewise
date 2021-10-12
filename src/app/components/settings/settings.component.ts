@@ -99,7 +99,7 @@ export class SettingsComponent implements OnInit {
   }
 
   hack(){
-    this.adminService.hack();
+    //this.adminService.hack();
   }
 
   setEmailReports(event){

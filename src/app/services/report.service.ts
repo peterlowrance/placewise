@@ -22,7 +22,7 @@ export const adServe = 'https://placewise-d040e.appspot.com/';
 export class ReportService {
 
   private reportSubscription: Subscription;
-  private reportStructure: BehaviorSubject<ReportStructureTemplates> = new BehaviorSubject(null);
+  private reportStructure: BehaviorSubject<ReportStructureWrapper[]> = new BehaviorSubject([]);
 
   constructor(
     private auth: AuthService,
@@ -135,16 +135,24 @@ export class ReportService {
 
   lastWorkspaceID: string = '';
   // Preloads at the beginning, knows the workspaceID through navbar
-  getReportTemplates(workspaceID: string): Observable<ReportStructureTemplates> {
+  getReportTemplates(workspaceID: string): Observable<ReportStructureWrapper[]> {
     if(this.lastWorkspaceID === workspaceID){
-      return;
+      return this.reportStructure.asObservable();
     }
     if(this.reportSubscription){
       this.reportSubscription.unsubscribe();
     }
 
     this.reportSubscription = this.afs.doc<ReportStructureTemplates>('/Workspaces/' + workspaceID + '/StructureData/ReportStructure').snapshotChanges().subscribe(structure => {
-      this.reportStructure.next(structure.payload.data());
+      let templates = structure.payload.data();
+      let reportsWithWrapper: ReportStructureWrapper[] = [];
+
+      for(let template in templates){
+        reportsWithWrapper.push({type: template, reportStructure: templates[template]})
+      }
+      reportsWithWrapper.sort((a, b) => a.reportStructure.order - b.reportStructure.order)
+
+      this.reportStructure.next(reportsWithWrapper);
     });
     return this.reportStructure.asObservable(); //needs different approach, maybe loading it here for the first time?
   }
@@ -155,33 +163,33 @@ export class ReportService {
 
     // 1: Go through and see what valid reports there are
 
-    for(let report in reportStructure){
+    for(let report of reportStructure){
 
       // If the report has no speific locations, it's available everywhere, so add
-      if(!reportStructure[report].locations){
-        availableReports.push({type: report, reportStructure: reportStructure[report], validLocationIDs: item.locations});
+      if(!report.reportStructure.locations){
+        availableReports.push({type: report.type, reportStructure: report.reportStructure, validLocationIDs: item.locations});
         continue;
       }
 
       // First build out the basic structure
-      let reportWithValidLocations: ReportStructureWrapper = {type: report, reportStructure: reportStructure[report], validLocationIDs: []};
+      let reportWithValidLocations: ReportStructureWrapper = {type: report.type, reportStructure: report.reportStructure, validLocationIDs: []};
 
       // Look through the hierarchy of this location and its ancestors to see if we can find a hit
       for(let locationID of item.locations){
 
         // Then add valid locations we find
         for(let loopLocationID of await this.searchService.getParentsOf(workspaceID, locationID, 'location')){
-          if(reportStructure[report].locations[loopLocationID]){
+          if(report.reportStructure.locations[loopLocationID]){
   
             // If there are no users for this location, add it
-            if(!reportStructure[report].locations[loopLocationID].users || reportStructure[report].locations[loopLocationID].users.length === 0){
+            if(!report.reportStructure.locations[loopLocationID].users || report.reportStructure.locations[loopLocationID].users.length === 0){
               // Push original location because that's the valid (child) location for that report
               reportWithValidLocations.validLocationIDs.push(locationID); 
               break;
             }
   
             // If we're in the user list, add it
-            else if(reportStructure[report].locations[loopLocationID].users.indexOf(this.auth.userInfo.id) > -1){
+            else if(report.reportStructure.locations[loopLocationID].users.indexOf(this.auth.userInfo.id) > -1){
               reportWithValidLocations.validLocationIDs.push(locationID);
               break;
             }
@@ -219,7 +227,8 @@ export class ReportService {
           reportTextFormat: [
             { type: 'input', data: 'Report Details' },
             { type: 'text', data: "\n\nThis was made with a custom report."}
-          ]
+          ],
+          order: availableReports.length + 1
         }
       })
     })

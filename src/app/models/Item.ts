@@ -28,6 +28,7 @@ export interface Item extends HierarchyObject {
   {
     [locationID: string] : {
       binID?: string;
+      binIDRange?: string;
       trackingData?: {
         type: string;
         amount: any;

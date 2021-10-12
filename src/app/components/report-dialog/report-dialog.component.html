@@ -34,8 +34,7 @@
                     <div class="hierarchy image" [ngStyle]="{'background-image': 'url(' + locationWithData.location.imageUrl + ')'}"></div>
                     <div class='hierarchy-text'>
                         <div class="hierarchy-title-text-positioner"><div class="hierarchy-title-text"><div>{{locationWithData.location.name}}</div></div></div>
-                        <div *ngIf="!locationWithData.canReport" class="hierarchy-desc-text disabled-location-text">Too many reports in 12h.</div>
-                        <div *ngIf="locationWithData.canReport" class="hierarchy-desc-text disabled-location-text">This has already been reported as {{type}}.</div>
+                        <div class="hierarchy-desc-text disabled-location-text">Too many reports recently.</div>
                     </div>
                 </div>
             </mat-card>
@@ -87,7 +86,7 @@
             </mat-form-field>
 
             <mat-form-field *ngIf="input.type === 'text'">
-                <mat-label> Enter Text </mat-label>
+                <mat-label> Enter Message </mat-label>
                 <input matInput [(ngModel)]="userFormFieldInput"/>
             </mat-form-field>
 
