@@ -875,7 +875,7 @@ export class ItemBuilderModalComponent implements OnInit {
       binDataToSave.range = rangeID;
     }
     else {
-      if(this.item.locationMetadata[binData.location.ID]){
+      if(this.item.locationMetadata && this.item.locationMetadata[binData.location.ID]){
         this.binIDsToSave[binData.location.ID] = {
           ID: baseID,
           previousID: this.item.locationMetadata[binData.location.ID].binID,
