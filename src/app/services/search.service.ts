@@ -418,7 +418,7 @@ export class SearchService implements SearchInterfaceService {
           {
             for(let attr in item.attributes){
               if(item.attributes[attr].name === suffixPiece.data){
-                buildingString += item.attributes[attr].value;
+                buildingString += item.attributes[attr].value.trim();
                 break;
               }
             }
@@ -438,7 +438,7 @@ export class SearchService implements SearchInterfaceService {
                   // If the piece of data is that layer
                   if(splitValues[index*2] === splitData[1]){
                     // Add the next piece of data, which is the layer's value
-                    buildingString += splitValues[index*2+1];
+                    buildingString += splitValues[index*2+1].trim();
                     break;
                   }
                 }

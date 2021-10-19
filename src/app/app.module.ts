@@ -84,6 +84,7 @@ import { TransferStockDialogComponent } from './components/transfer-stock-dialog
 import { NgxMasonryModule } from 'ngx-masonry';
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { QRScannerDialogComponent } from './components/qrscanner-dialog/qrscanner-dialog.component';
+import { ReportListComponent } from './components/report-list/report-list.component';
 
 @NgModule({
   declarations: [
@@ -127,6 +128,7 @@ import { QRScannerDialogComponent } from './components/qrscanner-dialog/qrscanne
     QRCodeCategoryDialogComponent,
     TransferStockDialogComponent,
     QRScannerDialogComponent,
+    ReportListComponent,
   ],
   imports: [
     CommonModule,

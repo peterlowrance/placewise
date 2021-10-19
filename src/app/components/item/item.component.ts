@@ -13,7 +13,7 @@ import {NestedTreeControl} from '@angular/cdk/tree';
 import {AuthService} from '../../services/auth.service';
 import {FormBuilder} from '@angular/forms';
 import {MatChipInputEvent} from '@angular/material/chips';
-import {COMMA, ENTER, SPACE} from '@angular/cdk/keycodes';
+import {COMMA, ENTER, I, SPACE} from '@angular/cdk/keycodes';
 import {AdminService} from 'src/app/services/admin.service';
 import {ImageService} from '../../services/image.service';
 import {ModifyHierarchyDialogComponent} from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
@@ -32,6 +32,8 @@ import { QRCodeItemDialogComponent } from '../qrcode-item-dialog/qrcode-item-dia
 import { NgxMasonryComponent } from 'ngx-masonry';
 import { TransferStockDialogComponent } from '../transfer-stock-dialog/transfer-stock-dialog.component';
 import { Console, timeStamp } from 'console';
+import { SentReport } from 'src/app/models/SentReport';
+import { ReportService } from 'src/app/services/report.service';
 
 
 interface TreeNode {
@@ -105,7 +107,8 @@ export class ItemComponent implements OnInit, OnDestroy {
     private navService: NavService,
     private cacheService: CacheService,
     private router: Router,
-    private snack: MatSnackBar
+    private snack: MatSnackBar,
+    private reportService: ReportService
   ) {
   }
 
@@ -154,6 +157,7 @@ export class ItemComponent implements OnInit, OnDestroy {
   attributesForCard: AttributeCard[];
 
   itemLocations: ItemLocation[] = [];
+  itemReports: SentReport[];
 
   role: string; // user role for editing
   missingData: string; // string of data missing, null if nothing is missing
@@ -223,6 +227,25 @@ export class ItemComponent implements OnInit, OnDestroy {
         if(this.locationsSub) this.locationsSub.unsubscribe();
         this.locationsSub = 
         */
+      }
+
+      if(item.reports && item.reports.length > 0){
+        let reports: SentReport[] = [];
+        let counter = 0;
+
+        for(let reportID of item.reports){
+          this.reportService.getReport(this.workspaceID, reportID.report).subscribe(
+            report => {
+              reports.push(report);
+              console.log(reports);
+
+              counter++;
+              if(counter === item.reports.length){
+                this.itemReports = reports;
+              }
+            }
+          )
+        }
       }
 
     });

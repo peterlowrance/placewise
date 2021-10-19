@@ -8,15 +8,6 @@
     margin:0;
 }
 
-.report-table{
-    width:100%
-}
-.row:hover{
-    background-color: beige;
-}
-.row:active:hover{
-    background-color: tan;
-}
 .clear-button
 {
     text-align: center;
@@ -32,20 +23,10 @@
     padding-top: calc(2.5% + 8px);
 }
 
-img {
-    width: 40px;
-
-}
-
 .allContent {
   max-width: 48rem;
   position: center;
   margin: auto;
-}
-
-.item {
-  padding-left: 0.4rem;
-  padding-right: 0.4rem;
 }
 
 .editButton {
@@ -67,10 +48,6 @@ h4 {
 }
 
 .location-icon {
-    color: rgba(0, 0, 0, 0.54);
-}
-
-.no-reports {
     color: rgba(0, 0, 0, 0.54);
 }
 

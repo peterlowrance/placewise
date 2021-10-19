@@ -45,8 +45,8 @@ export class AdminReportComponent implements OnInit {
 
     this.reportService.getReports(this.workspaceID).subscribe(reports => {
       this.numberOfAllReports = reports.length;
-      this.notifiedReports = [];
-      this.externalReports = [];
+      let notifiedReports = [];
+      let externalReports = [];
 
       // First get the user
       this.authService.getUser().subscribe(user => {
@@ -54,96 +54,17 @@ export class AdminReportComponent implements OnInit {
         // Setup the item and if it is notified for each report
         for(let i = 0; i < reports.length; i++)
         {
-          this.searchService.getItem(this.workspaceID, reports[i].item).subscribe(z => {
-            reports[i].trueItem = z;
-
-            /*
-            OLD NOTIFICATION SYSTEM
-
-            this.searchService.getAncestorsOf(z).subscribe(itemLocations => {
-              let found = false;
-              for(let location = 0; location < locations.length && !found; location++){
-                for(let outerIndex = 0; outerIndex < itemLocations.length && !found; outerIndex++){
-                  for(let innerIndex = 0; innerIndex < itemLocations[outerIndex].length && !found; innerIndex++){
-                    if(locations[location] === itemLocations[outerIndex][innerIndex].ID){
-                      found = true;
-                      this.relevantReports.push(reports[i]);
-                    }
-                  }
-                }
-              }
-              if(!found){
-                this.externalReports.push(reports[i]);
-              }
-
-              // JANKY, but we cannot load this before getting ancestors, this messes with cache and that we don't have getAncestorsOf
-              // Setup to account for getting different input in the future. If we want to fix this, we'll need to rewrite getAncestorsOf
-              // a little and fix up where it's used to allow for not assuming it's going to give back only one answer.
-              // It's still conflicting if we do that as usually getAncestorsOf itself and what needs it is complex, so less updates is better.
-
-              if(i === 0){ // Only do this once
-                let localSetOfLocationNames: string[] = [];
-                for(let locIndex in locations){
-                  this.searchService.getLocation(locations[locIndex]).subscribe(loc => {
-                    localSetOfLocationNames.push(loc.name);
-                      this.listeningToLocationNames = localSetOfLocationNames;
-                  })
-                }
-              }
-
-            })
-              */
-          })
-
-          /*
-          // Replace local data for the item's location with it's name. Temporary.
-          if(reports[i].location){
-            let getLoc = this.searchService.getLocation(reports[i].location).subscribe(location => {
-              if(location){
-                reports[i].location = location.name;
-                getLoc.unsubscribe();
-              }
-            })
-          }
-          */
-          
           // Add to the notified section if it was for the person reading it
           if(reports[i].reportedTo && reports[i].reportedTo.indexOf(user.id) > -1){
-            this.notifiedReports.push(reports[i]);
+            notifiedReports.push(reports[i]);
           }
           else {
-            this.externalReports.push(reports[i]);
+            externalReports.push(reports[i]);
           }
-
-          // Only sort the reports once after all is loaded
-          if(i === reports.length - 1){
-            this.notifiedReports.sort(function(a, b) {
-              if(a.timestamp > b.timestamp){
-                return -1;
-              }
-              else if(a.timestamp < b.timestamp){
-                return 1;
-              }
-              else {
-                return 0;
-              }
-            });
-            this.externalReports.sort(function(a, b) {
-              if(a.timestamp > b.timestamp){
-                return -1;
-              }
-              else if(a.timestamp < b.timestamp){
-                return 1;
-              }
-              else {
-                return 0;
-              }
-            });
-          }
-
-          // Get the name of the person that reported it
-          this.authService.getUserInfo(reports[i].user).subscribe(z => {reports[i].userName = z.firstName + " " + z.lastName});
         }
+
+        this.notifiedReports = notifiedReports;
+        this.externalReports = externalReports;
       })
     });
   }
