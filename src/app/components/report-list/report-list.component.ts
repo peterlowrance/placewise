@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DetailedReportModalData } from 'src/app/models/DetailedReportModalData';
 import { Item } from 'src/app/models/Item';
@@ -29,17 +29,25 @@ export class ReportListComponent implements OnInit {
     ) { }
 
   ngOnInit(): void {
-    console.log("HI");
+    
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    // I could make this less jerky in the future by manually adding/removing new pieces
+    // But it will be challenging, this is already really quick to stick with the update before
+    // It sorts the reports
+
+    this.loaded = false;
     if(this.reports && this.reports.length > 0){
 
       if(!this.singleItem){
-        console.log("HAI");
         let counter = 0;
 
         for(let i = 0; i < this.reports.length; i++)
         {
-          this.searchService.getItem(this.workspaceID, this.reports[i].item).subscribe(z => {
+          let immediateUnSub = this.searchService.getItem(this.workspaceID, this.reports[i].item).subscribe(z => {
             this.reports[i].trueItem = z;
+            immediateUnSub.unsubscribe();
 
             counter++;
             if(counter === this.reports.length){
