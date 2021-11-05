@@ -29,18 +29,18 @@ export class AuthService {
     defaultUsersForReports: []
   };*/
   /** User information */
-  userInfo: User = {
+  userInfo: BehaviorSubject<User> = new BehaviorSubject<User>({
     firstName: '',
     lastName: '',
     email: '',
     workspace:'',
     id: ''
-  }
+  });
   /**User role, Admin or User */
   role: string = 'User';
 
   /**Current role behavior subject */
-  currentRole: BehaviorSubject<string> = new BehaviorSubject<string>(this.role);;
+  currentRole: BehaviorSubject<string> = new BehaviorSubject<string>(this.role);
 
   /**Workspace behaviour subject 
   currentWorkspace: BehaviorSubject<WorkspaceInfo> = new BehaviorSubject<WorkspaceInfo>({
@@ -88,7 +88,7 @@ export class AuthService {
       const userDoc = this.getUserInfo(user.uid);
       //subscribe to changes in user info
       userDoc.subscribe(
-        val => {this.userInfo = val; this.userInfo.id = user.uid}
+        val => {val.id = user.uid; this.userInfo.next(val)}
       );
     }
     else{ //user not defined, set behavior subjects to null
@@ -166,7 +166,7 @@ export class AuthService {
    * Gets the user information
    */
   getUser(){
-    return of(this.userInfo);
+    return this.userInfo.asObservable();
   }
 
   /**
@@ -191,7 +191,7 @@ export class AuthService {
    * Sends a change password request to firebase
    */
   async changePassword(curPass: string, newPass: string){
-    const cred = firebase.auth.EmailAuthProvider.credential(this.userInfo.email, curPass);
+    const cred = firebase.auth.EmailAuthProvider.credential(this.userInfo.value.email, curPass);
     //reauthenticate
     await this.afAuth.auth.currentUser.reauthenticateWithCredential(cred);
     return await this.afAuth.auth.currentUser.updatePassword(newPass);
