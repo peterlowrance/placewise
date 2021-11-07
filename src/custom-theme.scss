@@ -65,9 +65,21 @@ html {
   }
 }
 
-.successful-report {
-  background-color:  #73f78e;
+.successful-result {
+  background-color: #73f78e;
   color: rgba(0, 0, 0, 0.87);
+  font-weight: 500;
+  font-size: 15px;
+  .mat-simple-snackbar-action {
+    color: rgba(0, 0, 0, 0.87) !important;
+  }
+}
+
+.caution-result {
+  background-color: rgb(255, 226, 95);
+  color: rgba(0, 0, 0, 0.87);
+  font-weight: 500;
+  font-size: 24px;
   .mat-simple-snackbar-action {
     color: rgba(0, 0, 0, 0.87) !important;
   }

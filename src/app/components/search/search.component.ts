@@ -215,10 +215,20 @@ export class SearchComponent implements OnInit, OnDestroy {
             let itemID = this.searchService.getItemIDFromBinID(URLbinID);
             if(itemID && itemID !== 'no ID'){
               this.router.navigate(['/w/' + this.workspaceID +  '/item/', itemID], {replaceUrl:true});
-              this.snack.open("Routed from bin " + URLbinID, "OK", {duration: 4000});
+              this.snack.open("Routed from bin " + URLbinID, "OK", {
+                horizontalPosition: 'center',
+                verticalPosition: 'top',
+                duration: 7500,
+                panelClass: ['successful-result']
+              });
             }
             else {
-              this.snack.open("No item was found for " + URLbinID, "OK", {duration: 4000});
+              this.snack.open("No item was found for " + URLbinID, "OK", {
+                horizontalPosition: 'center',
+                verticalPosition: 'top',
+                duration: 7500,
+                panelClass: ['caution-result']
+              });
             }
           }
         })
