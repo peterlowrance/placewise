@@ -87,3 +87,21 @@ mat-button-toggle-group {
 .bin-form {
   max-width: 90px;
 }
+
+.qr-scanner-button {
+  position: fixed;
+  top: max(400px, calc(95% - 48px)); /* For trying not to get this in the way of android keyboards */
+  right: calc(50vw - 150px);
+  background-color: white;
+  color: rgb(100, 100, 100);
+  padding: 0 0.8rem;
+  border-radius: 10rem;
+  letter-spacing: .08em;
+  width: 300px;
+  font-weight: 500;
+  z-index: 100;
+}
+
+.qr-icon {
+  padding-right: 4px;
+}

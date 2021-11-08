@@ -599,18 +599,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     }
     this.previousSearch = event;
     this.previousSearchRoot = this.root.ID;
-  }
-
-  openQRScanner(){
-    this.dialog.open(QRScannerDialogComponent, {
-      width: '480px',
-      data: {
-        workspaceID: this.workspaceID
-      }
-    });
-  }
-
-  
+  }  
 
   goToEditHierarchy() {
     this.router.navigate(['w/' + this.workspaceID + '/hierarchyItem/' + (this.root.type === 'category' ? 'categories' : 'locations') + '/' + this.root.ID]);

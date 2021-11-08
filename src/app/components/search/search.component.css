@@ -206,23 +206,6 @@ mat-card-content {
   padding: calc(5% - 0.1rem) calc(0.2rem + 6%) ;
 }
 
-.qr-scanner-button {
-  position: fixed;
-  top: max(400px, calc(96% - 64px)); /* For trying not to get this in the way of android keyboards */
-  right: calc(50vw - 150px);
-  background-color: white;
-  color: rgb(100, 100, 100);
-  padding: 0 0.8rem;
-  border-radius: 10rem;
-  letter-spacing: .08em;
-  width: 300px;
-  font-weight: 500;
-}
-
-.qr-icon {
-  padding-right: 4px;
-}
-
 .add-fabs {
   visibility: hidden;
   align-items: flex-end;

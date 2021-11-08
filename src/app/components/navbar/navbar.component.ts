@@ -18,6 +18,8 @@ import { Category } from 'src/app/models/Category';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Item } from 'src/app/models/Item';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { QRScannerDialogComponent } from '../qrscanner-dialog/qrscanner-dialog.component';
+import { I } from '@angular/cdk/keycodes';
 
 
 @Component({
@@ -291,6 +293,21 @@ export class NavbarComponent implements OnInit {
       });
       this.navService.setSubscribedParent(this.searchService.subscribeToLocation(this.workspaceID, id));
     }
+  }
+
+  showQRScanner(): boolean {
+    let navLocation = this.checkLocation();
+
+    return navLocation === 'item' || navLocation === '/' || navLocation === 'category' || navLocation === 'location'
+  }
+
+  openQRScanner(){
+    this.dialog.open(QRScannerDialogComponent, {
+      width: '480px',
+      data: {
+        workspaceID: this.workspaceID
+      }
+    });
   }
 
 }

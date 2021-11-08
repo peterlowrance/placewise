@@ -170,12 +170,16 @@
     <br>
     <br>
     <button mat-button *ngIf="this.role === 'Admin'" color="warn" (click)="requestDelete()">Delete</button>
-  </div>  
+  </div> 
+  <br>
+  <br>
+  <br>
+  <br>
 </div>
 
-<button mat-mini-fab class="extended-fab-button" *ngIf="this.role === 'Admin' && this.getDirty()" @open-undo-fab matTooltip="Undo" color="accent" (click)="undoChanges()">
+<!--button mat-mini-fab class="extended-fab-button" *ngIf="this.role === 'Admin' && this.getDirty()" @open-undo-fab matTooltip="Undo" color="accent" (click)="undoChanges()">
   <mat-icon>edit</mat-icon><span class="extended-fab-button__text">Revert</span>
-</button>
+</button-->
 
 <div *ngIf="!loaded" style="padding: 18px;">
   <h3 *ngIf="isCategory">Loading category...</h3>
