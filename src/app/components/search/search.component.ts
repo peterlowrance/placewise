@@ -14,7 +14,7 @@ import { trigger, state, style, transition, animate, keyframes} from '@angular/a
 import { Category } from 'src/app/models/Category';
 import { switchMap } from 'rxjs/operators';
 import { url } from 'inspector';
-import { Identifiers } from '@angular/compiler';
+import { Identifiers, ThrowStmt } from '@angular/compiler';
 import { CacheService } from 'src/app/services/cache.service';
 import { ItemBuilderModalComponent } from '../item-builder-modal/item-builder-modal.component';
 import { Attribute } from 'src/app/models/Attribute';
@@ -25,6 +25,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { QRScannerDialogComponent } from '../qrscanner-dialog/qrscanner-dialog.component';
 import { QRCodeCategoryDialogComponent } from '../qrcode-category-dialog/qrcode-category-dialog.component';
 import { QRCodeLocationDialogComponent } from '../qrcode-location-dialog/qrcode-location-dialog.component';
+import { I } from '@angular/cdk/keycodes';
 
 /**
  *
@@ -177,7 +178,18 @@ export class SearchComponent implements OnInit, OnDestroy {
       const selectedSearch = route.get('selectedHierarchy') === 'categories' ? 'category' : 'location';
       this.workspaceID = route.get('workspaceID');
 
-      if(urlID && (!this.root || this.root.ID !== urlID)){
+      // Bad workspace, try to get it from user
+      if(!this.workspaceID || this.workspaceID === "undefined"){
+        console.log("Bad workspace.");
+        this.authService.getUser().subscribe(user => {
+          if(user.id){
+            console.log("Workpsace: " + user.workspace);
+            this.router.navigate(['/w/' + user.workspace + '/search/locations/root'], {replaceUrl:true});
+          }
+        })
+      }
+
+      else if(urlID && (!this.root || this.root.ID !== urlID)){
         // Load root from cache if possible
         let cache = this.cacheService.get(urlID, selectedSearch);
         if(cache){

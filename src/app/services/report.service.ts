@@ -189,7 +189,7 @@ export class ReportService {
             }
   
             // If we're in the user list, add it
-            else if(report.reportStructure.locations[loopLocationID].users.indexOf(this.auth.userInfo.id) > -1){
+            else if(report.reportStructure.locations[loopLocationID].users.indexOf(this.auth.userInfo.value.id) > -1){
               reportWithValidLocations.validLocationIDs.push(locationID);
               break;
             }
