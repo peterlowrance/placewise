@@ -103,6 +103,6 @@ export class SettingsComponent implements OnInit {
   }
 
   setEmailReports(event){
-    this.adminService.setEmailReportsForUser(this.workspace.id, this.user.id, event.checked);
+    this.adminService.setEmailReportsForUser(this.user.workspace, this.user.id, event.checked);
   }
 }
