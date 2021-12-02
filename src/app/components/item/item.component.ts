@@ -229,7 +229,7 @@ export class ItemComponent implements OnInit, OnDestroy {
         */
       }
 
-      if(item.reports && item.reports.length > 0){
+      if(item.reports){
         let reports: SentReport[] = [];
         let counter = 0;
 
@@ -237,7 +237,6 @@ export class ItemComponent implements OnInit, OnDestroy {
           this.reportService.getReport(this.workspaceID, reportID.report).subscribe(
             report => {
               reports.push(report);
-              console.log(reports);
 
               counter++;
               if(counter === item.reports.length){
@@ -246,6 +245,10 @@ export class ItemComponent implements OnInit, OnDestroy {
             }
           )
         }
+      }
+
+      if(!item.reports || item.reports.length < 1){
+        this.itemReports = [];
       }
 
     });

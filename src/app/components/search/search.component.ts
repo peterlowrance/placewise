@@ -166,7 +166,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.parentSub.unsubscribe();
     this.returnSub.unsubscribe();
-    this.paramQuerySub.unsubscribe();
+    if(this.paramQuerySub) this.paramQuerySub.unsubscribe();
     this.routeSub.unsubscribe();
     Object.values(this.subItems).forEach(sub => sub.unsubscribe());
   }
