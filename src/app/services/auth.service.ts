@@ -53,7 +53,7 @@ export class AuthService {
   usersInWorkspace = 0;
 
   // If this user has recieve emails turned on
-  recieveEmails: boolean;
+  recieveEmails: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(null);
 
   constructor(private afAuth: AngularFireAuth,
               private afs: AngularFirestore,
@@ -82,7 +82,7 @@ export class AuthService {
           this.usersInWorkspace = col.size;
         })
         this.afs.doc(`Workspaces/${token.claims.workspace}/WorkspaceUsers/${user.uid}`).snapshotChanges().subscribe(wUser => {
-          this.recieveEmails = (wUser.payload.data() as WorkspaceUser).emailReports;
+          this.recieveEmails.next((wUser.payload.data() as WorkspaceUser).emailReports);
         });
       });
       const userDoc = this.getUserInfo(user.uid);
@@ -177,7 +177,7 @@ export class AuthService {
   }
 
   getRecieveEmails(){
-    return of(this.recieveEmails);
+    return this.recieveEmails.asObservable();
   }
 
   /**
