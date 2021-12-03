@@ -7,7 +7,7 @@
     {{ manualPrint }}
 </div-->
 
-<zxing-scanner *ngIf="scannerEnabled" [device]="device" (autostarting)="setDefaultCamera()" (scanComplete)="scan($event)" (camerasFound)="loadCameras($event)" (camerasNotFound)="loadCameras([])"></zxing-scanner>
+<zxing-scanner *ngIf="scannerEnabled" [device]="device" [enable]="scannerBooted" (autostarting)="setDefaultCamera()" (scanComplete)="scan($event)" (camerasFound)="loadCameras($event)" (camerasNotFound)="loadCameras([])"></zxing-scanner>
 <button *ngIf="devices && devices.length > 1" class="big-button report-button structure-color-dark" mat-raised-button (click)="changeCamera()"> Change Camera </button>
 
 <br>

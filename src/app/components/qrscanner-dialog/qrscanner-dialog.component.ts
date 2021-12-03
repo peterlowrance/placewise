@@ -23,6 +23,7 @@ export class QRScannerDialogComponent implements OnInit {
   cameraNum = 0;
   devices: MediaDeviceInfo[];
   scannerEnabled: boolean = true; // This is because sometimes the camera feed sometimes didn't shut off after the dialog was closed, so we delete
+  scannerBooted: boolean = false; // This is to prevent the camera from loading the wrong camera then having to switch - so we first grab the right camera then turn it on
   //manualPrint: string;  // For debugging
 
   loadCameras(event){
@@ -32,6 +33,8 @@ export class QRScannerDialogComponent implements OnInit {
     .sort((elementA, elementB) => 
       AdvancedAlphaNumSort.compare(elementA.label, elementB.label)
     );
+
+    this.scannerBooted = true;
   }
 
   setDefaultCamera(){
