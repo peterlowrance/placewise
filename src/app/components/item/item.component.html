@@ -225,7 +225,7 @@
             <!-- Reports, if there are any -->
             <div *ngIf="itemReports" class="active-reports">
                 <h3 class="bottom-space desktop-no-top-space"> Active Reports: </h3>
-                <app-report-list [reports]="itemReports" [workspaceID]="workspaceID">
+                <app-report-list [reports]="itemReports" [workspaceID]="workspaceID" [headers]="['User','Date','Type']">
                 </app-report-list>
             </div>
 

@@ -24,6 +24,22 @@
                 </div>
             </td>
         </ng-container>
+        <ng-container matColumnDef="Date">
+            <th mat-header-cell *matHeaderCellDef> Date </th>
+            <td mat-cell *matCellDef="let r">
+                <div>
+                    <div>{{getHumanReadableDate(r.timestamp)}}</div>
+                </div>
+            </td>
+        </ng-container>
+        <ng-container matColumnDef="Type">
+            <th mat-header-cell *matHeaderCellDef> Type </th>
+            <td mat-cell *matCellDef="let r">
+                <div>
+                    <div class="report-type-text" [style.background-color]="colors[r.type] + 'B0'">{{r.type}}</div>
+                </div>
+            </td>
+        </ng-container>
         <tr mat-header-row *matHeaderRowDef="headers"></tr>
         <tr class="row" mat-row (click)="openModal(row)" *matRowDef="let row; columns: headers" ></tr>
     </table>

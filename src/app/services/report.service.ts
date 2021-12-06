@@ -209,28 +209,7 @@ export class ReportService {
 
     this.searchService.getWorkspaceInfo(workspaceID).subscribe(workspaceInfo => {
       // Include custom report at all times
-      availableReports.push({
-        type: 'custom',
-        validLocationIDs: item.locations,
-        reportStructure: {
-          name: "Custom Report",
-          description: "Give a message to any admin that you'd like.",
-          color: '#E8EFFF',
-          maximumReportAmount: 3,
-          maximumReportTimeframe: 24,
-          userInput: [{
-            name: "Report Details",
-            description: "What is the problem?",
-            type: 'text'
-          }],
-          reportToUsers: workspaceInfo.defaultUsersForReports,
-          reportTextFormat: [
-            { type: 'input', data: 'Report Details' },
-            { type: 'text', data: "\n\nThis was made with a custom report."}
-          ],
-          order: availableReports.length + 1
-        }
-      })
+      availableReports.push(this.getCustomReportTemplate(item.locations, workspaceInfo.defaultUsersForReports, availableReports.length + 1));
     })
 
     // 2: Of those valid reports, which have too many reports recently?
@@ -314,6 +293,32 @@ export class ReportService {
     });
 
     return true;
+  }
+
+  // Hardcoded custom template
+  getCustomReportTemplate(validLocationIDs, reportToUsers, order): ReportStructureWrapper {
+    return {
+      type: 'custom',
+      validLocationIDs: validLocationIDs,
+      reportStructure: {
+        name: "Custom Report",
+        description: "Give a message to any admin that you'd like.",
+        color: '#E8EFFF',
+        maximumReportAmount: 3,
+        maximumReportTimeframe: 24,
+        userInput: [{
+          name: "Report Details",
+          description: "What is the problem?",
+          type: 'text'
+        }],
+        reportToUsers: reportToUsers,
+        reportTextFormat: [
+          { type: 'input', data: 'Report Details' },
+          { type: 'text', data: "\n\nThis was made with a custom report."}
+        ],
+        order: order
+      }
+    }
   }
 
 }

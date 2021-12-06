@@ -5,6 +5,7 @@ import { Item } from 'src/app/models/Item';
 import { SentReport } from 'src/app/models/SentReport';
 import { AdminService } from 'src/app/services/admin.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { ReportService } from 'src/app/services/report.service';
 import { SearchService } from 'src/app/services/search.service';
 import { ReportDetailViewComponent } from '../report-detail-view/report-detail-view.component';
 
@@ -17,15 +18,17 @@ export class ReportListComponent implements OnInit {
   @Input() reports: SentReport[];
   @Input() workspaceID: string;
   @Input() singleItem?: Item;  // This is for when we're displaying reports connected to an item
+  @Input() headers: string[] = ['Image','Item','User','Date','Type'];
 
   loaded: boolean = false;
-  headers: string[] = ['Image','Item','User'];
+  colors: {[id: string] : string} = {};
 
   constructor(
     private searchService: SearchService,
     public dialog: MatDialog,
     private adminService: AdminService,
-    private authService: AuthService
+    private authService: AuthService,
+    private reportService: ReportService
     ) { }
 
   ngOnInit(): void {
@@ -53,7 +56,7 @@ export class ReportListComponent implements OnInit {
             if(counter === this.reports.length){
               this.loadUserNames();
               this.sortReports();
-              this.loaded = true;
+              this.loadColors();
             }
           });
         }
@@ -65,7 +68,7 @@ export class ReportListComponent implements OnInit {
         }
         this.loadUserNames();
         this.sortReports();
-        this.loaded = true;
+        this.loadColors();
       }
       
     }
@@ -94,6 +97,21 @@ export class ReportListComponent implements OnInit {
     for(let i = 0; i < this.reports.length; i++){
       this.authService.getUserInfo(this.reports[i].user).subscribe(z => {this.reports[i].userName = z.firstName + " " + z.lastName});
     }
+  }
+
+  loadColors(){
+    this.reportService.getReportTemplates(this.workspaceID).subscribe(templates => {
+      if(templates){
+        for(let template of templates){
+          this.colors[template.type] = template.reportStructure.color;
+        }
+
+        // Load custom color
+        this.colors['custom'] = this.reportService.getCustomReportTemplate(null,null,null).reportStructure.color;
+
+        this.loaded = true;
+      }
+    })
   }
 
   openModal(r : SentReport)
@@ -127,6 +145,12 @@ export class ReportListComponent implements OnInit {
             this.adminService.deleteReport(this.workspaceID, reportData.reportID, reportData.itemID);
           }
         });
+  }
+
+  getHumanReadableDate(timestamp: number): string {
+    let date = new Date(timestamp);
+
+    return (date.getMonth()+1)  + '/' + date.getDate() + '/' + date.getFullYear().toString().substr(2);
   }
 
 }
