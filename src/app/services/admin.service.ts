@@ -933,6 +933,7 @@ export class AdminService {
     this.setBinIDs(workspaceID, binsToReset, item.ID);
   }
 
+  /*
   hack(){
     this.afs.collection('Workspaces/Apex Fab/Category').get().subscribe(hier => {
       let structure = {};
@@ -963,6 +964,7 @@ export class AdminService {
       this.afs.doc('Workspaces/Apex Fab/StructureData/CategoriesHierarchy').set(structure);
     })
   }
+  */
 
   constructor(
     private afs: AngularFirestore, 

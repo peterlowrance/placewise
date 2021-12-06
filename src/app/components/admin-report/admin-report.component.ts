@@ -77,40 +77,6 @@ export class AdminReportComponent implements OnInit {
     this.router.navigateByUrl("/w/" + this.workspaceID + "/reports/templates");
   }
 
-
-  openModal(r : SentReport )
-  {
-
-        // reset report data, ensure clicking out defaults to fail and no double send
-        var reportData : DetailedReportModalData = {
-          itemName:r.trueItem.name,itemID: r.trueItem.ID, reportDesc : r.desc,reportID : r.ID,toBeRemoved:false, toGoToItem: false, location: r.location
-        }
-
-
-        const dialogRef = this.dialog.open(ReportDetailViewComponent, {
-          width: '28rem',
-          data: {
-            workspaceID: this.workspaceID,
-            reportData: {
-              itemName: reportData.itemName,
-              reportDesc: reportData.reportDesc,
-              reportID: reportData.reportID,
-              remove: reportData.toBeRemoved,
-              itemID: reportData.itemID, 
-              location: r.location
-            }
-          }
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
-          reportData = result.reportData;
-          // if it's valid, build and isue report, else leave
-          if (reportData && reportData.toBeRemoved) {
-            this.adminService.deleteReport(this.workspaceID, reportData.reportID, reportData.itemID);
-          }
-        });
-  }
-
   // confirmClear() {
   //   // reset report data, ensure clicking out defaults to fail and no double send
   //   let data = {confirm: false, desc: 'You sure you want to clear reports?'};

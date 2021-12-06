@@ -6,4 +6,6 @@ export interface DetailedReportModalData {
     toBeRemoved: boolean;
     toGoToItem: boolean;
     location: string;
+    reporterName: string;
+    time: string;
 }

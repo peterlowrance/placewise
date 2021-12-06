@@ -116,35 +116,41 @@ export class ReportListComponent implements OnInit {
 
   openModal(r : SentReport)
   {
+    // Make a human readable date
+    let date = new Date(r.timestamp);
+    let readableDate = 
+      (date.getMonth()+1) + "/" +
+      date.getDate() + "/" +
+      (date.getFullYear()).toString().substr(2) + " at " +
+      date.toLocaleTimeString();
 
-        // reset report data, ensure clicking out defaults to fail and no double send
-        var reportData : DetailedReportModalData = {
-          itemName:r.trueItem.name,itemID: r.trueItem.ID, reportDesc : r.desc,reportID : r.ID,toBeRemoved:false, toGoToItem: false, location: r.location
-        }
+    // reset report data, ensure clicking out defaults to fail and no double send
+    var reportData : DetailedReportModalData = {
+      itemName:r.trueItem.name,
+      itemID: r.trueItem.ID, 
+      reportDesc : r.desc,reportID : 
+      r.ID,toBeRemoved:false, 
+      toGoToItem: false, 
+      location: r.location,
+      reporterName: r.userName,
+      time: readableDate
+    }
 
 
-        const dialogRef = this.dialog.open(ReportDetailViewComponent, {
-          width: '28rem',
-          data: {
-            workspaceID: this.workspaceID,
-            reportData: {
-              itemName: reportData.itemName,
-              reportDesc: reportData.reportDesc,
-              reportID: reportData.reportID,
-              remove: reportData.toBeRemoved,
-              itemID: reportData.itemID, 
-              location: r.location
-            }
-          }
-        });
+    const dialogRef = this.dialog.open(ReportDetailViewComponent, {
+      width: '28rem',
+      data: {
+        workspaceID: this.workspaceID,
+        reportData: reportData
+      }
+    });
 
-        dialogRef.afterClosed().subscribe(result => {
-          reportData = result.reportData;
-          // if it's valid, build and isue report, else leave
-          if (reportData && reportData.toBeRemoved) {
-            this.adminService.deleteReport(this.workspaceID, reportData.reportID, reportData.itemID);
-          }
-        });
+    dialogRef.afterClosed().subscribe(result => {
+      // if it's valid, build and issue report, else leave
+      if (result.reportData && result.reportData.toBeRemoved) {
+        this.adminService.deleteReport(this.workspaceID, reportData.reportID, reportData.itemID);
+      }
+    });
   }
 
   getHumanReadableDate(timestamp: number): string {
