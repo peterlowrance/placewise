@@ -20,3 +20,7 @@ button {
   margin-top: 16px;
   margin-bottom: 2px;
 }
+
+.metadata-text {
+  font-size: 16px;
+}
