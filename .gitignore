@@ -1,5 +1,8 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
+# environments & keys
+/src/environments
+
 # compiled output
 /dist
 /tmp
@@ -104,8 +107,6 @@ testem.log
 Thumbs.db
 
 # boilerplate files
-**/src/environments/environment.prod.ts
-**/src/environments/environment.ts
 **/src/assets/.gitkeep
 **/src/favicon.ico
 **/src/styles.css
