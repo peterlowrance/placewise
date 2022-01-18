@@ -94,8 +94,11 @@ export class ReportListComponent implements OnInit {
 
   loadUserNames(){
     // Get the name of the person that reported it
-    for(let i = 0; i < this.reports.length; i++){
-      this.authService.getUserInfo(this.reports[i].user).subscribe(z => {this.reports[i].userName = z.firstName + " " + z.lastName});
+    for(let report of this.reports){
+      let userInfoSub = this.authService.getUserInfo(report.user).subscribe(z => {
+        report.userName = z.firstName + " " + z.lastName;
+        userInfoSub.unsubscribe();
+      });
     }
   }
 
