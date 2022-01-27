@@ -303,23 +303,25 @@ export class ReportDialogComponent implements OnInit {
 
     this.reportService.getReportTemplates(this.workspaceID).subscribe(templates => {
 
-      for(let template of templates){
-        if(template.type === type){
-          this.reportTemplate = template.reportStructure;
-          break;
+      if(this.step !== 'sending'){
+        for(let template of templates){
+          if(template.type === type){
+            this.reportTemplate = template.reportStructure;
+            break;
+          }
         }
-      }
-      this.updateLocationDataForAutoReport(type, this.locationData, this.timestamp);
-      this.input = this.reportTemplate.userInput[0];
-
-      if(!this.data.locations || this.data.locations.length < 2){
-        if(this.data.locations.length === 1){
-          this.locationID = this.data.locations[0].ID;
+        this.updateLocationDataForAutoReport(type, this.locationData, this.timestamp);
+        this.input = this.reportTemplate.userInput[0];
+  
+        if(!this.data.locations || this.data.locations.length < 2){
+          if(this.data.locations.length === 1){
+            this.locationID = this.data.locations[0].ID;
+          }
+          this.step = 'template';
         }
-        this.step = 'template';
-      }
-      else {
-        this.step = 'where';
+        else {
+          this.step = 'where';
+        }
       }
     })
   }
@@ -379,6 +381,7 @@ export class ReportDialogComponent implements OnInit {
   }
 
   sendReport(){
+    console.log("REPORT SENT.");
     // Append which location it was from
     for(let location of this.data.locations){
       if(location.ID === this.locationID){
