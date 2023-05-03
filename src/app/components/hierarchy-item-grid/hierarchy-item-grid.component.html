@@ -29,16 +29,14 @@
         </mat-grid-list>
 
         <!-- Items -->
-        <mat-grid-list *ngIf="type === 'item' && !insideLocation" class="row" [cols]="columns * 2" rowHeight="3:4">
+        <mat-grid-list *ngIf="type === 'item' && !insideLocation" class="row" [cols]="columns" rowHeight="6:1">
             <mat-grid-tile class="holder" *ngFor="let item of hierarchyItemList">
                 <mat-card class="itemCard" (click)="goToHierarchyItem(item)" [class.mat-elevation-z3]="true">
+                    <div class='item-text'>
+                        <div *ngIf="item.name"> {{ item.name }} </div>
+                        <div *ngIf="!item.name" class="light-text"> ( No title ) </div>
+                    </div>
                     <div class="item image" [ngStyle]="{'background-image': 'url(' + item.imageUrl + ')'}"></div>
-                    <mat-card-content>
-                        <div class='item-text'>
-                            <p *ngIf="item.name"> {{ item.name }} </p>
-                            <h4 *ngIf="!item.name" class="light-text"> ( No title ) </h4>
-                        </div>
-                    </mat-card-content>
                 </mat-card>
             </mat-grid-tile>
         </mat-grid-list>

@@ -8,24 +8,22 @@
 
 .hierarchy.image {
     width: 27%;
-    height: inherit;
     border-top-left-radius: inherit;
     border-bottom-left-radius: inherit;
-    margin: 0;
 }
   
 .image {
     background: 50% 50% no-repeat;
     background-size: cover;
     width: 5rem;
-    height: 65%;
-    margin: auto;
+    height: 100%;
+    margin: 0;
 }
   
 .item.image {
-    width: 100%;
-    border-top-left-radius: inherit;
+    width: 22%;
     border-top-right-radius: inherit;
+    border-bottom-right-radius: inherit;
 }
 
 
@@ -38,6 +36,9 @@ mat-card {
     width: 92%;
     height: 92%;
     border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .binItemCard {
@@ -73,13 +74,9 @@ mat-card-content {
 }
 
 .item-text {
-    text-align: center;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 15px;
+    font-size: 16px;
+    max-width: 60%;
+    margin: 0 18px;
 }
   
 .bin-text {
@@ -87,7 +84,7 @@ mat-card-content {
     justify-content: center;
     align-items: center;
     height: 12%;
-    font-size: 15px;
+    font-size: 16px;
 }
   
 .hierarchy-text {
