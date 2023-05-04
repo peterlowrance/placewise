@@ -33,7 +33,7 @@ mat-card {
 }
 
 .itemCard {
-    width: 92%;
+    width: 96%;
     height: 92%;
     border-radius: 8px;
     display: flex;
@@ -42,13 +42,16 @@ mat-card {
 }
 
 .binItemCard {
-    height: 88%;
+    height: 68%;
     width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .binCard {
-    width: 92%;
-    height: 92%;
+    width: 96%;
+    height: 90%;
     padding: 0;
     border-radius: 8px;
 }
@@ -83,7 +86,7 @@ mat-card-content {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 12%;
+    height: 32%;
     font-size: 16px;
 }
   
