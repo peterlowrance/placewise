@@ -520,6 +520,15 @@ p {
   .desktop-no-top-space {
     margin-top: 0;
   }
+
+  .container-img {
+    min-height: 0;
+    max-height: none;
+  }
+
+  .all-content {
+    box-shadow: none;
+  }
 }
 
 @media screen and (min-width: 600px){

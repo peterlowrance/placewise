@@ -200,7 +200,8 @@
 
     <div class="item-content">
         <div class="item-content-block block-1">
-            <img class="desktop-image container-img" src={{item.imageUrl}} layout-fit>
+            <img *ngIf="item.imageUrl" class="desktop-image container-img" src={{item.imageUrl}} layout-fit>
+            <img *ngIf="!item.imageUrl" class="desktop-image container-img grayed-image" src={{category.imageUrl}} layout-fit>
             <!--button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="editField('photo')"><mat-icon>photo_camera</mat-icon></button-->
 
             <h3 class="attribute-header bottom-space"> 
