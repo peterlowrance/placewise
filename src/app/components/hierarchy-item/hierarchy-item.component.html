@@ -2,7 +2,7 @@
   <img class="responsive-item-image container-img" src={{hierarchyItem.imageUrl}} layout-fit>
   <div class="info-content">
     <button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="camera.click()"><mat-icon>photo_camera</mat-icon></button>
-    <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
+    <input hidden type="file" accept=".jpg,.jpeg,.png,.webp;capture=camera" #camera (change)='uploadImage($event)'/>
     <div [ngSwitch]="this.textEditFields.name">
       <div *ngSwitchCase=true>
         <form (ngSubmit)="onNameSubmit()">

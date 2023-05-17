@@ -277,7 +277,7 @@
             <!-- Confirm button if there is an image -->
             <button *ngIf="item.imageUrl != '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="nextStep()" color="primary"> {{ singleStep ? "Confirm" : "Next" }} </button>
             
-            <input hidden type="file" accept=".jpg,.jpeg,.png;capture=camera" #camera (change)='uploadImage($event)'/>
+            <input hidden type="file" accept=".jpg,.jpeg,.png,.webp;capture=camera" #camera (change)='uploadImage($event)'/>
         </div>
 
         <!-- Next or confirm button depending on if this is a single step-->

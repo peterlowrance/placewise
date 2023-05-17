@@ -151,7 +151,10 @@
     </div>
 </div-->
 
-<img *ngIf="item" class="responsive-item-image container-img" src={{item.imageUrl}} layout-fit>
+<div class="container-img">
+    <img *ngIf="item && item.imageUrl" class="responsive-item-image" src={{item.imageUrl}} layout-fit alt="No Image">
+    <img *ngIf="item && !item.imageUrl" class="responsive-item-image grayed-image" src={{category.imageUrl}} layout-fit alt="No Image">
+</div>
 <div class="all-content" *ngIf="item">
     <div class="small-spacer"></div>
 
@@ -162,10 +165,10 @@
         </h1>
         <div *ngIf="item.desc" class="item-description">{{item.desc}}</div>
 
-        <button class="big-button report-button action-color" disabled="true" mat-raised-button (click)="transferStock()" [class.mat-elevation-z3]="true">
+        <!--button class="big-button report-button action-color" disabled="true" mat-raised-button (click)="transferStock()" [class.mat-elevation-z3]="true">
             <mat-icon>arrow_circle_right</mat-icon> 
             Transfer Stock (WIP)
-        </button>
+        </button-->
 
         <button class="big-button report-button action-color" mat-raised-button (click)="createReport()" [class.mat-elevation-z3]="true">
             <mat-icon>assignment_late</mat-icon>
@@ -197,7 +200,8 @@
 
     <div class="item-content">
         <div class="item-content-block block-1">
-            <img class="desktop-image container-img" src={{item.imageUrl}} layout-fit>
+            <img *ngIf="item.imageUrl" class="desktop-image container-img" src={{item.imageUrl}} layout-fit>
+            <img *ngIf="!item.imageUrl" class="desktop-image container-img grayed-image" src={{category.imageUrl}} layout-fit>
             <!--button mat-mini-fab *ngIf="this.role === 'Admin'" color="accent" class="camera-button" (click)="editField('photo')"><mat-icon>photo_camera</mat-icon></button-->
 
             <h3 class="attribute-header bottom-space"> 

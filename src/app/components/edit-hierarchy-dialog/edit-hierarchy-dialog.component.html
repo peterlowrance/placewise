@@ -15,7 +15,7 @@
       <button mat-icon-button class="camera"  (click)="uploader.click()"><mat-icon>photo_camera</mat-icon></button>
     </div>
     <!-- hidden item uploader -->
-    <input hidden type="file" accept=".jpg,.jpeg,.png" #uploader (change)='uploadImage($event)'/>
+    <input hidden type="file" accept=".jpg,.jpeg,.png,.webp" #uploader (change)='uploadImage($event)'/>
     <div class="foundWithin">Found within: {{data.realParent ? data.realParent.name : (isCategory ? 'Unassigned' : workspace)}} <button mat-icon-button (click)="onChangeParent()"><mat-icon>edit</mat-icon></button></div>
     <div mat-dialog-actions>
       <button mat-raised-button (click)="onCancelClick()">Cancel</button>
