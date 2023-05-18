@@ -98,7 +98,6 @@ export class ItemBuilderModalComponent implements OnInit {
         name: '',
         locations: [],
         category: 'root',
-        imageUrl: '../../../assets/notFound.png'
       };
       this.step = 'basic';
 
@@ -1024,7 +1023,7 @@ export class ItemBuilderModalComponent implements OnInit {
   finish(){
     this.adminService.createItemAtLocation(this.workspaceID, this.item).subscribe(id => {
       this.item.ID = id;
-      if(this.item.imageUrl !== '../../../assets/notFound.png'){
+      if(this.item.imageUrl){
         this.saveItemImage();
       }
       this.saveBinIDs();
