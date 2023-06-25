@@ -736,6 +736,13 @@ export class ItemBuilderModalComponent implements OnInit {
       return true;
     }
 
+    // Always allow user to skip taking an item picture.
+    // Item pictures should be more reliant on category images
+    // to reduce the amount of photos needed for us and them. 
+    else if(this.step === 'picture'){
+      return true;
+    }
+
     // Default to false
     return false;
   }

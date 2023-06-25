@@ -147,6 +147,12 @@
   max-width: 100%;
 }
 
+.category-picture {
+  min-width: 100%;
+  max-width: 100%;
+  filter: grayscale(100%) brightness(75%);
+}
+
 .scrollable {
     overflow-y: auto;
     overflow-x: hidden;

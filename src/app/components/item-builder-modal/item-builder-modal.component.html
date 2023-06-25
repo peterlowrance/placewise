@@ -202,16 +202,19 @@
         <div *ngIf="this.step == 'picture'" class="step-picture">
             <h2 mat-dialog-title> Item Picture </h2>
             <div class="scrollable">
-                <div *ngIf="item.imageUrl == '../../../assets/notFound.png'">
-                    <h3> Would you like to take a picture of {{item.name}}? </h3>
+                <div *ngIf="!item.imageUrl && !category.imageUrl">
+                    <div> Neither the category nor item have an image. Would you like to give this item a custom image? </div>
                 </div>
-                <div *ngIf="item.imageUrl != '../../../assets/notFound.png'">
-                    <div> For {{item.name}}: </div>
+                <div *ngIf="!item.imageUrl && category.imageUrl">
+                    <img class="category-picture" src={{category.imageUrl}} alt="... Something went wrong with the item's image!">
                     <br>
-                    <img class="item-picture" src={{item.imageUrl}} alt="Image load failed!">
+                    <div> The item will use the category's image. Would you like to give this item a custom picture? </div>
+                    <br>
                 </div>
-                <div *ngIf="!item.imageUrl">
-                    <div> Something went wrong with the item's image! </div>
+                <div *ngIf="item.imageUrl">
+                    <img class="item-picture" src={{item.imageUrl}} alt="... Something went wrong with the item's image!">
+                    <br>
+                    <div> Would you like to update the item's custom picture? </div>
                 </div>
             </div>
         </div>
@@ -268,12 +271,10 @@
         
         <!-- For images -->
         <div *ngIf="step === 'picture'" class="stacked-buttons">
-            <!-- Skip button for image if there is none -->
-            <button *ngIf="!singleStep && (!item.imageUrl || item.imageUrl == '../../../assets/notFound.png')" mat-raised-button class="rect-action-button action-color" (click)="nextStep()">Skip</button>
             <!-- Camera button for when there is no image -->
             <button *ngIf="item.imageUrl == '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="camera.click()" color="primary"> <mat-icon>photo_camera</mat-icon> Yes </button>
             <!-- Retake button if there is an image -->
-            <button *ngIf="item.imageUrl != '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="camera.click()" color="accent"> <mat-icon>photo_camera</mat-icon> Retake </button>
+            <button *ngIf="item.imageUrl != '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="camera.click()" color="accent"> <mat-icon>photo_camera</mat-icon> {{ item.imageUrl ? "Replace" : "Custom" }} </button>
             <!-- Confirm button if there is an image -->
             <button *ngIf="item.imageUrl != '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="nextStep()" color="primary"> {{ singleStep ? "Confirm" : "Next" }} </button>
             
