@@ -271,12 +271,10 @@
         
         <!-- For images -->
         <div *ngIf="step === 'picture'" class="stacked-buttons">
-            <!-- Camera button for when there is no image -->
-            <button *ngIf="item.imageUrl == '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="camera.click()" color="primary"> <mat-icon>photo_camera</mat-icon> Yes </button>
-            <!-- Retake button if there is an image -->
-            <button *ngIf="item.imageUrl != '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="camera.click()" color="accent"> <mat-icon>photo_camera</mat-icon> {{ item.imageUrl ? "Replace" : "Custom" }} </button>
-            <!-- Confirm button if there is an image -->
-            <button *ngIf="item.imageUrl != '../../../assets/notFound.png'" mat-raised-button class="rect-action-button" (click)="nextStep()" color="primary"> {{ singleStep ? "Confirm" : "Next" }} </button>
+            <!-- Take/upload an image -->
+            <button mat-raised-button class="rect-action-button" (click)="camera.click()" color="accent"> <mat-icon>photo_camera</mat-icon> {{ item.imageUrl ? "Replace" : "Custom" }} </button>
+            <!-- Next button, needed one here to be able to stack them -->
+            <button mat-raised-button class="rect-action-button" (click)="nextStep()" color="primary"> {{ singleStep ? "Confirm" : "Next" }} </button>
             
             <input hidden type="file" accept=".jpg,.jpeg,.png,.webp;capture=camera" #camera (change)='uploadImage($event)'/>
         </div>

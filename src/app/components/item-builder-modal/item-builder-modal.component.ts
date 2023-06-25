@@ -979,7 +979,7 @@ export class ItemBuilderModalComponent implements OnInit {
     if(this.step === 'attributes'){
       this.rebuildTitle();
     }
-    else if(this.step === 'picture' && this.singleStep && this.item.imageUrl && this.item.imageUrl !== '../../../assets/notFound.png'){
+    else if(this.step === 'picture' && this.singleStep && this.item.imageUrl){
       this.saveItemImage();
     }
 
