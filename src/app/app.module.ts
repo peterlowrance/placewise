@@ -28,6 +28,7 @@ import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatSelectModule} from '@angular/material/select';
 import {TextFieldModule} from '@angular/cdk/text-field';
 import {DragDropModule} from '@angular/cdk/drag-drop';
+import {MatTabsModule} from '@angular/material/tabs';
 
 import {SmdFabSpeedDialModule} from 'node_modules/angular-speed-dial';
 // Imports for all Placewise modules
@@ -175,6 +176,7 @@ import { PrintQueueComponent } from './components/print-queue/print-queue.compon
     QRCodeModule,
     NgxMasonryModule,
     ZXingScannerModule,
+    MatTabsModule
   ],
   providers: [],
   bootstrap: [AppComponent],

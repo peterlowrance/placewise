@@ -200,6 +200,8 @@ export class NavbarComponent implements OnInit {
       return 'reports';
     } else if (this.locationString.includes('/textSearch')) {
       return 'textSearch';
+    } else if (this.locationString.includes('/print')) {
+      return 'print';
     }
     else if(this.locationString.includes('/search/')) {
       return '/';

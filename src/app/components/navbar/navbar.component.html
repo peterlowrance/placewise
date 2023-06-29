@@ -22,6 +22,9 @@
             <span *ngSwitchCase='"itemBuilder"'>
                 <span class="nav-text">Item Builder</span>
             </span>
+            <span *ngSwitchCase='"print"'>
+                <span class="nav-text">Print</span>
+            </span>
             <!-- we are home, check for in search hierarchy -->
             <span *ngSwitchDefault>
                 <span *ngIf='parent === null || parent?.ID === "root"'>Home</span>
