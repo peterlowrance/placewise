@@ -17,6 +17,7 @@ import { HierarchyItemComponent } from './components/hierarchy-item/hierarchy-it
 import { TextSearchComponent } from './components/text-search/text-search.component';
 import { ReportTemplatesComponent } from './components/report-templates/report-templates.component';
 import { ReportTemplateEditComponent } from './components/report-template-edit/report-template-edit.component';
+import { PrintQueueComponent } from './components/print-queue/print-queue.component';
 
 const routes: Routes = [
   {path: 'w/:workspaceID/search/:selectedHierarchy/:id', component: SearchComponent, canActivate: [AuthGuard]},
@@ -24,6 +25,7 @@ const routes: Routes = [
   {path: 'login', component: LoginComponent},
   {path: 'w/:workspaceID/item/:id', component: ItemComponent, canActivate: [AuthGuard]},
   {path: 'settings', component: SettingsComponent, canActivate: [AuthGuard]},
+  {path: 'print', component: PrintQueueComponent, canActivate: [AuthGuard]},
   {path: 'w/:workspaceID/reports', component: AdminReportComponent, canActivate: [AuthGuard]},
   {path: 'w/:workspaceID/reports/templates', component: ReportTemplatesComponent, canActivate: [AuthGuard]},
   {path: 'w/:workspaceID/reports/templates/:type', component: ReportTemplateEditComponent, canActivate: [AuthGuard]},
