@@ -1,31 +1,41 @@
 <mat-tab-group class="structure-color-light" mat-align-tabs="center">
-    <mat-tab label="Queued Items" class="tab-content" style="background-color: white;">
-        <table mat-table [dataSource]="itemsInQueue" class="item-table">
-
-            <ng-container matColumnDef="itemName">
-                <th mat-header-cell *matHeaderCellDef> Item </th>
-                <td mat-cell *matCellDef="let element"> {{element.itemName}} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="printName">
-                <th mat-header-cell *matHeaderCellDef> Print <br> Name </th>
-                <td mat-cell *matCellDef="let element"> <mat-checkbox
-                    [ngModel]="element.printName"
-                    disabled="disabled"></mat-checkbox> </td>
-            </ng-container>
-
-            <ng-container matColumnDef="printBin">
-                <th mat-header-cell *matHeaderCellDef> Print <br> Bin </th>
-                <td mat-cell *matCellDef="let element"> <mat-checkbox
-                    [ngModel]="element.printBin"
-                    disabled="disabled"></mat-checkbox> </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
+    <mat-tab label="Queued Items" class="tab-content">
+        <div cdkDropList (cdkDropListDropped)="drop($event)" class="item-list">
+            <div class="item-list-header-container">
+                <div>
+                    QR Code to Print
+                </div>
+                <div class="item-list-header-selection">
+                    <span>Name</span> <span>Bin</span> <span>Univ.</span>
+                </div>
+            </div>
+            <div *ngFor="let item of itemsInQueue; index as i" cdkDrag>
+                <div class="item-line" [style.margin-bottom]="calculateSpacing(i)">
+                    <div>
+                        {{item.itemName}}
+                    </div>
+                    <div class="item-checkbox-container">
+                        <mat-checkbox class="item-checkbox" [ngModel]="item.printName"></mat-checkbox>
+                        <mat-checkbox class="item-checkbox" [ngModel]="item.printBin"></mat-checkbox>
+                        <mat-checkbox class="item-checkbox" [ngModel]="item.printUniversal"></mat-checkbox>
+                    </div>
+                </div>
+            </div>
+        </div>
     </mat-tab>
-    <mat-tab label="Page Setup" class="tab-content" style="background-color: white;">
-        Its luigi time <mat-slide-toggle></mat-slide-toggle>
+    <mat-tab label="Page Setup" class="tab-content">
+        <div class="page-setup">
+            <mat-radio-group class="radio-button-group" [(ngModel)]="orientation">
+                <mat-radio-button value="portrait" class="radio-button-space">Portrait</mat-radio-button>
+                <mat-radio-button value="landscape">Landscape</mat-radio-button>
+            </mat-radio-group>
+            <br><br>
+            <mat-form-field appearance="outline">
+                <mat-label>Columns of QR Codes</mat-label>
+                <input matInput [(ngModel)]="printColumns" type="number">
+            </mat-form-field>
+            <br><br>
+            <button mat-raised-button class="big-button structure-color" (click)="printPDF()" [disabled]="!checkReady()"><mat-icon>print</mat-icon> Print </button>
+        </div>
     </mat-tab>
 </mat-tab-group>
