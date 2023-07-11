@@ -73,12 +73,12 @@ export class PrintQueueComponent implements OnInit {
       this.fontMultiplier = 160;
     }
     else if(this.format === 'horiz-long'){
-      this.xSpacing = 8;
+      this.xSpacing = 9.6;
       this.ySpacing = 1.1;
-      this.fontMultiplier = 200;
+      this.fontMultiplier = 220;
     }
     else if(this.format === 'horiz-short'){
-      this.xSpacing = 5;
+      this.xSpacing = 4.8;
       this.ySpacing = 1.1;
       this.fontMultiplier = 200;
     }
@@ -137,13 +137,12 @@ export class PrintQueueComponent implements OnInit {
 
     let doc = new jsPDF({orientation: this.pageWidth > this.pageHeight ? 'l' : 'p', unit: 'in', format: [this.pageWidth, this.pageHeight]});
     doc.setFontSize(this.calculatedFontSize);
+    let totalQRsPerPage = this.calculatedColumns * this.calculatedRows;
     
     if(this.format.startsWith('vert')){
-
       let calcInitialQRSpaceX = (this.pageWidth - (2*this.margins) - ((this.calculatedColumns-1) * this.xSpacing * this.qrFullImageSize) - this.qrFullImageSize)/2;
       let calcInitialQRSpaceY = (this.pageHeight - (2*this.margins) - (this.calculatedRows * this.ySpacing * this.qrFullImageSize))/2;
       if(calcInitialQRSpaceY < 0) { calcInitialQRSpaceY = 0 }
-      let totalQRsPerPage = this.calculatedColumns * this.calculatedRows;
 
       let itemIndex = 0;
       let xIndex = 0;
@@ -198,8 +197,57 @@ export class PrintQueueComponent implements OnInit {
         
     }
 
-    else if (this.format === 'cutting-horizontal'){
+    else {
+      let itemIndex = 0;
+      let xIndex = 0;
+      let yIndex = 0;
+      for(let item of this.itemsInQueue){
+        doc.addImage(this.getBase64QR(document.getElementById('qrCode' + itemIndex)), 'PNG', 
+          this.margins + (xIndex * this.xSpacing * this.qrFullImageSize),
+          this.margins + (yIndex * this.ySpacing * this.qrFullImageSize),  
+          this.qrFullImageSize, this.qrFullImageSize);
 
+        let extraTextLine = 0;
+        if(this.textToPrint.includes('-B-N')){
+          extraTextLine = this.calculatedFontSize * 0.014;
+        }
+
+        if(this.textToPrint.includes('-N')){
+          doc.setFont("Helvetica", "");
+          doc.text(item.itemName,
+            this.margins + (1.1*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
+            this.margins + extraTextLine + (this.qrFullImageSize*0.5) - (this.calculatedFontSize * 0.018) + (yIndex * this.ySpacing * this.qrFullImageSize), 
+            {
+              baseline: 'top',
+              maxWidth: this.xSpacing*this.qrSize
+            })
+        }
+
+        if(this.textToPrint.includes('-B')){
+          doc.setFont("Courier", "Bold");
+          doc.text(item.binID,
+            this.margins + (1.1*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
+            this.margins + (this.qrFullImageSize*0.06) + (yIndex * this.ySpacing * this.qrFullImageSize),
+            {
+              baseline: 'top'
+            })
+        }
+
+        itemIndex++;
+        if(itemIndex % totalQRsPerPage === 0 && itemIndex !== this.itemsInQueue.length){
+          doc.addPage();
+          xIndex = 0;
+          yIndex = 0;
+        }
+        else {
+          xIndex++;
+          if(xIndex % this.calculatedColumns === 0){
+            xIndex = 0;
+            yIndex++;
+          }
+
+        }
+      }
     }
     
     doc.output('dataurlnewwindow');
