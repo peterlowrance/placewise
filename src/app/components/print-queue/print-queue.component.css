@@ -61,6 +61,25 @@
   max-width: 90vw;
 }
 
-.radio-button-space {
+.input-space {
   margin-right: 24px;
+  margin-bottom: 12px;
+}
+
+.QR-code-holder {
+  margin: 0 auto;
+  width: 256px;
+  display: none;
+}
+
+.form-space {
+  margin-right: 18px;
+}
+
+.information-separator-small {
+  margin-bottom: 18px;
+}
+
+.information-separator-large {
+  margin-bottom: 36px;
 }

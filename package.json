@@ -39,7 +39,6 @@
     "masonry-layout": "^4.2.2",
     "ngx-masonry": "^11.0.2",
     "node": "^16.6.1",
-    "qrcodejs": "^1.0.0",
     "rxjs": "~6.6.7",
     "tslib": "^1.14.1",
     "xmlhttprequest-ssl": "^1.6.3",
