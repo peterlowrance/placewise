@@ -32,14 +32,15 @@ export class PrintQueueComponent implements OnInit {
   itemsInQueue = FILLER_DATA;
   displayedColumns: string[] = ['itemName', 'printName', 'printBin'];
   xSpacing: number = 2.4; ySpacing: number = 3.2;
+  qrSize: number = 0.68;
   qrFullImageSize: number;
-  displayedQRSize: number;
-  fontSize: number = 16;
+  overrideFontSize: number;
+  calculatedFontSize: number = 14;
+  fontMultiplier: number;
   pageWidth: number = 8.5;
   pageHeight: number = 11;
-  margins: number = 0.3;
-  inputColumns: number = 4;
-  calculatedColumns: number = 4;
+  margins: number = 0.25;
+  calculatedColumns: number;
   calculatedRows: number;
   textToPrint: string = "QR-N";
   format: string = 'vert-large';
@@ -49,48 +50,62 @@ export class PrintQueueComponent implements OnInit {
 
   ngOnInit(): void {
     this.calculateGrid();
+    this.updateFontSize();
   }
 
 
   calculateGrid(){
+    this.qrFullImageSize = this.qrSize * 1.2;
 
     if(this.format === 'vert-large'){
-      this.xSpacing = 2.7;
-      this.ySpacing = 3.6;
+      this.xSpacing = 2.4;
+      this.ySpacing = 3.2;
+      this.fontMultiplier = 200;
     }
     else if(this.format === 'vert-medium'){
-      this.xSpacing = 2.2;
+      this.xSpacing = 2;
       this.ySpacing = 2.4;
+      this.fontMultiplier = 160;
     }
     else if(this.format === 'vert-small'){
       this.xSpacing = 1.2;
       this.ySpacing = 1.32;
+      this.fontMultiplier = 160;
     }
     else if(this.format === 'horiz-long'){
       this.xSpacing = 8;
       this.ySpacing = 1.1;
+      this.fontMultiplier = 200;
     }
     else if(this.format === 'horiz-short'){
       this.xSpacing = 5;
       this.ySpacing = 1.1;
+      this.fontMultiplier = 200;
     }
 
-    this.calculatedColumns = Math.floor(this.inputColumns);
+    this.calculatedColumns = Math.floor((this.pageWidth - (2 * this.margins))/(this.xSpacing*this.qrFullImageSize));
+    this.calculatedRows = Math.floor((this.pageHeight - (2 * this.margins))/(this.ySpacing*this.qrFullImageSize));
+
     if(this.calculatedColumns < 1){
       this.calculatedColumns = 1;
     }
-    if(this.calculatedColumns > 1000){
-      this.calculatedColumns = 1000;
-    }
-
-    this.qrFullImageSize = (this.pageWidth - (2 * this.margins))/(this.xSpacing*this.calculatedColumns);
-    this.calculatedRows = Math.floor((this.pageHeight - (2 * this.margins))/(this.ySpacing*this.qrFullImageSize));
-    this.displayedQRSize = Math.floor((this.qrFullImageSize*0.84)*100)/100;
-    
     if(this.calculatedRows < 1){
       this.calculatedRows = 1;
     }
+
+    this.updateFontSize();
   }
+
+
+  updateFontSize(){
+    if(this.overrideFontSize){
+      this.calculatedFontSize = this.overrideFontSize;
+    }
+    else {
+      this.calculatedFontSize = Math.floor(this.fontMultiplier * this.qrSize)/10;
+    }
+  }
+
 
   calculateSpacing(index: number){
     if(index % this.calculatedColumns === (this.calculatedColumns - 1)){
@@ -102,7 +117,7 @@ export class PrintQueueComponent implements OnInit {
   }
 
   checkReady(){
-    if(this.qrFullImageSize && this.fontSize){
+    if(this.qrSize && this.calculatedFontSize){
       return true;
     }
     return false;
@@ -121,7 +136,7 @@ export class PrintQueueComponent implements OnInit {
   printPDF(){
 
     let doc = new jsPDF({orientation: this.pageWidth > this.pageHeight ? 'l' : 'p', unit: 'in', format: [this.pageWidth, this.pageHeight]});
-    doc.setFontSize(this.fontSize);
+    doc.setFontSize(this.calculatedFontSize);
     
     if(this.format.startsWith('vert')){
 
@@ -141,17 +156,17 @@ export class PrintQueueComponent implements OnInit {
 
         let extraTextLine = 0;
         if(this.textToPrint.includes('-B-N')){
-          extraTextLine = this.fontSize * 0.02;
+          extraTextLine = this.calculatedFontSize * 0.02;
         }
 
         if(this.textToPrint.includes('-N')){
           doc.setFont("Helvetica", "");
           doc.text(item.itemName,
             this.margins + calcInitialQRSpaceX + (0.5*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
-            this.margins + extraTextLine + calcInitialQRSpaceY + this.qrFullImageSize + (this.fontSize*0.015) + (yIndex * this.ySpacing * this.qrFullImageSize), 
+            this.margins + extraTextLine + calcInitialQRSpaceY + this.qrFullImageSize + (this.calculatedFontSize*0.015) + (yIndex * this.ySpacing * this.qrFullImageSize), 
             {
               align: 'center',
-              maxWidth: Math.min(this.xSpacing*this.qrFullImageSize*0.88, 0.15*this.fontSize)
+              maxWidth: Math.min(this.xSpacing*this.qrSize*1.08, 0.15*this.calculatedFontSize)
             })
         }
 
@@ -159,7 +174,7 @@ export class PrintQueueComponent implements OnInit {
           doc.setFont("Courier", "Bold");
           doc.text(item.binID,
             this.margins + calcInitialQRSpaceX + (0.5*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
-            this.margins + calcInitialQRSpaceY + (this.qrFullImageSize*0.94) + (this.fontSize*0.015) + (yIndex * this.ySpacing * this.qrFullImageSize),
+            this.margins + calcInitialQRSpaceY + (this.qrFullImageSize*0.94) + (this.calculatedFontSize*0.015) + (yIndex * this.ySpacing * this.qrFullImageSize),
             {
               align: 'center'
             })

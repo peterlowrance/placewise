@@ -57,16 +57,17 @@
                     <input matInput [(ngModel)]="margins" type="number" (ngModelChange)="calculateGrid()">
                 </mat-form-field>
                 <mat-form-field appearance="outline">
-                    <mat-label>Columns</mat-label>
-                    <input matInput [(ngModel)]="inputColumns" type="number" (ngModelChange)="calculateGrid()">
+                    <mat-label>Size of QR Codes (in)</mat-label>
+                    <input matInput [(ngModel)]="qrSize" type="number" (ngModelChange)="calculateGrid()">
                 </mat-form-field>
-                <div>There will be {{calculatedRows}} rows of QR codes about {{displayedQRSize}}" wide.</div>
+                <div>The result will be {{calculatedRows}} rows by {{calculatedColumns}} columns.</div>
             </div>              
             
-            <div class="information-separator-small">
+            <div class="information-separator-large">
                 <mat-form-field appearance="outline">
-                    <mat-label>Font Size</mat-label>
-                    <input matInput [(ngModel)]="fontSize" type="number">
+                    <mat-label>Override Font Size</mat-label>
+                    <input matInput [(ngModel)]="overrideFontSize" type="number" (ngModelChange)="updateFontSize()">
+                    <mat-hint *ngIf="!overrideFontSize">Current font size is {{calculatedFontSize}}</mat-hint>
                 </mat-form-field>
             </div>
 
