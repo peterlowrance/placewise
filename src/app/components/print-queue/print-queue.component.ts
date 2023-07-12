@@ -77,6 +77,11 @@ export class PrintQueueComponent implements OnInit {
       this.ySpacing = 1.1;
       this.fontMultiplier = 220;
     }
+    else if(this.format === 'horiz-medium'){
+      this.xSpacing = 6.4;
+      this.ySpacing = 1.1;
+      this.fontMultiplier = 200;
+    }
     else if(this.format === 'horiz-short'){
       this.xSpacing = 4.8;
       this.ySpacing = 1.1;
@@ -209,7 +214,7 @@ export class PrintQueueComponent implements OnInit {
 
         let extraTextLine = 0;
         if(this.textToPrint.includes('-B-N')){
-          extraTextLine = this.calculatedFontSize * 0.014;
+          extraTextLine = this.calculatedFontSize * 0.013;
         }
 
         if(this.textToPrint.includes('-N')){
@@ -219,7 +224,7 @@ export class PrintQueueComponent implements OnInit {
             this.margins + extraTextLine + (this.qrFullImageSize*0.5) - (this.calculatedFontSize * 0.018) + (yIndex * this.ySpacing * this.qrFullImageSize), 
             {
               baseline: 'top',
-              maxWidth: this.xSpacing*this.qrSize
+              maxWidth: this.xSpacing*this.qrSize*0.9
             })
         }
 
