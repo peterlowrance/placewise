@@ -1,6 +1,48 @@
 <mat-tab-group class="structure-color-light" mat-align-tabs="center">
     <mat-tab label="Queued Items" class="tab-content">
         <div cdkDropList (cdkDropListDropped)="drop($event)" class="item-list">
+            <div class="add-qr-range-container">
+                <div>
+                    Add range of bin QRs to queue:
+                </div>
+                <div class="add-qr-range-form">
+                    <mat-form-field class="bin-form" appearance="outline">
+                        <mat-label>Shelf</mat-label>
+                        <input 
+                            class="shelf-input" 
+                            matInput 
+                            #shelfInput
+                            type="number" 
+                            pattern="\d*" 
+                            maxlength="3"
+                            (keyup)="updateQuickSearchShelf($event)">
+                    </mat-form-field>
+                    <span> - </span>
+                    <mat-form-field class="bin-form" appearance="outline">
+                        <mat-label>Bin</mat-label>
+                        <input 
+                            class="shelf-input" 
+                            matInput 
+                            #binInput
+                            type="number" 
+                            pattern="\d*" 
+                            maxlength="3"
+                            (keyup)="updateQuickSearchBin($event)">
+                    </mat-form-field>
+                    <span> to </span>
+                    <mat-form-field class="bin-form" appearance="outline">
+                        <mat-label>Bin</mat-label>
+                        <input 
+                            class="shelf-input" 
+                            matInput 
+                            #binInput
+                            type="number" 
+                            pattern="\d*" 
+                            maxlength="3"
+                            (keyup)="updateQuickSearchBin($event)">
+                    </mat-form-field>
+                </div>
+            </div>
             <div class="item-list-header-container">
                 <div>
                     QR Code to Print
