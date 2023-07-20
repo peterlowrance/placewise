@@ -9,3 +9,7 @@
     min-width: 90px;
     margin-top: 18px;
 }
+
+.textarea {
+    height: 90px;
+}

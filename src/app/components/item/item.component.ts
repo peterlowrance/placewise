@@ -34,6 +34,8 @@ import { TransferStockDialogComponent } from '../transfer-stock-dialog/transfer-
 import { Console, timeStamp } from 'console';
 import { SentReport } from 'src/app/models/SentReport';
 import { ReportService } from 'src/app/services/report.service';
+import { PrintService } from 'src/app/services/print.service';
+import { BinSelectDialogComponent } from '../bin-select-dialog/bin-select-dialog.component';
 
 
 interface TreeNode {
@@ -108,7 +110,8 @@ export class ItemComponent implements OnInit, OnDestroy {
     private cacheService: CacheService,
     private router: Router,
     private snack: MatSnackBar,
-    private reportService: ReportService
+    private reportService: ReportService,
+    private printService: PrintService
   ) {
   }
 
@@ -498,15 +501,44 @@ export class ItemComponent implements OnInit, OnDestroy {
     }
   }
 
-  openQRCodeGenerator(){
-    const dialogRef = this.dialog.open(QRCodeItemDialogComponent, {
-      width: '30rem',
-      data: {
-        item: this.item,
-        workspaceID: this.workspaceID,
-        locations: this.itemLocations.map(data => { return data.location})
+  addItemToPrintQueue(){
+
+    // If there's no location, jsut add the item name with it's ID
+    if(!this.item.locations || this.item.locations.length === 0){
+      this.printService.addPrintItemToQueue(this.workspaceID, { ID: this.item.ID, displayName: this.item.name, type: 'i'})
+      this.snack.open('Item Added to Print Queue', "OK", {duration: 2000, panelClass: ['mat-toolbar']});
+    }
+    else {
+
+      // First collect what bins this item is in
+      let binData: {binID: string, locationName: string}[] = [];
+        for(let location of this.itemLocations){
+          if(location.binID){
+            binData.push({binID: location.binID, locationName: location.location.name});
+          }
+        }
+
+      // If there's multiple bins, make a pop-up for the user to select which bin
+      if (binData.length > 1){
+        this.dialog.open(BinSelectDialogComponent, {
+          width: '30rem',
+          data: { binData }
+        }).afterClosed().subscribe(result => {
+          this.printService.addPrintItemToQueue(this.workspaceID, { ID: this.item.ID, displayName: this.item.name, binID: result, type: 'i'});
+          this.snack.open("Item Added " + result + " to Print Queue", "OK", {duration: 2000, panelClass: ['mat-toolbar']});
+        })
       }
-    });
+      // One bin, add that without a pop-up
+      else if (binData.length === 1) {
+        this.printService.addPrintItemToQueue(this.workspaceID, { ID: this.item.ID, displayName: this.item.name, binID: this.item.locationMetadata[this.item.locations[0]].binID, type: 'i'});
+        this.snack.open('Item Added to Print Queue', "OK", {duration: 2000, panelClass: ['mat-toolbar']});
+      }
+      // There were no bins: just add the item
+      else {      
+        this.printService.addPrintItemToQueue(this.workspaceID, { ID: this.item.ID, displayName: this.item.name, type: 'i'})
+        this.snack.open('Item Added to Print Queue', "OK", {duration: 2000, panelClass: ['mat-toolbar']});
+      }
+    }
   }
 
   createReport() {

@@ -25,7 +25,7 @@ const routes: Routes = [
   {path: 'login', component: LoginComponent},
   {path: 'w/:workspaceID/item/:id', component: ItemComponent, canActivate: [AuthGuard]},
   {path: 'settings', component: SettingsComponent, canActivate: [AuthGuard]},
-  {path: 'print', component: PrintQueueComponent, canActivate: [AuthGuard]},
+  {path: 'w/:workspaceID/print', component: PrintQueueComponent, canActivate: [AuthGuard]},
   {path: 'w/:workspaceID/reports', component: AdminReportComponent, canActivate: [AuthGuard]},
   {path: 'w/:workspaceID/reports/templates', component: ReportTemplatesComponent, canActivate: [AuthGuard]},
   {path: 'w/:workspaceID/reports/templates/:type', component: ReportTemplateEditComponent, canActivate: [AuthGuard]},

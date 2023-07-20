@@ -175,9 +175,9 @@
             Report
         </button>
 
-        <button class="big-button report-button action-color-light" mat-raised-button (click)="openQRCodeGenerator()" [class.mat-elevation-z3]="true">
+        <button class="big-button report-button action-color-light" mat-raised-button (click)="addItemToPrintQueue()" [class.mat-elevation-z3]="true">
             <mat-icon>qr_code_2</mat-icon> 
-            Create QR Code
+            Add to Print Queue
         </button>
 
         <span *ngIf="role === 'Admin'">

@@ -87,6 +87,7 @@ import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { QRScannerDialogComponent } from './components/qrscanner-dialog/qrscanner-dialog.component';
 import { ReportListComponent } from './components/report-list/report-list.component';
 import { PrintQueueComponent } from './components/print-queue/print-queue.component';
+import { BinSelectDialogComponent } from './components/bin-select-dialog/bin-select-dialog.component';
 
 @NgModule({
   declarations: [
@@ -132,6 +133,7 @@ import { PrintQueueComponent } from './components/print-queue/print-queue.compon
     QRScannerDialogComponent,
     ReportListComponent,
     PrintQueueComponent,
+    BinSelectDialogComponent,
   ],
   imports: [
     CommonModule,

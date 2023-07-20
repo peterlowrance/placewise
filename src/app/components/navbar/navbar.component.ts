@@ -249,6 +249,9 @@ export class NavbarComponent implements OnInit {
       case 'textSearch':
         this.router.navigateByUrl("/w/" + this.workspaceID + "/textSearch");
         break;
+      case 'print':
+        this.router.navigateByUrl("/w/" + this.workspaceID + "/print");
+        break;
       default:
         this.router.navigateByUrl(route);
     }

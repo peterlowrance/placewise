@@ -1,0 +1,7 @@
+<div>
+    <h3> Choose a bin number to add to the Print Queue. </h3>
+    <div *ngFor="let bin of data.binData" class="button-and-text">
+        <button mat-raised-button class="big-button action-color" (click)="selectBin(bin.binID)"> {{bin.binID}} </button>
+        ({{bin.locationName}})
+    </div>
+</div>

@@ -3,22 +3,18 @@
         <div cdkDropList (cdkDropListDropped)="drop($event)" class="item-list">
             <div class="item-list-header-container">
                 <div>
-                    QR Code to Print
-                </div>
-                <div class="item-list-header-selection">
-                    <span>Name</span> <span>Bin</span> <span>Univ.</span>
+                    Item, Location, Category, or Bin to QR Print
                 </div>
             </div>
             <div *ngFor="let item of itemsInQueue; index as i" cdkDrag>
                 <div class="item-line" [style.margin-bottom]="calculateSpacing(i)">
-                    <mat-icon style="color: #BBB">drag_indicator</mat-icon>
+                    <mat-icon class="drag-icon" style="color: #BBB" cdkDragHandle>drag_indicator</mat-icon>
                     <div>
-                        {{item.itemName}}
+                        {{item.displayName}}
                     </div>
                     <div class="item-checkbox-container">
-                        <mat-checkbox class="item-checkbox" [ngModel]="item.printName"></mat-checkbox>
-                        <mat-checkbox class="item-checkbox" [ngModel]="item.printBin"></mat-checkbox>
-                        <mat-checkbox class="item-checkbox" [ngModel]="item.printUniversal"></mat-checkbox>
+                        <button mat-icon-button (click)="editDisplayName(i)"><mat-icon>edit</mat-icon></button>
+                        <button mat-icon-button (click)="removeItem(i)"><mat-icon>delete</mat-icon></button>
                     </div>
                 </div>
             </div>
@@ -95,7 +91,7 @@
             
             <div class="QR-code-holder">
                 <div *ngFor="let item of itemsInQueue; index as i">
-                    <qrcode [attr.id]="'qrCode' + i" [qrdata]="item.itemName" [width]="256" [errorCorrectionLevel]="'Q'"></qrcode>
+                    <qrcode *ngIf="item.QRtext" [attr.id]="'qrCode' + i" [qrdata]="item.QRtext" [width]="256" [errorCorrectionLevel]="'Q'"></qrcode>
                 </div>
             </div>
         </div>

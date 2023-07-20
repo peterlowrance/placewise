@@ -26,7 +26,7 @@ export class SimpleFieldDialogComponent implements OnInit {
   }
 
   submit(){
-    this.dialogRef.close({value: this.newValue, changed: this.newValue !== this.data.value, wasValid: true});
+    this.dialogRef.close({value: this.newValue.replace('\n', ''), changed: this.newValue !== this.data.value, wasValid: true});
   }
 
   cancel(){

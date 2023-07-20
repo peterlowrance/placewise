@@ -1,26 +1,15 @@
-import { style } from '@angular/animations';
-import { Component, ElementRef, OnInit } from '@angular/core';
-import { MatTabsModule } from '@angular/material/tabs';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import jsPDF from 'jspdf';
-import QRCode from 'qrcode';
-
-export interface QueueItem {
-  itemName: string;
-  printName: boolean;
-  binID: string;
-  printUniversal: boolean;
-}
-
-var FILLER_DATA: QueueItem[] = [
-  {itemName: "HHCS, 1/4\"-20 xs 5/8\"LG", printName: true, binID: "001-015", printUniversal: false},
-  {itemName: "22-18 AWG, Power Phase, #6 Stud Red Polyolefin Sealed Crimp Locking Fork Terminal", printName: false,  binID: "001-016", printUniversal: false},
-  {itemName: "Burp", printName: true,  binID: "001-017", printUniversal: false},
-  {itemName: "Bonk", printName: false,  binID: "001-018", printUniversal: false},
-  {itemName: "HHCS, 1/4\"-20 x 5/8\"LG", printName: false,  binID: "001-019", printUniversal: false},
-  {itemName: "HHCS, 1/4\"-20 x 5/8\"LG", printName: true,  binID: "001-020", printUniversal: false},
-  {itemName: "HHCS, 1/4\"-20 x 5/8\"LG", printName: true,  binID: "001-021", printUniversal: false},
-  {itemName: "HHCS, 1/4\"-20 x 5/8\"LG", printName: true,  binID: "001-022", printUniversal: false},
-];
+import { PrintItem } from 'src/app/models/PrintItem';
+import { SimpleFieldDialogComponent } from '../simple-field-dialog/simple-field-dialog.component';
+import { PrintService } from 'src/app/services/print.service';
+import { ActivatedRoute } from '@angular/router';
+import { AuthService } from 'src/app/services/auth.service';
+import { QRCodeEncoder, QRCodeWriter } from '@zxing/library';
+import ErrorCorrectionLevel from '@zxing/library/esm/core/qrcode/decoder/ErrorCorrectionLevel';
+import { BrowserQRCodeSvgWriter } from '@zxing/browser';
 
 @Component({
   selector: 'app-print-queue',
@@ -29,7 +18,7 @@ var FILLER_DATA: QueueItem[] = [
 })
 export class PrintQueueComponent implements OnInit {
 
-  itemsInQueue = FILLER_DATA;
+  itemsInQueue: PrintItem[] = [];
   displayedColumns: string[] = ['itemName', 'printName', 'printBin'];
   xSpacing: number = 2.4; ySpacing: number = 3.2;
   qrSize: number = 0.68;
@@ -45,12 +34,39 @@ export class PrintQueueComponent implements OnInit {
   textToPrint: string = "QR-N";
   format: string = 'vert-large';
   linkQRTo: string = 'I';
+  workspaceID: string;
 
-  constructor() { }
+  constructor(
+    public dialog: MatDialog, 
+    private printService: PrintService, 
+    private authService: AuthService,
+    private route: ActivatedRoute) { }
 
   ngOnInit(): void {
+    this.workspaceID = this.route.snapshot.paramMap.get('workspaceID');
+
     this.calculateGrid();
     this.updateFontSize();
+    this.loadQueue();
+  }
+
+
+  loadQueue(){
+    this.authService.getUser().subscribe(user => {
+      if(user){
+        this.printService.loadItemsInQueue(this.workspaceID, user.id).then(items => {
+          this.itemsInQueue = items;
+          this.setupTextForQRs();
+        })
+      }
+    })
+  }
+
+
+  setupTextForQRs(){
+    for(let printItem of this.itemsInQueue){
+      printItem.QRtext = '/' + printItem.type + '/' + printItem.ID;
+    }
   }
 
 
@@ -113,7 +129,11 @@ export class PrintQueueComponent implements OnInit {
 
 
   calculateSpacing(index: number){
-    if(index % this.calculatedColumns === (this.calculatedColumns - 1)){
+    let totalPerPage = this.calculatedColumns * this.calculatedRows;
+    if(index % totalPerPage === (totalPerPage - 1)){
+      return '18px';
+    }
+    else if(index % this.calculatedColumns === (this.calculatedColumns - 1)){
       return '6px';
     }
     else {
@@ -128,6 +148,27 @@ export class PrintQueueComponent implements OnInit {
     return false;
   }
 
+  editDisplayName(index: number){
+    this.dialog.open(SimpleFieldDialogComponent, {
+      width: '300px',
+      data: {fieldName: 'Name:', value: this.itemsInQueue[index].displayName, description: 'Change the text to override the normal name.'}
+    }).beforeClosed().subscribe(result => {
+      if(result && result.wasValid){
+        console.log(result.value);
+        this.itemsInQueue[index].displayName = result.value;
+      }
+    });
+  }
+
+  removeItem(index: number){
+    this.itemsInQueue.splice(index, 1);
+  }
+  
+
+  drop(event: CdkDragDrop<string[]>){
+    moveItemInArray(this.itemsInQueue, event.previousIndex, event.currentIndex);
+  }
+
 
   swapDimensions(){
     let widthHolder = this.pageWidth;
@@ -140,6 +181,8 @@ export class PrintQueueComponent implements OnInit {
 
   printPDF(){
 
+    let codeWriter = new BrowserQRCodeSvgWriter();
+    let serializer = new XMLSerializer();
     let doc = new jsPDF({orientation: this.pageWidth > this.pageHeight ? 'l' : 'p', unit: 'in', format: [this.pageWidth, this.pageHeight]});
     doc.setFontSize(this.calculatedFontSize);
     let totalQRsPerPage = this.calculatedColumns * this.calculatedRows;
@@ -153,10 +196,11 @@ export class PrintQueueComponent implements OnInit {
       let xIndex = 0;
       let yIndex = 0;
       for(let item of this.itemsInQueue){
-        doc.addImage(this.getBase64QR(document.getElementById('qrCode' + itemIndex)), 'PNG', 
-          this.margins + calcInitialQRSpaceX + (xIndex * this.xSpacing * this.qrFullImageSize),
-          this.margins + calcInitialQRSpaceY + (yIndex * this.ySpacing * this.qrFullImageSize),  
-          this.qrFullImageSize, this.qrFullImageSize);
+        console.log(codeWriter.write(item.QRtext, 300, 300));
+        //doc.addImage(codeWriter.write(item.QRtext, 300, 300),
+        //  this.margins + calcInitialQRSpaceX + (xIndex * this.xSpacing * this.qrFullImageSize),
+        //  this.margins + calcInitialQRSpaceY + (yIndex * this.ySpacing * this.qrFullImageSize),  
+        //  this.qrFullImageSize, this.qrFullImageSize);
 
         let extraTextLine = 0;
         if(this.textToPrint.includes('-B-N')){
@@ -165,7 +209,7 @@ export class PrintQueueComponent implements OnInit {
 
         if(this.textToPrint.includes('-N')){
           doc.setFont("Helvetica", "");
-          doc.text(item.itemName,
+          doc.text(item.displayName,
             this.margins + calcInitialQRSpaceX + (0.5*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
             this.margins + extraTextLine + calcInitialQRSpaceY + this.qrFullImageSize + (this.calculatedFontSize*0.015) + (yIndex * this.ySpacing * this.qrFullImageSize), 
             {
@@ -219,7 +263,7 @@ export class PrintQueueComponent implements OnInit {
 
         if(this.textToPrint.includes('-N')){
           doc.setFont("Helvetica", "");
-          doc.text(item.itemName,
+          doc.text(item.displayName,
             this.margins + (1.1*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
             this.margins + extraTextLine + (this.qrFullImageSize*0.5) - (this.calculatedFontSize * 0.018) + (yIndex * this.ySpacing * this.qrFullImageSize), 
             {
@@ -274,7 +318,7 @@ export class PrintQueueComponent implements OnInit {
   }
 
   addTestItem(){
-    this.itemsInQueue.push({itemName: "MOMMA", printName: false,  binID: "001-0XX", printUniversal: false})
+    this.itemsInQueue.push({displayName: "MOMMA", binID: "001-0XX", ID: 'o8WKvkebo46rfmNnNmQY', type: 'i'})
   }
 
 }

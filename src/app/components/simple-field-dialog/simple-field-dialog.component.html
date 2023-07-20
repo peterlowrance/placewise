@@ -1,9 +1,10 @@
 <mat-form-field>
     <mat-label>{{data.fieldName}}</mat-label>
-    <input matInput #value
+    <textarea matInput #value class="textarea"
     type="text"
+    [value]="data.value"
     (keyup)="setValue(value.value)"
-    (keyup.enter)="submit()">
+    (keyup.enter)="submit()"></textarea>
 </mat-form-field>
 
 <div *ngIf="data.description">
