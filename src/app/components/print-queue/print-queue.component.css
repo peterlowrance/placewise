@@ -87,3 +87,12 @@
 .drag-icon {
   margin-right: 6px;
 }
+
+.add-qr-range-container {
+  background-color: white;
+  padding: 10px 10px 4px;
+}
+
+.bin-form {
+  max-width: 84px;
+}
