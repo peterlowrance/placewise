@@ -7,9 +7,7 @@ import { SimpleFieldDialogComponent } from '../simple-field-dialog/simple-field-
 import { PrintService } from 'src/app/services/print.service';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
-import { QRCodeEncoder, QRCodeWriter } from '@zxing/library';
-import ErrorCorrectionLevel from '@zxing/library/esm/core/qrcode/decoder/ErrorCorrectionLevel';
-import { BrowserQRCodeSvgWriter } from '@zxing/browser';
+import { QRCodeComponent, QRCodeElementType, QRCodeModule } from 'angularx-qrcode';
 
 @Component({
   selector: 'app-print-queue',
@@ -35,6 +33,7 @@ export class PrintQueueComponent implements OnInit {
   format: string = 'vert-large';
   linkQRTo: string = 'I';
   workspaceID: string;
+  QRtextTEST = "1234";
 
   constructor(
     public dialog: MatDialog, 
@@ -179,10 +178,13 @@ export class PrintQueueComponent implements OnInit {
   }
 
 
+  test(){
+    console.log("holy frick I work");
+  }
+
+
   printPDF(){
 
-    let codeWriter = new BrowserQRCodeSvgWriter();
-    let serializer = new XMLSerializer();
     let doc = new jsPDF({orientation: this.pageWidth > this.pageHeight ? 'l' : 'p', unit: 'in', format: [this.pageWidth, this.pageHeight]});
     doc.setFontSize(this.calculatedFontSize);
     let totalQRsPerPage = this.calculatedColumns * this.calculatedRows;
@@ -196,11 +198,10 @@ export class PrintQueueComponent implements OnInit {
       let xIndex = 0;
       let yIndex = 0;
       for(let item of this.itemsInQueue){
-        console.log(codeWriter.write(item.QRtext, 300, 300));
-        //doc.addImage(codeWriter.write(item.QRtext, 300, 300),
-        //  this.margins + calcInitialQRSpaceX + (xIndex * this.xSpacing * this.qrFullImageSize),
-        //  this.margins + calcInitialQRSpaceY + (yIndex * this.ySpacing * this.qrFullImageSize),  
-        //  this.qrFullImageSize, this.qrFullImageSize);
+        doc.addImage(this.getBase64QR(document.getElementById('qrCode' + itemIndex)), 'PNG', 
+          this.margins + calcInitialQRSpaceX + (xIndex * this.xSpacing * this.qrFullImageSize),
+          this.margins + calcInitialQRSpaceY + (yIndex * this.ySpacing * this.qrFullImageSize),  
+          this.qrFullImageSize, this.qrFullImageSize);
 
         let extraTextLine = 0;
         if(this.textToPrint.includes('-B-N')){
@@ -299,7 +300,7 @@ export class PrintQueueComponent implements OnInit {
       }
     }
     
-    doc.output('dataurlnewwindow');
+    window.open(doc.output("bloburl"), "_blank");
   }
   
 

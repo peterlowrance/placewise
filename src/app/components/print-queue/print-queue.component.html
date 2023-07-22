@@ -133,7 +133,7 @@
             
             <div class="QR-code-holder">
                 <div *ngFor="let item of itemsInQueue; index as i">
-                    <qrcode *ngIf="item.QRtext" [attr.id]="'qrCode' + i" [qrdata]="item.QRtext" [width]="256" [errorCorrectionLevel]="'Q'"></qrcode>
+                    <qrcode [attr.id]="'qrCode' + i" [qrdata]="item.ID" [width]="256" [errorCorrectionLevel]="'Q'"></qrcode>
                 </div>
             </div>
         </div>
