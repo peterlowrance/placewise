@@ -4,6 +4,8 @@ import {AngularFirestore} from '@angular/fire/firestore';
 import * as firebase from 'firebase';
 import { PrintItem } from '../models/PrintItem';
 import { U } from '@angular/cdk/keycodes';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 
 
@@ -21,17 +23,21 @@ export class PrintService {
     }
 
 
-    async loadItemsInQueue(workspaceID: string, userID: string): Promise<PrintItem[]> {
-        let workspaceUserData = await this.afs.doc('/Workspaces/' + workspaceID + '/WorkspaceUsers/' + userID).ref.get();
-        if(workspaceUserData.exists){
-            const data = workspaceUserData.data() as {printQueue: PrintItem[]};
+    subscribeToItemsInQueue(workspaceID: string, userID: string): Observable<PrintItem[]> {
+        return this.afs.doc('/Workspaces/' + workspaceID + '/WorkspaceUsers/' + userID).snapshotChanges().pipe(map(a => {
+            const data = a.payload.data() as {printQueue: PrintItem[]};
             if(data){
                 return data.printQueue;
             }
             else {
                 return null;
             }
-        }
+        }));
+    }
+
+    async updateItemsInQueue(workspaceID: string, printQueue: PrintItem[]){
+        this.afs.doc('/Workspaces/' + workspaceID + '/WorkspaceUsers/' + this.auth.userInfo.value.id)
+            .update({printQueue: printQueue});
     }
 
 }

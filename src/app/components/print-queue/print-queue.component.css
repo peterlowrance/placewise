@@ -6,10 +6,12 @@
 }
 
 .item-list {
-  max-width: 100%;
+  max-width: calc(100% - 24px);
   width: 540px;
   margin: 0 auto;
+  padding: 12px;
   background-color: #DDD;
+  border-radius: 4px;
 }
 
 .item-list-header-container {
@@ -90,9 +92,26 @@
 
 .add-qr-range-container {
   background-color: white;
-  padding: 10px 10px 4px;
+  padding: 12px;
+  padding-bottom: 42px;
+  width: 300px;
+  max-width: calc(100% - 24px);
+  margin: 0 auto;
 }
 
 .bin-form {
   max-width: 84px;
+}
+
+.mat-tab-body-wrapper {
+  background-color: white;
+}
+
+.bin-add-button {
+  margin-top: -6px;
+  width: 292px;
+}
+
+.qr-range-label {
+  margin-bottom: 6px;
 }

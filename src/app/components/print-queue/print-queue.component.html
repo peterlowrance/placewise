@@ -1,8 +1,8 @@
-<mat-tab-group class="structure-color-light" mat-align-tabs="center">
-    <mat-tab label="Queued Items" class="tab-content">
-        <div cdkDropList (cdkDropListDropped)="drop($event)" class="item-list">
+<mat-tab-group class="action-color-light" mat-align-tabs="center">
+    <mat-tab label="Queued Items">
+        <div class="tab-content">
             <div class="add-qr-range-container">
-                <div>
+                <div class="qr-range-label">
                     Add range of bin QRs to queue:
                 </div>
                 <div class="add-qr-range-form">
@@ -41,99 +41,104 @@
                             maxlength="3"
                             (keyup)="updateQuickSearchBinExt($event)">
                     </mat-form-field>
+                    <br>
+                    <button mat-raised-button class="bin-add-button action-color" [disabled]="qrBins === 0" (click)="addBinQRs()"> Add {{qrBins}} Bin QRs </button>
                 </div>
             </div>
-            <div class="item-list-header-container">
-                <div>
-                    Item, Location, Category, or Bin to QR Print
-                </div>
-            </div>
-            <div *ngFor="let item of itemsInQueue; index as i" cdkDrag>
-                <div class="item-line" [style.margin-bottom]="calculateSpacing(i)">
-                    <mat-icon class="drag-icon" style="color: #BBB" cdkDragHandle>drag_indicator</mat-icon>
+            <div cdkDropList (cdkDropListDropped)="drop($event)" [class.mat-elevation-z4]="true" class="item-list">
+                <div class="item-list-header-container">
                     <div>
-                        {{item.displayName}}
+                        Item, Location, Category, or Bin to QR Print
                     </div>
-                    <div class="item-checkbox-container">
-                        <button mat-icon-button (click)="editDisplayName(i)"><mat-icon>edit</mat-icon></button>
-                        <button mat-icon-button (click)="removeItem(i)"><mat-icon>delete</mat-icon></button>
+                </div>
+                <div *ngFor="let item of itemsInQueue; index as i" cdkDrag>
+                    <div class="item-line" [class.mat-elevation-z2]="true" [style.margin-bottom]="calculateSpacing(i)">
+                        <mat-icon class="drag-icon" style="color: #BBB; cursor: pointer" cdkDragHandle>drag_indicator</mat-icon>
+                        <div>
+                            {{item.displayName}}
+                        </div>
+                        <div class="item-checkbox-container">
+                            <button mat-icon-button (click)="editDisplayName(i)"><mat-icon>edit</mat-icon></button>
+                            <button mat-icon-button (click)="removeItem(i)"><mat-icon>delete</mat-icon></button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </mat-tab>
-    <mat-tab label="Page Setup" class="tab-content">
-        <div class="page-setup">
+    <mat-tab label="Page Setup">
+        <div class="tab-content">
+            <div class="page-setup">
 
-            <div class="information-separator-large">
-                <div class="input-space"> Formatting: </div>
-                <mat-radio-group class="radio-button-group" [(ngModel)]="format" (ngModelChange)="calculateGrid()">
-                    <mat-radio-button value="vert-large" class="input-space"><i class="light-text">Necessary for scanning<br>QRs on the same page:</i><br>Vertical, large spacing.</mat-radio-button>
-                    <mat-radio-button value="vert-medium" class="input-space">Vertical, medium spacing.</mat-radio-button><br>
-                    <mat-radio-button value="vert-small" class="input-space"><i class="light-text">Best for cutting up QRs<br>alone or with Bin IDs:</i><br>Vertical, small spacing.</mat-radio-button><br>
-                    <mat-radio-button value="horiz-long" class="input-space">Horizontal, long spacing.</mat-radio-button><br>
-                    <mat-radio-button value="horiz-medium" class="input-space">Horizontal, medium spacing.</mat-radio-button><br>
-                    <mat-radio-button value="horiz-short"><i class="light-text">Least paper used with<br>QRs and Item names:</i><br>Horizontal, short spacing.</mat-radio-button><br>
-                </mat-radio-group>
-            </div>
+                <div class="information-separator-large">
+                    <div class="input-space"> Formatting: </div>
+                    <mat-radio-group class="radio-button-group" [(ngModel)]="format" (ngModelChange)="calculateGrid()">
+                        <mat-radio-button value="vert-large" class="input-space"><i class="light-text">Necessary for scanning<br>QRs on the same page:</i><br>Vertical, large spacing.</mat-radio-button>
+                        <mat-radio-button value="vert-medium" class="input-space">Vertical, medium spacing.</mat-radio-button><br>
+                        <mat-radio-button value="vert-small" class="input-space"><i class="light-text">Best for cutting up QRs<br>alone or with Bin IDs:</i><br>Vertical, small spacing.</mat-radio-button><br>
+                        <mat-radio-button value="horiz-long" class="input-space">Horizontal, long spacing.</mat-radio-button><br>
+                        <mat-radio-button value="horiz-medium" class="input-space">Horizontal, medium spacing.</mat-radio-button><br>
+                        <mat-radio-button value="horiz-short"><i class="light-text">Least paper used with<br>QRs and Item names:</i><br>Horizontal, short spacing.</mat-radio-button><br>
+                    </mat-radio-group>
+                </div>
 
-            <div class="information-separator-large">
-                <mat-form-field class="form-space" appearance="outline">
-                    <mat-label>Page Width (in)</mat-label>
-                    <input matInput [(ngModel)]="pageWidth" type="number" (ngModelChange)="calculateGrid()">
-                </mat-form-field>
-                <mat-form-field class="form-space" appearance="outline">
-                    <mat-label>Page Height (in)</mat-label>
-                    <input matInput [(ngModel)]="pageHeight" type="number" (ngModelChange)="calculateGrid()">
-                </mat-form-field>
-                <span>
-                    <button mat-icon-button class="action-color-light" (click)="swapDimensions()"><mat-icon>screen_rotation</mat-icon></button>
-                </span>
-                <br>
-                <br>
-                <mat-form-field class="form-space" appearance="outline">
-                    <mat-label>Margins (in)</mat-label>
-                    <input matInput [(ngModel)]="margins" type="number" (ngModelChange)="calculateGrid()">
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                    <mat-label>Size of QR Codes (in)</mat-label>
-                    <input matInput [(ngModel)]="qrSize" type="number" (ngModelChange)="calculateGrid()">
-                </mat-form-field>
-                <div>The result will be {{calculatedRows}} rows by {{calculatedColumns}} columns.</div>
-            </div>              
-            
-            <div class="information-separator-large">
-                <mat-form-field appearance="outline">
-                    <mat-label>Override Font Size</mat-label>
-                    <input matInput [(ngModel)]="overrideFontSize" type="number" (ngModelChange)="updateFontSize()">
-                    <mat-hint *ngIf="!overrideFontSize">Current font size is {{calculatedFontSize}}</mat-hint>
-                </mat-form-field>
-            </div>
+                <div class="information-separator-large">
+                    <mat-form-field class="form-space" appearance="outline">
+                        <mat-label>Page Width (in)</mat-label>
+                        <input matInput [(ngModel)]="pageWidth" type="number" (ngModelChange)="calculateGrid()">
+                    </mat-form-field>
+                    <mat-form-field class="form-space" appearance="outline">
+                        <mat-label>Page Height (in)</mat-label>
+                        <input matInput [(ngModel)]="pageHeight" type="number" (ngModelChange)="calculateGrid()">
+                    </mat-form-field>
+                    <span>
+                        <button mat-icon-button class="action-color-light" (click)="swapDimensions()"><mat-icon>screen_rotation</mat-icon></button>
+                    </span>
+                    <br>
+                    <br>
+                    <mat-form-field class="form-space" appearance="outline">
+                        <mat-label>Margins (in)</mat-label>
+                        <input matInput [(ngModel)]="margins" type="number" (ngModelChange)="calculateGrid()">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Size of QR Codes (in)</mat-label>
+                        <input matInput [(ngModel)]="qrSize" type="number" (ngModelChange)="calculateGrid()">
+                    </mat-form-field>
+                    <div>The result will be {{calculatedRows}} rows by {{calculatedColumns}} columns.</div>
+                </div>              
+                
+                <div class="information-separator-large">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Override Font Size</mat-label>
+                        <input matInput [(ngModel)]="overrideFontSize" type="number" (ngModelChange)="updateFontSize()">
+                        <mat-hint *ngIf="!overrideFontSize">Current font size is {{calculatedFontSize}}</mat-hint>
+                    </mat-form-field>
+                </div>
 
-            <div class="information-separator-large">
-                <div class="input-space"> What will be printed: </div>
-                <mat-radio-group class="radio-button-group" [(ngModel)]="textToPrint">
-                    <mat-radio-button value="QR-N" class="input-space">QR, Item name</mat-radio-button> <br>
-                    <mat-radio-button value="QR-B" class="input-space">QR, Bin ID</mat-radio-button> <br>
-                    <mat-radio-button value="QR-B-N" class="input-space">QR, Bin ID, Item name</mat-radio-button> <br>
-                    <mat-radio-button value="QR" class="input-space">Just QRs</mat-radio-button>
-                </mat-radio-group>
-            </div>
+                <div class="information-separator-large">
+                    <div class="input-space"> What will be printed: </div>
+                    <mat-radio-group class="radio-button-group" [(ngModel)]="textToPrint">
+                        <mat-radio-button value="QR-N" class="input-space">QR, Item name</mat-radio-button> <br>
+                        <mat-radio-button value="QR-B" class="input-space">QR, Bin ID</mat-radio-button> <br>
+                        <mat-radio-button value="QR-B-N" class="input-space">QR, Bin ID, Item name</mat-radio-button> <br>
+                        <mat-radio-button value="QR" class="input-space">Just QRs</mat-radio-button>
+                    </mat-radio-group>
+                </div>
 
-            <div class="information-separator-large">
-                <div class="input-space"> Link item QRs to: </div>
-                <mat-radio-group class="radio-button-group" [(ngModel)]="linkQRTo">
-                    <mat-radio-button value="I" class="input-space">Item itself</mat-radio-button>
-                    <mat-radio-button value="B" class="input-space">Bin number</mat-radio-button>
-                </mat-radio-group>
-            </div>
+                <div class="information-separator-large">
+                    <div class="input-space"> Link item QRs to: </div>
+                    <mat-radio-group class="radio-button-group" [(ngModel)]="linkQRTo">
+                        <mat-radio-button value="I" class="input-space">Item itself</mat-radio-button>
+                        <mat-radio-button value="B" class="input-space">Bin number</mat-radio-button>
+                    </mat-radio-group>
+                </div>
 
-            <button mat-raised-button class="big-button structure-color" (click)="printPDF()" [disabled]="!checkReady()"><mat-icon>print</mat-icon> Print </button>
-            <br><br><button mat-raised-button class="big-button structure-color" (click)="addTestItem(qrGenerator)"><mat-icon>computer</mat-icon> MOMMA BUTTON </button>
-            
-            <div class="QR-code-holder">
-                <div *ngFor="let item of itemsInQueue; index as i">
-                    <qrcode [attr.id]="'qrCode' + i" [qrdata]="item.ID" [width]="256" [errorCorrectionLevel]="'Q'"></qrcode>
+                <button mat-raised-button class="big-button action-color-dark" (click)="printPDF()" [disabled]="!checkReady()"><mat-icon>print</mat-icon> Print </button>
+                
+                <div class="QR-code-holder">
+                    <div *ngFor="let item of itemsInQueue; index as i">
+                        <qrcode [attr.id]="'qrCode' + i" [qrdata]="item.QRtext" [width]="256" [errorCorrectionLevel]="item.type === 'b' ? 'H' : 'Q'"></qrcode>
+                    </div>
                 </div>
             </div>
         </div>

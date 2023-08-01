@@ -8,6 +8,7 @@ import { PrintService } from 'src/app/services/print.service';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { QRCodeComponent, QRCodeElementType, QRCodeModule } from 'angularx-qrcode';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-print-queue',
@@ -36,8 +37,9 @@ export class PrintQueueComponent implements OnInit {
   format: string = 'vert-large';
   linkQRTo: string = 'I';
   workspaceID: string;
-  QRtextTEST = "1234";
   doubleBackspace = false;
+  queueSubscription: Subscription;
+  qrBins: number = 0;
 
   constructor(
     public dialog: MatDialog, 
@@ -53,11 +55,15 @@ export class PrintQueueComponent implements OnInit {
     this.loadQueue();
   }
 
+  ngOnDestroy() {
+    this.queueSubscription.unsubscribe();
+  }
+
 
   loadQueue(){
     this.authService.getUser().subscribe(user => {
-      if(user){
-        this.printService.loadItemsInQueue(this.workspaceID, user.id).then(items => {
+      if(user && user.id){
+        this.queueSubscription = this.printService.subscribeToItemsInQueue(this.workspaceID, user.id).subscribe(items => {
           this.itemsInQueue = items;
           this.setupTextForQRs();
         })
@@ -68,7 +74,9 @@ export class PrintQueueComponent implements OnInit {
 
   setupTextForQRs(){
     for(let printItem of this.itemsInQueue){
-      printItem.QRtext = '/' + printItem.type + '/' + printItem.ID;
+      if(!printItem.QRtext){
+        printItem.QRtext = '/' + printItem.type + '/' + printItem.ID;
+      }
     }
   }
 
@@ -134,10 +142,10 @@ export class PrintQueueComponent implements OnInit {
   calculateSpacing(index: number){
     let totalPerPage = this.calculatedColumns * this.calculatedRows;
     if(index % totalPerPage === (totalPerPage - 1)){
-      return '18px';
+      return '24px';
     }
     else if(index % this.calculatedColumns === (this.calculatedColumns - 1)){
-      return '6px';
+      return '8px';
     }
     else {
       return '2px';
@@ -159,17 +167,23 @@ export class PrintQueueComponent implements OnInit {
       if(result && result.wasValid){
         console.log(result.value);
         this.itemsInQueue[index].displayName = result.value;
+        this.printService.updateItemsInQueue(this.workspaceID, this.itemsInQueue);
       }
     });
   }
 
   removeItem(index: number){
+    this.printService.updateItemsInQueue(this.workspaceID, 
+      this.itemsInQueue.slice(0, index).concat(this.itemsInQueue.slice(index+1, this.itemsInQueue.length-1)));
+    /*
     this.itemsInQueue.splice(index, 1);
+    */
   }
   
 
   drop(event: CdkDragDrop<string[]>){
     moveItemInArray(this.itemsInQueue, event.previousIndex, event.currentIndex);
+    this.printService.updateItemsInQueue(this.workspaceID, this.itemsInQueue);
   }
 
 
@@ -179,11 +193,6 @@ export class PrintQueueComponent implements OnInit {
     this.pageHeight = widthHolder;
 
     this.calculateGrid();
-  }
-
-
-  test(){
-    console.log("holy frick I work");
   }
 
 
@@ -316,11 +325,13 @@ export class PrintQueueComponent implements OnInit {
   updateQuickSearchBin(event){
     this.checkAndMoveToNextBinInput(this.binInput, this.binInputExt);
     this.checkAndBackupInput(event, this.binInput, this.shelfInput);
+    this.calculateNumberOfQRs();
   }
 
   
   updateQuickSearchBinExt(event){
-    this.checkAndBackupInput(event, this.binInputExt, this.binInput);    
+    this.checkAndBackupInput(event, this.binInputExt, this.binInput);
+    this.calculateNumberOfQRs();
   }
 
 
@@ -363,6 +374,87 @@ export class PrintQueueComponent implements OnInit {
       this.binInput.nativeElement.value = this.binInput.nativeElement.value.substring(0, 3);
     }
   }
+
+
+  calculateNumberOfQRs(){
+    if(this.binInputExt.nativeElement.value && this.binInput.nativeElement.value){
+      let newBinAmount = this.binInputExt.nativeElement.value - this.binInput.nativeElement.value;
+      
+      if(newBinAmount > 0){
+        this.qrBins = newBinAmount;
+      }
+      else {
+        this.qrBins = 0;
+      }
+    }
+    else if(this.binInput.nativeElement.value){
+      this.qrBins = 1;
+    }
+    else {
+      this.qrBins = 0;
+    }
+  }
+
+
+  addBinQRs(){
+    if(this.qrBins > 0){
+      if(this.binInputExt.nativeElement.value && this.binInput.nativeElement.value){
+
+        let endingNum = Number.parseInt(this.binInputExt.nativeElement.value);
+        for(let binNumber = Number.parseInt(this.binInput.nativeElement.value); binNumber <= endingNum; binNumber++){
+          let binID = this.convertNumberToThreeDigitString(this.shelfInput.nativeElement.value) 
+            + '-' + this.convertNumberToThreeDigitString(binNumber);
+          this.itemsInQueue.push({
+            ID: binID,
+            displayName: "Bin " + binID,
+            type: 'b'
+          });
+        }
+
+        this.printService.updateItemsInQueue(this.workspaceID, this.itemsInQueue);
+        this.clearBinInfo();
+      }
+
+      else if(this.binInput.nativeElement.value){
+        let binID = this.convertNumberToThreeDigitString(this.shelfInput.nativeElement.value) 
+          + '-' + this.convertNumberToThreeDigitString(this.binInput.nativeElement.value);
+
+        this.itemsInQueue.push({
+          ID: binID,
+          displayName: "Bin " + binID,
+          type: 'b'
+        });
+
+        this.printService.updateItemsInQueue(this.workspaceID, this.itemsInQueue);
+        this.clearBinInfo();
+      }
+    }
+  }
+
+
+  clearBinInfo(){
+    this.shelfInput.nativeElement.value = null;
+    this.binInput.nativeElement.value = null;
+    this.binInputExt.nativeElement.value = null;
+    this.qrBins = 0;
+  }
+
+
+  convertNumberToThreeDigitString(num: number | string): string {
+    
+    let strigifiedNum = num.toString();
+
+    if(strigifiedNum.length === 1){
+      return '00' + strigifiedNum;
+    }
+    else if(strigifiedNum.length === 2){
+      return '0' + strigifiedNum;
+    }
+    else {
+      return num.toString();
+    }
+    
+  }
   
 
   getBase64QR(qrGenerator){
@@ -377,10 +469,6 @@ export class PrintQueueComponent implements OnInit {
     else {
       return qrGenerator.querySelector("canvas").toDataURL("image/png");
     }
-  }
-
-  addTestItem(){
-    this.itemsInQueue.push({displayName: "MOMMA", binID: "001-0XX", ID: 'o8WKvkebo46rfmNnNmQY', type: 'i'})
   }
 
 }
