@@ -1,5 +1,5 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import jsPDF from 'jspdf';
 import { PrintItem } from 'src/app/models/PrintItem';
@@ -15,6 +15,9 @@ import { QRCodeComponent, QRCodeElementType, QRCodeModule } from 'angularx-qrcod
   styleUrls: ['./print-queue.component.css'],
 })
 export class PrintQueueComponent implements OnInit {
+  @ViewChild("binInputExt") binInputExt: ElementRef;
+  @ViewChild("binInput") binInput: ElementRef;
+  @ViewChild("shelfInput") shelfInput: ElementRef;
 
   itemsInQueue: PrintItem[] = [];
   displayedColumns: string[] = ['itemName', 'printName', 'printBin'];
@@ -34,6 +37,7 @@ export class PrintQueueComponent implements OnInit {
   linkQRTo: string = 'I';
   workspaceID: string;
   QRtextTEST = "1234";
+  doubleBackspace = false;
 
   constructor(
     public dialog: MatDialog, 
@@ -301,6 +305,63 @@ export class PrintQueueComponent implements OnInit {
     }
     
     window.open(doc.output("bloburl"), "_blank");
+  }
+
+
+  updateQuickSearchShelf(event){
+    this.checkAndMoveToNextBinInput(this.shelfInput, this.binInput);
+  }
+
+
+  updateQuickSearchBin(event){
+    this.checkAndMoveToNextBinInput(this.binInput, this.binInputExt);
+    this.checkAndBackupInput(event, this.binInput, this.shelfInput);
+  }
+
+  
+  updateQuickSearchBinExt(event){
+    this.checkAndBackupInput(event, this.binInputExt, this.binInput);    
+  }
+
+
+  checkAndMoveToNextBinInput(input: ElementRef<any>, nextInput: ElementRef<any>){
+    if(input.nativeElement.value.length > 3){
+      let start = (input.nativeElement.value as string).substring(0, 3);
+      let chopped = (input.nativeElement.value as string).substring(3);
+      input.nativeElement.value = start;
+
+      if(chopped.length > 3){
+        nextInput.nativeElement.value = chopped.substring(0, 3);
+      }
+      else {
+        nextInput.nativeElement.value = chopped;
+      }
+
+      nextInput.nativeElement.focus();
+    }
+  }
+
+
+  checkAndBackupInput(event, input: ElementRef<any>, prevInput: ElementRef<any>){
+    // Wait until the user hits backspace twice before returning to the shelf number
+    if(input.nativeElement.value.length < 1 && event.key === 'Backspace'){
+      if(this.doubleBackspace){
+        prevInput.nativeElement.focus();
+        this.doubleBackspace = false;
+      }
+      else {
+        this.doubleBackspace = true;
+      }
+    }
+    // If they had not hit backspace or have no characters in the input, reset the backspace counter
+    else {
+      this.doubleBackspace = false;
+    }
+
+    // If there was too much text entered, chop off the extra text
+    if(this.binInput.nativeElement.value.length > 3){
+      this.binInput.nativeElement.value = this.binInput.nativeElement.value.substring(0, 3);
+    }
   }
   
 
