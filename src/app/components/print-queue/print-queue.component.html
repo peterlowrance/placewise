@@ -44,11 +44,16 @@
                     <br>
                     <button mat-raised-button class="bin-add-button action-color" [disabled]="qrBins === 0" (click)="addBinQRs()"> Add {{qrBins}} Bin QRs </button>
                 </div>
+                <br>
+                <button mat-raised-button class="bin-add-button" color="warn" [disabled]="itemsInQueue.length === 0" (click)="clearAllItems()"> Clear all Queued Items </button>
             </div>
             <div cdkDropList (cdkDropListDropped)="drop($event)" [class.mat-elevation-z4]="true" class="item-list">
                 <div class="item-list-header-container">
                     <div>
                         Item, Location, Category, or Bin to QR Print
+                    </div>
+                    <div *ngIf="!itemsInQueue || itemsInQueue.length === 0">
+                        <br><br> (There are no items in the queue.)
                     </div>
                 </div>
                 <div *ngFor="let item of itemsInQueue; index as i" cdkDrag>
@@ -73,7 +78,7 @@
                 <div class="information-separator-large">
                     <div class="input-space"> Formatting: </div>
                     <mat-radio-group class="radio-button-group" [(ngModel)]="format" (ngModelChange)="calculateGrid()">
-                        <mat-radio-button value="vert-large" class="input-space"><i class="light-text">Necessary for scanning<br>QRs on the same page:</i><br>Vertical, large spacing.</mat-radio-button>
+                        <mat-radio-button value="vert-large" class="input-space"><i class="light-text">Necessary for scanning<br>QRs on the same page:</i><br>Vertical, large spacing.</mat-radio-button><br>
                         <mat-radio-button value="vert-medium" class="input-space">Vertical, medium spacing.</mat-radio-button><br>
                         <mat-radio-button value="vert-small" class="input-space"><i class="light-text">Best for cutting up QRs<br>alone or with Bin IDs:</i><br>Vertical, small spacing.</mat-radio-button><br>
                         <mat-radio-button value="horiz-long" class="input-space">Horizontal, long spacing.</mat-radio-button><br>

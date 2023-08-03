@@ -223,7 +223,7 @@ export class PrintQueueComponent implements OnInit {
 
         if(this.textToPrint.includes('-N')){
           doc.setFont("Helvetica", "");
-          doc.text(item.displayName,
+          doc.text(item.type === 'b' ? item.ID : item.displayName,
             this.margins + calcInitialQRSpaceX + (0.5*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
             this.margins + extraTextLine + calcInitialQRSpaceY + this.qrFullImageSize + (this.calculatedFontSize*0.015) + (yIndex * this.ySpacing * this.qrFullImageSize), 
             {
@@ -277,7 +277,7 @@ export class PrintQueueComponent implements OnInit {
 
         if(this.textToPrint.includes('-N')){
           doc.setFont("Helvetica", "");
-          doc.text(item.displayName,
+          doc.text(item.type === 'b' ? item.ID : item.displayName,
             this.margins + (1.1*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
             this.margins + extraTextLine + (this.qrFullImageSize*0.5) - (this.calculatedFontSize * 0.018) + (yIndex * this.ySpacing * this.qrFullImageSize), 
             {
@@ -378,7 +378,7 @@ export class PrintQueueComponent implements OnInit {
 
   calculateNumberOfQRs(){
     if(this.binInputExt.nativeElement.value && this.binInput.nativeElement.value){
-      let newBinAmount = this.binInputExt.nativeElement.value - this.binInput.nativeElement.value;
+      let newBinAmount = this.binInputExt.nativeElement.value - this.binInput.nativeElement.value + 1;
       
       if(newBinAmount > 0){
         this.qrBins = newBinAmount;
@@ -398,20 +398,24 @@ export class PrintQueueComponent implements OnInit {
 
   addBinQRs(){
     if(this.qrBins > 0){
+
       if(this.binInputExt.nativeElement.value && this.binInput.nativeElement.value){
 
+        let newItemsInQueue: PrintItem[] = [];
         let endingNum = Number.parseInt(this.binInputExt.nativeElement.value);
+
         for(let binNumber = Number.parseInt(this.binInput.nativeElement.value); binNumber <= endingNum; binNumber++){
           let binID = this.convertNumberToThreeDigitString(this.shelfInput.nativeElement.value) 
             + '-' + this.convertNumberToThreeDigitString(binNumber);
-          this.itemsInQueue.push({
+
+          newItemsInQueue.push({
             ID: binID,
             displayName: "Bin " + binID,
             type: 'b'
           });
         }
 
-        this.printService.updateItemsInQueue(this.workspaceID, this.itemsInQueue);
+        this.printService.updateItemsInQueue(this.workspaceID, this.itemsInQueue.concat(newItemsInQueue));
         this.clearBinInfo();
       }
 
@@ -419,13 +423,11 @@ export class PrintQueueComponent implements OnInit {
         let binID = this.convertNumberToThreeDigitString(this.shelfInput.nativeElement.value) 
           + '-' + this.convertNumberToThreeDigitString(this.binInput.nativeElement.value);
 
-        this.itemsInQueue.push({
+        this.printService.updateItemsInQueue(this.workspaceID, this.itemsInQueue.concat([{
           ID: binID,
           displayName: "Bin " + binID,
           type: 'b'
-        });
-
-        this.printService.updateItemsInQueue(this.workspaceID, this.itemsInQueue);
+        }]));
         this.clearBinInfo();
       }
     }
@@ -437,6 +439,13 @@ export class PrintQueueComponent implements OnInit {
     this.binInput.nativeElement.value = null;
     this.binInputExt.nativeElement.value = null;
     this.qrBins = 0;
+  }
+
+
+  clearAllItems(){
+    if(confirm("Are you sure you want to reset the print queue?")){
+      this.printService.updateItemsInQueue(this.workspaceID, []);
+    }
   }
 
 

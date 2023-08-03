@@ -3,6 +3,7 @@
 .tab-content {
   width: 100%;
   background-color: white !important;
+  padding-bottom: 12px;
 }
 
 .item-list {
@@ -15,9 +16,6 @@
 }
 
 .item-list-header-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   font-size: 16px;
   padding: 10px 10px 4px;
 }
