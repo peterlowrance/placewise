@@ -20,6 +20,7 @@ import { Item } from 'src/app/models/Item';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { QRScannerDialogComponent } from '../qrscanner-dialog/qrscanner-dialog.component';
 import { I } from '@angular/cdk/keycodes';
+import { PrintService } from 'src/app/services/print.service';
 
 
 @Component({
@@ -50,6 +51,7 @@ export class NavbarComponent implements OnInit {
 
   hasReadReportsColor = 'accent';
   numberOfReports = 0;
+  numberInQueue = 0;
 
   workspaceID: string;
 
@@ -69,11 +71,13 @@ export class NavbarComponent implements OnInit {
     private searchService: SearchService, 
     private adminService: AdminService,
     private snack: MatSnackBar,
-    private reportService: ReportService) {
+    private reportService: ReportService,
+    private printService: PrintService) {
     // For good measure, don't pile on identical subscriptions. These are used to stop previous ones.
     let reportsSub: Subscription;
     //let authSub: Subscription;
     let reportLocationsSub: Subscription;
+    let printQueueSub: Subscription;
 
     router.events.subscribe(val => {
       this.navService.setDirty(false); //Clear dirtyness anytime we leave a page
@@ -89,8 +93,14 @@ export class NavbarComponent implements OnInit {
             this.workspaceID = workspaceID;
             this.reportService.getReportTemplates(this.workspaceID);
 
-            if(reportLocationsSub) reportLocationsSub.unsubscribe();
+            this.authService.getUser().subscribe(user => {
+
+              // This could be stupid logic, quickly added for print queue
+              if(user && user.id){
+                if(reportLocationsSub) reportLocationsSub.unsubscribe();
                 if(reportsSub) reportsSub.unsubscribe();
+                if(printQueueSub) printQueueSub.unsubscribe();
+
                 reportsSub = this.reportService.getReports(this.workspaceID).subscribe(reports => {
                   if(reports){
                     this.numberOfReports = 0;
@@ -98,16 +108,22 @@ export class NavbarComponent implements OnInit {
                     if(this.locationString !== '/reports'){
                       this.hasReadReportsColor = 'warn';
                     }
-
-                    this.authService.getUser().subscribe(user => {
+                    
                       for(let report of reports){
                         if(report.reportedTo && report.reportedTo.indexOf(user.id) > -1){
                           this.numberOfReports++;
                         }
                       }
-                    });
                   }
-              });
+                });
+
+                printQueueSub = this.printService.getItemsInQueue(this.workspaceID, user.id).subscribe(queue => {
+                  if(queue){
+                    this.numberInQueue = queue.length;
+                  }
+                })
+              }
+            });
           }
         }
 

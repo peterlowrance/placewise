@@ -506,6 +506,7 @@ export class SearchService implements SearchInterfaceService {
   binSub: Subscription;
   lastWorkspaceIDForBins: string = '';
 
+  // Checks if the bins are loaded. If not, it will load them and return true. If they are, it will return true. It will only return false if it can't be loaded.
   loadBinData(workspaceID: string): Promise<boolean> {
     return new Promise<boolean>(resolve => {
       if(workspaceID !== this.lastWorkspaceIDForBins){
@@ -517,6 +518,7 @@ export class SearchService implements SearchInterfaceService {
           let data = doc.payload.data();
           if(data){
             this.BinData = data;
+            this.lastWorkspaceIDForBins = workspaceID;
             console.log(Object.keys(data.bins).length);
             console.log(JSON.stringify(data.bins).length);
             resolve(true);
@@ -525,6 +527,10 @@ export class SearchService implements SearchInterfaceService {
             resolve(false);
           }
         })
+      }
+      else {
+        console.log("Bins already loaded.");
+        resolve(true);
       }
     })
   }

@@ -41,6 +41,10 @@
   align-items: center;
 }
 
+.item-text {
+  width: 400px;
+}
+
 .item-checkbox {
   margin: 0 12px;
 }
@@ -112,4 +116,8 @@
 
 .qr-range-label {
   margin-bottom: 6px;
+}
+
+.loading-bar {
+  width: 292px;
 }

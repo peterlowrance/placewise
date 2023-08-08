@@ -42,7 +42,8 @@
                             (keyup)="updateQuickSearchBinExt($event)">
                     </mat-form-field>
                     <br>
-                    <button mat-raised-button class="bin-add-button action-color" [disabled]="qrBins === 0" (click)="addBinQRs()"> Add {{qrBins}} Bin QRs </button>
+                    <button mat-raised-button class="bin-add-button action-color" [disabled]="qrBins === 0 || loadingItems" (click)="addBinQRs()"> Add {{qrBins}} Bin QRs </button>
+                    <mat-progress-bar *ngIf="loadingItems" class="loading-bar" mode="determinate" [value]="loadingProgress"></mat-progress-bar>
                 </div>
                 <br>
                 <button mat-raised-button class="bin-add-button" color="warn" [disabled]="itemsInQueue.length === 0" (click)="clearAllItems()"> Clear all Queued Items </button>
@@ -58,9 +59,10 @@
                 </div>
                 <div *ngFor="let item of itemsInQueue; index as i" cdkDrag>
                     <div class="item-line" [class.mat-elevation-z2]="true" [style.margin-bottom]="calculateSpacing(i)">
-                        <mat-icon class="drag-icon" style="color: #BBB; cursor: pointer" cdkDragHandle>drag_indicator</mat-icon>
-                        <div>
-                            {{item.displayName}}
+                        <mat-icon class="drag-icon" style="color: #BBB; cursor: grab" cdkDragHandle>drag_indicator</mat-icon>
+                        <div class="item-text">
+                            <span class="light-text">{{item.binID ?? (item.type === 'b' ? "(No Item)" : "(No Bin)")}}</span>
+                            <br>{{item.displayName}}
                         </div>
                         <div class="item-checkbox-container">
                             <button mat-icon-button (click)="editDisplayName(i)"><mat-icon>edit</mat-icon></button>
@@ -121,6 +123,14 @@
                 </div>
 
                 <div class="information-separator-large">
+                    <div class="input-space"> Link item QRs to: </div>
+                    <mat-radio-group class="radio-button-group" value="I">
+                        <mat-radio-button value="I" class="input-space" (click)="setupTextForQRs(false)">Item itself</mat-radio-button>
+                        <mat-radio-button value="B" class="input-space" (click)="setupTextForQRs(true)">Bin number</mat-radio-button>
+                    </mat-radio-group>
+                </div>
+
+                <div class="information-separator-large">
                     <div class="input-space"> What will be printed: </div>
                     <mat-radio-group class="radio-button-group" [(ngModel)]="textToPrint">
                         <mat-radio-button value="QR-N" class="input-space">QR, Item name</mat-radio-button> <br>
@@ -130,19 +140,11 @@
                     </mat-radio-group>
                 </div>
 
-                <div class="information-separator-large">
-                    <div class="input-space"> Link item QRs to: </div>
-                    <mat-radio-group class="radio-button-group" [(ngModel)]="linkQRTo">
-                        <mat-radio-button value="I" class="input-space">Item itself</mat-radio-button>
-                        <mat-radio-button value="B" class="input-space">Bin number</mat-radio-button>
-                    </mat-radio-group>
-                </div>
-
                 <button mat-raised-button class="big-button action-color-dark" (click)="printPDF()" [disabled]="!checkReady()"><mat-icon>print</mat-icon> Print </button>
                 
                 <div class="QR-code-holder">
                     <div *ngFor="let item of itemsInQueue; index as i">
-                        <qrcode [attr.id]="'qrCode' + i" [qrdata]="item.QRtext" [width]="256" [errorCorrectionLevel]="item.type === 'b' ? 'H' : 'Q'"></qrcode>
+                        <qrcode [attr.id]="'qrCode' + i" [qrdata]="item.QRtext" [width]="256" [errorCorrectionLevel]="item.QRtext.charAt(1) === 'b' ? 'H' : 'Q'"></qrcode>
                     </div>
                 </div>
             </div>

@@ -8,7 +8,6 @@ import { DetailedReportModalData } from 'src/app/models/DetailedReportModalData'
 import { MatDialog } from '@angular/material/dialog';
 import { ReportDetailViewComponent } from '../report-detail-view/report-detail-view.component';
 import { AuthService } from 'src/app/services/auth.service';
-import { ConfirmComponent } from '../confirm/confirm.component';
 import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 import { Subscription } from 'rxjs';
 import { WorkspaceUser } from 'src/app/models/WorkspaceUser';

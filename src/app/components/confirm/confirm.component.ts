@@ -16,7 +16,7 @@ export class ConfirmComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: ConfirmData
   ) { }
 
-  onSendClick(){
+  onConfirmClick(){
     //set invalid report
     this.data.confirm=true;
     this.dialogRef.close(this.data);

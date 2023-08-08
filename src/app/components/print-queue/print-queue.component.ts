@@ -9,6 +9,9 @@ import { ActivatedRoute } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { QRCodeComponent, QRCodeElementType, QRCodeModule } from 'angularx-qrcode';
 import { Subscription } from 'rxjs';
+import { first } from 'rxjs/operators'
+import { SearchService } from 'src/app/services/search.service';
+import { ConfirmComponent } from '../confirm/confirm.component';
 
 @Component({
   selector: 'app-print-queue',
@@ -35,15 +38,18 @@ export class PrintQueueComponent implements OnInit {
   calculatedRows: number;
   textToPrint: string = "QR-N";
   format: string = 'vert-large';
-  linkQRTo: string = 'I';
+  linkQRTo: string;
   workspaceID: string;
   doubleBackspace = false;
   queueSubscription: Subscription;
   qrBins: number = 0;
+  loadingItems: boolean = false;
+  loadingProgress: number = 0;
 
   constructor(
     public dialog: MatDialog, 
     private printService: PrintService, 
+    private searchService: SearchService,
     private authService: AuthService,
     private route: ActivatedRoute) { }
 
@@ -53,6 +59,8 @@ export class PrintQueueComponent implements OnInit {
     this.calculateGrid();
     this.updateFontSize();
     this.loadQueue();
+
+    this.searchService.loadBinData(this.workspaceID);
   }
 
   ngOnDestroy() {
@@ -63,18 +71,29 @@ export class PrintQueueComponent implements OnInit {
   loadQueue(){
     this.authService.getUser().subscribe(user => {
       if(user && user.id){
-        this.queueSubscription = this.printService.subscribeToItemsInQueue(this.workspaceID, user.id).subscribe(items => {
+        this.queueSubscription = this.printService.getItemsInQueue(this.workspaceID, user.id).subscribe(items => {
           this.itemsInQueue = items;
-          this.setupTextForQRs();
+          this.setupTextForQRs(false);
         })
       }
     })
   }
 
 
-  setupTextForQRs(){
+  setupTextForQRs(useBins: boolean){
     for(let printItem of this.itemsInQueue){
-      if(!printItem.QRtext){
+      if(useBins){
+        this.linkQRTo = 'bin';
+
+        if(printItem.binID){
+          printItem.QRtext = '/b/' + printItem.binID;
+        }
+        else {
+          printItem.QRtext = '/' + printItem.type + '/' + printItem.ID;
+        }
+      }
+      else {
+        this.linkQRTo = 'item';
         printItem.QRtext = '/' + printItem.type + '/' + printItem.ID;
       }
     }
@@ -221,9 +240,9 @@ export class PrintQueueComponent implements OnInit {
           extraTextLine = this.calculatedFontSize * 0.02;
         }
 
-        if(this.textToPrint.includes('-N')){
+        if(this.textToPrint.includes('-N') && item.type !== 'b'){
           doc.setFont("Helvetica", "");
-          doc.text(item.type === 'b' ? item.ID : item.displayName,
+          doc.text(item.displayName,
             this.margins + calcInitialQRSpaceX + (0.5*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
             this.margins + extraTextLine + calcInitialQRSpaceY + this.qrFullImageSize + (this.calculatedFontSize*0.015) + (yIndex * this.ySpacing * this.qrFullImageSize), 
             {
@@ -232,9 +251,10 @@ export class PrintQueueComponent implements OnInit {
             })
         }
 
-        if(this.textToPrint.includes('-B')){
+        // Print bin of selected or we're printing a bin number without an item
+        if(this.textToPrint.includes('-B') || (item.type === 'b' && this.textToPrint.includes('-N'))){
           doc.setFont("Courier", "Bold");
-          doc.text(item.binID,
+          doc.text(item.binID ?? item.ID,
             this.margins + calcInitialQRSpaceX + (0.5*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
             this.margins + calcInitialQRSpaceY + (this.qrFullImageSize*0.94) + (this.calculatedFontSize*0.015) + (yIndex * this.ySpacing * this.qrFullImageSize),
             {
@@ -275,9 +295,9 @@ export class PrintQueueComponent implements OnInit {
           extraTextLine = this.calculatedFontSize * 0.013;
         }
 
-        if(this.textToPrint.includes('-N')){
+        if(this.textToPrint.includes('-N') && item.type !== 'b'){
           doc.setFont("Helvetica", "");
-          doc.text(item.type === 'b' ? item.ID : item.displayName,
+          doc.text(item.displayName,
             this.margins + (1.1*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
             this.margins + extraTextLine + (this.qrFullImageSize*0.5) - (this.calculatedFontSize * 0.018) + (yIndex * this.ySpacing * this.qrFullImageSize), 
             {
@@ -286,7 +306,7 @@ export class PrintQueueComponent implements OnInit {
             })
         }
 
-        if(this.textToPrint.includes('-B')){
+        if(this.textToPrint.includes('-B') || (item.type === 'b' && this.textToPrint.includes('-N'))){
           doc.setFont("Courier", "Bold");
           doc.text(item.binID,
             this.margins + (1.1*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
@@ -312,8 +332,19 @@ export class PrintQueueComponent implements OnInit {
         }
       }
     }
-    
+
     window.open(doc.output("bloburl"), "_blank");
+    this.dialog.open(ConfirmComponent, {
+      width: '400px',
+      data: {
+        desc: "Would you like to clear the queue now that you have printed the items?",
+        confirmText: "Clear",
+        textColor: 'warn'
+    }}).afterClosed().subscribe(result => {
+      if(result && result.confirm){
+        this.clearAllItems(true);
+      }
+    });
   }
 
 
@@ -396,39 +427,51 @@ export class PrintQueueComponent implements OnInit {
   }
 
 
-  addBinQRs(){
+  async addBinQRs(){
     if(this.qrBins > 0){
 
-      if(this.binInputExt.nativeElement.value && this.binInput.nativeElement.value){
+      if(this.binInput.nativeElement.value){
 
         let newItemsInQueue: PrintItem[] = [];
-        let endingNum = Number.parseInt(this.binInputExt.nativeElement.value);
+        let binNumber = Number.parseInt(this.binInput.nativeElement.value)
+        let endingNum = this.binInputExt.nativeElement.value ? Number.parseInt(this.binInputExt.nativeElement.value) : binNumber;
+        this.loadingItems = true;
+        let progressInterval = 100/this.qrBins;
 
-        for(let binNumber = Number.parseInt(this.binInput.nativeElement.value); binNumber <= endingNum; binNumber++){
+        for(; binNumber <= endingNum; binNumber++){
           let binID = this.convertNumberToThreeDigitString(this.shelfInput.nativeElement.value) 
             + '-' + this.convertNumberToThreeDigitString(binNumber);
 
+          let itemID = this.searchService.getItemIDFromBinID(binID);
+          this.loadingProgress += progressInterval;
+
+          if(itemID && itemID !== 'err' && itemID !== 'no ID'){
+            let loadedItem = await this.searchService.getItem(this.workspaceID, itemID).pipe(first(result => result !== undefined)).toPromise();
+
+            if(loadedItem){
+              newItemsInQueue.push({
+                ID: itemID,
+                displayName: loadedItem.name,
+                binID: binID,
+                type: 'i'
+              });
+
+              continue;
+            }
+          }
+          
           newItemsInQueue.push({
             ID: binID,
             displayName: "Bin " + binID,
             type: 'b'
           });
+          
         }
 
         this.printService.updateItemsInQueue(this.workspaceID, this.itemsInQueue.concat(newItemsInQueue));
         this.clearBinInfo();
-      }
-
-      else if(this.binInput.nativeElement.value){
-        let binID = this.convertNumberToThreeDigitString(this.shelfInput.nativeElement.value) 
-          + '-' + this.convertNumberToThreeDigitString(this.binInput.nativeElement.value);
-
-        this.printService.updateItemsInQueue(this.workspaceID, this.itemsInQueue.concat([{
-          ID: binID,
-          displayName: "Bin " + binID,
-          type: 'b'
-        }]));
-        this.clearBinInfo();
+        this.loadingItems = false;
+        this.loadingProgress = 0;
       }
     }
   }
@@ -442,8 +485,13 @@ export class PrintQueueComponent implements OnInit {
   }
 
 
-  clearAllItems(){
-    if(confirm("Are you sure you want to reset the print queue?")){
+  clearAllItems(bypassConfirm?: boolean){
+    if(!bypassConfirm){
+      if(confirm("Are you sure you want to reset the print queue?")){
+        this.printService.updateItemsInQueue(this.workspaceID, []);
+      }
+    }
+    else {
       this.printService.updateItemsInQueue(this.workspaceID, []);
     }
   }

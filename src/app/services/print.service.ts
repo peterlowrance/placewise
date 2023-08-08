@@ -23,7 +23,7 @@ export class PrintService {
     }
 
 
-    subscribeToItemsInQueue(workspaceID: string, userID: string): Observable<PrintItem[]> {
+    getItemsInQueue(workspaceID: string, userID: string): Observable<PrintItem[]> {
         return this.afs.doc('/Workspaces/' + workspaceID + '/WorkspaceUsers/' + userID).snapshotChanges().pipe(map(a => {
             const data = a.payload.data() as {printQueue: PrintItem[]};
             if(data){
