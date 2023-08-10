@@ -7,7 +7,6 @@ import { SimpleFieldDialogComponent } from '../simple-field-dialog/simple-field-
 import { PrintService } from 'src/app/services/print.service';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
-import { QRCodeComponent, QRCodeElementType, QRCodeModule } from 'angularx-qrcode';
 import { Subscription } from 'rxjs';
 import { first } from 'rxjs/operators'
 import { SearchService } from 'src/app/services/search.service';
@@ -60,6 +59,7 @@ export class PrintQueueComponent implements OnInit {
     this.updateFontSize();
     this.loadQueue();
 
+    // Make sure the bin document is loaded for loading items right away if adding to the queue via bin ID is used
     this.searchService.loadBinData(this.workspaceID);
   }
 
@@ -68,6 +68,7 @@ export class PrintQueueComponent implements OnInit {
   }
 
 
+  // This sets up a subscription to the queue if it doesn't already exist.
   loadQueue(){
     this.authService.getUser().subscribe(user => {
       if(user && user.id){
@@ -80,6 +81,8 @@ export class PrintQueueComponent implements OnInit {
   }
 
 
+  // This sets up what is encoded into the QR code
+  // If printing bin numbers is selected, it will prefer to use the bin ID over normal ID
   setupTextForQRs(useBins: boolean){
     for(let printItem of this.itemsInQueue){
       if(useBins){
@@ -100,6 +103,7 @@ export class PrintQueueComponent implements OnInit {
   }
 
 
+  // Determines how many qr codes can fit with the current configuration
   calculateGrid(){
     this.qrFullImageSize = this.qrSize * 1.2;
 
@@ -148,6 +152,7 @@ export class PrintQueueComponent implements OnInit {
   }
 
 
+  // Updates font size based on qr Sizes, or if there's an override
   updateFontSize(){
     if(this.overrideFontSize){
       this.calculatedFontSize = this.overrideFontSize;
@@ -157,7 +162,7 @@ export class PrintQueueComponent implements OnInit {
     }
   }
 
-
+  // Gets the spacing between elements in the queue to show row and page separations
   calculateSpacing(index: number){
     let totalPerPage = this.calculatedColumns * this.calculatedRows;
     if(index % totalPerPage === (totalPerPage - 1)){
@@ -171,6 +176,7 @@ export class PrintQueueComponent implements OnInit {
     }
   }
 
+  // Makes sure we have all necessary info before being able to print
   checkReady(){
     if(this.qrSize && this.calculatedFontSize){
       return true;
@@ -178,6 +184,7 @@ export class PrintQueueComponent implements OnInit {
     return false;
   }
 
+  // Open dialog to edit the label of a print queue item
   editDisplayName(index: number){
     this.dialog.open(SimpleFieldDialogComponent, {
       width: '300px',
@@ -191,21 +198,22 @@ export class PrintQueueComponent implements OnInit {
     });
   }
 
+
+  // Removes an item in queue by first removing it from Firebase. Then the updated array will come back through the queue subscription
   removeItem(index: number){
     this.printService.updateItemsInQueue(this.workspaceID, 
       this.itemsInQueue.slice(0, index).concat(this.itemsInQueue.slice(index+1, this.itemsInQueue.length-1)));
-    /*
-    this.itemsInQueue.splice(index, 1);
-    */
   }
   
 
+  // When using the drag and drop, switch the items then update Firebase
   drop(event: CdkDragDrop<string[]>){
     moveItemInArray(this.itemsInQueue, event.previousIndex, event.currentIndex);
     this.printService.updateItemsInQueue(this.workspaceID, this.itemsInQueue);
   }
 
 
+  // After swapping the length and width of the paper, recalculate how many QRs can fit
   swapDimensions(){
     let widthHolder = this.pageWidth;
     this.pageWidth = this.pageHeight;
@@ -217,24 +225,32 @@ export class PrintQueueComponent implements OnInit {
 
   printPDF(){
 
+    // Initial page setup
     let doc = new jsPDF({orientation: this.pageWidth > this.pageHeight ? 'l' : 'p', unit: 'in', format: [this.pageWidth, this.pageHeight]});
     doc.setFontSize(this.calculatedFontSize);
     let totalQRsPerPage = this.calculatedColumns * this.calculatedRows;
     
+    // Render based on a vertical configuration
     if(this.format.startsWith('vert')){
+      // Determine the offset from the edge of the page to make the items look centered
       let calcInitialQRSpaceX = (this.pageWidth - (2*this.margins) - ((this.calculatedColumns-1) * this.xSpacing * this.qrFullImageSize) - this.qrFullImageSize)/2;
       let calcInitialQRSpaceY = (this.pageHeight - (2*this.margins) - (this.calculatedRows * this.ySpacing * this.qrFullImageSize))/2;
+      // If the height is longer than the space available, make it always start at the margin
       if(calcInitialQRSpaceY < 0) { calcInitialQRSpaceY = 0 }
 
       let itemIndex = 0;
       let xIndex = 0;
       let yIndex = 0;
+
+      // Render each QR with thier given labels
       for(let item of this.itemsInQueue){
+        // Render the QR from pre-rendered hidden QR codes generated on the DOM using angularx-qrcode elements
         doc.addImage(this.getBase64QR(document.getElementById('qrCode' + itemIndex)), 'PNG', 
           this.margins + calcInitialQRSpaceX + (xIndex * this.xSpacing * this.qrFullImageSize),
           this.margins + calcInitialQRSpaceY + (yIndex * this.ySpacing * this.qrFullImageSize),  
           this.qrFullImageSize, this.qrFullImageSize);
 
+        // If there's both bin number and label to be printed, setup the label being printed on a different line
         let extraTextLine = 0;
         if(this.textToPrint.includes('-B-N')){
           extraTextLine = this.calculatedFontSize * 0.02;
