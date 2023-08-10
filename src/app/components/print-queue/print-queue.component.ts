@@ -333,7 +333,7 @@ export class PrintQueueComponent implements OnInit {
       }
     }
 
-    window.open(doc.output("bloburl"), "_blank");
+    window.open(doc.output("bloburl").toString(), "_blank");
     this.dialog.open(ConfirmComponent, {
       width: '400px',
       data: {
