@@ -229,127 +229,87 @@ export class PrintQueueComponent implements OnInit {
     let doc = new jsPDF({orientation: this.pageWidth > this.pageHeight ? 'l' : 'p', unit: 'in', format: [this.pageWidth, this.pageHeight]});
     doc.setFontSize(this.calculatedFontSize);
     let totalQRsPerPage = this.calculatedColumns * this.calculatedRows;
-    
-    // Render based on a vertical configuration
-    if(this.format.startsWith('vert')){
-      // Determine the offset from the edge of the page to make the items look centered
-      let calcInitialQRSpaceX = (this.pageWidth - (2*this.margins) - ((this.calculatedColumns-1) * this.xSpacing * this.qrFullImageSize) - this.qrFullImageSize)/2;
-      let calcInitialQRSpaceY = (this.pageHeight - (2*this.margins) - (this.calculatedRows * this.ySpacing * this.qrFullImageSize))/2;
+    let isVertical = this.format.startsWith('vert');
+
+    // Determine the offset from the edge of the page to make the items look centered on vertical setup
+    let calcInitialQRSpaceX = 0;
+    let calcInitialQRSpaceY = 0;
+    if(isVertical){
+      calcInitialQRSpaceX = (this.pageWidth - (2*this.margins) - ((this.calculatedColumns-1) * this.xSpacing * this.qrFullImageSize) - this.qrFullImageSize)/2;
+      calcInitialQRSpaceY = (this.pageHeight - (2*this.margins) - (this.calculatedRows * this.ySpacing * this.qrFullImageSize))/2;
       // If the height is longer than the space available, make it always start at the margin
       if(calcInitialQRSpaceY < 0) { calcInitialQRSpaceY = 0 }
-
-      let itemIndex = 0;
-      let xIndex = 0;
-      let yIndex = 0;
-
-      // Render each QR with thier given labels
-      for(let item of this.itemsInQueue){
-        // Render the QR from pre-rendered hidden QR codes generated on the DOM using angularx-qrcode elements
-        doc.addImage(this.getBase64QR(document.getElementById('qrCode' + itemIndex)), 'PNG', 
-          this.margins + calcInitialQRSpaceX + (xIndex * this.xSpacing * this.qrFullImageSize),
-          this.margins + calcInitialQRSpaceY + (yIndex * this.ySpacing * this.qrFullImageSize),  
-          this.qrFullImageSize, this.qrFullImageSize);
-
-        // If there's both bin number and label to be printed, setup the label being printed on a different line
-        let extraTextLine = 0;
-        if(this.textToPrint.includes('-B-N')){
-          extraTextLine = this.calculatedFontSize * 0.02;
-        }
-
-        if(this.textToPrint.includes('-N') && item.type !== 'b'){
-          doc.setFont("Helvetica", "");
-          doc.text(item.displayName,
-            this.margins + calcInitialQRSpaceX + (0.5*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
-            this.margins + extraTextLine + calcInitialQRSpaceY + this.qrFullImageSize + (this.calculatedFontSize*0.015) + (yIndex * this.ySpacing * this.qrFullImageSize), 
-            {
-              align: 'center',
-              maxWidth: Math.min(this.xSpacing*this.qrSize*1.08, 0.15*this.calculatedFontSize)
-            })
-        }
-
-        // Print bin of selected or we're printing a bin number without an item
-        if(this.textToPrint.includes('-B') || (item.type === 'b' && this.textToPrint.includes('-N'))){
-          doc.setFont("Courier", "Bold");
-          doc.text(item.binID ?? item.ID,
-            this.margins + calcInitialQRSpaceX + (0.5*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
-            this.margins + calcInitialQRSpaceY + (this.qrFullImageSize*0.94) + (this.calculatedFontSize*0.015) + (yIndex * this.ySpacing * this.qrFullImageSize),
-            {
-              align: 'center'
-            })
-        }
-
-        itemIndex++;
-        if(itemIndex % totalQRsPerPage === 0 && itemIndex !== this.itemsInQueue.length){
-          doc.addPage();
-          xIndex = 0;
-          yIndex = 0;
-        }
-        else {
-          xIndex++;
-          if(xIndex % this.calculatedColumns === 0){
-            xIndex = 0;
-            yIndex++;
-          }
-
-        }
-      }
-        
     }
 
-    else {
-      let itemIndex = 0;
-      let xIndex = 0;
-      let yIndex = 0;
-      for(let item of this.itemsInQueue){
-        doc.addImage(this.getBase64QR(document.getElementById('qrCode' + itemIndex)), 'PNG', 
-          this.margins + (xIndex * this.xSpacing * this.qrFullImageSize),
-          this.margins + (yIndex * this.ySpacing * this.qrFullImageSize),  
-          this.qrFullImageSize, this.qrFullImageSize);
+    let itemIndex = 0;
+    let xIndex = 0;
+    let yIndex = 0;
 
-        let extraTextLine = 0;
-        if(this.textToPrint.includes('-B-N')){
-          extraTextLine = this.calculatedFontSize * 0.013;
-        }
+    // Render each QR with thier given labels
+    for(let item of this.itemsInQueue){
+      // Render the QR from pre-rendered hidden QR codes generated on the DOM using angularx-qrcode elements
+      doc.addImage(this.getBase64QR(document.getElementById('qrCode' + itemIndex)), 'PNG', 
+        this.margins + calcInitialQRSpaceX + (xIndex * this.xSpacing * this.qrFullImageSize),
+        this.margins + calcInitialQRSpaceY + (yIndex * this.ySpacing * this.qrFullImageSize),  
+        this.qrFullImageSize, this.qrFullImageSize);
 
-        if(this.textToPrint.includes('-N') && item.type !== 'b'){
-          doc.setFont("Helvetica", "");
-          doc.text(item.displayName,
-            this.margins + (1.1*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
-            this.margins + extraTextLine + (this.qrFullImageSize*0.5) - (this.calculatedFontSize * 0.018) + (yIndex * this.ySpacing * this.qrFullImageSize), 
-            {
-              baseline: 'top',
-              maxWidth: this.xSpacing*this.qrSize*0.9
-            })
-        }
+      // If there's both bin number and label to be printed, setup the label being printed on a different line
+      let extraTextLine = 0;
+      if(this.textToPrint.includes('-B-N')){
+        extraTextLine = this.calculatedFontSize * (isVertical ? 0.02 : 0.013);
+      }
 
-        if(this.textToPrint.includes('-B') || (item.type === 'b' && this.textToPrint.includes('-N'))){
-          doc.setFont("Courier", "Bold");
-          doc.text(item.binID,
-            this.margins + (1.1*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
-            this.margins + (this.qrFullImageSize*0.06) + (yIndex * this.ySpacing * this.qrFullImageSize),
-            {
-              baseline: 'top'
-            })
-        }
+      // If the label (item name) is included, render it - unless the print item is just a bin, then ignore this
+      if(this.textToPrint.includes('-N') && item.type !== 'b'){
+        doc.setFont("Helvetica", "");
+        doc.text(item.displayName.replace(/(\r\n|\n|\r)/gm, ""),
+          this.margins + calcInitialQRSpaceX + ((isVertical ? 0.5 : 1.1)*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
+          this.margins + extraTextLine + calcInitialQRSpaceY + (this.qrFullImageSize*(isVertical ? 1.0 : 0.5)) + (this.calculatedFontSize*(isVertical ? 0.015 : -0.018)) + (yIndex * this.ySpacing * this.qrFullImageSize), 
+          (isVertical ? {
+            align: 'center',
+            maxWidth: Math.min(this.xSpacing*this.qrSize*1.08, 0.15*this.calculatedFontSize)
+          } : {
+            baseline: 'top',
+            maxWidth: this.xSpacing*this.qrSize*0.9
+          }))
+      }
 
-        itemIndex++;
-        if(itemIndex % totalQRsPerPage === 0 && itemIndex !== this.itemsInQueue.length){
-          doc.addPage();
+      // If the bin id is included, render it. If the print item was just a bin, print this as its name
+      if(this.textToPrint.includes('-B') || (item.type === 'b' && this.textToPrint.includes('-N'))){
+        doc.setFont("Courier", "Bold");
+        doc.text(item.binID ?? item.ID,
+          this.margins + calcInitialQRSpaceX + ((isVertical ? 0.5 : 1.1)*this.qrFullImageSize) + (xIndex * this.xSpacing * this.qrFullImageSize),
+          this.margins + calcInitialQRSpaceY + (this.qrFullImageSize*(isVertical ? 0.94 : 0.06)) + (this.calculatedFontSize*(isVertical ? 0.015 : 0)) + (yIndex * this.ySpacing * this.qrFullImageSize),
+          (isVertical ? {
+            align: 'center'
+          } : {
+            baseline: 'top'
+          }))
+      }
+
+      itemIndex++;
+
+      // Once there's enough QRs on one page, move to the next and start again
+      if(itemIndex % totalQRsPerPage === 0 && itemIndex !== this.itemsInQueue.length){
+        doc.addPage();
+        xIndex = 0;
+        yIndex = 0;
+      }
+
+      // If there's more room on this page, shift to next according column or row
+      else {
+        xIndex++;
+        if(xIndex % this.calculatedColumns === 0){
           xIndex = 0;
-          yIndex = 0;
-        }
-        else {
-          xIndex++;
-          if(xIndex % this.calculatedColumns === 0){
-            xIndex = 0;
-            yIndex++;
-          }
-
+          yIndex++;
         }
       }
     }
 
+    // Render the document to a new page in the user's web browser
     window.open(doc.output("bloburl").toString(), "_blank");
+
+    // Back in Placebin, open a pop up asking the user if they'd like to clear their browser
     this.dialog.open(ConfirmComponent, {
       width: '400px',
       data: {
@@ -364,24 +324,27 @@ export class PrintQueueComponent implements OnInit {
   }
 
 
+  // Called when the number in the shelf changes, checks if we should move to the bin input
   updateQuickSearchShelf(event){
     this.checkAndMoveToNextBinInput(this.shelfInput, this.binInput);
   }
 
-
+  // Called when the number in the starting bin changes, checks if we should move inputs and how many bins are currently included
   updateQuickSearchBin(event){
     this.checkAndMoveToNextBinInput(this.binInput, this.binInputExt);
     this.checkAndBackupInput(event, this.binInput, this.shelfInput);
-    this.calculateNumberOfQRs();
+    this.calculateNumberOfBins();
   }
 
   
+  // Called when the number in the ending bin changes, checks if we should move inputs and how many bins are currently included
   updateQuickSearchBinExt(event){
     this.checkAndBackupInput(event, this.binInputExt, this.binInput);
-    this.calculateNumberOfQRs();
+    this.calculateNumberOfBins();
   }
 
 
+  // Once the digits are over three, move to next input.
   checkAndMoveToNextBinInput(input: ElementRef<any>, nextInput: ElementRef<any>){
     if(input.nativeElement.value.length > 3){
       let start = (input.nativeElement.value as string).substring(0, 3);
@@ -399,7 +362,7 @@ export class PrintQueueComponent implements OnInit {
     }
   }
 
-
+  // If there's no numbers left and we hit backspace twice, move to previous input
   checkAndBackupInput(event, input: ElementRef<any>, prevInput: ElementRef<any>){
     // Wait until the user hits backspace twice before returning to the shelf number
     if(input.nativeElement.value.length < 1 && event.key === 'Backspace'){
@@ -423,7 +386,8 @@ export class PrintQueueComponent implements OnInit {
   }
 
 
-  calculateNumberOfQRs(){
+  // You can figure this one out. If bins are negative, set it to zero.
+  calculateNumberOfBins(){
     if(this.binInputExt.nativeElement.value && this.binInput.nativeElement.value){
       let newBinAmount = this.binInputExt.nativeElement.value - this.binInput.nativeElement.value + 1;
       
@@ -443,17 +407,20 @@ export class PrintQueueComponent implements OnInit {
   }
 
 
+  // Loads the items in the range of bin IDs, if one exists for that bin ID.
+  // If one does not, it adds a print item that's just a bin ID with no item data.
   async addBinQRs(){
     if(this.qrBins > 0){
 
       if(this.binInput.nativeElement.value){
 
         let newItemsInQueue: PrintItem[] = [];
-        let binNumber = Number.parseInt(this.binInput.nativeElement.value)
+        let binNumber = Number.parseInt(this.binInput.nativeElement.value) // Starting number that will be incremented
         let endingNum = this.binInputExt.nativeElement.value ? Number.parseInt(this.binInputExt.nativeElement.value) : binNumber;
         this.loadingItems = true;
-        let progressInterval = 100/this.qrBins;
+        let progressInterval = 100/this.qrBins; // For the progress indicator under the button
 
+        // Go through each bin ID in the range, including the last number
         for(; binNumber <= endingNum; binNumber++){
           let binID = this.convertNumberToThreeDigitString(this.shelfInput.nativeElement.value) 
             + '-' + this.convertNumberToThreeDigitString(binNumber);
@@ -461,6 +428,7 @@ export class PrintQueueComponent implements OnInit {
           let itemID = this.searchService.getItemIDFromBinID(binID);
           this.loadingProgress += progressInterval;
 
+          // Make sure there's an item that has the bin ID before trying to load the item from Firebase
           if(itemID && itemID !== 'err' && itemID !== 'no ID'){
             let loadedItem = await this.searchService.getItem(this.workspaceID, itemID).pipe(first(result => result !== undefined)).toPromise();
 
@@ -476,6 +444,7 @@ export class PrintQueueComponent implements OnInit {
             }
           }
           
+          // If there was no item, add the barebones bin print item
           newItemsInQueue.push({
             ID: binID,
             displayName: "Bin " + binID,
@@ -484,7 +453,10 @@ export class PrintQueueComponent implements OnInit {
           
         }
 
+        // Add these new items to the print queue in Firebase, which will then update our print queue subscription
         this.printService.updateItemsInQueue(this.workspaceID, this.itemsInQueue.concat(newItemsInQueue));
+
+        // Clean up the UI 
         this.clearBinInfo();
         this.loadingItems = false;
         this.loadingProgress = 0;
@@ -493,6 +465,7 @@ export class PrintQueueComponent implements OnInit {
   }
 
 
+  // When a new set of bins are added, remove the text in the inputs. Helps prevent spam, whether intentional or not
   clearBinInfo(){
     this.shelfInput.nativeElement.value = null;
     this.binInput.nativeElement.value = null;
@@ -501,6 +474,7 @@ export class PrintQueueComponent implements OnInit {
   }
 
 
+  // Removes all the items from the print queue, but first double checks you want to do that
   clearAllItems(bypassConfirm?: boolean){
     if(!bypassConfirm){
       if(confirm("Are you sure you want to reset the print queue?")){
@@ -512,7 +486,7 @@ export class PrintQueueComponent implements OnInit {
     }
   }
 
-
+  // Make numbers into the digits of the bin format
   convertNumberToThreeDigitString(num: number | string): string {
     
     let strigifiedNum = num.toString();
@@ -529,7 +503,7 @@ export class PrintQueueComponent implements OnInit {
     
   }
   
-
+  // Gets the QR image from the hidden pre-rendered QR codes on the DOM
   getBase64QR(qrGenerator){
     let loadAsImage = qrGenerator.querySelector("img");
 
