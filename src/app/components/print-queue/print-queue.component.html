@@ -1,4 +1,4 @@
-<mat-tab-group class="action-color-light" mat-align-tabs="center">
+<mat-tab-group class="action-color-light" mat-align-tabs="center" [(selectedIndex)]="selectedTab">
     <mat-tab label="Queued Items">
         <div class="tab-content">
             <div class="add-qr-range-container">
@@ -73,6 +73,19 @@
             </div>
         </div>
     </mat-tab>
+    <mat-tab label="Templates">
+        <div class="tab-content">
+            <div class="templates">
+                <mat-card *ngFor="let template of printTemplates; index as i" class="print-template">
+                    <div>
+                        {{template.templateName}}
+                        <br> <span class="light-text">{{template.updated}}</span>
+                    </div>
+                    <button mat-raised-button class="action-color" (click)="loadTemplate(i)" [disabled]="!checkReady()"> Use </button>
+                </mat-card>
+            </div>
+        </div>
+    </mat-tab>
     <mat-tab label="Page Setup">
         <div class="tab-content">
             <div class="page-setup">
@@ -124,9 +137,9 @@
 
                 <div class="information-separator-large">
                     <div class="input-space"> Link item QRs to: </div>
-                    <mat-radio-group class="radio-button-group" value="I">
-                        <mat-radio-button value="I" class="input-space" (click)="setupTextForQRs(false)">Item itself</mat-radio-button>
-                        <mat-radio-button value="B" class="input-space" (click)="setupTextForQRs(true)">Bin number</mat-radio-button>
+                    <mat-radio-group class="radio-button-group" [value]="linkQRTo">
+                        <mat-radio-button value="item" class="input-space" (click)="setupTextForQRs(false)">Item itself</mat-radio-button>
+                        <mat-radio-button value="bin" class="input-space" (click)="setupTextForQRs(true)">Bin number</mat-radio-button>
                     </mat-radio-group>
                 </div>
 
@@ -140,7 +153,9 @@
                     </mat-radio-group>
                 </div>
 
-                <button mat-raised-button class="big-button action-color-dark" (click)="printPDF()" [disabled]="!checkReady()"><mat-icon>print</mat-icon> Print </button>
+                <button mat-raised-button class="big-button action-color button-space" (click)="printPDF()" [disabled]="!checkReady()"><mat-icon>print</mat-icon> Print </button>
+                <button mat-raised-button class="big-button action-color-dark" (click)="saveTemplate()" [disabled]="!checkReady()"><mat-icon>save</mat-icon> Save as Template </button>
+
                 
                 <div class="QR-code-holder">
                     <div *ngFor="let item of itemsInQueue; index as i">

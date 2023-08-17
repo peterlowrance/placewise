@@ -6,6 +6,7 @@ import { PrintItem } from '../models/PrintItem';
 import { U } from '@angular/cdk/keycodes';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { PrintTemplate } from '../models/PrintTemplate';
 
 
 
@@ -39,5 +40,48 @@ export class PrintService {
         this.afs.doc('/Workspaces/' + workspaceID + '/WorkspaceUsers/' + this.auth.userInfo.value.id)
             .update({printQueue: printQueue});
     }
+
+    async getPrintTemplates(workspaceID: string): Promise<PrintTemplate[]> {
+        let templates = await this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/PrintTemplates').ref.get();
+        if(templates.exists){
+            const data = templates.data().templates as PrintTemplate[];
+            if(data){
+                return data;
+              }
+              else {
+                return null;
+              }
+        }
+    }
+
+    // Checks if the template name already exists. If so, it will overwrite the template. Otherwise, it will make a new version.
+    // Returns true once it's saved.
+    saveNewTemplate(workspaceID: string, originalTemplates: PrintTemplate[], newTemplate: PrintTemplate): Promise<boolean> {
+        
+        return new Promise<boolean>((resolve) => {
+        
+            let templateOverriden = false;
+            
+            for(let template of originalTemplates){
+                if(template.templateName.toUpperCase() === newTemplate.templateName.toUpperCase()){
+                    template = newTemplate;
+                    templateOverriden = true;
+                    break;
+                }
+            }
+
+            // Put new templates at the top
+            if(!templateOverriden){
+                originalTemplates = [newTemplate].concat(originalTemplates);
+            }
+
+            this.afs.doc('/Workspaces/' + workspaceID + '/StructureData/PrintTemplates')
+                .set({templates: originalTemplates}).then(resolved => {
+                    resolve(true);
+                })
+
+        });
+    }
+
 
 }

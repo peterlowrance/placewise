@@ -550,6 +550,11 @@ export class ItemBuilderModalComponent implements OnInit {
     }
   }
 
+  
+  addNewAttributeValue(card: AttributeCard){
+    console.log("neet");
+  }
+
   // After changing attributes, this updates the title
   rebuildTitle(){
     // Rebuild title

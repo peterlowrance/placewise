@@ -11,6 +11,8 @@ import { Subscription } from 'rxjs';
 import { first } from 'rxjs/operators'
 import { SearchService } from 'src/app/services/search.service';
 import { ConfirmComponent } from '../confirm/confirm.component';
+import { PrintTemplate } from 'src/app/models/PrintTemplate';
+import { formatDate } from '@angular/common';
 
 @Component({
   selector: 'app-print-queue',
@@ -44,6 +46,9 @@ export class PrintQueueComponent implements OnInit {
   qrBins: number = 0;
   loadingItems: boolean = false;
   loadingProgress: number = 0;
+  printTemplates: PrintTemplate[];
+  selectedTab: number = 0;
+  templateName: string = '';
 
   constructor(
     public dialog: MatDialog, 
@@ -61,6 +66,10 @@ export class PrintQueueComponent implements OnInit {
 
     // Make sure the bin document is loaded for loading items right away if adding to the queue via bin ID is used
     this.searchService.loadBinData(this.workspaceID);
+
+    this.printService.getPrintTemplates(this.workspaceID).then(result => {
+      this.printTemplates = result;
+    })
   }
 
   ngOnDestroy() {
@@ -220,6 +229,28 @@ export class PrintQueueComponent implements OnInit {
     this.pageHeight = widthHolder;
 
     this.calculateGrid();
+  }
+
+
+  loadTemplate(index: number){
+    let template = this.printTemplates[index];
+
+    this.templateName = template.templateName;
+    this.format = template.format;
+    this.pageWidth = template.width;
+    this.pageHeight = template.height;
+    this.textToPrint = template.whatIsPrinted;
+    this.margins = template.margins;
+    this.qrSize = template.qrSize;
+    if(template.fontSize) {this.overrideFontSize = template.fontSize; }
+    else { this.overrideFontSize = null; this.updateFontSize(); }
+    
+    if(template.linkToBin) {this.linkQRTo = 'bin'; this.setupTextForQRs(true)}
+    else {this.linkQRTo = 'item'; this.setupTextForQRs(false)}
+
+    this.calculateGrid();
+
+    this.selectedTab = 2;
   }
 
 
@@ -484,6 +515,44 @@ export class PrintQueueComponent implements OnInit {
     else {
       this.printService.updateItemsInQueue(this.workspaceID, []);
     }
+  }
+
+  saveTemplate(){
+    this.dialog.open(SimpleFieldDialogComponent, {
+      width: '300px',
+      data: {fieldName: 'Template Name:', value: this.templateName, description: 'If the name is the same as an existing template, that template will be overriden.'}
+    }).beforeClosed().subscribe(result => {
+      if(result && result.wasValid){
+        let newTemplate: PrintTemplate = {
+          templateName: result.value,
+          updated: formatDate(Date.now(),'yyyy-MM-dd', 'en-US'),
+
+          format: this.format,
+          width: this.pageWidth,
+          height: this.pageHeight,
+          margins: this.margins,
+          qrSize: this.qrSize,
+          whatIsPrinted: this.textToPrint
+        }
+
+        if(this.linkQRTo === 'bin'){
+          newTemplate.linkToBin = true;
+        }
+
+        if(this.overrideFontSize){
+          newTemplate.fontSize = this.overrideFontSize;
+        }
+
+        this.printService.saveNewTemplate(this.workspaceID, this.printTemplates, newTemplate).then(resolved => {
+          if(resolved){
+            this.printService.getPrintTemplates(this.workspaceID).then(templates => {
+              this.printTemplates = templates;
+              this.selectedTab = 1;
+            })
+          }
+        })
+      }
+    });
   }
 
   // Make numbers into the digits of the bin format

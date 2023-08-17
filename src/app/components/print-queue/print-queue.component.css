@@ -121,3 +121,21 @@
 .loading-bar {
   width: 292px;
 }
+
+.templates {
+  padding: 6px;
+  max-width: calc(100vw - 12px);
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+.print-template {
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.button-space {
+  margin-right: 12px;
+  margin-bottom: 12px;
+}
