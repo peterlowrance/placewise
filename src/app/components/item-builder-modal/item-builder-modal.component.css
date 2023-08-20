@@ -154,9 +154,9 @@
 }
 
 .scrollable {
-    overflow-y: auto;
-    overflow-x: hidden;
-    max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 60vh;
 }
 
 .title-scroll {

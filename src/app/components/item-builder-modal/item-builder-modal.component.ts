@@ -16,6 +16,7 @@ import { SearchService } from 'src/app/services/search.service';
 import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 import { AttributeOption } from 'src/app/models/Attribute';
 import { ENGINE_METHOD_DIGESTS } from 'constants';
+import { AttributeBuilderDialogComponent } from '../attribute-builder-dialog/attribute-builder-dialog.component';
 
 interface AttributeCard {
   name: string;
@@ -552,7 +553,19 @@ export class ItemBuilderModalComponent implements OnInit {
 
   
   addNewAttributeValue(card: AttributeCard){
-    console.log("neet");
+    this.dialog.open(AttributeBuilderDialogComponent, {
+      width: '360px',
+      data: {attribute: {
+        name: card.name,
+        type: card.type,
+        // NEXT: Get attribute options (layers) loaded from card name
+      }, step: 'options', finishStep: true},
+    })
+    .beforeClosed().subscribe(result => {
+      if(result.wasValid){
+        console.log("Attrbiute result: " + JSON.stringify(result))
+      }
+    });
   }
 
   // After changing attributes, this updates the title
