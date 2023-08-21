@@ -3,7 +3,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReportStructure, ReportStructureWrapper } from 'src/app/models/ReportStructure';
 import { ReportService } from 'src/app/services/report.service';
-import { AttributeBuilderDialogComponent } from '../attribute-builder-dialog/attribute-builder-dialog.component';
 import { SimpleFieldDialogComponent } from '../simple-field-dialog/simple-field-dialog.component';
 
 @Component({

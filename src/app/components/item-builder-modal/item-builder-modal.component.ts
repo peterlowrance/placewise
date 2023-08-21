@@ -84,6 +84,7 @@ export class ItemBuilderModalComponent implements OnInit {
   binIDData: BinInterface[] = [];
 
   ngOnInit() {
+
     this.workspaceID = this.data.workspaceID;
 
     // Setup if this is just for editing one piece of an item
@@ -553,17 +554,43 @@ export class ItemBuilderModalComponent implements OnInit {
 
   
   addNewAttributeValue(card: AttributeCard){
+
     this.dialog.open(AttributeBuilderDialogComponent, {
       width: '360px',
       data: {attribute: {
         name: card.name,
         type: card.type,
-        // NEXT: Get attribute options (layers) loaded from card name
+        options: card.selectors[0].options,
+        layerNames: card.layerNames
       }, step: 'options', finishStep: true},
     })
     .beforeClosed().subscribe(result => {
       if(result.wasValid){
-        console.log("Attrbiute result: " + JSON.stringify(result))
+        for(let selector of card.selectors){
+          selector.selectedValue = null;
+        }
+
+        for(let category of this.categoryAndAncestors){
+          if(category.name === card.category){
+            for(let attributeIndex = 0; attributeIndex < category.attributes.length; attributeIndex){
+              if(category.attributes[attributeIndex].name === card.name){
+                category.attributes[attributeIndex] = result.data;
+
+                this.adminService.updateHierarchy(this.workspaceID, JSON.parse(JSON.stringify(category)), true).then(confirmation => {
+                  if (confirmation !== true) {
+                    this.snack.open('Attribute Update Failed', "OK", {duration: 3000, panelClass: ['mat-warn']});
+                  }
+                });
+
+                break;
+              }
+            }
+
+            break;
+          }
+        }
+
+        
       }
     });
   }

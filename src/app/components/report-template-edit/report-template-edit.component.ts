@@ -10,7 +10,6 @@ import { WorkspaceUser } from 'src/app/models/WorkspaceUser';
 import { AdminService } from 'src/app/services/admin.service';
 import { ReportService } from 'src/app/services/report.service';
 import { SearchService } from 'src/app/services/search.service';
-import { AttributeBuilderDialogComponent } from '../attribute-builder-dialog/attribute-builder-dialog.component';
 import { ColorPaletteDialogComponent } from '../color-palette-dialog/color-palette-dialog.component';
 import { ModifyHierarchyDialogComponent } from '../modify-hierarchy-dialog/modify-hierarchy-dialog.component';
 import { ReportFormatPieceDialogComponent } from '../report-format-piece-dialog/report-format-piece-dialog.component';

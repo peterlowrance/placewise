@@ -126,7 +126,7 @@
                                     <mat-label class="attribute-select-label">{{(attrCard.layerNames && attrCard.layerNames[selectorIndex] ? attrCard.layerNames[selectorIndex] : attrCard.name) + ":"}}</mat-label>
                                     <mat-select class="attribute-select" [(value)]="selector.selectedValue">
                                         <mat-option *ngFor="let option of selector.options; index as optionIndex" value="{{option.value}}" (click)="onAttrOptionSubmit(attrCard, selectorIndex, optionIndex, option.value)"> {{ option.value }} </mat-option>
-                                        <mat-option class="structure-color-light" value="Add new..."  (click)="addNewAttributeValue(attrCard)"> Add new... </mat-option>
+                                        <mat-option class="structure-color-light" value="Edit Options..."  (click)="addNewAttributeValue(attrCard)"> Edit Options... </mat-option>
                                     </mat-select>
                                 </mat-form-field>
                             </div>
