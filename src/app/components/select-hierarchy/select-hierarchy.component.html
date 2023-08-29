@@ -1,0 +1,35 @@
+<div id="overlay">
+    <mat-toolbar>
+        <mat-toolbar-row class="structure-color-dark toolbar-top">
+            <button mat-icon-button (click)="goBack()" [disabled]="currentHierarchyID === 'root'">
+                <mat-icon>
+                    arrow_upward
+                </mat-icon> 
+            </button>
+            Select a {{type}}
+            <div style="min-width: 40px; min-height: 40px"></div>
+        </mat-toolbar-row>
+        <mat-toolbar-row  *ngIf="currentHierarchyID !== 'root'" class="toolbar-bottom">
+            {{currentHierarchyName}}
+        </mat-toolbar-row>
+        <mat-toolbar-row *ngIf="currentHierarchyID === 'root'" class="nothing-selected toolbar-bottom">
+            (No {{type}} selected)
+        </mat-toolbar-row>
+    </mat-toolbar>
+
+    <div class="item-container">
+        <div *ngIf="currentHierarchyID === 'root' && recentHierarchyItems">
+            <h3 class="hierarchy-heading">Recent {{type === 'category' ? "Categories" : "Locations"}}</h3>
+            <app-hierarchy-item-grid class="recent-items" [hierarchyItemList]="recentHierarchyItems" (clickedHierarchy)="goToHierarchy($event)"></app-hierarchy-item-grid>
+            <h3 class="hierarchy-heading">All {{type === 'category' ? "Categories" : "Locations"}}</h3>
+        </div>
+
+        <app-hierarchy-item-grid class="items" [hierarchyItemList]="hierarchyItems" (clickedHierarchy)="goToHierarchy($event)"></app-hierarchy-item-grid>
+        <div class="bottom-spacer">
+
+        </div>
+    </div>
+
+    <button *ngIf="currentHierarchyID !== 'root'" mat-fab class="extended-fab button-select structure-color-light" (click)="exit()">Put item in {{currentHierarchyName}}</button>
+    <button mat-fab class="extended-fab button-cancel" (click)="exit(true)">Cancel</button>
+</div>

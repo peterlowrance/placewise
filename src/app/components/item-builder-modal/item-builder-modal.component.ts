@@ -82,6 +82,7 @@ export class ItemBuilderModalComponent implements OnInit {
   } = {};
   invalidBinIDErrors: {[locationID: string] : string} = {};
   binIDData: BinInterface[] = [];
+  typeLookingFor: string;
 
   ngOnInit() {
 
@@ -236,12 +237,17 @@ export class ItemBuilderModalComponent implements OnInit {
    * Changes the item's category
    */
   editCategory() {
+    this.step = 'select';
+    this.typeLookingFor = 'category';
+
+    /*
     const oldCategory = this.item.category ? this.item.category : 'root';
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
       data: {workspaceID: this.workspaceID, hierarchy: 'categories', singleSelection: true, parents: [this.item.category]}
     });
     dialogRef.afterClosed().subscribe(result => this.updateItemCategory(result, oldCategory));
+    */
   }
 
   /**
@@ -287,13 +293,37 @@ export class ItemBuilderModalComponent implements OnInit {
    * Changes the item's locations to new locations
    */
   editLocation() {
+    this.step = 'select';
+    this.typeLookingFor = 'location';
+
     // Deep copy locations
+    /*
     const oldLocations = JSON.parse(JSON.stringify(this.item.locations));
     const dialogRef = this.dialog.open(ModifyHierarchyDialogComponent, {
       width: '45rem',
       data: {workspaceID: this.workspaceID, hierarchy: 'locations', singleSelection: false, parents: this.item.locations}
     });
     dialogRef.beforeClosed().subscribe(result => this.updateItemLocations(result, oldLocations));
+    */
+  }
+
+  setHierarchy(event: HierarchyItem){
+    console.log(event);
+
+    if(event){
+      if(this.typeLookingFor === 'category'){
+        this.updateItemCategory([event.ID], this.item.category);
+      }
+      else {
+        this.updateItemLocations(this.item.locations.concat(event.ID));
+      }
+    }
+
+    this.step = 'basic';
+  }
+
+  removeLocation(event: HierarchyLocation){
+    this.updateItemLocations(this.item.locations.filter(locationID => {return locationID !== event.ID}));
   }
 
   /**
@@ -301,48 +331,16 @@ export class ItemBuilderModalComponent implements OnInit {
    * @param result locations chosen
    * @param oldLocations old locations
    */
-  updateItemLocations(result: string[], oldLocations: string[]) {
-    if (result) {
-      // Go through and get the new locations for saving to recent
-      let newLocations: string[] = [];
-
-      for(let resultIndex in result){
-        let found = false;
-        for(let currentIndex in oldLocations){
-          if(oldLocations[currentIndex] === result[resultIndex]){
-            found = true;
-            break;
-          }
-        }
-        if(!found){
-          newLocations.push(result[resultIndex]);
-        }
-      }
+  updateItemLocations(locations: string[]) {
+    if (locations) {
 
       // Update the item locations
-      this.item.locations = result;
-      
-      // NOTE: Inside the updateItem, the tracked data for old locations in the data structure get removed. But the card is removed here:
-      /*
-      for(let oldLocIndex in oldLocations){
-        if(newLocations.indexOf(oldLocations[oldLocIndex]) === -1){
-          for(let cardIndex in this.trackingCards){
-            if(this.trackingCards[cardIndex].locationID === oldLocations[oldLocIndex]){
-              this.trackingCards.splice(parseInt(cardIndex), 1);
-            }
-          }
-        }
-      }
-      */
-
-      //this.adminService.updateItem(this.item, null, oldLocations); // TODO: Not good placement, seperate from main saving mechanism
-      // this.setDirty(true);
-
-      this.loadLocationsFromIDs(result);
+      this.item.locations = locations;
+      this.loadLocationsFromIDs(locations);
 
       // Update recent locations
-      for(let index in newLocations){
-        let localSub = this.searchService.subscribeToLocation(this.workspaceID, newLocations[index]).subscribe(loc => {
+      for(let index in locations){
+        let localSub = this.searchService.subscribeToLocation(this.workspaceID, locations[index]).subscribe(loc => {
           this.adminService.addToRecent(loc);
           localSub.unsubscribe(); // Don't want this screwing with us later
         })

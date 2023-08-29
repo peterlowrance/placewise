@@ -21,7 +21,9 @@ export class HierarchyItemGridComponent implements OnInit {
 
   ngOnInit(): void {
     this.determineCols();
+  }
 
+  ngOnChanges() {
     if(this.hierarchyItemList && this.hierarchyItemList.length > 0){
       this.type = this.hierarchyItemList[0].type;
     }

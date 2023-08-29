@@ -88,6 +88,7 @@ import { QRScannerDialogComponent } from './components/qrscanner-dialog/qrscanne
 import { ReportListComponent } from './components/report-list/report-list.component';
 import { PrintQueueComponent } from './components/print-queue/print-queue.component';
 import { BinSelectDialogComponent } from './components/bin-select-dialog/bin-select-dialog.component';
+import { SelectHierarchyComponent } from './components/select-hierarchy/select-hierarchy.component';
 
 @NgModule({
   declarations: [
@@ -134,6 +135,7 @@ import { BinSelectDialogComponent } from './components/bin-select-dialog/bin-sel
     ReportListComponent,
     PrintQueueComponent,
     BinSelectDialogComponent,
+    SelectHierarchyComponent,
   ],
   imports: [
     CommonModule,

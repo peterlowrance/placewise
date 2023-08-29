@@ -19,12 +19,13 @@
                 </div>
                 <p *ngIf="!category"> Loading category... </p>
                 <br>
-                <h3> Locations <button mat-icon-button class="editButton" (click)="editLocation()"><mat-icon>edit</mat-icon></button></h3>
+                <h3> Locations <button mat-icon-button class="editButton" (click)="editLocation()"><mat-icon>add</mat-icon></button></h3>
                 <div *ngFor="let location of locations" class="locations-container">
                     <img class="locationImg" src={{location.imageUrl}}>
                     <div class="location-name">{{location.ID !== 'root' ? location.name : 'Unassigned'}}
                         <mat-icon *ngIf="location.ID == 'root'" class="missing-data-icon">error_outline</mat-icon>
                     </div>
+                    <button *ngIf="location.ID !== 'root'" mat-icon-button (click)="removeLocation(location)"><mat-icon>delete</mat-icon></button>
                 </div>
                 <div *ngIf="!loadingLocations && locations && locations.length === 0">
                     No Locations <mat-icon class="missing-data-icon">error_outline</mat-icon>
@@ -263,6 +264,13 @@
                 <br>
             </div>
         </div>
+    </div>
+
+    
+    <div *ngIf="this.step === 'select'" class="step-select">
+        <app-select-hierarchy [workspaceID]="workspaceID" [type]="typeLookingFor" (selectedHierarchy)="setHierarchy($event)">
+
+        </app-select-hierarchy>
     </div>
 
     <!-- Buttons -->

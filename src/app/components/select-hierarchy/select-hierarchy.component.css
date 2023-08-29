@@ -1,0 +1,64 @@
+
+#overlay {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    background-color: white;
+    z-index: 100;
+}
+
+.toolbar-bottom {
+    color: white;
+    background-color: #546E7A;
+}
+
+.toolbar-top {
+    display: flex;
+    justify-content: space-between;
+}
+
+.item-container {
+    max-height: 100%;
+    min-height: 100%;
+    max-width: 1200px;
+    margin: 0 auto auto auto;
+    overflow: auto;
+}
+
+.bottom-spacer {
+    min-height: 300px; 
+}
+
+.extended-fab {
+    position: fixed;
+    right: calc(50vw - 150px);
+    background-color: white;
+    color: rgba(0,0,0, 0.87);
+    padding: 0 0.8rem;
+    border-radius: 10rem;
+    width: 300px;
+    font-weight: 500;
+    z-index: 100;
+  }
+
+.button-select {
+    top: max(400px, calc(95% - 114px)); /* For trying not to get this in the way of android keyboards */
+}
+
+.button-cancel {
+    top: max(400px, calc(95% - 48px)); /* For trying not to get this in the way of android keyboards */
+}
+
+.recent-items {
+    margin-bottom: 60px;
+}
+
+.hierarchy-heading {
+    margin: 36px 0px 12px 8px;
+}
+
+.nothing-selected {
+    color: rgba(255, 255, 255, 0.7);
+}
